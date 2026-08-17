@@ -15,6 +15,7 @@ var current_hp: float = 0.0
 var gold: int = 0
 var traits: Array[String] = []
 var loop_state: String = "CHOOSING_QUEST"
+var active_quest
 var active_effects: Array[Dictionary] = []
 
 func _init(initial_name: String) -> void:

@@ -69,7 +69,19 @@ func create_hero_panel() -> void:
 func update_hero_panel() -> void:
 	var hero = simulation.hero_state
 	var stats = simulation.combat_stats
-	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power()]
+	var active_quest_name: String = "—"
+	if hero.active_quest != null:
+		active_quest_name = hero.active_quest.display_name
+	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power()]
+
+func get_state_display_name(loop_state: String) -> String:
+	match loop_state:
+		"CHOOSING_QUEST": return "Выбирает квест"
+		"TRAVEL_TO_QUEST": return "Идёт к цели"
+		"DOING_QUEST": return "Выполняет квест"
+		"RETURNING_TO_CITY": return "Возвращается в город"
+		"TURNING_IN_QUEST": return "Сдаёт квест"
+	return loop_state
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
