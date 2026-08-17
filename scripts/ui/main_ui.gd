@@ -1,16 +1,11 @@
 extends Control
 
-const WorldClockScript = preload("res://scripts/core/world_clock.gd")
-const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
-const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
-const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
-const DiaryScript = preload("res://scripts/narrative/diary.gd")
+const SimulationScript = preload("res://scripts/core/simulation.gd")
 
-var world_clock = WorldClockScript.new()
-var debug_log = DebugLogScript.new()
-var diary = DiaryScript.new()
+var simulation = SimulationScript.new()
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
+var hero_details_label: Label
 var log_text_edit: TextEdit
 
 func _ready() -> void:
@@ -18,16 +13,17 @@ func _ready() -> void:
 	create_hero_panel()
 	create_tick_indicator()
 	create_narrative_panel()
-	world_clock.tick_completed.connect(on_world_tick_completed)
+	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
+	update_hero_panel()
 
 func _process(delta: float) -> void:
-	world_clock.advance_time(delta)
-	time_progress_bar.value = world_clock.tick_progress * 100.0
-	tick_counter_label.text = "Тик: %d" % world_clock.world_tick
+	simulation.advance_time(delta)
+	time_progress_bar.value = simulation.world_clock.tick_progress * 100.0
+	tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
+	update_hero_panel()
 
-func on_world_tick_completed(completed_tick: int) -> void:
-	debug_log.record_tick(completed_tick)
-	log_text_edit.text = debug_log.get_text()
+func on_world_tick_completed(_completed_tick: int) -> void:
+	log_text_edit.text = simulation.debug_log.get_text()
 	log_text_edit.scroll_vertical = log_text_edit.get_line_count()
 
 func create_background() -> void:
@@ -37,30 +33,20 @@ func create_background() -> void:
 	add_child(background)
 
 func create_hero_panel() -> void:
-	var name_repository = HeroNameRepositoryScript.new()
-	var hero = HeroStateScript.new(name_repository.get_random_name())
-
 	var panel := PanelContainer.new()
 	panel.position = Vector2(32.0, 32.0)
-	panel.size = Vector2(300.0, 420.0)
+	panel.size = Vector2(320.0, 430.0)
 	add_child(panel)
 
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 8)
-	panel.add_child(content)
+	hero_details_label = Label.new()
+	hero_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hero_details_label.add_theme_font_size_override("font_size", 16)
+	panel.add_child(hero_details_label)
 
-	add_info_label(content, hero.hero_name, 26)
-	add_info_label(content, hero.hero_class, 20)
-	add_info_label(content, "Уровень: %d   XP: %d / %d" % [hero.level, hero.experience, hero.experience_to_next_level])
-	add_info_label(content, "HP: %.0f / %.0f" % [hero.current_hp, hero.max_hp])
-	add_info_label(content, "Сила: %d" % hero.strength)
-	add_info_label(content, "Ловкость: %d" % hero.agility)
-	add_info_label(content, "Интеллект: %d" % hero.intelligence)
-	add_info_label(content, "Атака: %.0f" % hero.attack)
-	add_info_label(content, "Скорость атаки: %.2f" % hero.attack_speed)
-	add_info_label(content, "Шанс крита: %.0f%%" % (hero.crit_chance * 100.0))
-	add_info_label(content, "Крит. урон: %.0f%%" % (hero.crit_damage * 100.0))
-	add_info_label(content, "Сила героя: %.2f" % hero.hero_power)
+func update_hero_panel() -> void:
+	var hero = simulation.hero_state
+	var stats = simulation.combat_stats
+	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power()]
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
@@ -95,7 +81,7 @@ func create_narrative_panel() -> void:
 	var diary_text_edit := create_read_only_text_edit()
 	diary_text_edit.name = "Дневник"
 	diary_text_edit.placeholder_text = "Пока записей нет."
-	diary_text_edit.text = diary.get_text()
+	diary_text_edit.text = simulation.diary.get_text()
 	tabs.add_child(diary_text_edit)
 
 func create_read_only_text_edit() -> TextEdit:
@@ -104,9 +90,3 @@ func create_read_only_text_edit() -> TextEdit:
 	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	text_edit.add_theme_font_size_override("font_size", 16)
 	return text_edit
-
-func add_info_label(container: VBoxContainer, text: String, font_size: int = 16) -> void:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_font_size_override("font_size", font_size)
-	container.add_child(label)
