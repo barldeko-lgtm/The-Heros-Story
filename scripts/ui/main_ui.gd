@@ -7,9 +7,11 @@ var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label
 var log_text_edit: TextEdit
+var speed_buttons: Dictionary = {}
 
 func _ready() -> void:
 	create_background()
+	create_speed_controls()
 	create_hero_panel()
 	create_tick_indicator()
 	create_narrative_panel()
@@ -31,6 +33,27 @@ func create_background() -> void:
 	background.color = Color("1a1c25")
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
+
+func create_speed_controls() -> void:
+	var speed_controls := HBoxContainer.new()
+	speed_controls.position = Vector2(950.0, 24.0)
+	speed_controls.size = Vector2(300.0, 38.0)
+	speed_controls.add_theme_constant_override("separation", 6)
+	add_child(speed_controls)
+
+	for speed in [1, 2, 5, 10, 20]:
+		var button := Button.new()
+		button.text = "×%d" % speed
+		button.toggle_mode = true
+		button.button_pressed = speed == 1
+		button.pressed.connect(set_time_scale.bind(float(speed)))
+		speed_controls.add_child(button)
+		speed_buttons[float(speed)] = button
+
+func set_time_scale(new_time_scale: float) -> void:
+	simulation.set_time_scale(new_time_scale)
+	for speed in speed_buttons:
+		speed_buttons[speed].button_pressed = is_equal_approx(speed, new_time_scale)
 
 func create_hero_panel() -> void:
 	var panel := PanelContainer.new()

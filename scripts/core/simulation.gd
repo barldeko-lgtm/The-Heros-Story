@@ -12,6 +12,7 @@ const DiaryScript = preload("res://scripts/narrative/diary.gd")
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
+var time_scale: float = 1.0
 var hero_state
 var combat_stats
 
@@ -26,7 +27,10 @@ func _init() -> void:
 	world_clock.tick_completed.connect(on_world_tick_completed)
 
 func advance_time(delta_seconds: float) -> void:
-	world_clock.advance_time(delta_seconds)
+	world_clock.advance_time(delta_seconds * time_scale)
+
+func set_time_scale(new_time_scale: float) -> void:
+	time_scale = new_time_scale
 
 func refresh_combat_stats() -> void:
 	combat_stats = stat_resolver.resolve(hero_state)
