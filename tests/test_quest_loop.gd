@@ -9,7 +9,7 @@ func _init() -> void:
 	for _tick in 7:
 		simulation.advance_time(10.0)
 
-	assert(simulation.hero_state.loop_state == "CHOOSING_QUEST", "Hero must return to quest selection after turning in the quest.")
+	assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Hero must return to quest selection after turning in the quest.")
 	assert(simulation.hero_state.gold == 20, "Hero must receive 20 gold only after quest turn-in.")
 
 	var expected_log := [

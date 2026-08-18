@@ -8,12 +8,14 @@ const StatResolverScript = preload("res://scripts/hero/stat_resolver.gd")
 const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd")
 const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
 const DiaryScript = preload("res://scripts/narrative/diary.gd")
+const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const InitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
+var quest_narrator = QuestNarratorScript.new()
 var time_scale: float = 1.0
 var hero_state
 var combat_stats
@@ -42,5 +44,8 @@ func get_hero_power() -> float:
 	return power_calculator.calculate(combat_stats)
 
 func on_world_tick_completed(completed_tick: int) -> void:
-	var message: String = quest_runner.advance(hero_state)
-	debug_log.record_event(completed_tick, message)
+	var event = quest_runner.advance(hero_state)
+	if event == null:
+		debug_log.record_tick(completed_tick)
+		return
+	debug_log.record_event(completed_tick, quest_narrator.describe(event))

@@ -1,6 +1,12 @@
 class_name HeroState
 extends RefCounted
 
+const CHOOSING_QUEST := "CHOOSING_QUEST"
+const TRAVEL_TO_QUEST := "TRAVEL_TO_QUEST"
+const DOING_QUEST := "DOING_QUEST"
+const RETURNING_TO_CITY := "RETURNING_TO_CITY"
+const TURNING_IN_QUEST := "TURNING_IN_QUEST"
+
 signal state_changed
 
 var hero_name: String
@@ -14,7 +20,7 @@ var intelligence: int = 2
 var current_hp: float = 0.0
 var gold: int = 0
 var traits: Array[String] = []
-var loop_state: String = "CHOOSING_QUEST"
+var loop_state: String = CHOOSING_QUEST
 var active_quest
 var active_effects: Array[Dictionary] = []
 

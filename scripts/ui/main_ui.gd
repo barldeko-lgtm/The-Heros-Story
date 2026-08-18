@@ -76,11 +76,11 @@ func update_hero_panel() -> void:
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:
-		"CHOOSING_QUEST": return "Выбирает квест"
-		"TRAVEL_TO_QUEST": return "Идёт к цели"
-		"DOING_QUEST": return "Выполняет квест"
-		"RETURNING_TO_CITY": return "Возвращается в город"
-		"TURNING_IN_QUEST": return "Сдаёт квест"
+		HeroState.CHOOSING_QUEST: return "Выбирает квест"
+		HeroState.TRAVEL_TO_QUEST: return "Идёт к цели"
+		HeroState.DOING_QUEST: return "Выполняет квест"
+		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
+		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
 	return loop_state
 
 func create_tick_indicator() -> void:

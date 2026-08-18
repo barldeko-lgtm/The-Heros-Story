@@ -1,38 +1,40 @@
 class_name QuestRunner
 extends RefCounted
 
+const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
+
 var quest_definition: Resource
 var travel_ticks_remaining: int = 0
 
 func _init(initial_quest_definition: Resource) -> void:
 	quest_definition = initial_quest_definition
 
-func advance(hero_state) -> String:
+func advance(hero_state):
 	match hero_state.loop_state:
-		"CHOOSING_QUEST":
+		HeroState.CHOOSING_QUEST:
 			hero_state.active_quest = quest_definition
 			travel_ticks_remaining = ceili(quest_definition.distance_km)
-			hero_state.loop_state = "TRAVEL_TO_QUEST"
-			return "%s выбрал квест «%s»." % [hero_state.hero_name, quest_definition.display_name]
-		"TRAVEL_TO_QUEST":
+			hero_state.loop_state = HeroState.TRAVEL_TO_QUEST
+			return QuestEventScript.new(QuestEventScript.HERO_SELECTED_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+		HeroState.TRAVEL_TO_QUEST:
 			travel_ticks_remaining -= 1
 			if travel_ticks_remaining <= 0:
-				hero_state.loop_state = "DOING_QUEST"
-				return "%s прибыл к цели." % hero_state.hero_name
-			return "%s идёт к цели. Осталось: %d км." % [hero_state.hero_name, travel_ticks_remaining]
-		"DOING_QUEST":
-			hero_state.loop_state = "RETURNING_TO_CITY"
+				hero_state.loop_state = HeroState.DOING_QUEST
+				return QuestEventScript.new(QuestEventScript.HERO_ARRIVED_AT_QUEST, hero_state.hero_name, quest_definition)
+			return QuestEventScript.new(QuestEventScript.HERO_TRAVELLING_TO_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+		HeroState.DOING_QUEST:
+			hero_state.loop_state = HeroState.RETURNING_TO_CITY
 			travel_ticks_remaining = ceili(quest_definition.distance_km)
-			return "%s выполнил задание «%s». Бой будет добавлен позже." % [hero_state.hero_name, quest_definition.display_name]
-		"RETURNING_TO_CITY":
+			return QuestEventScript.new(QuestEventScript.HERO_COMPLETED_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+		HeroState.RETURNING_TO_CITY:
 			travel_ticks_remaining -= 1
 			if travel_ticks_remaining <= 0:
-				hero_state.loop_state = "TURNING_IN_QUEST"
-				return "%s вернулся в город." % hero_state.hero_name
-			return "%s возвращается в город. Осталось: %d км." % [hero_state.hero_name, travel_ticks_remaining]
-		"TURNING_IN_QUEST":
+				hero_state.loop_state = HeroState.TURNING_IN_QUEST
+				return QuestEventScript.new(QuestEventScript.HERO_RETURNED_TO_CITY, hero_state.hero_name, quest_definition)
+			return QuestEventScript.new(QuestEventScript.HERO_RETURNING_TO_CITY, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+		HeroState.TURNING_IN_QUEST:
 			hero_state.gold += quest_definition.gold_reward
 			hero_state.active_quest = null
-			hero_state.loop_state = "CHOOSING_QUEST"
-			return "%s сдал квест «%s» и получил %d золота." % [hero_state.hero_name, quest_definition.display_name, quest_definition.gold_reward]
-	return ""
+			hero_state.loop_state = HeroState.CHOOSING_QUEST
+			return QuestEventScript.new(QuestEventScript.HERO_TURNED_IN_QUEST, hero_state.hero_name, quest_definition, 0, quest_definition.gold_reward)
+	return null
