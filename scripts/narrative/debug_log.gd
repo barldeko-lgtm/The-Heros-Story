@@ -15,5 +15,9 @@ func record_event(world_tick: int, message: String) -> void:
 	entries.append(entry)
 	text_changed.emit(get_text())
 
+func record_combat_event(message: String) -> void:
+	entries.append("Бой — %s" % message)
+	text_changed.emit(get_text())
+
 func get_text() -> String:
 	return "\n".join(entries)

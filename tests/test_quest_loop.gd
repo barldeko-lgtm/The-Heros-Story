@@ -6,22 +6,31 @@ func _init() -> void:
 
 	var simulation: RefCounted = simulation_script.new()
 	simulation.hero_state.hero_name = "Алексей"
-	for _tick in 7:
-		simulation.advance_time(10.0)
+	simulation.advance_time(30.0)
+	assert(simulation.world_clock.world_tick == 3, "Arrival must complete on the third world tick.")
+	assert(simulation.hero_state.loop_state == HeroState.DOING_QUEST, "Arrival must leave the hero ready to start combat.")
 
-	assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Hero must return to quest selection after turning in the quest.")
-	assert(simulation.hero_state.gold == 20, "Hero must receive 20 gold only after quest turn-in.")
+	simulation.advance_time(1.0)
+	assert(simulation.active_combat_session != null, "Combat must begin as a live session after arrival.")
+	assert(simulation.world_clock.world_tick == 3, "World ticks must freeze while internal combat is running.")
 
-	var expected_log := [
-		"Тик 1 — Алексей выбрал квест «Проблема у восточной дороги».",
-		"Тик 2 — Алексей идёт к цели. Осталось: 1 км.",
-		"Тик 3 — Алексей прибыл к цели.",
-		"Тик 4 — Алексей выполнил задание «Проблема у восточной дороги». Бой будет добавлен позже.",
-		"Тик 5 — Алексей возвращается в город. Осталось: 1 км.",
-		"Тик 6 — Алексей вернулся в город.",
-		"Тик 7 — Алексей сдал квест «Проблема у восточной дороги» и получил 20 золота.",
-	]
-	assert(simulation.debug_log.entries == expected_log, "Quest loop must produce the approved sequence of log entries.")
+	simulation.advance_time(0.5)
+	assert(simulation.world_clock.world_tick == 3, "The world clock must still be frozen when the first combat action resolves.")
+	assert(count_entries_containing(simulation.debug_log.entries, "нанёс") >= 1, "Each resolved combat action must be written to the debug log immediately.")
 
-	print("PASS: Quest loop travels, completes the placeholder quest, returns, and grants gold.")
+	simulation.set_time_scale(100.0)
+	simulation.advance_time(0.2)
+	assert(simulation.active_combat_session == null, "The first combat session must finish at x100 speed.")
+	assert(simulation.world_clock.world_tick == 4, "Exactly one world tick must be counted after a finished fight.")
+	assert(simulation.hero_state.experience == 50, "The hero must gain the goblin's XP immediately after victory.")
+	assert(simulation.hero_state.loop_state == HeroState.RECOVERING_AFTER_FIGHT, "Recovery must begin only after the completed combat tick.")
+
+	print("PASS: Live combat freezes world ticks, logs attacks, and awards XP after victory.")
 	quit()
+
+func count_entries_containing(entries: Array[String], text: String) -> int:
+	var count := 0
+	for entry in entries:
+		if entry.contains(text):
+			count += 1
+	return count

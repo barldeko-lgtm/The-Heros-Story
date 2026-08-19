@@ -2,16 +2,19 @@ class_name QuestRunner
 extends RefCounted
 
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
+const RECOVERY_PERCENT_OF_MAX_HP: float = 0.20
 
 var quest_definition: Resource
 var travel_ticks_remaining: int = 0
+var completed_mob_count: int = 0
 
 func _init(initial_quest_definition: Resource) -> void:
 	quest_definition = initial_quest_definition
 
-func advance(hero_state):
+func advance(hero_state, combat_stats: CombatStats = null):
 	match hero_state.loop_state:
 		HeroState.CHOOSING_QUEST:
+			completed_mob_count = 0
 			hero_state.active_quest = quest_definition
 			travel_ticks_remaining = ceili(quest_definition.distance_km)
 			hero_state.loop_state = HeroState.TRAVEL_TO_QUEST
@@ -22,10 +25,17 @@ func advance(hero_state):
 				hero_state.loop_state = HeroState.DOING_QUEST
 				return QuestEventScript.new(QuestEventScript.HERO_ARRIVED_AT_QUEST, hero_state.hero_name, quest_definition)
 			return QuestEventScript.new(QuestEventScript.HERO_TRAVELLING_TO_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
-		HeroState.DOING_QUEST:
-			hero_state.loop_state = HeroState.RETURNING_TO_CITY
-			travel_ticks_remaining = ceili(quest_definition.distance_km)
-			return QuestEventScript.new(QuestEventScript.HERO_COMPLETED_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+		HeroState.RECOVERING_AFTER_FIGHT:
+			assert(combat_stats != null, "Quest recovery requires resolved hero CombatStats.")
+			hero_state.current_hp = minf(combat_stats.max_hp, hero_state.current_hp + combat_stats.max_hp * RECOVERY_PERCENT_OF_MAX_HP)
+			if is_equal_approx(hero_state.current_hp, combat_stats.max_hp):
+				hero_state.current_hp = combat_stats.max_hp
+				if completed_mob_count >= quest_definition.mob_count:
+					hero_state.loop_state = HeroState.RETURNING_TO_CITY
+					travel_ticks_remaining = ceili(quest_definition.distance_km)
+				else:
+					hero_state.loop_state = HeroState.DOING_QUEST
+			return QuestEventScript.new(QuestEventScript.HERO_RECOVERED_AFTER_FIGHT, hero_state.hero_name, quest_definition, 0, 0, null, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp)
 		HeroState.RETURNING_TO_CITY:
 			travel_ticks_remaining -= 1
 			if travel_ticks_remaining <= 0:
@@ -38,3 +48,20 @@ func advance(hero_state):
 			hero_state.loop_state = HeroState.CHOOSING_QUEST
 			return QuestEventScript.new(QuestEventScript.HERO_TURNED_IN_QUEST, hero_state.hero_name, quest_definition, 0, quest_definition.gold_reward)
 	return null
+
+func get_current_mob_stats():
+	return quest_definition.mob_definition.get_combat_stats()
+
+func get_next_mob_number() -> int:
+	return completed_mob_count + 1
+
+func complete_fight(hero_state, combat_stats: CombatStats, combat_result):
+	hero_state.current_hp = combat_result.hero_remaining_hp
+	if not combat_result.hero_won:
+		push_error("Hero death during a quest is not implemented yet.")
+		return null
+	completed_mob_count += 1
+	var experience_reward: int = quest_definition.mob_definition.experience_reward
+	hero_state.experience += experience_reward
+	hero_state.loop_state = HeroState.RECOVERING_AFTER_FIGHT
+	return QuestEventScript.new(QuestEventScript.HERO_WON_FIGHT, hero_state.hero_name, quest_definition, 0, 0, combat_result, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp, experience_reward)

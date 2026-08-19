@@ -16,6 +16,7 @@ func _ready() -> void:
 	create_tick_indicator()
 	create_narrative_panel()
 	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
+	simulation.debug_log.text_changed.connect(on_debug_log_text_changed)
 	update_hero_panel()
 
 func _process(delta: float) -> void:
@@ -25,7 +26,13 @@ func _process(delta: float) -> void:
 	update_hero_panel()
 
 func on_world_tick_completed(_completed_tick: int) -> void:
-	log_text_edit.text = simulation.debug_log.get_text()
+	update_debug_log(simulation.debug_log.get_text())
+
+func on_debug_log_text_changed(log_text: String) -> void:
+	update_debug_log(log_text)
+
+func update_debug_log(log_text: String) -> void:
+	log_text_edit.text = log_text
 	log_text_edit.scroll_vertical = log_text_edit.get_line_count()
 
 func create_background() -> void:
@@ -36,12 +43,12 @@ func create_background() -> void:
 
 func create_speed_controls() -> void:
 	var speed_controls := HBoxContainer.new()
-	speed_controls.position = Vector2(950.0, 24.0)
-	speed_controls.size = Vector2(300.0, 38.0)
+	speed_controls.position = Vector2(820.0, 24.0)
+	speed_controls.size = Vector2(430.0, 38.0)
 	speed_controls.add_theme_constant_override("separation", 6)
 	add_child(speed_controls)
 
-	for speed in [1, 2, 5, 10, 20]:
+	for speed in [0, 1, 2, 5, 10, 20, 100]:
 		var button := Button.new()
 		button.text = "×%d" % speed
 		button.toggle_mode = true
@@ -79,6 +86,7 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.CHOOSING_QUEST: return "Выбирает квест"
 		HeroState.TRAVEL_TO_QUEST: return "Идёт к цели"
 		HeroState.DOING_QUEST: return "Выполняет квест"
+		HeroState.RECOVERING_AFTER_FIGHT: return "Восстанавливается после боя"
 		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
 		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
 	return loop_state

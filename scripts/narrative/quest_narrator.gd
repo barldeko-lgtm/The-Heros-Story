@@ -11,8 +11,10 @@ func describe(event) -> String:
 			return "%s идёт к цели. Осталось: %d км." % [event.hero_name, event.distance_remaining]
 		QuestEventScript.HERO_ARRIVED_AT_QUEST:
 			return "%s прибыл к цели." % event.hero_name
-		QuestEventScript.HERO_COMPLETED_QUEST:
-			return "%s выполнил задание «%s». Бой будет добавлен позже." % [event.hero_name, event.quest_definition.display_name]
+		QuestEventScript.HERO_WON_FIGHT:
+			return "%s победил %s в бою %d/%d, получил %d XP. HP: %.0f / %.0f." % [event.hero_name, event.quest_definition.mob_definition.display_name, event.completed_mob_count, event.mob_count, event.experience_reward, event.current_hp, event.max_hp]
+		QuestEventScript.HERO_RECOVERED_AFTER_FIGHT:
+			return describe_recovery(event)
 		QuestEventScript.HERO_RETURNING_TO_CITY:
 			return "%s возвращается в город. Осталось: %d км." % [event.hero_name, event.distance_remaining]
 		QuestEventScript.HERO_RETURNED_TO_CITY:
@@ -20,3 +22,20 @@ func describe(event) -> String:
 		QuestEventScript.HERO_TURNED_IN_QUEST:
 			return "%s сдал квест «%s» и получил %d золота." % [event.hero_name, event.quest_definition.display_name, event.gold_reward]
 	return ""
+
+func describe_combat_started(hero_name: String, quest_definition: Resource, mob_number: int, mob_count: int) -> String:
+	return "%s начинает бой с %s (%d/%d)." % [hero_name, quest_definition.mob_definition.display_name, mob_number, mob_count]
+
+func describe_combat_action(action, hero_name: String, quest_definition: Resource) -> String:
+	var attacker_name: String = hero_name if action.attacker_id == "hero" else quest_definition.mob_definition.display_name
+	var critical_text := " критическим ударом" if action.is_critical else ""
+	return "%.2f с — %s%s нанёс %.2f урона." % [action.time_seconds, attacker_name, critical_text, action.damage]
+
+func describe_recovery(event) -> String:
+	var message := "%s восстановил здоровье: %.0f / %.0f." % [event.hero_name, event.current_hp, event.max_hp]
+	if is_equal_approx(event.current_hp, event.max_hp):
+		if event.completed_mob_count >= event.mob_count:
+			message += " Все противники побеждены; он идёт в город."
+		else:
+			message += " Готов к следующему бою."
+	return message

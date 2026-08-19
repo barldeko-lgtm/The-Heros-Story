@@ -94,16 +94,28 @@ Quest data schema:
 ### `scripts/combat/power_calculator.gd`
 Single shared Power calculation for hero and mobs.
 
-Real combat simulation is not implemented yet.
+### `scripts/combat/combat_simulator.gd`
+Creates a live hero-versus-mob combat session from final `CombatStats`.
+
+### `scripts/combat/combat_session.gd`
+Owns internal combat time, next attack timers, mutable combat HP, and resolved action events for one active duel.
+
+### `scripts/combat/combat_action.gd`
+Stores one resolved attack for a combat result.
+
+### `scripts/combat/combat_result.gd`
+Stores the duel winner, final HP values, duration, and resolved attacks.
 
 ## Quests
 
 ### `scripts/quests/quest_runner.gd`
-Executes the current single-quest placeholder loop.
+Executes the current single-quest loop with one fight per quest mob and full post-fight recovery.
 
 Owns:
 - travel tick countdown;
 - quest execution state transitions;
+- defeated-mob count;
+- 20%-of-MaxHP recovery ticks;
 - active quest assignment;
 - turn-in Gold reward;
 - structured quest-event output.
@@ -146,10 +158,16 @@ Current only quest resource.
 - `tests/test_simulation_speed.gd`
 - `tests/test_hero_name_repository.gd`
 - `tests/test_stat_resolver.gd`
+- `tests/test_combat_simulator.gd`
+- `tests/test_combat_critical_hit.gd`
+- `tests/test_combat_simultaneous_death.gd`
+- `tests/test_combat_session.gd`
+- `tests/test_combat_frame_step_probe.gd`
 - `tests/test_goblin_definition.gd`
 - `tests/test_goblin_quest_definition.gd`
 - `tests/test_debug_log.gd`
 - `tests/test_quest_loop.gd`
+- `tests/test_quest_full_combat_loop.gd`
 - `tests/test_quest_event.gd`
 - `tests/test_quest_narrator.gd`
 

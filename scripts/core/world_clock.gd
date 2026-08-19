@@ -19,5 +19,8 @@ func advance_time(delta_seconds: float) -> void:
 		elapsed_seconds -= TICK_DURATION_SECONDS
 		if is_zero_approx(elapsed_seconds):
 			elapsed_seconds = 0.0
-		world_tick += 1
-		tick_completed.emit(world_tick)
+		complete_tick()
+
+func complete_tick() -> void:
+	world_tick += 1
+	tick_completed.emit(world_tick)
