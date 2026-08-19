@@ -18,7 +18,8 @@ Implemented:
 - death, 100-tick natural resurrection, and city recovery;
 - three mob definitions: Goblin, Wolf, and Bear;
 - three quest definitions: Goblin road problem, Wolf hunt, and Bear hunt;
-- a single autonomous quest loop;
+- autonomous choice among the current quest resources;
+- a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
 - separate quest narration;
 - debug log;
@@ -27,11 +28,9 @@ Implemented:
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- automated large-batch Power validation, then the quest pool and autonomous quest choice.
+- tune the current quest/mob data while validating autonomous selection, then add personality modifiers as a separate slice.
 
 Still missing from the current build:
-- large-batch Power validation;
-- quest pool and quest choice;
 - traits;
 - diary episodes;
 - god system.
@@ -121,26 +120,31 @@ After the 100th respawn tick:
 Full loot loss is still only a future hook because QuestLoot/inventory do not exist yet.
 
 
-## Current Power calibration content
+## Current quest content and selection
 
-`data/mobs/0002_wolf.tres` is the current near-equal-Power calibration mob:
-- category: MONSTER;
-- MaxHP 72.55;
-- Attack 8;
-- AttackSpeed 1.35;
-- CritChance 12%;
-- CritDamage 150%;
-- Power ≈ 20.38, intentionally ≈95% of starting HeroPower ≈21.45;
-- XP is temporarily 0 so repeated Power testing does not level the hero and invalidate the comparison.
+Concrete mob and quest values live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here.
 
-`data/quests/0002_wolf_hunt.tres` contains:
-- 8 wolves;
-- distance 4 km;
-- reward 80 Gold.
+The developer build now loads all `.tres` quest definitions from `res://data/quests` into `QuestPool`.
 
-The developer UI currently starts this Wolf quest so repeated manual ×100 testing is immediately available. `Simulation.new()` without a supplied quest still defaults to the Goblin quest for existing regression tests.
+At every `CHOOSING_QUEST` decision point:
 
-After every completed fight, `Simulation` updates cumulative per-mob combat statistics. These statistics are shown in a fixed developer UI panel and are no longer written into the debug log.
+1. `QuestEvaluator` applies the Hard Filter:
+   `MobPower <= HeroPower × 0.95`;
+2. only allowed quests participate further;
+3. the weakest allowed mob becomes the recovery baseline (`1`);
+4. for every allowed quest:
+   `RelativeRecoveryCost = MobPower / WeakestAllowedMobPower`;
+5. `EstimatedCostPerMob = 1 fight tick + RelativeRecoveryCost`;
+6. `EstimatedQuestTicks = Distance + MobCount × EstimatedCostPerMob + Distance + 1 turn-in tick`;
+7. `BaseAttractiveness = GoldReward / EstimatedQuestTicks`;
+8. personality/divine modifiers are currently `0`;
+9. the highest final `QuestScore` is selected with no roulette.
+
+The currently selected quest is then handed to `QuestRunner`, which remains responsible only for execution.
+
+`Simulation.new()` without an explicit `null` quest keeps the old fixed-Goblin default for regression compatibility. The real developer UI uses `Simulation.new(seed, null)`, which enables autonomous selection from the quest pool.
+
+Cumulative combat statistics remain keyed by mob id and continue to be shown in the fixed developer panel.
 
 ## Current quest loop
 
@@ -170,7 +174,7 @@ fight lost
 → CHOOSING_QUEST
 ```
 
-There is still no quest pool and no choice among several quests.
+Quest selection now happens autonomously before `QuestRunner` begins execution.
 
 ## Quest events and narrative
 
@@ -188,25 +192,6 @@ Death, natural resurrection, and city recovery use structured events rather than
 The diary remains unimplemented and receives no gameplay events yet.
 
 
-
-### Bear calibration mob
-
-`data/mobs/0003_bear.tres` is the second 95%-Power calibration profile:
-- category: MONSTER;
-- MaxHP 180;
-- Attack 5;
-- AttackSpeed 0.90;
-- CritChance 5%;
-- CritDamage 150%;
-- Power ≈ 20.37, or ≈94.98% of starting HeroPower;
-- XP remains 0 during calibration.
-
-`data/quests/0003_bear_hunt.tres` contains:
-- 4 bears;
-- distance 3 km;
-- reward 40 Gold.
-
-The developer UI currently starts the Bear hunt for manual ×100 Power validation.
 
 ## Debug log window
 

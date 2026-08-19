@@ -8,6 +8,7 @@ This document records current cross-file dependencies and contracts that can be 
 main_ui.gd
 → Simulation
 → WorldClock / CombatSession
+→ QuestPool / QuestEvaluator
 → QuestRunner
 → QuestEvent
 → QuestNarrator
@@ -48,6 +49,47 @@ It must not:
 - write UI or diary state.
 
 Death handling begins only after the completed `CombatResult` reaches the quest/simulation layer.
+
+## Autonomous quest selection
+
+Owners:
+- `scripts/quests/quest_pool.gd` — available quest definitions;
+- `scripts/quests/quest_evaluator.gd` — Hard Filter and QuestScore;
+- `scripts/quests/quest_runner.gd` — execution only;
+- `scripts/core/simulation.gd` — coordination between selection and execution.
+
+Current decision flow:
+
+```text
+CHOOSING_QUEST
+→ QuestPool available quests
+→ Hard Filter: MobPower <= HeroPower × 0.95
+→ WeakestAllowedMobPower among allowed quests
+→ RelativeRecoveryCost = MobPower / WeakestAllowedMobPower
+→ EstimatedCostPerMob = 1 + RelativeRecoveryCost
+→ EstimatedQuestTicks = Distance × 2 + MobCount × EstimatedCostPerMob + 1
+→ BaseAttractiveness = GoldReward / EstimatedQuestTicks
+→ current trait/divine modifiers = 0
+→ strict highest QuestScore
+→ selected QuestDefinition assigned to QuestRunner
+→ QuestRunner executes
+```
+
+Contracts:
+- Hard Filter compares full HeroPower, not current injured HP;
+- mob count does not affect Hard Filter;
+- filtered-out quests never participate in QuestScore;
+- the weakest allowed mob is normalized to recovery cost `1`;
+- one fight contributes exactly `1` estimated tick before recovery cost;
+- fractional estimated ticks are allowed because this is pre-choice estimation only;
+- current selection has no general roulette;
+- QuestEvaluator must not execute quests;
+- QuestRunner must not calculate Hard Filter or QuestScore;
+- UI must not choose quests;
+- changing `.tres` mob/quest tuning must not require changing selection code.
+
+The first `QuestPool` is deliberately small: it loads reusable quest definitions from `data/quests`. Full QuestInstance replacement/refresh lifecycle is not implemented in this slice.
+
 
 ## Quest execution and death
 
@@ -142,7 +184,7 @@ Contracts:
 - cumulative combat statistics remain in `Simulation` and are displayed by UI; they are not written into the debug log;
 - the same mechanism works for any mob definition and is not Wolf-specific.
 
-`Simulation` may receive an explicit initial quest for development/testing. If omitted, it keeps the existing Goblin quest default. The developer UI currently supplies the Wolf hunt quest for manual Power validation.
+`Simulation` may receive an explicit fixed quest for regression/development tests. Its default remains the existing Goblin quest. Passing `null` enables autonomous QuestPool selection; the developer UI now uses this autonomous mode.
 
 
 ## Debug-log retention

@@ -13,6 +13,8 @@ const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
 const DiaryScript = preload("res://scripts/narrative/diary.gd")
 const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
+const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
+const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
@@ -34,10 +36,18 @@ var stat_resolver = StatResolverScript.new()
 var power_calculator = PowerCalculatorScript.new()
 var combat_simulator = CombatSimulatorScript.new()
 var quest_runner
+var quest_pool
+var quest_evaluator = QuestEvaluatorScript.new()
+var autonomous_quest_choice: bool = false
+var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
 
-func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest) -> void:
-	quest_runner = QuestRunnerScript.new(initial_quest_definition)
+func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = []) -> void:
+	autonomous_quest_choice = initial_quest_definition == null
+	var runner_initial_quest: Resource = DefaultInitialQuest if autonomous_quest_choice else initial_quest_definition
+	quest_runner = QuestRunnerScript.new(runner_initial_quest)
+	if autonomous_quest_choice:
+		quest_pool = QuestPoolScript.new(available_quest_definitions)
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
@@ -130,6 +140,18 @@ func get_combat_results(mob_id: String) -> Dictionary:
 func get_current_combat_results() -> Dictionary:
 	return get_combat_results(quest_runner.quest_definition.mob_definition.id)
 
+func choose_next_quest() -> bool:
+	if not autonomous_quest_choice:
+		return true
+
+	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power())
+	var selected_quest = last_quest_selection.get("selected_quest")
+	if selected_quest == null:
+		return false
+
+	quest_runner.quest_definition = selected_quest
+	return true
+
 func get_active_combat_world_tick() -> int:
 	return world_clock.world_tick + 1
 
@@ -168,6 +190,9 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		skip_quest_advance_on_completed_combat_tick = false
 		return
 	if hero_state.loop_state == HeroState.DOING_QUEST:
+		return
+	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
+		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
 		return
 	var event = quest_runner.advance(hero_state, combat_stats)
 	if event == null:

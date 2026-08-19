@@ -10,4 +10,4 @@ display_name = "Проблема у восточной дороги"
 mob_definition = ExtResource("2_goblin")
 mob_count = 5
 distance_km = 2.0
-gold_reward = 20
+gold_reward = 40

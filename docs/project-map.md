@@ -12,7 +12,7 @@
 ## Core
 
 ### `scripts/core/simulation.gd`
-Runtime coordinator. Its constructor accepts an optional initial quest; the default remains the Goblin quest for regression compatibility.
+Runtime coordinator. The default constructor keeps the fixed Goblin quest for regression compatibility; passing `null` as the initial quest enables autonomous selection from QuestPool.
 
 Coordinates:
 - WorldClock;
@@ -20,6 +20,7 @@ Coordinates:
 - HeroState / HeroProgression / StatResolver;
 - PowerCalculator;
 - live CombatSession;
+- QuestPool / QuestEvaluator;
 - QuestRunner;
 - QuestNarrator;
 - DebugLog;
@@ -67,6 +68,24 @@ Shared hero/mob Power calculation.
 
 ## Quests
 
+### `scripts/quests/quest_pool.gd`
+Owns the currently available quest definitions for this Prototype 0 slice.
+
+The developer build loads every `.tres` under `res://data/quests` in stable filename order. Tests may inject an explicit list instead.
+
+This first pool is definition-backed and reusable; full QuestInstance replacement/lifecycle is still a later slice.
+
+### `scripts/quests/quest_evaluator.gd`
+Owns autonomous quest evaluation:
+- 95% Hard Filter;
+- weakest-allowed-mob normalization;
+- estimated combat/recovery cost;
+- BaseAttractiveness;
+- current neutral QuestScore;
+- strict highest-score selection.
+
+Personality and divine modifiers are present as zero-value slots only; their behaviour is not implemented here.
+
 ### `scripts/quests/quest_runner.gd`
 Executes the current single quest.
 
@@ -108,22 +127,25 @@ Displays:
 - fixed bottom-right cumulative combat-statistics panel.
 
 
-## Current calibration data
+## Quest and mob data
 
-### `data/mobs/0002_wolf.tres`
-95%-of-starting-HeroPower MONSTER used for combat/Power validation.
+Concrete tuning lives in:
+- `data/mobs/`;
+- `data/quests/`.
 
-### `data/quests/0002_wolf_hunt.tres`
-Eight-Wolf test quest: 4 km distance, 80 Gold reward.
-
-
-### `data/mobs/0003_bear.tres`
-Slow, high-HP MONSTER calibrated to approximately 95% of starting HeroPower.
-
-### `data/quests/0003_bear_hunt.tres`
-Four-Bear calibration quest: 3 km distance, 40 Gold reward.
+Quest selection does not hard-code individual quest files. `QuestPool` discovers current quest `.tres` resources from the quest directory.
 
 ## Tests
+
+### `tests/test_quest_pool.gd`
+Protects automatic discovery of quest resources from `data/quests`.
+
+### `tests/test_quest_evaluator.gd`
+Protects the 95% Hard Filter, weakest-mob normalization, estimated quest time, and strict highest QuestScore selection using in-memory test data.
+
+### `tests/test_autonomous_quest_choice.gd`
+Integration coverage that `Simulation` selects first and `QuestRunner` executes the already selected quest.
+
 
 
 ### `tests/test_wolf_definition.gd`

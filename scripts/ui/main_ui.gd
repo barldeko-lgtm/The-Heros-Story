@@ -1,10 +1,8 @@
 extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
-const DeveloperInitialQuest = preload("res://data/quests/0003_bear_hunt.tres")
-
 var simulation_seed: int = int(Time.get_unix_time_from_system())
-var simulation = SimulationScript.new(simulation_seed, DeveloperInitialQuest)
+var simulation = SimulationScript.new(simulation_seed, null)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label

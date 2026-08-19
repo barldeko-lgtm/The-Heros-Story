@@ -8,6 +8,6 @@ script = ExtResource("1_quest_definition")
 id = "wolf_hunt"
 display_name = "Охота на волков"
 mob_definition = ExtResource("2_wolf")
-mob_count = 8
+mob_count = 7
 distance_km = 4.0
 gold_reward = 80

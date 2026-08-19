@@ -20,7 +20,7 @@ Preserve the simulation-first direction and real hero autonomy. Do not turn the 
 
 Read in this order:
 
-1. `docs/The_Heros_Story_Prototype_0_Scope_v0.20_EN.md`
+1. `docs/The_Heros_Story_Prototype_0_Scope_v0.21_EN.md`
 2. `docs/new_project_concept_design_pillars_v2.7_EN.md`
 3. `docs/current-state.md`
 4. `docs/project-map.md`
