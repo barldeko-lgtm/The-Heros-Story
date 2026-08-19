@@ -21,6 +21,14 @@ func describe(event) -> String:
 			return "%s вернулся в город." % event.hero_name
 		QuestEventScript.HERO_TURNED_IN_QUEST:
 			return "%s сдал квест «%s» и получил %d золота." % [event.hero_name, event.quest_definition.display_name, event.gold_reward]
+		QuestEventScript.HERO_DIED:
+			return "%s погиб в бою с %s. Квест «%s» отменён. Возрождение через %d тиков." % [event.hero_name, event.quest_definition.mob_definition.display_name, event.quest_definition.display_name, event.respawn_ticks_remaining]
+		QuestEventScript.HERO_WAITING_FOR_RESURRECTION:
+			return "%s мёртв. Тиков до возрождения: %d." % [event.hero_name, event.respawn_ticks_remaining]
+		QuestEventScript.HERO_RESURRECTED:
+			return "%s возродился в городе с %.1f HP." % [event.hero_name, event.current_hp]
+		QuestEventScript.HERO_RECOVERING_IN_CITY:
+			return describe_city_recovery(event)
 	return ""
 
 func describe_combat_started(hero_name: String, quest_definition: Resource, mob_number: int, mob_count: int) -> String:
@@ -38,4 +46,10 @@ func describe_recovery(event) -> String:
 			message += " Все противники побеждены; он идёт в город."
 		else:
 			message += " Готов к следующему бою."
+	return message
+
+func describe_city_recovery(event) -> String:
+	var message := "%s восстанавливается в городе: %.1f / %.1f HP." % [event.hero_name, event.current_hp, event.max_hp]
+	if is_equal_approx(event.current_hp, event.max_hp):
+		message += " Полностью восстановился и снова готов выбирать квест."
 	return message

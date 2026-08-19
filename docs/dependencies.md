@@ -4,163 +4,128 @@ This document records current cross-file dependencies and contracts that can be 
 
 ## Runtime flow
 
-Current startup/runtime chain:
-
 ```text
-project.godot
-→ main.tscn
-→ main_ui.gd
+main_ui.gd
 → Simulation
+→ WorldClock / CombatSession
+→ QuestRunner
+→ QuestEvent
+→ QuestNarrator
+→ DebugLog
 ```
 
-Live combat flow:
+Live combat:
 
 ```text
-Simulation
-→ CombatSession
+CombatSession
 → CombatResult
-→ HeroProgression + QuestRunner
+→ Simulation
+    ├── victory → HeroProgression XP / possible stat refresh
+    └── result → QuestRunner
 → exactly one completed world tick
 ```
 
 ## World time
 
-Owner:
-- `scripts/core/world_clock.gd`
-
-Current dependency:
-- `Simulation` applies time scale before advancing `WorldClock`;
-- time scale `0` pauses without resetting partial progress;
-- quest advancement happens from `tick_completed`;
-- active combat consumes scaled internal seconds while world-tick progress is frozen.
-
-## Hero progression and final stats
-
-Main files:
-- `scripts/hero/hero_state.gd`
-- `scripts/hero/hero_progression.gd`
-- `scripts/hero/stat_resolver.gd`
-- `scripts/core/simulation.gd`
-
-Current chain:
-
-```text
-XP reward
-→ HeroProgression
-→ HeroState
-→ StatResolver
-→ CombatStats
-```
+`WorldClock` remains the single world-tick source.
 
 Contracts:
-- XP application and Warrior level growth live in `HeroProgression`;
-- `QuestRunner` does not mutate hero XP or levels;
-- excess XP carries over;
-- one reward may grant multiple levels;
-- each level adds +4 STR, +1 AGI, and +20 direct MaxHP through the level bonus;
-- `Simulation` refreshes `CombatStats` after a mid-quest level-up before recovery and the next fight;
-- level-up itself does not directly heal current HP.
+- active combat freezes ordinary world-tick progress;
+- a resolved fight still counts as exactly one world tick;
+- `DEAD_RESPAWNING` advances only through normal world ticks;
+- pause therefore freezes the respawn timer;
+- developer speed controls accelerate the respawn timer in the same way as travel/recovery.
 
-## Shared Power
+## Combat / death boundary
 
-```text
-CombatStats
-→ PowerCalculator
-→ Power
-```
+`CombatSession` owns only one duel and reports victory or defeat through `CombatResult`.
 
-Hero and mobs use the same calculator. Stat changes must flow through `CombatStats` before Power is recalculated.
+It must not:
+- cancel quests;
+- award XP;
+- run the resurrection timer;
+- restore city HP;
+- write UI or diary state.
 
-## Seeded randomness
+Death handling begins only after the completed `CombatResult` reaches the quest/simulation layer.
 
-Main files:
-- `scripts/core/seeded_rng.gd`
-- `scripts/core/simulation.gd`
-- `scripts/core/hero_name_repository.gd`
-- `scripts/combat/combat_session.gd`
-- `scripts/ui/main_ui.gd`
+## Quest execution and death
 
-Current runtime chain:
+`scripts/quests/quest_runner.gd` owns the current quest-execution states.
 
-```text
-visible simulation seed
-→ SeededRng
-→ shared RNG
-    ├── HeroNameRepository
-    └── CombatSession crit rolls
-```
+On defeat it must:
+- clamp hero current HP to 0;
+- cancel `active_quest`;
+- clear current quest execution counters;
+- enter `DEAD_RESPAWNING` with exactly 100 ticks remaining;
+- not grant Gold.
 
-Contracts:
-- `Simulation` owns the runtime seeded RNG;
-- equal seeds plus equal simulation steps reproduce the current random sequence;
-- changing random-call order changes later results for the same seed;
-- the developer UI chooses and displays the run seed;
-- `Simulation.new()` without an explicit seed stays deterministic for tests;
-- standalone name/combat fallbacks are deterministic instead of calling `randomize()`.
+XP remains outside `QuestRunner`. `Simulation` applies mob XP through `HeroProgression` only when `combat_result.hero_won` is true.
 
-Future random systems should receive controlled RNG from the simulation.
+Therefore a mob that kills the hero cannot grant XP, while previously earned XP and levels remain untouched.
 
-## Combat core
+## Natural resurrection
+
+Current contract:
 
 ```text
-Hero CombatStats + Mob CombatStats
-→ CombatSimulator
-→ CombatSession
-→ CombatAction
-→ CombatResult
+DEAD_RESPAWNING (100 world ticks)
+→ current HP = 1
+→ RECOVERING_IN_CITY
+→ +20% MaxHP per world tick
+→ full MaxHP
+→ CHOOSING_QUEST
 ```
 
-Contracts:
-- Combat does not choose quests, award XP, restore HP, or update UI;
-- runtime combat receives the simulation RNG;
-- hero opening advantage remains 0.5 seconds;
-- same-timestamp attacks resolve together;
-- simultaneous death counts as hero defeat.
+The resurrection tick changes the state to `RECOVERING_IN_CITY` but does not also perform the first recovery tick. Recovery begins on the following world tick.
 
-## Quest execution
+The hero cannot start a new quest while injured.
 
-Current dependencies:
-- `QuestRunner` owns quest execution state, travel, defeated-mob count, recovery, and Gold turn-in;
-- mob XP remains data on `MobDefinition`;
-- `QuestRunner` exposes that reward but does not apply it;
-- `Simulation` applies the reward through `HeroProgression`;
-- recovery uses the currently resolved MaxHP, including level-up changes.
+## Structured events and narrative
 
-Hero death is still an unimplemented developer error.
+Death-related gameplay reports structured facts through `QuestEvent`:
+- `HERO_DIED`;
+- `HERO_WAITING_FOR_RESURRECTION`;
+- `HERO_RESURRECTED`;
+- `HERO_RECOVERING_IN_CITY`.
 
-## Simulation responsibility
+`QuestNarrator` owns their current Russian wording.
 
-`Simulation` currently coordinates:
-- seeded RNG;
-- resolved hero stats;
-- combat;
-- XP handoff to `HeroProgression`;
-- stat refresh after level-up;
-- quest execution;
-- logging.
-
-Subsystem rules remain in their owning files.
+The diary remains separate and is not implemented as part of the death slice.
 
 ## UI boundary
 
-`main_ui.gd` creates a time-based seed, constructs `Simulation` with it, displays current state/seed, and sends speed changes.
+`main_ui.gd` only displays simulation state.
 
-Gameplay rules remain outside UI.
+It may read `QuestRunner.respawn_ticks_remaining` for the current developer-state label, but it does not decrement the timer or change HP/state.
 
-## Tests protecting this slice
+## Future god-resurrection hook
 
-- `test_seeded_rng.gd` — same-seed RNG/simulation reproducibility;
-- `test_hero_progression.gd` — XP ownership, level growth, carryover, level-2 stats;
-- `test_level_up_after_fight.gd` — real combat XP triggers level-up and refreshed stats;
-- existing combat/quest/stat/world-clock tests protect the surrounding loop.
-
-## Future equipment hook
+The current natural resurrection path establishes the shared post-resurrection contract:
 
 ```text
-Equipment
-→ StatResolver
-→ CombatStats
-→ Combat / Power
+resurrection
+→ 1 HP
+→ RECOVERING_IN_CITY
 ```
 
-Future stat sources must enter through `StatResolver` without replacing combat or Power logic.
+The future god system may bypass the remaining natural timer, but must not move resurrection logic into combat or UI.
+
+## Future loot hook
+
+QuestLoot is not implemented yet.
+
+When it exists, death must clear only current-quest loot before entering the existing respawn path. Permanent inventory/equipment must remain separate.
+
+## Tests protecting this contract
+
+`tests/test_death_respawn.gd` verifies:
+- one lost fight still consumes one world tick;
+- active quest cancellation;
+- no XP from the losing mob;
+- no Gold from the failed quest;
+- retention of prior level/XP;
+- exactly 100 respawn ticks;
+- resurrection at exactly 1 HP;
+- 20% MaxHP city recovery;
+- full recovery before `CHOOSING_QUEST`.

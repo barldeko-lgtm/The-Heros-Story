@@ -72,6 +72,11 @@ func refresh_combat_stats() -> void:
 func get_hero_power() -> float:
 	return power_calculator.calculate(combat_stats)
 
+func get_current_hero_hp() -> float:
+	if active_combat_session != null:
+		return active_combat_session.hero_remaining_hp
+	return hero_state.current_hp
+
 func get_current_opponent_name() -> String:
 	if active_combat_session == null:
 		return ""
@@ -112,9 +117,7 @@ func advance_active_combat(available_seconds: float) -> float:
 			if hero_state.level != previous_level:
 				refresh_combat_stats()
 		var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
-		if event == null:
-			debug_log.record_combat_event("Герой погиб. Смерть и возвращение в город ещё не реализованы.")
-		else:
+		if event != null:
 			debug_log.record_combat_event(quest_narrator.describe(event))
 			if hero_state.level != previous_level:
 				debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level])
