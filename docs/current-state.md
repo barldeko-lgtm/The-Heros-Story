@@ -8,14 +8,16 @@ The project is at the early Prototype 0 foundation stage.
 
 Implemented:
 - one autonomous hero;
-- Warrior starting stats;
+- Warrior starting stats and level-up progression;
 - world tick;
 - pause and developer speed controls (×0, ×1, ×2, ×5, ×10, ×20, ×100);
+- one shared seeded RNG for current simulation randomness;
 - one shared Power calculation for hero and mobs;
 - a live one-on-one combat session with timed strikes;
+- per-mob XP and post-fight recovery;
 - one goblin definition;
 - one quest definition;
-- a placeholder autonomous quest loop;
+- a single autonomous quest loop;
 - structured quest events;
 - separate quest narration;
 - debug log;
@@ -24,16 +26,15 @@ Implemented:
 - narrow automated tests.
 
 Current next major gameplay step:
-- level-up execution.
+- automated large-batch Power validation, then the quest pool and autonomous quest choice.
 
 Still missing from the current build:
-- level-up execution;
+- large-batch Power validation;
 - quest pool and quest choice;
 - traits;
 - death/resurrection;
 - diary episodes;
-- god system;
-- seeded reproducible RNG.
+- god system.
 
 ## World time
 
@@ -44,7 +45,7 @@ Current behaviour:
 - partial tick progress is retained;
 - one update may complete multiple ticks;
 - `Simulation` applies the selected time scale before advancing the clock;
-- time scale `0` pauses world-tick progress without resetting partial progress.
+- time scale `0` pauses world-tick progress without resetting partial progress;
 - an active combat session freezes world-tick progress; the selected time scale accelerates its internal seconds too.
 
 Current UI exposes ×0, ×1, ×2, ×5, ×10, ×20, ×100.
@@ -62,6 +63,15 @@ Current UI exposes ×0, ×1, ×2, ×5, ×10, ×20, ×100.
 - current loop state;
 - active quest;
 - active effects.
+
+`scripts/hero/hero_progression.gd` now owns XP application and Warrior level growth.
+
+Each level:
+- costs 1000 XP;
+- carries excess XP forward;
+- adds +20 direct MaxHP through the level bonus;
+- adds +4 STR;
+- adds +1 AGI.
 
 Final combat stats are resolved separately:
 
@@ -82,6 +92,8 @@ Starting Warrior resolves to:
 - CritChance 12%;
 - CritDamage 156%.
 
+After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
+
 ## Shared Power
 
 `scripts/combat/power_calculator.gd` contains the single Power formula.
@@ -89,6 +101,18 @@ Starting Warrior resolves to:
 Both hero and mobs use it through the same `CombatStats` structure.
 
 Current starting Hero Power is approximately 21.45.
+
+## Seeded randomness
+
+`scripts/core/seeded_rng.gd` owns the current seeded `RandomNumberGenerator`.
+
+`Simulation` passes the same RNG to:
+- hero-name selection;
+- live combat critical-hit rolls.
+
+The developer UI creates a time-based seed for each run and displays it in the hero panel.
+
+Creating `Simulation` with the same explicit seed and advancing it the same way reproduces the current random sequence.
 
 ## Combat
 
@@ -99,10 +123,12 @@ Current behaviour:
 - the hero’s first attack has a 0.5-second opening advantage;
 - same-timestamp attacks resolve together;
 - a simultaneous death counts as hero defeat;
-- critical hits retain fractional damage internally.
+- critical hits retain fractional damage internally;
 - each resolved strike enters the debug log immediately while the world clock is frozen.
 
-Each ordinary quest mob uses a live combat session. Victory immediately grants that mob's XP; level-up and hero death are still outside the current loop.
+Each ordinary quest mob uses a live combat session. Victory grants that mob's XP through `HeroProgression`; level-up applies immediately after the fight and the new stats start affecting recovery and the next fight.
+
+Hero death is still outside the current slice.
 
 ## Current content
 
@@ -137,14 +163,15 @@ choose current quest
 → travel
 → arrive
 → one fight per mob
-→ recover 20% MaxHP per world tick until full after every fight
+→ XP / possible level-up
+→ recover 20% MaxHP per world tick until full
 → return
 → turn in
 → receive Gold
 → repeat
 ```
 
-Arrival is its own world tick. The first fight starts immediately after it, with the world clock frozen. Internal strikes run over real seconds scaled by the selected developer speed. When the fight ends, exactly one world tick is counted. Only on the following world ticks does the hero recover 20% MaxHP per tick until fully healed. Then the next fight or return travel begins.
+Arrival is its own world tick. The first fight starts immediately after it, with the world clock frozen. Internal strikes run over real seconds scaled by the selected developer speed. When the fight ends, exactly one world tick is counted.
 
 Hero death is deliberately not implemented in this slice. If the current test content ever produces a loss, the quest runner stops with a developer error instead of inventing death/teleport behaviour.
 
@@ -169,6 +196,8 @@ QuestRunner
 
 `scripts/narrative/debug_log.gd` stores technical tick/event messages.
 
+Level-up is also written to the current debug log.
+
 `scripts/narrative/diary.gd` currently exists only as an empty storage shell.
 
 The diary UI tab exists, but no gameplay system writes diary episodes yet.
@@ -186,6 +215,7 @@ The UI displays:
 - primary and combat stats;
 - Hero Power;
 - active quest;
+- current simulation seed;
 - tick progress;
 - speed controls;
 - debug log;
@@ -196,16 +226,15 @@ The UI currently creates the `Simulation` instance itself.
 ## Tests
 
 Current tests cover:
-- world clock;
-- simulation speed;
-- isolated combat, critical hits, and simultaneous hero death;
-- timed live combat, frozen world ticks, and immediate combat logging;
-- frame-step combat progression without zero-time hangs;
+- world clock and simulation speed;
+- seeded RNG reproducibility;
 - hero name loading;
+- XP, level-up, stat growth, and excess-XP carryover;
+- level-up after a real fight;
 - starting stat resolution;
-- goblin definition;
-- quest definition;
+- isolated/live combat and critical-hit behaviour;
+- frame-step combat progression;
+- goblin and quest definitions;
 - debug log;
 - quest fights, XP, and full recovery;
-- structured quest events;
-- quest narration.
+- structured quest events and narration.

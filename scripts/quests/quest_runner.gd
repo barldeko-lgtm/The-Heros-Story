@@ -52,6 +52,9 @@ func advance(hero_state, combat_stats: CombatStats = null):
 func get_current_mob_stats():
 	return quest_definition.mob_definition.get_combat_stats()
 
+func get_current_mob_experience_reward() -> int:
+	return quest_definition.mob_definition.experience_reward
+
 func get_next_mob_number() -> int:
 	return completed_mob_count + 1
 
@@ -61,7 +64,6 @@ func complete_fight(hero_state, combat_stats: CombatStats, combat_result):
 		push_error("Hero death during a quest is not implemented yet.")
 		return null
 	completed_mob_count += 1
-	var experience_reward: int = quest_definition.mob_definition.experience_reward
-	hero_state.experience += experience_reward
+	var experience_reward: int = get_current_mob_experience_reward()
 	hero_state.loop_state = HeroState.RECOVERING_AFTER_FIGHT
 	return QuestEventScript.new(QuestEventScript.HERO_WON_FIGHT, hero_state.hero_name, quest_definition, 0, 0, combat_result, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp, experience_reward)

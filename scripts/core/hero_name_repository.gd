@@ -2,11 +2,15 @@ class_name HeroNameRepository
 extends RefCounted
 
 const NAMES_PATH: String = "res://data/hero_names_ru.txt"
+const FALLBACK_SEED: int = 1
 
-var random_number_generator: RandomNumberGenerator = RandomNumberGenerator.new()
+var random_number_generator: RandomNumberGenerator
 
-func _init() -> void:
-	random_number_generator.randomize()
+func _init(initial_random_number_generator: RandomNumberGenerator = null) -> void:
+	random_number_generator = initial_random_number_generator
+	if random_number_generator == null:
+		random_number_generator = RandomNumberGenerator.new()
+		random_number_generator.seed = FALLBACK_SEED
 
 func load_names() -> Array[String]:
 	var names: Array[String] = []

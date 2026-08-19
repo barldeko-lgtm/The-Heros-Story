@@ -23,44 +23,35 @@ Current runtime coordinator.
 
 Creates/owns:
 - WorldClock;
+- SeededRng;
 - HeroState;
+- HeroProgression;
 - StatResolver;
 - PowerCalculator;
+- CombatSimulator/current CombatSession;
 - QuestRunner;
 - QuestNarrator;
 - DebugLog;
 - Diary.
 
-Also:
-- creates the hero;
-- resolves starting stats;
-- advances world time;
-- connects world ticks to quest execution;
-- passes quest events into narration/logging.
+Also coordinates combat XP, level-up stat refresh, world ticks, quest execution, and logging.
 
 ### `scripts/core/world_clock.gd`
-Owns:
-- 10-second world tick;
-- accumulated time;
-- world tick counter;
-- tick progress;
-- `tick_completed`.
+Owns the shared world tick and tick progress.
+
+### `scripts/core/seeded_rng.gd`
+Owns one seeded `RandomNumberGenerator` for the current simulation.
 
 ### `scripts/core/hero_name_repository.gd`
-Loads:
-- `data/hero_names_ru.txt`
-
-Chooses the current random hero name.
+Loads `data/hero_names_ru.txt` and chooses the hero name using the supplied RNG.
 
 ## Hero
 
 ### `scripts/hero/hero_state.gd`
-Mutable hero runtime state.
-
-Also owns the current quest-loop state constants.
+Mutable hero runtime state and current quest-loop state constants.
 
 ### `scripts/hero/hero_progression.gd`
-Current Warrior base/progression constants and level HP bonus helper.
+Owns Warrior base/progression constants, XP application, excess-XP carryover, and level-up attribute growth.
 
 ### `scripts/hero/stat_resolver.gd`
 Builds final `CombatStats` from hero state/progression data.
@@ -68,26 +59,13 @@ Builds final `CombatStats` from hero state/progression data.
 ## Models
 
 ### `scripts/model/runtime/combat_stats.gd`
-Shared final combat-stat container:
-- MaxHP;
-- Attack;
-- AttackSpeed;
-- CritChance;
-- CritDamage;
-- DamageReduction.
+Shared final combat-stat container.
 
 ### `scripts/model/definitions/mob_definition.gd`
-Mob data schema.
-
-Converts mob data into shared `CombatStats` and uses the shared Power calculator.
+Mob data schema and conversion to shared `CombatStats`.
 
 ### `scripts/model/definitions/quest_definition.gd`
-Quest data schema:
-- id/name;
-- mob reference;
-- mob count;
-- distance;
-- Gold reward.
+Quest data schema.
 
 ## Combat
 
@@ -95,41 +73,42 @@ Quest data schema:
 Single shared Power calculation for hero and mobs.
 
 ### `scripts/combat/combat_simulator.gd`
-Creates a live hero-versus-mob combat session from final `CombatStats`.
+Creates one live combat session.
 
 ### `scripts/combat/combat_session.gd`
-Owns internal combat time, next attack timers, mutable combat HP, and resolved action events for one active duel.
+Owns internal combat time, attack timers, mutable combat HP, seeded crit rolls, and resolved actions.
 
 ### `scripts/combat/combat_action.gd`
-Stores one resolved attack for a combat result.
+Stores one resolved attack.
 
 ### `scripts/combat/combat_result.gd`
-Stores the duel winner, final HP values, duration, and resolved attacks.
+Stores one duel result.
 
 ## Quests
 
 ### `scripts/quests/quest_runner.gd`
-Executes the current single-quest loop with one fight per quest mob and full post-fight recovery.
+Executes the current single-quest loop.
 
 Owns:
-- travel tick countdown;
-- quest execution state transitions;
+- travel;
+- quest state transitions;
 - defeated-mob count;
-- 20%-of-MaxHP recovery ticks;
-- active quest assignment;
-- turn-in Gold reward;
+- post-fight recovery;
+- turn-in Gold;
 - structured quest-event output.
 
+It exposes the current mob XP reward but no longer mutates hero XP or levels.
+
 ### `scripts/quests/quest_event.gd`
-Structured quest-event data and current quest-event ids.
+Structured quest-event data and ids.
 
 ## Narrative
 
 ### `scripts/narrative/quest_narrator.gd`
-Turns `QuestEvent` objects into current Russian log text.
+Turns current quest/combat events into Russian log text.
 
 ### `scripts/narrative/debug_log.gd`
-Stores technical tick/event log entries.
+Stores technical log entries.
 
 ### `scripts/narrative/diary.gd`
 Current empty diary-entry store.
@@ -139,7 +118,7 @@ Current empty diary-entry store.
 ### `scripts/ui/main_ui.gd`
 Current rough developer UI.
 
-Displays simulation state and advances the current `Simulation` from `_process()`.
+Creates a time-based simulation seed, displays it, and advances `Simulation`.
 
 ## Data
 
@@ -154,55 +133,25 @@ Current only quest resource.
 
 ## Tests
 
-- `tests/test_world_clock.gd`
-- `tests/test_simulation_speed.gd`
-- `tests/test_hero_name_repository.gd`
-- `tests/test_stat_resolver.gd`
-- `tests/test_combat_simulator.gd`
-- `tests/test_combat_critical_hit.gd`
-- `tests/test_combat_simultaneous_death.gd`
-- `tests/test_combat_session.gd`
-- `tests/test_combat_frame_step_probe.gd`
-- `tests/test_goblin_definition.gd`
-- `tests/test_goblin_quest_definition.gd`
-- `tests/test_debug_log.gd`
-- `tests/test_quest_loop.gd`
-- `tests/test_quest_full_combat_loop.gd`
-- `tests/test_quest_event.gd`
-- `tests/test_quest_narrator.gd`
+New/updated coverage for this slice:
+- `tests/test_seeded_rng.gd`
+- `tests/test_hero_progression.gd`
+- `tests/test_level_up_after_fight.gd`
+
+Existing combat, quest, world-clock, stat, data, and narrative tests remain in place.
 
 ## Current ownership summary
 
 ```text
 main_ui.gd
-    ↓
+    ↓ seed
 Simulation
+    ├── SeededRng
+    │     ├── HeroNameRepository
+    │     └── CombatSession
     ├── WorldClock
-    ├── HeroState
-    │     ↓
-    │   StatResolver
-    │     ↓
-    │   CombatStats
-    │     ↓
-    │   PowerCalculator
-    ├── QuestRunner
-    │     ↓
-    │   QuestEvent
-    │     ↓
-    │   QuestNarrator
-    │     ↓
-    │   DebugLog
+    ├── HeroProgression → HeroState → StatResolver → CombatStats → PowerCalculator
+    ├── CombatSimulator → CombatSession
+    ├── QuestRunner → QuestEvent → QuestNarrator → DebugLog
     └── Diary
-
-data/mobs/*.tres
-    ↓
-MobDefinition
-    ↓
-CombatStats
-    ↓
-PowerCalculator
-
-data/quests/*.tres
-    ↓
-QuestDefinition
 ```

@@ -2,7 +2,8 @@ extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 
-var simulation = SimulationScript.new()
+var simulation_seed: int = int(Time.get_unix_time_from_system())
+var simulation = SimulationScript.new(simulation_seed)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label
@@ -65,7 +66,7 @@ func set_time_scale(new_time_scale: float) -> void:
 func create_hero_panel() -> void:
 	var panel := PanelContainer.new()
 	panel.position = Vector2(32.0, 32.0)
-	panel.size = Vector2(320.0, 430.0)
+	panel.size = Vector2(320.0, 450.0)
 	add_child(panel)
 
 	hero_details_label = Label.new()
@@ -79,7 +80,7 @@ func update_hero_panel() -> void:
 	var active_quest_name: String = "—"
 	if hero.active_quest != null:
 		active_quest_name = hero.active_quest.display_name
-	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power()]
+	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:

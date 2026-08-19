@@ -5,6 +5,7 @@ const CombatActionScript = preload("res://scripts/combat/combat_action.gd")
 const CombatResultScript = preload("res://scripts/combat/combat_result.gd")
 const HERO_OPENING_ADVANTAGE_SECONDS: float = 0.5
 const TIME_EPSILON: float = 0.000001
+const FALLBACK_SEED: int = 1
 
 var hero_stats: CombatStats
 var mob_stats: CombatStats
@@ -27,7 +28,7 @@ func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, init
 	random_number_generator = initial_random_number_generator
 	if random_number_generator == null:
 		random_number_generator = RandomNumberGenerator.new()
-		random_number_generator.randomize()
+		random_number_generator.seed = FALLBACK_SEED
 	hero_remaining_hp = hero_stats.max_hp
 	mob_remaining_hp = mob_stats.max_hp
 	hero_attack_interval = 2.0 / hero_stats.attack_speed

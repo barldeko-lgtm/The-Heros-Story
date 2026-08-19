@@ -2,8 +2,10 @@ class_name Simulation
 extends RefCounted
 
 const WorldClockScript = preload("res://scripts/core/world_clock.gd")
+const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
+const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const StatResolverScript = preload("res://scripts/hero/stat_resolver.gd")
 const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd")
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
@@ -13,24 +15,30 @@ const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const InitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const TIME_EPSILON: float = 0.000001
+const DEFAULT_SIMULATION_SEED: int = 1
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
 var quest_narrator = QuestNarratorScript.new()
 var time_scale: float = 1.0
+var simulation_seed: int = DEFAULT_SIMULATION_SEED
+var seeded_rng
 var hero_state
 var combat_stats
 var active_combat_session
 var skip_quest_advance_on_completed_combat_tick: bool = false
 
+var hero_progression = HeroProgressionScript.new()
 var stat_resolver = StatResolverScript.new()
 var power_calculator = PowerCalculatorScript.new()
 var combat_simulator = CombatSimulatorScript.new()
 var quest_runner = QuestRunnerScript.new(InitialQuest)
 
-func _init() -> void:
-	var name_repository = HeroNameRepositoryScript.new()
+func _init(initial_seed: int = DEFAULT_SIMULATION_SEED) -> void:
+	simulation_seed = initial_seed
+	seeded_rng = SeededRngScript.new(simulation_seed)
+	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
@@ -65,7 +73,7 @@ func get_hero_power() -> float:
 	return power_calculator.calculate(combat_stats)
 
 func start_combat() -> void:
-	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats())
+	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng())
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count))
 
 func advance_active_combat(available_seconds: float) -> float:
@@ -77,11 +85,18 @@ func advance_active_combat(available_seconds: float) -> float:
 	if active_combat_session.is_finished:
 		var combat_result = active_combat_session.get_result()
 		active_combat_session = null
+		var previous_level: int = hero_state.level
+		if combat_result.hero_won:
+			hero_progression.add_experience(hero_state, quest_runner.get_current_mob_experience_reward())
+			if hero_state.level != previous_level:
+				refresh_combat_stats()
 		var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 		if event == null:
 			debug_log.record_combat_event("Герой погиб. Смерть и возвращение в город ещё не реализованы.")
 		else:
 			debug_log.record_combat_event(quest_narrator.describe(event))
+			if hero_state.level != previous_level:
+				debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level])
 		skip_quest_advance_on_completed_combat_tick = true
 		world_clock.complete_tick()
 	return consumed_seconds
