@@ -1,0 +1,89 @@
+name: Godot Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Godot 4.7.1 tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Godot 4.7.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION="4.7.1"
+          GODOT_FILE="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          GODOT_ZIP="${GODOT_FILE}.zip"
+
+          curl --fail --location --retry 3             --output "${GODOT_ZIP}"             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${GODOT_ZIP}"
+
+          mkdir -p "${HOME}/godot"
+          unzip -q "${GODOT_ZIP}" -d "${HOME}/godot"
+          chmod +x "${HOME}/godot/${GODOT_FILE}"
+          echo "${HOME}/godot" >> "${GITHUB_PATH}"
+
+      - name: Verify Godot
+        shell: bash
+        run: Godot_v4.7.1-stable_linux.x86_64 --version
+
+      - name: Import project
+        shell: bash
+        run: Godot_v4.7.1-stable_linux.x86_64 --headless --path . --import
+
+      - name: Run all tests
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          GODOT="Godot_v4.7.1-stable_linux.x86_64"
+          shopt -s nullglob
+          TESTS=(tests/test_*.gd)
+
+          if (( ${#TESTS[@]} == 0 )); then
+            echo "::error::No tests matching tests/test_*.gd were found."
+            exit 1
+          fi
+
+          FAILED=0
+
+          for TEST in "${TESTS[@]}"; do
+            echo "::group::${TEST}"
+            OUTPUT_FILE="$(mktemp)"
+
+            "${GODOT}" --headless --path . --script "${TEST}" 2>&1 | tee "${OUTPUT_FILE}"
+            GODOT_STATUS=${PIPESTATUS[0]}
+
+            if (( GODOT_STATUS != 0 )); then
+              echo "::error file=${TEST}::Godot exited with code ${GODOT_STATUS}."
+              FAILED=1
+            elif ! grep -q "PASS:" "${OUTPUT_FILE}"; then
+              echo "::error file=${TEST}::Test did not print a PASS marker."
+              FAILED=1
+            elif grep -q "SCRIPT ERROR:" "${OUTPUT_FILE}"; then
+              echo "::error file=${TEST}::Godot reported a script error."
+              FAILED=1
+            else
+              echo "PASS: ${TEST}"
+            fi
+
+            rm -f "${OUTPUT_FILE}"
+            echo "::endgroup::"
+          done
+
+          if (( FAILED != 0 )); then
+            echo "::error::One or more Godot tests failed."
+            exit 1
+          fi
+
+          echo "All ${#TESTS[@]} tests passed."
