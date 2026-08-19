@@ -12,7 +12,7 @@
 ## Core
 
 ### `scripts/core/simulation.gd`
-Runtime coordinator.
+Runtime coordinator. Its constructor accepts an optional initial quest; the default remains the Goblin quest for regression compatibility.
 
 Coordinates:
 - WorldClock;
@@ -25,7 +25,7 @@ Coordinates:
 - DebugLog;
 - Diary shell.
 
-On combat completion it applies XP only after victory, passes the result to `QuestRunner`, logs the resulting structured event, and completes exactly one world tick for the fight.
+On combat completion it records cumulative per-mob win/loss statistics, applies XP only after victory, passes the result to `QuestRunner`, logs the resulting structured event, and completes exactly one world tick for the fight.
 
 ### `scripts/core/world_clock.gd`
 Single world-time authority used by travel, recovery, and the natural resurrection timer.
@@ -90,7 +90,7 @@ Structured quest/runtime events, now including death, resurrection, and city rec
 Turns quest/combat/death events into current Russian debug-log text.
 
 ### `scripts/narrative/debug_log.gd`
-Technical log store.
+Technical log store. Retains only the last 100 world ticks; multiple combat lines from one fight share the single world tick consumed by that fight.
 
 ### `scripts/narrative/diary.gd`
 Empty diary store; diary generation is not implemented yet.
@@ -104,9 +104,43 @@ Displays:
 - hero panel left;
 - log/diary center;
 - active opponent right;
-- current death-respawn countdown through the hero state label.
+- current death-respawn countdown through the hero state label;
+- fixed bottom-right cumulative combat-statistics panel.
+
+
+## Current calibration data
+
+### `data/mobs/0002_wolf.tres`
+95%-of-starting-HeroPower MONSTER used for combat/Power validation.
+
+### `data/quests/0002_wolf_hunt.tres`
+Eight-Wolf test quest: 4 km distance, 80 Gold reward.
+
+
+### `data/mobs/0003_bear.tres`
+Slow, high-HP MONSTER calibrated to approximately 95% of starting HeroPower.
+
+### `data/quests/0003_bear_hunt.tres`
+Four-Bear calibration quest: 3 km distance, 40 Gold reward.
 
 ## Tests
+
+
+### `tests/test_wolf_definition.gd`
+Protects the Wolf calibration card and Power ≈ 20.38.
+
+### `tests/test_wolf_quest_definition.gd`
+Protects the 8-Wolf / 4 km / 80 Gold quest data.
+
+### `tests/test_combat_statistics.gd`
+Protects cumulative fight/win/loss/winrate counting.
+
+
+### `tests/test_bear_definition.gd`
+Protects the slow/high-HP Bear calibration card and Power ≈ 20.38.
+
+### `tests/test_bear_quest_definition.gd`
+Protects the 4-Bear / 3 km / 40 Gold quest data.
 
 ### `tests/test_death_respawn.gd`
 Integration coverage for:

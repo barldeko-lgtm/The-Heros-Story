@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/0003_bear.tres" id="2_bear"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "bear_hunt"
+display_name = "Охота на медведей"
+mob_definition = ExtResource("2_bear")
+mob_count = 4
+distance_km = 3.0
+gold_reward = 40

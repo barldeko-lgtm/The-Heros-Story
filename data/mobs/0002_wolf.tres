@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "wolf"
+display_name = "Волк"
+category = 1
+max_hp = 72.55
+attack = 8.0
+attack_speed = 1.35
+crit_chance = 0.12
+crit_damage = 1.5
+damage_reduction = 0.0
+experience_reward = 0
+gold_reward = 0

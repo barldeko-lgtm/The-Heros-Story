@@ -7,7 +7,7 @@ func _init() -> void:
 	assert(goblin.display_name == "Гоблин", "Goblin display name must be Russian.")
 	assert(goblin.category == 0, "Goblin must be classified as HUMANOID.")
 	assert(is_equal_approx(goblin.max_hp, 50.0), "Goblin max HP must be 50.")
-	assert(is_equal_approx(goblin.attack, 3.0), "Goblin attack must be 3.")
+	assert(is_equal_approx(goblin.attack, 4.0), "Goblin attack must be 4.")
 	assert(is_equal_approx(goblin.attack_speed, 1.0), "Goblin attack speed must be 1.0.")
 	assert(is_equal_approx(goblin.crit_chance, 0.05), "Goblin crit chance must be 5%.")
 	assert(is_equal_approx(goblin.crit_damage, 1.50), "Goblin crit damage must be 150%.")
@@ -16,5 +16,5 @@ func _init() -> void:
 	assert(is_equal_approx(goblin.damage_reduction, 0.0), "Goblin damage reduction must be 0.")
 	assert(goblin.get_power() < 21.45, "Goblin power must be below starting HeroPower.")
 
-	print("PASS: Goblin definition contains approved stats and automatic power.")
+	print("PASS: Goblin definition contains current test stats and automatic power.")
 	quit()

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "bear"
+display_name = "Медведь"
+category = 1
+max_hp = 180.0
+attack = 5.0
+attack_speed = 0.9
+crit_chance = 0.05
+crit_damage = 1.5
+damage_reduction = 0.0
+experience_reward = 0
+gold_reward = 0

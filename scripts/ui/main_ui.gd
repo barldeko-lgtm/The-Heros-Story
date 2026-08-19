@@ -1,13 +1,15 @@
 extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
+const DeveloperInitialQuest = preload("res://data/quests/0003_bear_hunt.tres")
 
 var simulation_seed: int = int(Time.get_unix_time_from_system())
-var simulation = SimulationScript.new(simulation_seed)
+var simulation = SimulationScript.new(simulation_seed, DeveloperInitialQuest)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label
 var opponent_details_label: Label
+var combat_statistics_label: Label
 var log_text_edit: TextEdit
 var speed_buttons: Dictionary = {}
 
@@ -16,12 +18,14 @@ func _ready() -> void:
 	create_speed_controls()
 	create_hero_panel()
 	create_opponent_panel()
+	create_combat_statistics_panel()
 	create_tick_indicator()
 	create_narrative_panel()
 	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
 	simulation.debug_log.text_changed.connect(on_debug_log_text_changed)
 	update_hero_panel()
 	update_opponent_panel()
+	update_combat_statistics_panel()
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
@@ -29,6 +33,7 @@ func _process(delta: float) -> void:
 	tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
 	update_hero_panel()
 	update_opponent_panel()
+	update_combat_statistics_panel()
 
 func on_world_tick_completed(_completed_tick: int) -> void:
 	update_debug_log(simulation.debug_log.get_text())
@@ -104,6 +109,35 @@ func update_opponent_panel() -> void:
 		stats.crit_chance * 100.0,
 		stats.crit_damage * 100.0,
 		simulation.get_current_opponent_power()
+	]
+
+func create_combat_statistics_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.position = Vector2(928.0, 530.0)
+	panel.size = Vector2(320.0, 120.0)
+	add_child(panel)
+
+	combat_statistics_label = Label.new()
+	combat_statistics_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	combat_statistics_label.add_theme_font_size_override("font_size", 15)
+	panel.add_child(combat_statistics_label)
+
+func update_combat_statistics_panel() -> void:
+	var stats: Dictionary = simulation.get_current_combat_results()
+	if stats.is_empty():
+		combat_statistics_label.text = "Статистика боёв\n\nПока боёв нет."
+		return
+
+	var total: int = stats["total"]
+	var wins: int = stats["wins"]
+	var losses: int = stats["losses"]
+	var win_rate: float = 100.0 * float(wins) / float(total)
+	combat_statistics_label.text = "Статистика боёв — %s\nБои: %d\nПобеды: %d\nПоражения: %d\nWinrate: %.1f%%" % [
+		stats["display_name"],
+		total,
+		wins,
+		losses,
+		win_rate,
 	]
 
 func update_hero_panel() -> void:

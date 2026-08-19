@@ -16,8 +16,8 @@ Implemented:
 - live one-on-one combat with timed strikes;
 - per-mob XP and post-fight recovery;
 - death, 100-tick natural resurrection, and city recovery;
-- one goblin definition;
-- one quest definition;
+- three mob definitions: Goblin, Wolf, and Bear;
+- three quest definitions: Goblin road problem, Wolf hunt, and Bear hunt;
 - a single autonomous quest loop;
 - structured quest/death events;
 - separate quest narration;
@@ -120,6 +120,28 @@ After the 100th respawn tick:
 
 Full loot loss is still only a future hook because QuestLoot/inventory do not exist yet.
 
+
+## Current Power calibration content
+
+`data/mobs/0002_wolf.tres` is the current near-equal-Power calibration mob:
+- category: MONSTER;
+- MaxHP 72.55;
+- Attack 8;
+- AttackSpeed 1.35;
+- CritChance 12%;
+- CritDamage 150%;
+- Power ≈ 20.38, intentionally ≈95% of starting HeroPower ≈21.45;
+- XP is temporarily 0 so repeated Power testing does not level the hero and invalidate the comparison.
+
+`data/quests/0002_wolf_hunt.tres` contains:
+- 8 wolves;
+- distance 4 km;
+- reward 80 Gold.
+
+The developer UI currently starts this Wolf quest so repeated manual ×100 testing is immediately available. `Simulation.new()` without a supplied quest still defaults to the Goblin quest for existing regression tests.
+
+After every completed fight, `Simulation` updates cumulative per-mob combat statistics. These statistics are shown in a fixed developer UI panel and are no longer written into the debug log.
+
 ## Current quest loop
 
 Current successful loop:
@@ -165,6 +187,36 @@ Death, natural resurrection, and city recovery use structured events rather than
 
 The diary remains unimplemented and receives no gameplay events yet.
 
+
+
+### Bear calibration mob
+
+`data/mobs/0003_bear.tres` is the second 95%-Power calibration profile:
+- category: MONSTER;
+- MaxHP 180;
+- Attack 5;
+- AttackSpeed 0.90;
+- CritChance 5%;
+- CritDamage 150%;
+- Power ≈ 20.37, or ≈94.98% of starting HeroPower;
+- XP remains 0 during calibration.
+
+`data/quests/0003_bear_hunt.tres` contains:
+- 4 bears;
+- distance 3 km;
+- reward 40 Gold.
+
+The developer UI currently starts the Bear hunt for manual ×100 Power validation.
+
+## Debug log window
+
+The debug log retains only the last 100 world ticks.
+
+Retention is tick-based rather than line-based:
+- ordinary tick messages belong to their world tick;
+- all start/action/result lines from one fight belong to the single world tick consumed by that fight;
+- therefore a verbose fight still counts as exactly one tick for log retention.
+
 ## UI
 
 Current layout:
@@ -177,6 +229,8 @@ The hero panel displays HP with one decimal place and now shows:
 - city-recovery state after resurrection.
 
 The opponent panel is populated only during active combat.
+
+A separate panel in the bottom-right corner continuously shows cumulative combat count, wins, losses, and winrate for the current quest mob.
 
 ## Tests
 

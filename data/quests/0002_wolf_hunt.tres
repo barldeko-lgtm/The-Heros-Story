@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/0002_wolf.tres" id="2_wolf"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "wolf_hunt"
+display_name = "Охота на волков"
+mob_definition = ExtResource("2_wolf")
+mob_count = 8
+distance_km = 4.0
+gold_reward = 80

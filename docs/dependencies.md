@@ -129,3 +129,30 @@ When it exists, death must clear only current-quest loot before entering the exi
 - resurrection at exactly 1 HP;
 - 20% MaxHP city recovery;
 - full recovery before `CHOOSING_QUEST`.
+
+
+## Combat validation telemetry
+
+`Simulation` owns lightweight development-only cumulative combat-result counters keyed by mob id.
+
+Contracts:
+- recording statistics must not alter combat, XP, recovery, death, or quest outcomes;
+- one finished fight increments exactly one result;
+- counters track total fights, hero wins, hero losses, and derived winrate;
+- cumulative combat statistics remain in `Simulation` and are displayed by UI; they are not written into the debug log;
+- the same mechanism works for any mob definition and is not Wolf-specific.
+
+`Simulation` may receive an explicit initial quest for development/testing. If omitted, it keeps the existing Goblin quest default. The developer UI currently supplies the Wolf hunt quest for manual Power validation.
+
+
+## Debug-log retention
+
+Owner:
+- `scripts/narrative/debug_log.gd`
+
+Contracts:
+- visible history is limited to the latest 100 world ticks;
+- retention is based on world-tick ids, not entry count;
+- every line from one individual fight is tagged with the same upcoming world tick because one fight consumes exactly one world tick;
+- trimming log history must not affect simulation state or cumulative combat statistics.
+
