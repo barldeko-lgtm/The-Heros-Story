@@ -72,6 +72,27 @@ func refresh_combat_stats() -> void:
 func get_hero_power() -> float:
 	return power_calculator.calculate(combat_stats)
 
+func get_current_opponent_name() -> String:
+	if active_combat_session == null:
+		return ""
+	return quest_runner.quest_definition.mob_definition.display_name
+
+func get_current_opponent_stats():
+	if active_combat_session == null:
+		return null
+	return active_combat_session.mob_stats
+
+func get_current_opponent_hp() -> float:
+	if active_combat_session == null:
+		return 0.0
+	return active_combat_session.mob_remaining_hp
+
+func get_current_opponent_power() -> float:
+	var opponent_stats = get_current_opponent_stats()
+	if opponent_stats == null:
+		return 0.0
+	return power_calculator.calculate(opponent_stats)
+
 func start_combat() -> void:
 	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng())
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count))

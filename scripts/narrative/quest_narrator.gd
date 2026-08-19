@@ -12,7 +12,7 @@ func describe(event) -> String:
 		QuestEventScript.HERO_ARRIVED_AT_QUEST:
 			return "%s прибыл к цели." % event.hero_name
 		QuestEventScript.HERO_WON_FIGHT:
-			return "%s победил %s в бою %d/%d, получил %d XP. HP: %.0f / %.0f." % [event.hero_name, event.quest_definition.mob_definition.display_name, event.completed_mob_count, event.mob_count, event.experience_reward, event.current_hp, event.max_hp]
+			return "%s победил %s в бою %d/%d, получил %d XP. HP: %.1f / %.1f." % [event.hero_name, event.quest_definition.mob_definition.display_name, event.completed_mob_count, event.mob_count, event.experience_reward, event.current_hp, event.max_hp]
 		QuestEventScript.HERO_RECOVERED_AFTER_FIGHT:
 			return describe_recovery(event)
 		QuestEventScript.HERO_RETURNING_TO_CITY:
@@ -32,7 +32,7 @@ func describe_combat_action(action, hero_name: String, quest_definition: Resourc
 	return "%.2f с — %s%s нанёс %.2f урона." % [action.time_seconds, attacker_name, critical_text, action.damage]
 
 func describe_recovery(event) -> String:
-	var message := "%s восстановил здоровье: %.0f / %.0f." % [event.hero_name, event.current_hp, event.max_hp]
+	var message := "%s восстановил здоровье: %.1f / %.1f." % [event.hero_name, event.current_hp, event.max_hp]
 	if is_equal_approx(event.current_hp, event.max_hp):
 		if event.completed_mob_count >= event.mob_count:
 			message += " Все противники побеждены; он идёт в город."

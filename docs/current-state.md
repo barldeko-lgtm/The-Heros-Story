@@ -210,16 +210,25 @@ Current runtime scene:
 Current UI:
 - `scripts/ui/main_ui.gd`
 
-The UI displays:
-- hero state;
-- primary and combat stats;
-- Hero Power;
-- active quest;
-- current simulation seed;
-- tick progress;
-- speed controls;
-- debug log;
-- diary tab.
+The UI is currently arranged as:
+- hero panel on the left;
+- log/diary in the center;
+- opponent panel on the right.
+
+The hero panel displays current HP with one decimal place.
+
+During an active fight, the opponent panel displays:
+- mob name;
+- current / MaxHP with one decimal place;
+- Attack;
+- AttackSpeed;
+- CritChance;
+- CritDamage;
+- MobPower.
+
+Outside combat the opponent panel shows that there is no current opponent.
+
+The UI also displays the current simulation seed, tick progress, and speed controls.
 
 The UI currently creates the `Simulation` instance itself.
 

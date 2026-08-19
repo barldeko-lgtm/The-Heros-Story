@@ -7,6 +7,7 @@ var simulation = SimulationScript.new(simulation_seed)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label
+var opponent_details_label: Label
 var log_text_edit: TextEdit
 var speed_buttons: Dictionary = {}
 
@@ -14,17 +15,20 @@ func _ready() -> void:
 	create_background()
 	create_speed_controls()
 	create_hero_panel()
+	create_opponent_panel()
 	create_tick_indicator()
 	create_narrative_panel()
 	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
 	simulation.debug_log.text_changed.connect(on_debug_log_text_changed)
 	update_hero_panel()
+	update_opponent_panel()
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
 	time_progress_bar.value = simulation.world_clock.tick_progress * 100.0
 	tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
 	update_hero_panel()
+	update_opponent_panel()
 
 func on_world_tick_completed(_completed_tick: int) -> void:
 	update_debug_log(simulation.debug_log.get_text())
@@ -65,8 +69,8 @@ func set_time_scale(new_time_scale: float) -> void:
 
 func create_hero_panel() -> void:
 	var panel := PanelContainer.new()
-	panel.position = Vector2(32.0, 32.0)
-	panel.size = Vector2(320.0, 450.0)
+	panel.position = Vector2(32.0, 80.0)
+	panel.size = Vector2(320.0, 430.0)
 	add_child(panel)
 
 	hero_details_label = Label.new()
@@ -74,13 +78,41 @@ func create_hero_panel() -> void:
 	hero_details_label.add_theme_font_size_override("font_size", 16)
 	panel.add_child(hero_details_label)
 
+func create_opponent_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.position = Vector2(928.0, 80.0)
+	panel.size = Vector2(320.0, 430.0)
+	add_child(panel)
+
+	opponent_details_label = Label.new()
+	opponent_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	opponent_details_label.add_theme_font_size_override("font_size", 16)
+	panel.add_child(opponent_details_label)
+
+func update_opponent_panel() -> void:
+	if simulation.active_combat_session == null:
+		opponent_details_label.text = "Противник\n\nСейчас боя нет."
+		return
+
+	var stats = simulation.get_current_opponent_stats()
+	opponent_details_label.text = "%s\n\nHP: %.1f / %.1f\n\nАтака: %.1f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила противника: %.2f" % [
+		simulation.get_current_opponent_name(),
+		simulation.get_current_opponent_hp(),
+		stats.max_hp,
+		stats.attack,
+		stats.attack_speed,
+		stats.crit_chance * 100.0,
+		stats.crit_damage * 100.0,
+		simulation.get_current_opponent_power()
+	]
+
 func update_hero_panel() -> void:
 	var hero = simulation.hero_state
 	var stats = simulation.combat_stats
 	var active_quest_name: String = "—"
 	if hero.active_quest != null:
 		active_quest_name = hero.active_quest.display_name
-	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.0f / %.0f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+	hero_details_label.text = "%s\nВоин\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, hero.level, hero.experience, hero.experience_to_next_level, hero.current_hp, stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:
@@ -94,19 +126,19 @@ func get_state_display_name(loop_state: String) -> String:
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
-	indicator.position = Vector2(410.0, 335.0)
-	indicator.size = Vector2(580.0, 44.0)
+	indicator.position = Vector2(380.0, 335.0)
+	indicator.size = Vector2(520.0, 44.0)
 	indicator.add_theme_constant_override("separation", 16)
 	add_child(indicator)
 
 	time_progress_bar = ProgressBar.new()
-	time_progress_bar.custom_minimum_size = Vector2(440.0, 36.0)
+	time_progress_bar.custom_minimum_size = Vector2(390.0, 36.0)
 	time_progress_bar.max_value = 100.0
 	time_progress_bar.show_percentage = false
 	indicator.add_child(time_progress_bar)
 
 	tick_counter_label = Label.new()
-	tick_counter_label.custom_minimum_size = Vector2(120.0, 36.0)
+	tick_counter_label.custom_minimum_size = Vector2(110.0, 36.0)
 	tick_counter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	tick_counter_label.add_theme_font_size_override("font_size", 22)
 	tick_counter_label.text = "Тик: 0"
@@ -114,8 +146,8 @@ func create_tick_indicator() -> void:
 
 func create_narrative_panel() -> void:
 	var tabs := TabContainer.new()
-	tabs.position = Vector2(410.0, 400.0)
-	tabs.size = Vector2(700.0, 250.0)
+	tabs.position = Vector2(380.0, 400.0)
+	tabs.size = Vector2(520.0, 250.0)
 	add_child(tabs)
 
 	log_text_edit = create_read_only_text_edit()
