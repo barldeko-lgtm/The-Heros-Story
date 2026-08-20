@@ -3,6 +3,7 @@ extends SceneTree
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const MobDefinitionScript = preload("res://scripts/model/definitions/mob_definition.gd")
 const QuestDefinitionScript = preload("res://scripts/model/definitions/quest_definition.gd")
+const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 
 func _init() -> void:
 	var evaluator = QuestEvaluatorScript.new()
@@ -42,7 +43,7 @@ func _init() -> void:
 	print("PASS: QuestEvaluator applies 95% Hard Filter and relative-cost QuestScore.")
 	quit()
 
-func make_quest(quest_id: String, target_power: float, reward: int, distance: float, mob_count: int) -> Resource:
+func make_quest(quest_id: String, target_power: float, reward: int, distance: float, mob_count: int):
 	var mob = MobDefinitionScript.new()
 	mob.id = "mob_" + quest_id
 	mob.display_name = mob.id
@@ -55,11 +56,8 @@ func make_quest(quest_id: String, target_power: float, reward: int, distance: fl
 	mob.crit_damage = 1.5
 	mob.damage_reduction = 0.0
 
-	var quest = QuestDefinitionScript.new()
-	quest.id = quest_id
-	quest.display_name = quest_id
-	quest.mob_definition = mob
-	quest.mob_count = mob_count
-	quest.distance_km = distance
-	quest.gold_reward = reward
-	return quest
+	var template = QuestDefinitionScript.new()
+	template.id = quest_id
+	template.display_name = quest_id
+	template.mob_definition = mob
+	return QuestOfferScript.new(template, mob_count, distance, int(reward / mob_count))

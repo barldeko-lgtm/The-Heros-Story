@@ -16,7 +16,7 @@ const HERO_RECOVERING_IN_CITY := "HERO_RECOVERING_IN_CITY"
 
 var event_type: String
 var hero_name: String
-var quest_definition: Resource
+var quest_definition
 var distance_remaining: int
 var gold_reward: int
 var combat_result
@@ -27,7 +27,7 @@ var max_hp: float
 var experience_reward: int
 var respawn_ticks_remaining: int
 
-func _init(initial_event_type: String, initial_hero_name: String, initial_quest_definition: Resource, initial_distance_remaining: int = 0, initial_gold_reward: int = 0, initial_combat_result = null, initial_completed_mob_count: int = 0, initial_mob_count: int = 0, initial_current_hp: float = 0.0, initial_max_hp: float = 0.0, initial_experience_reward: int = 0, initial_respawn_ticks_remaining: int = 0) -> void:
+func _init(initial_event_type: String, initial_hero_name: String, initial_quest_definition, initial_distance_remaining: int = 0, initial_gold_reward: int = 0, initial_combat_result = null, initial_completed_mob_count: int = 0, initial_mob_count: int = 0, initial_current_hp: float = 0.0, initial_max_hp: float = 0.0, initial_experience_reward: int = 0, initial_respawn_ticks_remaining: int = 0) -> void:
 	event_type = initial_event_type
 	hero_name = initial_hero_name
 	quest_definition = initial_quest_definition

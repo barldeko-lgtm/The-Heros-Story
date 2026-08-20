@@ -6,12 +6,12 @@ const RECOVERY_PERCENT_OF_MAX_HP: float = 0.20
 const RESPAWN_DURATION_TICKS: int = 100
 const RESURRECTION_HP: float = 1.0
 
-var quest_definition: Resource
+var quest_definition
 var travel_ticks_remaining: int = 0
 var completed_mob_count: int = 0
 var respawn_ticks_remaining: int = 0
 
-func _init(initial_quest_definition: Resource) -> void:
+func _init(initial_quest_definition) -> void:
 	quest_definition = initial_quest_definition
 
 func advance(hero_state, combat_stats: CombatStats = null):

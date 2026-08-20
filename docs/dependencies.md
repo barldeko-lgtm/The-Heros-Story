@@ -53,7 +53,7 @@ Death handling begins only after the completed `CombatResult` reaches the quest/
 ## Autonomous quest selection
 
 Owners:
-- `scripts/quests/quest_pool.gd` — available quest definitions;
+- `scripts/quests/quest_pool.gd` — immutable templates and current quest offers;
 - `scripts/quests/quest_evaluator.gd` — Hard Filter and QuestScore;
 - `scripts/quests/quest_runner.gd` — execution only;
 - `scripts/core/simulation.gd` — coordination between selection and execution.
@@ -71,7 +71,7 @@ CHOOSING_QUEST
 → BaseAttractiveness = GoldReward / EstimatedQuestTicks
 → current trait/divine modifiers = 0
 → strict highest QuestScore
-→ selected QuestDefinition assigned to QuestRunner
+→ selected QuestOffer assigned to QuestRunner
 → QuestRunner executes
 ```
 
@@ -88,7 +88,7 @@ Contracts:
 - UI must not choose quests;
 - changing `.tres` mob/quest tuning must not require changing selection code.
 
-The first `QuestPool` is deliberately small: it loads reusable quest definitions from `data/quests`. Full QuestInstance replacement/refresh lifecycle is not implemented in this slice.
+`QuestPool` loads immutable reusable quest templates from `data/quests` and uses the shared seeded RNG to create current `QuestOffer` objects. Templates contain only inclusive ranges. Each offer owns rolled count, distance, and gold per mob; its total Gold is a derived value, always `MobCount × GoldPerMob`. After a successful turn-in, only that accepted offer is regenerated in the same slot. After fatal cancellation, its replacement waits until city recovery returns the hero to `CHOOSING_QUEST`. Unaccepted offers must retain their exact runtime values and identities.
 
 
 ## Quest execution and death

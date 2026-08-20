@@ -36,11 +36,11 @@ func select_quest(available_quests: Array, hero_power: float) -> Dictionary:
 		weakest_allowed_mob_power = minf(weakest_allowed_mob_power, eligible["mob_power"])
 
 	var evaluations: Array[Dictionary] = []
-	var selected_quest: Resource = null
+	var selected_quest = null
 	var selected_score: float = -INF
 
 	for eligible in eligible_quests:
-		var quest_definition: Resource = eligible["quest"]
+		var quest_definition = eligible["quest"]
 		var mob_power: float = eligible["mob_power"]
 
 		var relative_recovery_cost: float = 1.0

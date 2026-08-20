@@ -1450,17 +1450,19 @@ A goblin and a wolf do not need separate behavior scripts if they differ only in
 
 Describes a quest template.
 
-#### QuestInstance
+#### QuestOffer
 
-Represents a concrete quest currently present in the city pool.
+Represents one concrete quest currently present in the city pool. The first Prototype 0 implementation owns the rolled mob count, distance, and gold per mob; total reward is always derived as `MobCount × GoldPerMob` rather than stored in the template.
 
-This later allows multiple instances of the same quest type with different:
+This allows multiple offers from the same quest type with different:
 
 - mob counts;
 - distances;
 - rewards;
 - sources;
 - expiration times.
+
+Future quest-instance state may extend this lightweight offer without moving rolled values back into `QuestDefinition`.
 
 #### ItemDefinition
 

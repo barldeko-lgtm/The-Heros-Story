@@ -69,11 +69,14 @@ Shared hero/mob Power calculation.
 ## Quests
 
 ### `scripts/quests/quest_pool.gd`
-Owns the currently available quest definitions for this Prototype 0 slice.
+Owns immutable quest templates and the currently available runtime tavern offers for this Prototype 0 slice.
 
-The developer build loads every `.tres` under `res://data/quests` in stable filename order. Tests may inject an explicit list instead.
+The developer build loads every `.tres` under `res://data/quests` in stable filename order, then uses the shared seeded RNG to roll one offer from each template's integer count, distance, and per-mob-gold ranges. An offer calculates its total Gold reward as `MobCount × GoldPerMob`.
 
-This first pool is definition-backed and reusable; full QuestInstance replacement/lifecycle is still a later slice.
+After a successful turn-in or a fatal cancellation followed by city recovery, only that accepted offer's same pool slot is regenerated; unaccepted offers persist. Tests may inject an explicit fixed offer list instead.
+
+### `scripts/model/runtime/quest_offer.gd`
+Runtime quest offer. Owns the rolled mob count, distance, and gold per mob for one tavern slot. Its total Gold is derived as `MobCount × GoldPerMob`; it is never serialized into a quest template.
 
 ### `scripts/quests/quest_evaluator.gd`
 Owns autonomous quest evaluation:
@@ -140,6 +143,18 @@ Quest selection does not hard-code individual quest files. `QuestPool` discovers
 ### `tests/test_quest_pool.gd`
 Protects automatic discovery of quest resources from `data/quests`.
 
+### `tests/test_quest_offer_randomization.gd`
+Protects seeded integer offer rolls, per-mob reward calculation, and preservation of unaccepted offers when one is replaced.
+
+### `tests/test_quest_template_offer_boundary.gd`
+Protects the boundary: templates retain only ranges, while `QuestOffer` owns the rolled values and derives total Gold.
+
+### `tests/test_quest_offer_refresh_lifecycle.gd`
+Protects the Simulation-to-QuestPool integration for replacing only a turned-in quest offer.
+
+### `tests/test_quest_offer_cancelled_lifecycle.gd`
+Protects delayed replacement of only a cancelled offer after natural resurrection and city recovery.
+
 ### `tests/test_quest_evaluator.gd`
 Protects the 95% Hard Filter, weakest-mob normalization, estimated quest time, and strict highest QuestScore selection using in-memory test data.
 
@@ -152,7 +167,7 @@ Integration coverage that `Simulation` selects first and `QuestRunner` executes 
 Protects the Wolf calibration card and Power ≈ 20.38.
 
 ### `tests/test_wolf_quest_definition.gd`
-Protects the 8-Wolf / 4 km / 80 Gold quest data.
+Protects the Wolf quest template's approved integer ranges.
 
 ### `tests/test_combat_statistics.gd`
 Protects cumulative fight/win/loss/winrate counting.
@@ -162,7 +177,7 @@ Protects cumulative fight/win/loss/winrate counting.
 Protects the slow/high-HP Bear calibration card and Power ≈ 20.38.
 
 ### `tests/test_bear_quest_definition.gd`
-Protects the 4-Bear / 3 km / 40 Gold quest data.
+Protects the Bear quest template's approved integer ranges.
 
 ### `tests/test_death_respawn.gd`
 Integration coverage for:

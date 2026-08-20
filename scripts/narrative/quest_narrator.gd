@@ -31,10 +31,10 @@ func describe(event) -> String:
 			return describe_city_recovery(event)
 	return ""
 
-func describe_combat_started(hero_name: String, quest_definition: Resource, mob_number: int, mob_count: int) -> String:
+func describe_combat_started(hero_name: String, quest_definition, mob_number: int, mob_count: int) -> String:
 	return "%s начинает бой с %s (%d/%d)." % [hero_name, quest_definition.mob_definition.display_name, mob_number, mob_count]
 
-func describe_combat_action(action, hero_name: String, quest_definition: Resource) -> String:
+func describe_combat_action(action, hero_name: String, quest_definition) -> String:
 	var attacker_name: String = hero_name if action.attacker_id == "hero" else quest_definition.mob_definition.display_name
 	var critical_text := " критическим ударом" if action.is_critical else ""
 	return "%.2f с — %s%s нанёс %.2f урона." % [action.time_seconds, attacker_name, critical_text, action.damage]

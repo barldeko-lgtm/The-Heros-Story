@@ -4,7 +4,7 @@ const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 
 func _init() -> void:
 	var quest_pool = QuestPoolScript.new()
-	var quests: Array[Resource] = quest_pool.get_available_quests()
+	var quests: Array = quest_pool.get_available_quests()
 
 	assert(not quests.is_empty(), "QuestPool must load quest resources from res://data/quests.")
 	for quest_definition in quests:

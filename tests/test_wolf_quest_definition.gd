@@ -7,9 +7,9 @@ func _init() -> void:
 	assert(quest.display_name == "Охота на волков", "Wolf quest display name must be Russian.")
 	assert(quest.mob_definition != null, "Wolf quest must reference a mob.")
 	assert(quest.mob_definition.id == "wolf", "Wolf quest must use the Wolf definition.")
-	assert(quest.mob_count == 8, "Wolf quest must contain 8 wolves.")
-	assert(is_equal_approx(quest.distance_km, 4.0), "Wolf quest distance must be 4 km.")
-	assert(quest.gold_reward == 80, "Wolf quest reward must be 80 gold.")
+	assert(quest.mob_count_min == 6 and quest.mob_count_max == 8, "Wolf offer count must roll from 6 through 8.")
+	assert(quest.distance_km_min == 3 and quest.distance_km_max == 5, "Wolf offer distance must roll from 3 through 5 km.")
+	assert(quest.gold_per_mob_min == 12 and quest.gold_per_mob_max == 14, "Wolf offer reward must roll from 12 through 14 gold per mob.")
 
-	print("PASS: Wolf quest contains 8 wolves at distance 4 with 80 gold reward.")
+	print("PASS: Wolf quest template contains only approved integer ranges.")
 	quit()

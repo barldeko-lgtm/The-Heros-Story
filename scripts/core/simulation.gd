@@ -15,6 +15,7 @@ const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
+
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
@@ -41,17 +42,21 @@ var quest_evaluator = QuestEvaluatorScript.new()
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
+var pending_quest_offer_replacement
 
 func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = []) -> void:
 	autonomous_quest_choice = initial_quest_definition == null
-	var runner_initial_quest: Resource = DefaultInitialQuest if autonomous_quest_choice else initial_quest_definition
-	quest_runner = QuestRunnerScript.new(runner_initial_quest)
-	if autonomous_quest_choice:
-		quest_pool = QuestPoolScript.new(available_quest_definitions)
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
+	var runner_initial_quest
+	if autonomous_quest_choice:
+		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())
+	else:
+		var fixed_quest_pool = QuestPoolScript.new([initial_quest_definition], seeded_rng.get_rng())
+		runner_initial_quest = fixed_quest_pool.create_offer(initial_quest_definition)
+	quest_runner = QuestRunnerScript.new(runner_initial_quest)
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
 	world_clock.tick_completed.connect(on_world_tick_completed)
@@ -178,6 +183,7 @@ func advance_active_combat(available_seconds: float) -> float:
 				refresh_combat_stats()
 		var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 		if event != null:
+			refresh_finished_quest_offer_if_needed(event)
 			debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
 			if hero_state.level != previous_level:
 				debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
@@ -198,4 +204,18 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if event == null:
 		debug_log.record_tick(completed_tick)
 		return
+	refresh_finished_quest_offer_if_needed(event)
 	debug_log.record_event(completed_tick, quest_narrator.describe(event))
+
+func refresh_finished_quest_offer_if_needed(event) -> void:
+	if not autonomous_quest_choice:
+		return
+	if event.event_type == QuestEvent.HERO_TURNED_IN_QUEST:
+		quest_pool.replace_offer(event.quest_definition)
+		return
+	if event.event_type == QuestEvent.HERO_DIED:
+		pending_quest_offer_replacement = event.quest_definition
+		return
+	if event.event_type == QuestEvent.HERO_RECOVERING_IN_CITY and hero_state.loop_state == HeroState.CHOOSING_QUEST and pending_quest_offer_replacement != null:
+		quest_pool.replace_offer(pending_quest_offer_replacement)
+		pending_quest_offer_replacement = null

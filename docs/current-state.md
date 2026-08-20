@@ -122,9 +122,11 @@ Full loot loss is still only a future hook because QuestLoot/inventory do not ex
 
 ## Current quest content and selection
 
-Concrete mob and quest values live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here.
+Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains only inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward.
 
-The developer build now loads all `.tres` quest definitions from `res://data/quests` into `QuestPool`.
+The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
+
+Only the accepted quest offer is regenerated: after a successful turn-in it is immediately replaced in its same tavern slot; after a fatal cancellation it is replaced when the hero finishes city recovery and returns to quest choice. Other offers retain their rolled values.
 
 At every `CHOOSING_QUEST` decision point:
 
