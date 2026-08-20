@@ -603,17 +603,17 @@ Otherwise:
 
 For **Brave**:
 
-> `CourageModifier = -0.15 + 0.30 × PowerNorm`
+> `CourageModifier = -0.30 + 0.60 × PowerNorm`
 
 Meaning:
 
-- weakest enemy → `-0.15`;
-- strongest enemy → `+0.15`;
+- weakest enemy → `-0.30`;
+- strongest enemy → `+0.30`;
 - all others scale proportionally between them.
 
 For **Coward**:
 
-> `CourageModifier = +0.15 - 0.30 × PowerNorm`
+> `CourageModifier = +0.30 - 0.60 × PowerNorm`
 
 The scale is mirrored.
 
@@ -621,13 +621,13 @@ The scale is mirrored.
 
 **Dishonorable:**
 
-- `+5%` actual damage against `HUMANOID`;
-- `+0.10` to `QuestScore` for quests against `HUMANOID`.
+- `+10%` actual damage against `HUMANOID`;
+- `+0.20` to `QuestScore` for quests against `HUMANOID`.
 
 **Noble:**
 
-- `+5%` actual damage against `MONSTER`;
-- `+0.10` to `QuestScore` for quests against `MONSTER`.
+- `+10%` actual damage against `MONSTER`;
+- `+0.20` to `QuestScore` for quests against `MONSTER`.
 
 There is no `QuestScore` penalty against the opposite category.
 
@@ -645,11 +645,11 @@ If `MaxReward == MinReward`:
 
 Otherwise:
 
-> `GreedModifier = 0.15 × (Reward - MinReward) / (MaxReward - MinReward)`
+> `GreedModifier = 0.30 × (Reward - MinReward) / (MaxReward - MinReward)`
 
 Range:
 
-> `0 ... +0.15`
+> `0 ... +0.30`
 
 ### 8.7. Limited Randomness
 

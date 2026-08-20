@@ -10,6 +10,7 @@ const FALLBACK_SEED: int = 1
 var hero_stats: CombatStats
 var mob_stats: CombatStats
 var random_number_generator: RandomNumberGenerator
+var hero_damage_multiplier: float = 1.0
 var hero_remaining_hp: float
 var mob_remaining_hp: float
 var hero_attack_interval: float
@@ -20,11 +21,13 @@ var elapsed_seconds: float = 0.0
 var is_finished: bool = false
 var actions: Array = []
 
-func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, initial_random_number_generator: RandomNumberGenerator = null) -> void:
+func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, initial_random_number_generator: RandomNumberGenerator = null, initial_hero_damage_multiplier: float = 1.0) -> void:
 	assert(initial_hero_stats.attack_speed > 0.0, "Hero attack speed must be positive.")
 	assert(initial_mob_stats.attack_speed > 0.0, "Mob attack speed must be positive.")
 	hero_stats = initial_hero_stats
 	mob_stats = initial_mob_stats
+	hero_damage_multiplier = initial_hero_damage_multiplier
+	assert(hero_damage_multiplier > 0.0, "Hero damage multiplier must be positive.")
 	random_number_generator = initial_random_number_generator
 	if random_number_generator == null:
 		random_number_generator = RandomNumberGenerator.new()
@@ -53,7 +56,7 @@ func advance(delta_seconds: float) -> Array:
 		var mob_damage := 0.0
 
 		if hero_attacks_now:
-			var hero_hit = create_hit("hero", hero_stats)
+			var hero_hit = create_hit("hero", hero_stats, hero_damage_multiplier)
 			hero_hit.time_seconds = elapsed_seconds
 			actions.append(hero_hit)
 			resolved_actions.append(hero_hit)
@@ -78,9 +81,10 @@ func advance(delta_seconds: float) -> Array:
 func get_result():
 	return CombatResultScript.new(hero_remaining_hp > 0.0, hero_remaining_hp, mob_remaining_hp, elapsed_seconds, actions)
 
-func create_hit(attacker_id: String, combat_stats: CombatStats):
+func create_hit(attacker_id: String, combat_stats: CombatStats, damage_multiplier: float = 1.0):
 	var is_critical := combat_stats.crit_chance > 0.0 and random_number_generator.randf() < combat_stats.crit_chance
 	var damage := combat_stats.attack
 	if is_critical:
 		damage *= combat_stats.crit_damage
+	damage *= damage_multiplier
 	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical)

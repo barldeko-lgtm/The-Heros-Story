@@ -5,6 +5,7 @@ const WorldClockScript = preload("res://scripts/core/world_clock.gd")
 const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const StatResolverScript = preload("res://scripts/hero/stat_resolver.gd")
 const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd")
@@ -50,6 +51,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
+	hero_state.traits = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
 	var runner_initial_quest
 	if autonomous_quest_choice:
 		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())
@@ -149,7 +151,7 @@ func choose_next_quest() -> bool:
 	if not autonomous_quest_choice:
 		return true
 
-	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power())
+	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power(), hero_state.traits)
 	var selected_quest = last_quest_selection.get("selected_quest")
 	if selected_quest == null:
 		return false
@@ -161,7 +163,8 @@ func get_active_combat_world_tick() -> int:
 	return world_clock.world_tick + 1
 
 func start_combat() -> void:
-	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng())
+	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, quest_runner.quest_definition.mob_definition.category)
+	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier)
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
 
 func advance_active_combat(available_seconds: float) -> float:

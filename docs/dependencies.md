@@ -69,7 +69,8 @@ CHOOSING_QUEST
 → EstimatedCostPerMob = 1 + RelativeRecoveryCost
 → EstimatedQuestTicks = Distance × 2 + MobCount × EstimatedCostPerMob + 1
 → BaseAttractiveness = GoldReward / EstimatedQuestTicks
-→ current trait/divine modifiers = 0
+→ current Courage / Morality / Greed modifiers
+→ current DivineModifier = 0
 → strict highest QuestScore
 → selected QuestOffer assigned to QuestRunner
 → QuestRunner executes
@@ -83,6 +84,9 @@ Contracts:
 - one fight contributes exactly `1` estimated tick before recovery cost;
 - fractional estimated ticks are allowed because this is pre-choice estimation only;
 - current selection has no general roulette;
+- starting traits use the shared seeded RNG and opposing traits are mutually exclusive;
+- personality modifiers apply only after Hard Filter;
+- Noble deals 10% more actual damage to MONSTER and Dishonorable to HUMANOID;
 - QuestEvaluator must not execute quests;
 - QuestRunner must not calculate Hard Filter or QuestScore;
 - UI must not choose quests;

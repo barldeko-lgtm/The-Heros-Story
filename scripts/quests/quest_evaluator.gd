@@ -1,12 +1,14 @@
 class_name QuestEvaluator
 extends RefCounted
 
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+
 const HARD_FILTER_RATIO: float = 0.95
 const FIGHT_TICKS_PER_MOB: float = 1.0
 const TURN_IN_TICKS: float = 1.0
 const SCORE_EPSILON: float = 0.000001
 
-func select_quest(available_quests: Array, hero_power: float) -> Dictionary:
+func select_quest(available_quests: Array, hero_power: float, hero_traits: Array[String] = []) -> Dictionary:
 	var hard_filter_limit: float = maxf(0.0, hero_power) * HARD_FILTER_RATIO
 	var eligible_quests: Array[Dictionary] = []
 
@@ -32,8 +34,14 @@ func select_quest(available_quests: Array, hero_power: float) -> Dictionary:
 		}
 
 	var weakest_allowed_mob_power: float = eligible_quests[0]["mob_power"]
+	var strongest_allowed_mob_power: float = eligible_quests[0]["mob_power"]
+	var minimum_reward: int = eligible_quests[0]["quest"].gold_reward
+	var maximum_reward: int = eligible_quests[0]["quest"].gold_reward
 	for eligible in eligible_quests:
 		weakest_allowed_mob_power = minf(weakest_allowed_mob_power, eligible["mob_power"])
+		strongest_allowed_mob_power = maxf(strongest_allowed_mob_power, eligible["mob_power"])
+		minimum_reward = mini(minimum_reward, eligible["quest"].gold_reward)
+		maximum_reward = maxi(maximum_reward, eligible["quest"].gold_reward)
 
 	var evaluations: Array[Dictionary] = []
 	var selected_quest = null
@@ -59,11 +67,24 @@ func select_quest(available_quests: Array, hero_power: float) -> Dictionary:
 		if estimated_quest_ticks > SCORE_EPSILON:
 			base_attractiveness = float(quest_definition.gold_reward) / estimated_quest_ticks
 
-		# Personality and divine modifiers are intentionally zero until
-		# their own Prototype 0 slices are implemented.
 		var courage_modifier: float = 0.0
+		if strongest_allowed_mob_power - weakest_allowed_mob_power > SCORE_EPSILON:
+			var power_normalized: float = (mob_power - weakest_allowed_mob_power) / (strongest_allowed_mob_power - weakest_allowed_mob_power)
+			if hero_traits.has(HeroTraitsScript.BRAVE):
+				courage_modifier = -HeroTraitsScript.COURAGE_EXTREME_MODIFIER + 2.0 * HeroTraitsScript.COURAGE_EXTREME_MODIFIER * power_normalized
+			elif hero_traits.has(HeroTraitsScript.COWARD):
+				courage_modifier = HeroTraitsScript.COURAGE_EXTREME_MODIFIER - 2.0 * HeroTraitsScript.COURAGE_EXTREME_MODIFIER * power_normalized
+
 		var morality_modifier: float = 0.0
+		if hero_traits.has(HeroTraitsScript.DISHONORABLE) and quest_definition.mob_definition.category == MobDefinition.Category.HUMANOID:
+			morality_modifier = HeroTraitsScript.MORALITY_QUEST_MODIFIER
+		elif hero_traits.has(HeroTraitsScript.NOBLE) and quest_definition.mob_definition.category == MobDefinition.Category.MONSTER:
+			morality_modifier = HeroTraitsScript.MORALITY_QUEST_MODIFIER
+
 		var greed_modifier: float = 0.0
+		if hero_traits.has(HeroTraitsScript.GREEDY) and maximum_reward != minimum_reward:
+			greed_modifier = HeroTraitsScript.GREED_MAX_MODIFIER * float(quest_definition.gold_reward - minimum_reward) / float(maximum_reward - minimum_reward)
+
 		var divine_modifier: float = 0.0
 
 		var quest_score: float = (

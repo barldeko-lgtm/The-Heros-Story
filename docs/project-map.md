@@ -41,6 +41,9 @@ Mutable hero state and centralized loop-state ids, including:
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
+### `scripts/hero/hero_traits.gd`
+Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible starting traits, Russian display names, and the Noble/Dishonorable category-damage multiplier.
+
 ### `scripts/hero/hero_progression.gd`
 Owns XP and Warrior level growth.
 
@@ -87,7 +90,13 @@ Owns autonomous quest evaluation:
 - current neutral QuestScore;
 - strict highest-score selection.
 
-Personality and divine modifiers are present as zero-value slots only; their behaviour is not implemented here.
+Applies the approved Coward/Brave, Dishonorable/Noble, and Greedy QuestScore modifiers. DivineModifier remains a zero-value future slot.
+
+### `tests/test_personality_traits.gd`
+Protects seeded compatible starting traits and the approved QuestScore formulas.
+
+### `tests/test_trait_combat_bonus.gd`
+Protects the 10% Noble/Dishonorable category bonus in actual combat damage.
 
 ### `scripts/quests/quest_runner.gd`
 Executes the current single quest.

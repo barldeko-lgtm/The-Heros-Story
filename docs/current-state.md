@@ -19,6 +19,8 @@ Implemented:
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
 - thirteen matching initial-city quest templates;
 - autonomous choice among the current quest resources;
+- seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
+- doubled personality modifiers in QuestScore and 10% category damage for Noble/Dishonorable;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
 - separate quest narration;
@@ -28,10 +30,9 @@ Implemented:
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- tune the current quest/mob data while validating autonomous selection, then add personality modifiers as a separate slice.
+- validate the visible effect of current personality modifiers during autonomous quest selection before expanding into diary or god-system work.
 
 Still missing from the current build:
-- traits;
 - diary episodes;
 - god system.
 
@@ -139,7 +140,7 @@ At every `CHOOSING_QUEST` decision point:
 5. `EstimatedCostPerMob = 1 fight tick + RelativeRecoveryCost`;
 6. `EstimatedQuestTicks = Distance + MobCount × EstimatedCostPerMob + Distance + 1 turn-in tick`;
 7. `BaseAttractiveness = GoldReward / EstimatedQuestTicks`;
-8. personality/divine modifiers are currently `0`;
+8. Courage, Morality, and Greed modifiers are applied from the hero's current traits; DivineModifier remains `0`;
 9. the highest final `QuestScore` is selected with no roulette.
 
 The currently selected quest is then handed to `QuestRunner`, which remains responsible only for execution.
