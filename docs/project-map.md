@@ -149,6 +149,9 @@ Protects seeded integer offer rolls, per-mob reward calculation, and preservatio
 ### `tests/test_quest_template_offer_boundary.gd`
 Protects the boundary: templates retain only ranges, while `QuestOffer` owns the rolled values and derives total Gold.
 
+### `tests/test_initial_city_content_expansion.gd`
+Protects the ten added initial-city mob/quest pairs: unique IDs, valid ranges, every new mob stronger than Goblin, and exactly six stronger than Bear.
+
 ### `tests/test_quest_offer_refresh_lifecycle.gd`
 Protects the Simulation-to-QuestPool integration for replacing only a turned-in quest offer.
 

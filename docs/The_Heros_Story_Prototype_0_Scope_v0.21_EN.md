@@ -219,9 +219,11 @@ After applying the starting attributes:
 
 ### 3.6. Level-Up
 
-Each new level requires:
+The XP requirement starts at 1000 and increases by 500 for every current hero level:
 
-> **1000 XP**
+> **`XPToNextLevel = 1000 + (CurrentLevel - 1) × 500`**
+
+Examples: level 1 → 2 requires 1000 XP, level 2 → 3 requires 1500 XP, and level 3 → 4 requires 2000 XP.
 
 Excess XP carries over toward the next level.
 

@@ -16,8 +16,8 @@ Implemented:
 - live one-on-one combat with timed strikes;
 - per-mob XP and post-fight recovery;
 - death, 100-tick natural resurrection, and city recovery;
-- three mob definitions: Goblin, Wolf, and Bear;
-- three quest definitions: Goblin road problem, Wolf hunt, and Bear hunt;
+- thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
+- thirteen matching initial-city quest templates;
 - autonomous choice among the current quest resources;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
@@ -67,7 +67,7 @@ Current loop states include:
 `scripts/hero/hero_progression.gd` owns XP application and Warrior level growth.
 
 Each level:
-- costs 1000 XP;
+- the next-level requirement starts at 1000 XP and increases by 500 per current level (`1000, 1500, 2000, ...`);
 - carries excess XP forward;
 - adds +20 direct MaxHP through the level bonus;
 - adds +4 STR;

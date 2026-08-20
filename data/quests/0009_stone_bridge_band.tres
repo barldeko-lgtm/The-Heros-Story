@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/0009_bandit_veteran.tres" id="2_mob"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "stone_bridge_band"
+display_name = "Банда у каменного моста"
+mob_definition = ExtResource("2_mob")
+mob_count_min = 2
+mob_count_max = 3
+distance_km_min = 4
+distance_km_max = 6
+gold_per_mob_min = 38
+gold_per_mob_max = 42

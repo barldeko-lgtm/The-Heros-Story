@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/0007_giant_spider.tres" id="2_mob"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "old_mill_webs"
+display_name = "Паутина у старой мельницы"
+mob_definition = ExtResource("2_mob")
+mob_count_min = 3
+mob_count_max = 5
+distance_km_min = 3
+distance_km_max = 5
+gold_per_mob_min = 23
+gold_per_mob_max = 26

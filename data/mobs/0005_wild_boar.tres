@@ -4,14 +4,14 @@
 
 [resource]
 script = ExtResource("1_mob_definition")
-id = "goblin"
-display_name = "Гоблин"
-category = 0
-max_hp = 45.0
-attack = 5.0
-attack_speed = 1.0
+id = "wild_boar"
+display_name = "Дикий кабан"
+category = 1
+max_hp = 90.0
+attack = 8.0
+attack_speed = 1.00
 crit_chance = 0.05
-crit_damage = 1.5
+crit_damage = 1.50
 damage_reduction = 0.0
-experience_reward = 50
-gold_reward = 2
+experience_reward = 75
+gold_reward = 4
