@@ -400,9 +400,9 @@ The overall visual style has not yet been defined and **is not considered an unr
 
 It should be developed separately in an art-direction document after the main screens and the required content volume are established.
 
-### 5.1. Equipment — Shop Titans as a Reference
+### 5.1. Equipment — Shop Heroes as a Reference
 
-For weapons, armor, helmets, accessories, and other equipment, the visual language of **Shop Titans** is a reference:
+For weapons, armor, helmets, accessories, and other equipment, the visual language of **Shop Heroes** is a reference:
 
 - large, readable silhouettes;
 - stylized fantasy;
@@ -415,7 +415,7 @@ For weapons, armor, helmets, accessories, and other equipment, the visual langua
 
 ### 5.2. Limitation
 
-Shop Titans is a reference **specifically for equipment**, not automatically for:
+Shop Heroes is a reference **specifically for equipment**, not automatically for:
 
 - the world;
 - the hero;

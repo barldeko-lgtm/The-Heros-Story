@@ -152,6 +152,6 @@ After code work:
 - give simple test steps;
 - mention anything not tested or any known limitation.
 
-When delivering files, provide a ZIP containing **only changed and new files** and preserve the exact project folder structure inside it.
+Do not create a delivery ZIP unless Sasha explicitly asks for one.
 
 Do not claim GitHub was updated unless Sasha explicitly requested the commit/push and it was actually done.
