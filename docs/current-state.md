@@ -21,6 +21,7 @@ Implemented:
 - autonomous choice among the current quest resources;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
 - doubled personality modifiers in QuestScore and 10% category damage for Noble/Dishonorable;
+- headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, and one-selection quest guidance;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
 - separate quest narration;
@@ -30,11 +31,23 @@ Implemented:
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- validate the visible effect of current personality modifiers during autonomous quest selection before expanding into diary or god-system work.
+- decide and implement the separate quest-guidance selection UI, or continue to diary episodes.
 
 Still missing from the current build:
 - diary episodes;
-- god system.
+- player-facing quest-guidance selection UI.
+
+## God-system core
+
+`scripts/god/god_state.gd` owns 100 maximum/starting energy, +1 energy per 6 world ticks, ability cooldowns, five combat-buff charges, and one pending guided quest id.
+
+`Simulation` currently exposes all four approved commands to future UI:
+- instant resurrection at `RemainingRespawnTicks × 0.5` energy;
+- divine healing for 10 energy, +50% MaxHP, 30-tick cooldown;
+- combat buff for 10 energy, +3 Attack for the next 5 fights, 120-tick cooldown;
+- quest guidance for 5 energy, +0.20 DivineModifier for one next selection, 360-tick cooldown.
+
+The center-top god panel now displays energy and provides working buttons for healing, combat blessing, and instant resurrection. Healing can modify live CombatSession HP during a fight. Quest guidance remains headless-only until its selection UI is approved.
 
 ## World time
 
@@ -209,6 +222,7 @@ Retention is tick-based rather than line-based:
 
 Current layout:
 - hero panel on the left;
+- god-energy panel and three ability buttons above the center log/diary;
 - log/diary in the center;
 - opponent panel on the right.
 
@@ -217,6 +231,8 @@ The hero panel displays HP with one decimal place and now shows:
 - city-recovery state after resurrection.
 
 The opponent panel is populated only during active combat.
+
+God-panel button availability follows gameplay state, energy, cooldowns, active buff charges, current HP, and death/respawn state. Instant resurrection is disabled until the hero dies; its button displays the current dynamic energy cost.
 
 A separate panel in the bottom-right corner continuously shows cumulative combat count, wins, losses, and winrate for the current quest mob.
 

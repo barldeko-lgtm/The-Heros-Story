@@ -77,6 +77,14 @@ func get_current_mob_experience_reward() -> int:
 func get_next_mob_number() -> int:
 	return completed_mob_count + 1
 
+func force_resurrection(hero_state, combat_stats: CombatStats):
+	if hero_state.loop_state != HeroState.DEAD_RESPAWNING:
+		return null
+	respawn_ticks_remaining = 0
+	hero_state.current_hp = minf(RESURRECTION_HP, combat_stats.max_hp)
+	hero_state.loop_state = HeroState.RECOVERING_IN_CITY
+	return QuestEventScript.new(QuestEventScript.HERO_RESURRECTED, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp)
+
 func complete_fight(hero_state, combat_stats: CombatStats, combat_result):
 	hero_state.current_hp = maxf(0.0, combat_result.hero_remaining_hp)
 	if not combat_result.hero_won:

@@ -78,6 +78,17 @@ The developer build loads every `.tres` under `res://data/quests` in stable file
 
 After a successful turn-in or a fatal cancellation followed by city recovery, only that accepted offer's same pool slot is regenerated; unaccepted offers persist. Tests may inject an explicit fixed offer list instead.
 
+## God system
+
+### `scripts/god/god_state.gd`
+Owns energy, six-tick recovery progress, ability cooldowns, combat-buff charges, quest guidance, and resurrection energy cost. `Simulation` validates world/hero state and applies each command to its owning gameplay system.
+
+### `tests/test_god_state.gd`
+Protects energy, recovery, cooldowns, combat charges, guidance consumption, and resurrection cost.
+
+### `tests/test_god_abilities_integration.gd`
+Protects Simulation integration for healing, instant resurrection, +3 Attack combat buff, and one-selection DivineModifier.
+
 ### `scripts/model/runtime/quest_offer.gd`
 Runtime quest offer. Owns the rolled mob count, distance, and gold per mob for one tavern slot. Its total Gold is derived as `MobCount × GoldPerMob`; it is never serialized into a quest template.
 
@@ -133,10 +144,16 @@ Current developer UI.
 
 Displays:
 - hero panel left;
+- god energy and Healing/Blessing/Resurrection controls above the narrative panel;
 - log/diary center;
 - active opponent right;
 - current death-respawn countdown through the hero state label;
 - fixed bottom-right cumulative combat-statistics panel.
+
+The god panel updates energy, cooldowns, buff charges, resurrection cost, and button availability every frame. Quest-guidance controls are intentionally deferred.
+
+### `tests/test_god_ui.gd`
+Protects god-panel placement, energy display, startup safety, and state-based availability of healing, blessing, and resurrection.
 
 
 ## Quest and mob data

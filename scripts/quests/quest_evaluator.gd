@@ -8,7 +8,7 @@ const FIGHT_TICKS_PER_MOB: float = 1.0
 const TURN_IN_TICKS: float = 1.0
 const SCORE_EPSILON: float = 0.000001
 
-func select_quest(available_quests: Array, hero_power: float, hero_traits: Array[String] = []) -> Dictionary:
+func select_quest(available_quests: Array, hero_power: float, hero_traits: Array[String] = [], guided_quest_id: String = "", divine_guidance_modifier: float = 0.0) -> Dictionary:
 	var hard_filter_limit: float = maxf(0.0, hero_power) * HARD_FILTER_RATIO
 	var eligible_quests: Array[Dictionary] = []
 
@@ -86,6 +86,8 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			greed_modifier = HeroTraitsScript.GREED_MAX_MODIFIER * float(quest_definition.gold_reward - minimum_reward) / float(maximum_reward - minimum_reward)
 
 		var divine_modifier: float = 0.0
+		if not guided_quest_id.is_empty() and quest_definition.id == guided_quest_id:
+			divine_modifier = divine_guidance_modifier
 
 		var quest_score: float = (
 			base_attractiveness

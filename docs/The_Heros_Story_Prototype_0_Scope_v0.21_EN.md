@@ -775,6 +775,8 @@ The god uses one resource:
 
 > **100 energy maximum**
 
+Prototype 0 starts with **100 energy**.
+
 ### 12.1. Energy Recovery
 
 Canonical rule:
@@ -826,7 +828,7 @@ Cooldown:
 > **30 world ticks**  
 > *(approximately 5 minutes at normal speed)*
 
-Because combat is calculated entirely within one world tick, healing cannot intervene in a fight that is already being internally resolved. It may be used between combat calculations and in other living hero states.
+Divine healing may be used during live combat. It restores the active `CombatSession` hero HP immediately between resolved strikes; outside combat it restores normal HeroState HP. It remains unavailable while dead or already at full HP.
 
 ### 12.4. Combat Buff
 

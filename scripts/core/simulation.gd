@@ -6,6 +6,7 @@ const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const GodStateScript = preload("res://scripts/god/god_state.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const StatResolverScript = preload("res://scripts/hero/stat_resolver.gd")
 const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd")
@@ -40,6 +41,7 @@ var combat_simulator = CombatSimulatorScript.new()
 var quest_runner
 var quest_pool
 var quest_evaluator = QuestEvaluatorScript.new()
+var god_state
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
@@ -49,6 +51,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	autonomous_quest_choice = initial_quest_definition == null
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
+	god_state = GodStateScript.new()
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	hero_state.traits = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
@@ -145,13 +148,16 @@ func get_combat_results(mob_id: String) -> Dictionary:
 	return combat_results_by_mob.get(mob_id, {}).duplicate()
 
 func get_current_combat_results() -> Dictionary:
+	if quest_runner == null or quest_runner.quest_definition == null or quest_runner.quest_definition.mob_definition == null:
+		return {}
 	return get_combat_results(quest_runner.quest_definition.mob_definition.id)
 
 func choose_next_quest() -> bool:
 	if not autonomous_quest_choice:
 		return true
 
-	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power(), hero_state.traits)
+	var guided_quest_id: String = god_state.consume_quest_guidance()
+	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power(), hero_state.traits, guided_quest_id, GodStateScript.QUEST_GUIDANCE_MODIFIER)
 	var selected_quest = last_quest_selection.get("selected_quest")
 	if selected_quest == null:
 		return false
@@ -164,7 +170,7 @@ func get_active_combat_world_tick() -> int:
 
 func start_combat() -> void:
 	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, quest_runner.quest_definition.mob_definition.category)
-	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier)
+	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier, god_state.get_combat_attack_bonus())
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
 
 func advance_active_combat(available_seconds: float) -> float:
@@ -175,6 +181,7 @@ func advance_active_combat(available_seconds: float) -> float:
 	var consumed_seconds: float = active_combat_session.elapsed_seconds - previous_elapsed_seconds
 	if active_combat_session.is_finished:
 		var combat_result = active_combat_session.get_result()
+		god_state.consume_combat_buff_fight()
 		var fought_mob_definition: Resource = quest_runner.quest_definition.mob_definition
 		active_combat_session = null
 		record_combat_result(fought_mob_definition, combat_result.hero_won)
@@ -195,6 +202,7 @@ func advance_active_combat(available_seconds: float) -> float:
 	return consumed_seconds
 
 func on_world_tick_completed(completed_tick: int) -> void:
+	god_state.advance_world_tick()
 	if skip_quest_advance_on_completed_combat_tick:
 		skip_quest_advance_on_completed_combat_tick = false
 		return
@@ -209,6 +217,40 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		return
 	refresh_finished_quest_offer_if_needed(event)
 	debug_log.record_event(completed_tick, quest_narrator.describe(event))
+
+func use_instant_resurrection() -> bool:
+	if hero_state.loop_state != HeroState.DEAD_RESPAWNING:
+		return false
+	if not god_state.try_spend_resurrection(quest_runner.respawn_ticks_remaining):
+		return false
+	var event = quest_runner.force_resurrection(hero_state, combat_stats)
+	if event != null:
+		debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
+	return event != null
+
+func use_divine_healing() -> bool:
+	if hero_state.loop_state == HeroState.DEAD_RESPAWNING:
+		return false
+	var current_hp: float = get_current_hero_hp()
+	if current_hp >= combat_stats.max_hp or not god_state.try_activate_healing():
+		return false
+	var healed_hp: float = minf(combat_stats.max_hp, current_hp + combat_stats.max_hp * 0.50)
+	if active_combat_session != null:
+		active_combat_session.hero_remaining_hp = healed_hp
+	else:
+		hero_state.current_hp = healed_hp
+	return true
+
+func use_combat_buff() -> bool:
+	return god_state.try_activate_combat_buff()
+
+func guide_hero_to_quest(quest_id: String) -> bool:
+	if not autonomous_quest_choice:
+		return false
+	for quest in quest_pool.get_available_quests():
+		if quest.id == quest_id:
+			return god_state.try_set_quest_guidance(quest_id)
+	return false
 
 func refresh_finished_quest_offer_if_needed(event) -> void:
 	if not autonomous_quest_choice:

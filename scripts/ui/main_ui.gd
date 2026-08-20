@@ -2,6 +2,7 @@ extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const GodStateScript = preload("res://scripts/god/god_state.gd")
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation = SimulationScript.new(simulation_seed, null)
 var time_progress_bar: ProgressBar
@@ -11,6 +12,13 @@ var opponent_details_label: Label
 var combat_statistics_label: Label
 var log_text_edit: TextEdit
 var speed_buttons: Dictionary = {}
+var god_panel: PanelContainer
+var god_energy_bar: ProgressBar
+var god_energy_label: Label
+var god_status_label: Label
+var divine_healing_button: Button
+var combat_buff_button: Button
+var instant_resurrection_button: Button
 
 func _ready() -> void:
 	create_background()
@@ -18,6 +26,7 @@ func _ready() -> void:
 	create_hero_panel()
 	create_opponent_panel()
 	create_combat_statistics_panel()
+	create_god_panel()
 	create_tick_indicator()
 	create_narrative_panel()
 	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
@@ -25,6 +34,7 @@ func _ready() -> void:
 	update_hero_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
+	update_god_panel()
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
@@ -33,6 +43,7 @@ func _process(delta: float) -> void:
 	update_hero_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
+	update_god_panel()
 
 func on_world_tick_completed(_completed_tick: int) -> void:
 	update_debug_log(simulation.debug_log.get_text())
@@ -159,6 +170,105 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.DEAD_RESPAWNING: return "Мёртв — тиков до возрождения: %d" % simulation.quest_runner.respawn_ticks_remaining
 		HeroState.RECOVERING_IN_CITY: return "Восстанавливается в городе"
 	return loop_state
+
+func create_god_panel() -> void:
+	god_panel = PanelContainer.new()
+	god_panel.name = "GodPanel"
+	god_panel.position = Vector2(380.0, 80.0)
+	god_panel.size = Vector2(520.0, 235.0)
+	add_child(god_panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 7)
+	god_panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "Влияние божества"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 20)
+	content.add_child(title)
+
+	god_energy_label = Label.new()
+	god_energy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(god_energy_label)
+
+	god_energy_bar = ProgressBar.new()
+	god_energy_bar.name = "GodEnergyBar"
+	god_energy_bar.max_value = GodStateScript.MAX_ENERGY
+	god_energy_bar.show_percentage = false
+	god_energy_bar.custom_minimum_size = Vector2(480.0, 28.0)
+	content.add_child(god_energy_bar)
+
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 6)
+	content.add_child(buttons)
+
+	divine_healing_button = Button.new()
+	divine_healing_button.name = "DivineHealingButton"
+	divine_healing_button.custom_minimum_size = Vector2(160.0, 58.0)
+	divine_healing_button.pressed.connect(on_divine_healing_pressed)
+	buttons.add_child(divine_healing_button)
+
+	combat_buff_button = Button.new()
+	combat_buff_button.name = "CombatBuffButton"
+	combat_buff_button.custom_minimum_size = Vector2(160.0, 58.0)
+	combat_buff_button.pressed.connect(on_combat_buff_pressed)
+	buttons.add_child(combat_buff_button)
+
+	instant_resurrection_button = Button.new()
+	instant_resurrection_button.name = "InstantResurrectionButton"
+	instant_resurrection_button.custom_minimum_size = Vector2(160.0, 58.0)
+	instant_resurrection_button.pressed.connect(on_instant_resurrection_pressed)
+	buttons.add_child(instant_resurrection_button)
+
+	god_status_label = Label.new()
+	god_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	god_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(god_status_label)
+
+func update_god_panel() -> void:
+	if god_panel == null:
+		return
+	var god = simulation.god_state
+	god_energy_bar.value = god.energy
+	god_energy_label.text = "Энергия: %.1f / %.0f" % [god.energy, GodStateScript.MAX_ENERGY]
+
+	var hero_is_dead: bool = simulation.hero_state.loop_state == HeroState.DEAD_RESPAWNING
+	var hero_is_full_hp: bool = simulation.get_current_hero_hp() >= simulation.combat_stats.max_hp
+	divine_healing_button.disabled = hero_is_dead or hero_is_full_hp or god.healing_cooldown_ticks > 0 or god.energy < GodStateScript.HEALING_COST
+	divine_healing_button.text = "Лечение\n10 энергии"
+	if god.healing_cooldown_ticks > 0:
+		divine_healing_button.text = "Лечение\nКД: %d" % god.healing_cooldown_ticks
+
+	combat_buff_button.disabled = god.combat_buff_fights_remaining > 0 or god.combat_buff_cooldown_ticks > 0 or god.energy < GodStateScript.COMBAT_BUFF_COST
+	combat_buff_button.text = "Благословение\n10 энергии"
+	if god.combat_buff_fights_remaining > 0:
+		combat_buff_button.text = "Благословение\nБоёв: %d" % god.combat_buff_fights_remaining
+	elif god.combat_buff_cooldown_ticks > 0:
+		combat_buff_button.text = "Благословение\nКД: %d" % god.combat_buff_cooldown_ticks
+
+	var resurrection_cost: float = god.get_resurrection_cost(simulation.quest_runner.respawn_ticks_remaining)
+	instant_resurrection_button.disabled = not hero_is_dead or simulation.quest_runner.respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
+	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
+
+	if god.combat_buff_fights_remaining > 0:
+		god_status_label.text = "Активно: +3 атаки, осталось боёв: %d" % god.combat_buff_fights_remaining
+	else:
+		god_status_label.text = "Лечение разрешено и во время боя."
+
+func on_divine_healing_pressed() -> void:
+	simulation.use_divine_healing()
+	update_hero_panel()
+	update_god_panel()
+
+func on_combat_buff_pressed() -> void:
+	simulation.use_combat_buff()
+	update_god_panel()
+
+func on_instant_resurrection_pressed() -> void:
+	simulation.use_instant_resurrection()
+	update_hero_panel()
+	update_god_panel()
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()

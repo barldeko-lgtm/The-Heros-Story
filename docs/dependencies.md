@@ -145,9 +145,14 @@ The diary remains separate and is not implemented as part of the death slice.
 
 It may read `QuestRunner.respawn_ticks_remaining` for the current developer-state label, but it does not decrement the timer or change HP/state.
 
-## Future god-resurrection hook
+## God-system core
 
-The current natural resurrection path establishes the shared post-resurrection contract:
+`scripts/god/god_state.gd` owns god energy, cooldowns, combat-buff charges, and pending quest guidance. `Simulation` owns command validation and coordination with hero, quest, and combat systems.
+
+Contracts:
+- energy starts/maxes at 100 and recovers +1 every 6 completed world ticks, including fight and resurrection ticks;
+- pause freezes recovery and cooldowns because no world ticks complete;
+- instant resurrection spends `RemainingRespawnTicks × 0.5`, bypasses the timer, and uses the shared post-resurrection contract:
 
 ```text
 resurrection
@@ -155,7 +160,10 @@ resurrection
 → RECOVERING_IN_CITY
 ```
 
-The future god system may bypass the remaining natural timer, but must not move resurrection logic into combat or UI.
+- healing cannot be used while dead or at full HP; during active combat it modifies live CombatSession HP rather than stale HeroState HP;
+- the combat buff adds +3 Attack before critical and trait multipliers and consumes one charge after every finished fight;
+- guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
+- UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
 
 ## Future loot hook
 
