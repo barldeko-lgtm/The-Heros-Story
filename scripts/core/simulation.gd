@@ -30,6 +30,7 @@ var time_scale: float = 1.0
 var simulation_seed: int = DEFAULT_SIMULATION_SEED
 var seeded_rng
 var hero_state
+var base_combat_stats
 var combat_stats
 var active_combat_session
 var skip_quest_advance_on_completed_combat_tick: bool = false
@@ -89,10 +90,11 @@ func set_time_scale(new_time_scale: float) -> void:
 	time_scale = new_time_scale
 
 func refresh_combat_stats() -> void:
-	combat_stats = stat_resolver.resolve(hero_state)
+	base_combat_stats = stat_resolver.resolve(hero_state, false)
+	combat_stats = stat_resolver.resolve(hero_state, true)
 
 func get_hero_power() -> float:
-	return power_calculator.calculate(combat_stats)
+	return power_calculator.calculate(base_combat_stats)
 
 func get_current_hero_hp() -> float:
 	if active_combat_session != null:
@@ -170,7 +172,7 @@ func get_active_combat_world_tick() -> int:
 
 func start_combat() -> void:
 	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, quest_runner.quest_definition.mob_definition.category)
-	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier, god_state.get_combat_attack_bonus())
+	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier)
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
 
 func advance_active_combat(available_seconds: float) -> float:
@@ -181,7 +183,7 @@ func advance_active_combat(available_seconds: float) -> float:
 	var consumed_seconds: float = active_combat_session.elapsed_seconds - previous_elapsed_seconds
 	if active_combat_session.is_finished:
 		var combat_result = active_combat_session.get_result()
-		god_state.consume_combat_buff_fight()
+		consume_combat_buff_fight()
 		var fought_mob_definition: Resource = quest_runner.quest_definition.mob_definition
 		active_combat_session = null
 		record_combat_result(fought_mob_definition, combat_result.hero_won)
@@ -242,7 +244,39 @@ func use_divine_healing() -> bool:
 	return true
 
 func use_combat_buff() -> bool:
-	return god_state.try_activate_combat_buff()
+	if not god_state.try_activate_combat_buff(get_combat_buff_fights_remaining() > 0):
+		return false
+	hero_state.active_effects.append({
+		"id": GodStateScript.COMBAT_BUFF_EFFECT_ID,
+		"attack_bonus": GodStateScript.COMBAT_BUFF_ATTACK_BONUS,
+		"fights_remaining": GodStateScript.COMBAT_BUFF_FIGHTS,
+	})
+	refresh_combat_stats()
+	return true
+
+func get_combat_buff_effect_index() -> int:
+	for index in hero_state.active_effects.size():
+		if hero_state.active_effects[index].get("id", "") == GodStateScript.COMBAT_BUFF_EFFECT_ID:
+			return index
+	return -1
+
+func get_combat_buff_fights_remaining() -> int:
+	var effect_index := get_combat_buff_effect_index()
+	if effect_index < 0:
+		return 0
+	return int(hero_state.active_effects[effect_index].get("fights_remaining", 0))
+
+func consume_combat_buff_fight() -> void:
+	var effect_index := get_combat_buff_effect_index()
+	if effect_index < 0:
+		return
+	var effect: Dictionary = hero_state.active_effects[effect_index]
+	effect["fights_remaining"] = maxi(0, int(effect.get("fights_remaining", 0)) - 1)
+	if effect["fights_remaining"] <= 0:
+		hero_state.active_effects.remove_at(effect_index)
+	else:
+		hero_state.active_effects[effect_index] = effect
+	refresh_combat_stats()
 
 func guide_hero_to_quest(quest_id: String) -> bool:
 	if not autonomous_quest_choice:

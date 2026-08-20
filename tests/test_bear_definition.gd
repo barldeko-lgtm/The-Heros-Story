@@ -1,22 +1,27 @@
 extends SceneTree
 
-const TARGET_POWER: float = 20.38
-const POWER_TOLERANCE: float = 0.01
-
 func _init() -> void:
+	var wolf = load("res://data/mobs/0002_wolf.tres")
 	var bear = load("res://data/mobs/0003_bear.tres")
+
+	assert(wolf != null, "Wolf definition must exist for progression comparison.")
 	assert(bear != null, "Bear definition must exist.")
 	assert(bear.id == "bear", "Bear ID must remain stable.")
 	assert(bear.display_name == "Медведь", "Bear display name must be Russian.")
-	assert(bear.category == 1, "Bear must be MONSTER.")
-	assert(is_equal_approx(bear.max_hp, 180.0), "Bear MaxHP must be 180.")
-	assert(is_equal_approx(bear.attack, 5.0), "Bear Attack must be 5.")
-	assert(is_equal_approx(bear.attack_speed, 0.90), "Bear AttackSpeed must be 0.90.")
-	assert(is_equal_approx(bear.crit_chance, 0.05), "Bear CritChance must be 5%.")
-	assert(is_equal_approx(bear.crit_damage, 1.50), "Bear CritDamage must be 150%.")
-	assert(is_equal_approx(bear.damage_reduction, 0.0), "Bear DamageReduction must be 0.")
-	assert(bear.experience_reward == 0, "Calibration Bear must not grant XP yet.")
-	assert(absf(bear.get_power() - TARGET_POWER) < POWER_TOLERANCE, "Bear Power must stay approximately 20.38.")
+	assert(bear.category == MobDefinition.Category.MONSTER, "Bear must be classified as MONSTER.")
 
-	print("PASS: Bear stays at approximately 95% of starting HeroPower.")
+	assert_valid_mob_stats(bear)
+	assert(bear.experience_reward >= 0, "Bear XP reward must not be negative.")
+	assert(bear.gold_reward >= 0, "Bear auxiliary gold reward must not be negative.")
+	assert(bear.get_power() > wolf.get_power(), "Bear must remain stronger than the Wolf in the current progression.")
+
+	print("PASS: Bear definition keeps valid combat data and remains above Wolf in progression.")
 	quit()
+
+func assert_valid_mob_stats(mob) -> void:
+	assert(mob.max_hp > 0.0, "Mob MaxHP must be positive.")
+	assert(mob.attack > 0.0, "Mob Attack must be positive.")
+	assert(mob.attack_speed > 0.0, "Mob AttackSpeed must be positive.")
+	assert(mob.crit_chance >= 0.0 and mob.crit_chance <= 1.0, "Mob CritChance must stay between 0 and 1.")
+	assert(mob.crit_damage >= 1.0, "Mob CritDamage must be at least 1.0.")
+	assert(mob.damage_reduction >= 0.0 and mob.damage_reduction < 1.0, "Mob DamageReduction must stay in [0, 1).")

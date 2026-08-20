@@ -41,13 +41,24 @@ func test_combat_buff() -> void:
 	var simulation = SimulationScript.new(1003, null)
 	simulation.hero_state.traits.clear()
 	simulation.combat_stats.crit_chance = 0.0
+	var base_attack: float = simulation.base_combat_stats.attack
+	var base_power: float = simulation.get_hero_power()
 	assert(simulation.choose_next_quest(), "Combat-buff test requires one eligible quest offer.")
 	assert(simulation.use_combat_buff(), "Combat buff must activate through Simulation.")
+	assert(simulation.get_combat_buff_fights_remaining() == 5, "Combat buff charges must live in HeroState.active_effects.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, base_attack), "Temporary buff must not change base Attack used by UI and HeroPower.")
+	assert(is_equal_approx(simulation.combat_stats.attack, base_attack + 3.0), "StatResolver must add the active +3 Attack effect to combat CombatStats.")
+	assert(is_equal_approx(simulation.get_hero_power(), base_power), "Temporary combat buff must not affect HeroPower or Hard Filter.")
+	simulation.combat_stats.crit_chance = 0.0
 	simulation.start_combat()
 	var first_attack_time: float = simulation.active_combat_session.hero_next_attack_time
 	var actions: Array = simulation.active_combat_session.advance(first_attack_time)
 	assert(not actions.is_empty() and actions[0].attacker_id == "hero", "The buff test must observe the first hero strike.")
-	assert(is_equal_approx(actions[0].damage, simulation.combat_stats.attack + 3.0), "Combat buff must add exactly 3 Attack to actual fight damage.")
+	assert(is_equal_approx(actions[0].damage, base_attack + 3.0), "Combat must use StatResolver output without a separate CombatSession Attack bonus.")
+	for _fight in 5:
+		simulation.consume_combat_buff_fight()
+	assert(simulation.get_combat_buff_fights_remaining() == 0, "Five completed fights must remove the active effect.")
+	assert(is_equal_approx(simulation.combat_stats.attack, base_attack), "CombatStats must return to base Attack when the effect expires.")
 
 func test_quest_guidance() -> void:
 	var simulation = SimulationScript.new(1004, null)

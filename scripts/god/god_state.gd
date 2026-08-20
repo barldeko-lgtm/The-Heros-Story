@@ -12,6 +12,7 @@ const COMBAT_BUFF_COST: float = 10.0
 const COMBAT_BUFF_COOLDOWN_TICKS: int = 120
 const COMBAT_BUFF_FIGHTS: int = 5
 const COMBAT_BUFF_ATTACK_BONUS: float = 3.0
+const COMBAT_BUFF_EFFECT_ID: String = "divine_combat_blessing"
 const QUEST_GUIDANCE_COST: float = 5.0
 const QUEST_GUIDANCE_COOLDOWN_TICKS: int = 360
 const QUEST_GUIDANCE_MODIFIER: float = 0.20
@@ -21,7 +22,7 @@ var energy: float = STARTING_ENERGY
 var energy_recovery_tick_progress: int = 0
 var healing_cooldown_ticks: int = 0
 var combat_buff_cooldown_ticks: int = 0
-var combat_buff_fights_remaining: int = 0
+
 var quest_guidance_cooldown_ticks: int = 0
 var guided_quest_id: String = ""
 
@@ -41,18 +42,11 @@ func try_activate_healing() -> bool:
 	healing_cooldown_ticks = HEALING_COOLDOWN_TICKS
 	return true
 
-func try_activate_combat_buff() -> bool:
-	if combat_buff_cooldown_ticks > 0 or combat_buff_fights_remaining > 0 or not spend_energy(COMBAT_BUFF_COST):
+func try_activate_combat_buff(effect_is_active: bool) -> bool:
+	if combat_buff_cooldown_ticks > 0 or effect_is_active or not spend_energy(COMBAT_BUFF_COST):
 		return false
 	combat_buff_cooldown_ticks = COMBAT_BUFF_COOLDOWN_TICKS
-	combat_buff_fights_remaining = COMBAT_BUFF_FIGHTS
 	return true
-
-func get_combat_attack_bonus() -> float:
-	return COMBAT_BUFF_ATTACK_BONUS if combat_buff_fights_remaining > 0 else 0.0
-
-func consume_combat_buff_fight() -> void:
-	combat_buff_fights_remaining = maxi(0, combat_buff_fights_remaining - 1)
 
 func try_set_quest_guidance(quest_id: String) -> bool:
 	if quest_id.is_empty() or quest_guidance_cooldown_ticks > 0 or not spend_energy(QUEST_GUIDANCE_COST):

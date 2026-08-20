@@ -48,7 +48,7 @@ Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible start
 Owns XP and Warrior level growth.
 
 ### `scripts/hero/stat_resolver.gd`
-Builds final `CombatStats`.
+Builds stable base stats and effective combat stats from the same sources. Effective stats include generic bonuses from `HeroState.active_effects`; base stats intentionally exclude finite temporary buffs for HeroPower/Hard Filter.
 
 ## Combat
 
@@ -81,10 +81,10 @@ After a successful turn-in or a fatal cancellation followed by city recovery, on
 ## God system
 
 ### `scripts/god/god_state.gd`
-Owns energy, six-tick recovery progress, ability cooldowns, combat-buff charges, quest guidance, and resurrection energy cost. `Simulation` validates world/hero state and applies each command to its owning gameplay system.
+Owns energy, six-tick recovery progress, ability cooldowns, quest guidance, and resurrection energy cost. The active blessing and its remaining fights live in `HeroState.active_effects`; `Simulation` validates commands and coordinates their owning systems.
 
 ### `tests/test_god_state.gd`
-Protects energy, recovery, cooldowns, combat charges, guidance consumption, and resurrection cost.
+Protects energy, recovery, cooldown activation rules, guidance consumption, and resurrection cost.
 
 ### `tests/test_god_abilities_integration.gd`
 Protects Simulation integration for healing, instant resurrection, +3 Attack combat buff, and one-selection DivineModifier.
@@ -150,7 +150,12 @@ Displays:
 - current death-respawn countdown through the hero state label;
 - fixed bottom-right cumulative combat-statistics panel.
 
-The god panel updates energy, cooldowns, buff charges, resurrection cost, and button availability every frame. Quest-guidance controls are intentionally deferred.
+The god panel updates energy, cooldowns, buff charges, resurrection cost, and button availability every frame. Active combat blessing displays its remaining fights and already-running cooldown together. Quest-guidance controls are intentionally deferred.
+
+Debug-log updates scroll to the final wrapped line after UI layout completes rather than using the raw logical line count.
+
+### `tests/test_debug_log_autoscroll.gd`
+Protects automatic scrolling to the actual bottom for long wrapped log entries.
 
 ### `tests/test_god_ui.gd`
 Protects god-panel placement, energy display, startup safety, and state-based availability of healing, blessing, and resurrection.

@@ -388,15 +388,17 @@ Power must be validated through large batches of automated fights. If equal Powe
 
 ### 5.4. Power for Quest Selection
 
-For Prototype 0, quest selection uses only the hero’s **full calculated strength**.
+For Prototype 0, quest selection uses the hero’s **base persistent calculated strength at full HP**.
 
-> `HeroPower = Power(MaxHP, FinalCombatStats)`
+> `HeroPower = Power(MaxHP, BaseCombatStats)`
 
 Hard Filter always compares:
 
-> **full hero strength ↔ full mob strength**
+> **base persistent hero strength ↔ full mob strength**
 
 The hero’s current HP **does not reduce HeroPower for quest selection**.
+
+Temporary finite buffs such as the five-fight divine `+3 Attack`, and conditional Noble/Dishonorable damage bonuses, do not increase HeroPower or change Hard Filter. Their effects are shown separately in UI and applied only to actual combat.
 
 This is intentional: the hero evaluates whether they are capable of defeating such an opponent in their normal full condition, rather than evaluating a temporary injury.
 
@@ -1527,6 +1529,13 @@ Future effects
 - CritDamage;
 - DamageReduction;
 - other future combat parameters.
+
+`StatResolver` may produce two explicit views from the same sources:
+
+- `BaseCombatStats` — persistent stats for HeroPower, Hard Filter, and the stable primary UI values;
+- effective `CombatStats` — base stats plus `HeroState.active_effects`, used by actual combat.
+
+The divine five-fight `+3 Attack` must exist as an active effect and must never be injected directly inside CombatSession. Conditional trait damage remains a separately displayed combat-only multiplier and is intentionally excluded from HeroPower.
 
 Then:
 

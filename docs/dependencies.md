@@ -147,7 +147,7 @@ It may read `QuestRunner.respawn_ticks_remaining` for the current developer-stat
 
 ## God-system core
 
-`scripts/god/god_state.gd` owns god energy, cooldowns, combat-buff charges, and pending quest guidance. `Simulation` owns command validation and coordination with hero, quest, and combat systems.
+`scripts/god/god_state.gd` owns god energy, cooldowns, and pending quest guidance. `HeroState.active_effects` owns the active blessing and remaining fights. `Simulation` owns command validation and coordination with hero, quest, stats, and combat systems.
 
 Contracts:
 - energy starts/maxes at 100 and recovers +1 every 6 completed world ticks, including fight and resurrection ticks;
@@ -161,7 +161,10 @@ resurrection
 ```
 
 - healing cannot be used while dead or at full HP; during active combat it modifies live CombatSession HP rather than stale HeroState HP;
-- the combat buff adds +3 Attack before critical and trait multipliers and consumes one charge after every finished fight;
+- combat blessing creates a generic `+3 Attack` active effect; `StatResolver` includes it in effective CombatStats, while base CombatStats/HeroPower remain unchanged;
+- CombatSession receives ready-made effective CombatStats and must not accept a separate flat Attack bonus;
+- the active blessing consumes one HeroState effect charge after every finished fight and refreshes resolved stats when changed or removed;
+- Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
 - UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
 

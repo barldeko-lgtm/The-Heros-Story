@@ -58,3 +58,10 @@ static func get_display_names(traits: Array[String]) -> String:
 	for trait_id in traits:
 		names.append(get_display_name(trait_id))
 	return ", ".join(names)
+
+static func get_conditional_damage_bonus_text(traits: Array[String]) -> String:
+	if traits.has(NOBLE):
+		return "+10% урона монстрам"
+	if traits.has(DISHONORABLE):
+		return "+10% урона гуманоидам"
+	return ""

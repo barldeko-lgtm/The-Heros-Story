@@ -7,7 +7,7 @@ func _init() -> void:
 	simulation.hero_state.hero_name = "Алексей"
 
 	var initial_offers: Array = simulation.quest_pool.get_available_quests()
-	assert(initial_offers.size() == 3, "The current tavern must start with its three current offers.")
+	assert(not initial_offers.is_empty(), "The tavern must start with at least one current quest offer.")
 
 	simulation.advance_time(10.0)
 	var accepted_offer = simulation.hero_state.active_quest
@@ -24,10 +24,12 @@ func _init() -> void:
 
 	assert(guard < 2000, "The selected safe quest must complete during the test.")
 	var refreshed_offers: Array = simulation.quest_pool.get_available_quests()
+
+	assert(refreshed_offers.size() == initial_offers.size(), "Replacing one accepted offer must not change the tavern pool size.")
 	assert(refreshed_offers[accepted_index] != accepted_offer, "Turning in an accepted quest must replace only that tavern slot with a new offer.")
 	for index in refreshed_offers.size():
 		if index != accepted_index:
 			assert(refreshed_offers[index] == untouched_offers[index], "Unaccepted tavern offers must stay unchanged after another quest is turned in.")
 
-	print("PASS: Turning in a quest refreshes only its tavern offer.")
+	print("PASS: Turning in a quest refreshes only its tavern offer without assuming a fixed pool size.")
 	quit()

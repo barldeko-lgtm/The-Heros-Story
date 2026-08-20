@@ -39,7 +39,7 @@ Still missing from the current build:
 
 ## God-system core
 
-`scripts/god/god_state.gd` owns 100 maximum/starting energy, +1 energy per 6 world ticks, ability cooldowns, five combat-buff charges, and one pending guided quest id.
+`scripts/god/god_state.gd` owns 100 maximum/starting energy, +1 energy per 6 world ticks, ability cooldowns, and one pending guided quest id. The active five-fight blessing itself lives in `HeroState.active_effects` as a real stat source.
 
 `Simulation` currently exposes all four approved commands to future UI:
 - instant resurrection at `RemainingRespawnTicks × 0.5` energy;
@@ -94,6 +94,12 @@ HeroState + HeroProgression
 → StatResolver
 → CombatStats
 ```
+
+`StatResolver` now produces:
+- stable `BaseCombatStats` for primary UI values, HeroPower, and Hard Filter;
+- effective `CombatStats` including active temporary effects for actual combat.
+
+The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
 After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
 
@@ -218,6 +224,8 @@ Retention is tick-based rather than line-based:
 - all start/action/result lines from one fight belong to the single world tick consumed by that fight;
 - therefore a verbose fight still counts as exactly one tick for log retention.
 
+The UI defers its scroll update until TextEdit wrapping/layout is complete, so every new log entry remains visible at the actual bottom without manual scrolling.
+
 ## UI
 
 Current layout:
@@ -233,6 +241,8 @@ The hero panel displays HP with one decimal place and now shows:
 The opponent panel is populated only during active combat.
 
 God-panel button availability follows gameplay state, energy, cooldowns, active buff charges, current HP, and death/respawn state. Instant resurrection is disabled until the hero dies; its button displays the current dynamic energy cost.
+
+Combat blessing starts its 120-tick cooldown immediately on use. While the five-fight effect remains active, the UI displays both independent counters (`Боёв` and `КД`) at the same time.
 
 A separate panel in the bottom-right corner continuously shows cumulative combat count, wins, losses, and winrate for the current quest mob.
 

@@ -53,7 +53,16 @@ func on_debug_log_text_changed(log_text: String) -> void:
 
 func update_debug_log(log_text: String) -> void:
 	log_text_edit.text = log_text
-	log_text_edit.scroll_vertical = log_text_edit.get_line_count()
+	call_deferred("scroll_debug_log_to_bottom")
+
+func scroll_debug_log_to_bottom() -> void:
+	if log_text_edit == null or not is_inside_tree():
+		return
+	await get_tree().process_frame
+	if not is_instance_valid(log_text_edit):
+		return
+	var scroll_bar: VScrollBar = log_text_edit.get_v_scroll_bar()
+	scroll_bar.value = scroll_bar.max_value
 
 func create_background() -> void:
 	var background := ColorRect.new()
@@ -152,12 +161,22 @@ func update_combat_statistics_panel() -> void:
 
 func update_hero_panel() -> void:
 	var hero = simulation.hero_state
-	var stats = simulation.combat_stats
+	var stats = simulation.base_combat_stats
 	var active_quest_name: String = "—"
 	if hero.active_quest != null:
 		active_quest_name = hero.active_quest.display_name
 	var trait_names: String = HeroTraitsScript.get_display_names(hero.traits)
-	hero_details_label.text = "%s\nВоин\nЧерты: %s\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+	var bonus_lines: PackedStringArray = []
+	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(hero.traits)
+	if not trait_bonus_text.is_empty():
+		bonus_lines.append("Бонус черты: %s" % trait_bonus_text)
+	var buff_fights: int = simulation.get_combat_buff_fights_remaining()
+	if buff_fights > 0:
+		bonus_lines.append("Божественное благословение: +3 Attack (%d боёв)" % buff_fights)
+	var bonuses_text: String = ""
+	if not bonus_lines.is_empty():
+		bonuses_text = "\n" + "\n".join(bonus_lines)
+	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, hero.strength, hero.agility, hero.intelligence, stats.attack, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:
@@ -240,10 +259,11 @@ func update_god_panel() -> void:
 	if god.healing_cooldown_ticks > 0:
 		divine_healing_button.text = "Лечение\nКД: %d" % god.healing_cooldown_ticks
 
-	combat_buff_button.disabled = god.combat_buff_fights_remaining > 0 or god.combat_buff_cooldown_ticks > 0 or god.energy < GodStateScript.COMBAT_BUFF_COST
+	var combat_buff_fights_remaining: int = simulation.get_combat_buff_fights_remaining()
+	combat_buff_button.disabled = combat_buff_fights_remaining > 0 or god.combat_buff_cooldown_ticks > 0 or god.energy < GodStateScript.COMBAT_BUFF_COST
 	combat_buff_button.text = "Благословение\n10 энергии"
-	if god.combat_buff_fights_remaining > 0:
-		combat_buff_button.text = "Благословение\nБоёв: %d" % god.combat_buff_fights_remaining
+	if combat_buff_fights_remaining > 0:
+		combat_buff_button.text = "Благословение\nБоёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
 	elif god.combat_buff_cooldown_ticks > 0:
 		combat_buff_button.text = "Благословение\nКД: %d" % god.combat_buff_cooldown_ticks
 
@@ -251,8 +271,8 @@ func update_god_panel() -> void:
 	instant_resurrection_button.disabled = not hero_is_dead or simulation.quest_runner.respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
 	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
 
-	if god.combat_buff_fights_remaining > 0:
-		god_status_label.text = "Активно: +3 атаки, осталось боёв: %d" % god.combat_buff_fights_remaining
+	if combat_buff_fights_remaining > 0:
+		god_status_label.text = "Активно: +3 атаки | Боёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
 	else:
 		god_status_label.text = "Лечение разрешено и во время боя."
 

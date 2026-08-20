@@ -16,12 +16,9 @@ func _init() -> void:
 	assert(is_equal_approx(god_state.energy, 91.0), "God energy must recover by one every six world ticks.")
 	assert(god_state.healing_cooldown_ticks == 24, "Cooldowns must decrease on every world tick.")
 
-	assert(god_state.try_activate_combat_buff(), "Combat buff must activate with enough energy and no active copy.")
-	assert(god_state.combat_buff_fights_remaining == 5, "Combat buff must last for five fights.")
+	assert(god_state.try_activate_combat_buff(false), "Combat buff must activate with enough energy and no active copy.")
 	assert(god_state.combat_buff_cooldown_ticks == 120, "Combat buff must start a 120-tick cooldown.")
-	for _fight in 5:
-		god_state.consume_combat_buff_fight()
-	assert(god_state.combat_buff_fights_remaining == 0, "Every completed fight must consume one buff charge.")
+	assert(not god_state.try_activate_combat_buff(true), "GodState must reject activation while HeroState already owns the active effect.")
 
 	assert(god_state.try_set_quest_guidance("wolf_hunt"), "Quest guidance must accept one available quest ID.")
 	assert(god_state.quest_guidance_cooldown_ticks == 360, "Quest guidance must start a 360-tick cooldown.")
@@ -33,5 +30,5 @@ func _init() -> void:
 	assert(god_state.try_spend_resurrection(20), "Instant resurrection must spend energy when affordable.")
 	assert(is_equal_approx(god_state.energy, energy_before_resurrection - 10.0), "Instant resurrection must deduct half the remaining ticks as energy.")
 
-	print("PASS: GodState owns energy, recovery, cooldowns, buff charges, guidance, and resurrection cost.")
+	print("PASS: GodState owns energy, recovery, cooldowns, guidance, and resurrection cost.")
 	quit()
