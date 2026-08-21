@@ -54,6 +54,32 @@ The player should not have to manually service every step of this process.
 
 The systems responsible for travel, combat, equipment, economy, personality, world state, and divine influence may modify individual stages of this loop without taking ownership of the loop itself.
 
+## The Base Loop Should Not Feel Routine
+
+The hero needs a clear and repeatable adventuring structure, but the game should actively minimize the feeling that the same sequence is simply repeating.
+
+The underlying pattern may remain familiar:
+
+- take an activity or quest;
+- prepare;
+- set out;
+- encounter danger;
+- complete the objective;
+- return;
+- receive the reward;
+- deal with loot and equipment;
+- decide what to do next.
+
+However, the player should not constantly experience:
+
+> the same quest → the same journey → the same fight → the same return.
+
+Even when the internal structure is similar, individual adventures should differ through circumstances, decisions, risk, consequences, and the way this particular hero responds to them.
+
+> **The base loop should give the game structure without turning the hero’s life into a conveyor belt of identical actions.**
+
+The game should not fight repetition by adding dozens of equally important minor everyday chores. Variety should come from within adventures and from meaningful systems layered on top of the base loop rather than from meaningless busywork.
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
