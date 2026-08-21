@@ -104,6 +104,23 @@ Damage, armor, speed, critical hits, dodge, accuracy, and similar values are tre
 
 The exact list of secondary stats, formulas, and even the final set of primary attributes may change as the combat system develops.
 
+## Sources of Permanent Hero Power
+
+The hero’s permanent combat strength comes from several main sources:
+
+1. **level and attributes**;
+2. **class, abilities, and their development**;
+3. **equipment**;
+4. **specialization and acquired combat traits**.
+
+The relative importance of these sources may change over the course of the hero’s development. Early on, level and basic attributes may matter more, while later equipment, abilities, specialization, and individual traits may become increasingly important.
+
+Temporary effects, consumable items, and divine assistance may strongly influence a particular fight, but they are not considered part of the hero’s permanent power.
+
+> **The hero’s strength should reflect more than a single level number; it should reflect the path of their development.**
+
+The exact contribution of each source may change during development and balance work.
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
