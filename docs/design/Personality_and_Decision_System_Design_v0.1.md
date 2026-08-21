@@ -38,6 +38,24 @@ Personality traits should bias the hero’s choices without dictating them compl
 
 The goal is for the hero’s behaviour to become recognizable and internally consistent over time without becoming fully predictable.
 
+## Personality Traits Are Not Good or Bad
+
+Personality traits describe the hero’s tendencies and should primarily shape behaviour rather than act as a list of bonuses and penalties.
+
+The preferred model uses several opposing scales, for example:
+
+- caution ↔ risk-taking;
+- mercy ↔ cruelty;
+- honesty ↔ cunning;
+- altruism ↔ selfishness;
+- curiosity ↔ conservatism.
+
+Both ends of a scale should have advantages and drawbacks.
+
+> **A personality trait should create a style of life, not simply provide a green bonus or a red penalty.**
+
+The exact set of personality scales will be defined separately.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
