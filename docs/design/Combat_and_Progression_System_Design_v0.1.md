@@ -274,6 +274,20 @@ When developing each class further, it should be checked against these questions
 
 > **Each class should feel like a distinct way of fighting, not a different set of numbers and a different weapon image.**
 
+## Possible Group Content — Future Hypothesis
+
+In the future, the game may consider difficult activities in which the main hero temporarily joins other autonomous NPC heroes.
+
+These could include especially difficult dungeons, raids, or other events that are hard for one hero to handle alone.
+
+Such content could potentially make class differences and combat roles more meaningful while also creating relationships, shared history, rivalry, or other connections between heroes.
+
+However, a permanent party, control over other heroes, and group content are **not part of the confirmed core game** and must not be required for the basic gameplay loop.
+
+> **The game must first work and remain interesting around one autonomous hero.**
+
+This idea is not a commitment for early versions and may be revised or discarded entirely later.
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
