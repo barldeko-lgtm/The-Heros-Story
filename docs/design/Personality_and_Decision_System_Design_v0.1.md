@@ -80,6 +80,22 @@ Preferences should influence autonomous choices and may form or change through t
 
 A separate complex subsystem is not required at this stage. Preferences may use the same underlying decision-weight mechanisms as personality while remaining conceptually distinct.
 
+## General Decision-Making Model
+
+The autonomous hero should make decisions logically enough that the player can understand the reasons behind their behaviour, but the hero does not need to choose the same option every time under similar circumstances.
+
+For most recurring decisions, the current general structure is:
+
+> **hard filtering → base weights → modifiers → choice**
+
+First, the hero removes clearly unsuitable options. The remaining reasonable options then receive a base attractiveness that can be modified by the hero’s personality, preferences, current condition, world circumstances, and other relevant factors.
+
+The hero then chooses among the remaining options.
+
+> **The hero should choose reasonably without becoming an algorithm that always calculates one mathematically optimal answer.**
+
+The exact final selection method — probabilistic, deterministic, or mixed — is a working part of the system and may change through development and testing.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
