@@ -29,6 +29,16 @@ This document defines the world as an autonomous system that continues to create
 
 The world should generate meaningful circumstances, not simulate complexity merely for its own sake.
 
+## The World Exists Independently of the Hero
+
+The world should not be scenery that waits for the hero to act.
+
+While the hero is occupied with their own life, cities, factions, conflicts, events, and other world processes may develop independently. Opportunities may appear and disappear, and some events may resolve without the hero’s participation.
+
+The hero can influence the world, but is not the center of all its processes.
+
+Only changes capable of creating noticeable circumstances, opportunities, or consequences for the hero’s story should be simulated. World complexity is not a goal by itself.
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
