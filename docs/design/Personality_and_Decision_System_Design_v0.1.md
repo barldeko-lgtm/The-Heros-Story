@@ -68,6 +68,18 @@ Personality should be stable enough for the hero to remain recognizable, but fle
 
 The exact experiences, events, and conditions that change personality will be defined separately.
 
+## Personal Preferences
+
+Personality and preferences are related, but they are not the same thing.
+
+**Personality** describes how the hero tends to act: cautiously, boldly, honestly, selfishly, and so on.
+
+**Preferences** describe what the hero likes or dislikes: types of activities, combat styles, equipment, places, factions, or individual characters.
+
+Preferences should influence autonomous choices and may form or change through the hero’s background and lived experience.
+
+A separate complex subsystem is not required at this stage. Preferences may use the same underlying decision-weight mechanisms as personality while remaining conceptually distinct.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
