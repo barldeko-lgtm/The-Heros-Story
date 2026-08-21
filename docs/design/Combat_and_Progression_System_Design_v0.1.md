@@ -253,6 +253,27 @@ The player should be able to understand why the hero arrived at that specializat
 
 The exact specialization system and whether the deity can softly influence this choice will be defined separately.
 
+## Base Starting Classes
+
+The current set of starting classes consists of four archetypes:
+
+- **Warrior**;
+- **Archer**;
+- **Mage**;
+- **Rogue**.
+
+This set is sufficient as the game’s current base class structure. Exact abilities, resources, specializations, and complete class mechanics will be designed separately and may change during development.
+
+When developing each class further, it should be checked against these questions:
+
+1. How is its combat logic different?
+2. What does it usually do at the beginning of a fight?
+3. How does its behaviour change if the fight drags on?
+4. What resource, state, or condition causes it to change tactics?
+5. Can the class be recognized from the combat log without seeing its name?
+
+> **Each class should feel like a distinct way of fighting, not a different set of numbers and a different weapon image.**
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
