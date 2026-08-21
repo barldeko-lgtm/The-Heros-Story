@@ -120,6 +120,24 @@ The exact progression structure, resources, branches, and growth pace will be de
 
 > **The hero develops first. Deity progression should be built on top of the hero’s progression rather than overshadowing it.**
 
+## Passive Regeneration of Divine Power
+
+The main resource used for direct divine intervention **regenerates passively while the game is running and the simulation continues**.
+
+This supports the intended rhythm:
+
+> the hero lives independently for a while → the player returns to observe → some opportunity to intervene is available again.
+
+Divine power should give the player occasional opportunities to affect an important moment, but it should not become the main reason to return to the game.
+
+The main reason to check on the hero should remain:
+
+> **interest in what happened to the hero and who they are gradually becoming.**
+
+Later, regeneration speed or maximum capacity may be influenced by deity progression, deity traits, the deity’s or hero’s renown in the world, reputation, or other suitable systems.
+
+Such additional regeneration modifiers are not required for an early version and may be designed later.
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
