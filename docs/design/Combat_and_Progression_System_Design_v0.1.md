@@ -82,6 +82,28 @@ The exact way this information is presented will be defined separately.
 
 > **The player does not directly control the hero’s development, but should understand why the hero is developing in that direction.**
 
+## Base Attributes and Resources
+
+At the current design stage, the main developable hero attributes are:
+
+- **Strength**;
+- **Dexterity**;
+- **Intelligence**.
+
+These are the current working attributes used by the level-up growth system. The list is not considered permanently closed: additional primary attributes may be introduced later if they create a clear gameplay purpose rather than unnecessary complexity.
+
+Separate from those attributes are hero resources:
+
+- **HP / Health**;
+- **Stamina** — currently considered as a resource for travel and other actions outside combat;
+- **class resource** — for example Mana, Rage, or another class-specific mechanic.
+
+These resources do not have to be distributed like normal attributes. Their values may depend on level, class, primary attributes, equipment, abilities, or other systems.
+
+Damage, armor, speed, critical hits, dodge, accuracy, and similar values are treated as **secondary stats**. They may be derived from primary attributes, class, equipment, abilities, temporary effects, and other sources.
+
+The exact list of secondary stats, formulas, and even the final set of primary attributes may change as the combat system develops.
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
