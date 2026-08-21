@@ -76,6 +76,25 @@ At that moment, the hero considers divine influence together with personality, p
 
 Influence applied directly during the relevant choice may be slightly stronger. This rewards active observation without making constant player presence necessary.
 
+## Direct Divine Intervention
+
+In addition to soft influence, the player has access to rarer forms of direct intervention.
+
+These abilities consume a limited divine resource that regenerates slowly enough that direct assistance cannot be used in every ordinary fight.
+
+At the base stage, the main forms of intervention are expected to be:
+
+- **healing the hero**;
+- **a temporary combat blessing or empowerment**.
+
+Later deity progression may unlock additional forms of direct intervention.
+
+The hero should overcome ordinary difficulties independently. Divine power becomes especially valuable when a situation is genuinely important or dangerous.
+
+> **Direct intervention helps the hero in an exceptional moment, but does not replace the hero’s own strength during ordinary play.**
+
+The exact abilities, their costs, and their limitations will be defined separately.
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
