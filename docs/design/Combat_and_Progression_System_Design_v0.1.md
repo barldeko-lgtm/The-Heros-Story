@@ -161,6 +161,20 @@ During maturity, greater importance may shift toward equipment, rare items, abil
 
 The exact pace and boundary between these stages are provisional and may change during development.
 
+## Soft Cap
+
+The hero has a **soft cap** after which ordinary vertical progression gradually slows down without stopping completely.
+
+After reaching this stage, the hero may still gain levels, increase attributes, and continue developing class abilities, but each additional increase becomes less significant.
+
+The purpose of the soft cap is not to stop hero development. It is to gradually shift the main source of interest away from simple level and attribute growth toward equipment, abilities, specialization, the hero’s individual characteristics, and participation in the living world.
+
+The early stage should not feel like a long tutorial before the “real game.” World events and larger processes exist from the beginning; a young hero simply has far less ability to affect them.
+
+The exact level or conditions for reaching the soft cap, as well as the pace of progression beyond it, will be defined separately and may change during development.
+
+> **After the soft cap, the hero does not stop developing — what changes is which sources matter most for further growth.**
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
