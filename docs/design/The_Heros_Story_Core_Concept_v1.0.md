@@ -98,6 +98,14 @@ One of the main reasons to return should be curiosity about the diary: what the 
 
 The diary should not be a raw action log. Routine events should be summarized, while important decisions, consequences, discoveries, losses, and turning points should stand out.
 
+## Background Play, Not Offline Idle
+
+The hero and world continue to develop while the game is running, even when the player is not actively watching.
+
+If the application is fully closed, the simulation stops. The game is not intended to be a traditional offline-idle game where the hero continues living for hours or days while the application is not running.
+
+The main reward for time spent away from the game window is not accumulated resources, but the story that had time to happen.
+
 ## The Player Is a Patron, Not a Commander
 
 The player influences the hero in limited and primarily indirect ways.
