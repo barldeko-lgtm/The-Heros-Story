@@ -38,6 +38,18 @@ The hero’s past may influence, for example, their attitude toward risk, types 
 
 After the game begins, lived experiences and the hero’s own decisions can gradually change these initial tendencies.
 
+## Starting Class
+
+After the biography is created, the player directly chooses one of the hero’s basic starting classes: **Warrior, Archer, Mage, or Rogue**.
+
+The class defines the hero’s main combat archetype: available ways of fighting, characteristic skills, class resources, and suitable equipment.
+
+The class does not define the hero’s personality. Two heroes of the same class may become noticeably different because of their background, personality, preferences, development, and equipment they find.
+
+In the future, the biography may produce a **recommended starting class**. The player may accept that recommendation or manually choose any other class.
+
+Choosing a class different from the biography recommendation should not by itself be treated as a mistake or impose a penalty on the hero.
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
