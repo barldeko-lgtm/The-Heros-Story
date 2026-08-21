@@ -138,6 +138,28 @@ Later, regeneration speed or maximum capacity may be influenced by deity progres
 
 Such additional regeneration modifiers are not required for an early version and may be designed later.
 
+## Deity Personality — Optional Later Layer
+
+A separate initial choice such as:
+
+> “good deity / evil deity”
+
+is not required at the start of the game.
+
+If a deity-personality system later proves useful, the deity’s direction should gradually emerge from the player’s own actions.
+
+Possible influences may include:
+
+- mercy;
+- cruelty;
+- inclination toward war;
+- protection and patronage;
+- other directions to be defined later.
+
+In that case, deity personality should reflect **how the player tends to act** rather than an alignment label chosen in advance.
+
+This system is not required for the base game and may be designed later or never implemented.
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
