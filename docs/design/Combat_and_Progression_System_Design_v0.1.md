@@ -31,6 +31,18 @@ This document defines how the hero becomes stronger and how autonomous combat co
 
 Hero and enemy strength must remain comparable through one shared combat-stat and Power model. Equipment and temporary effects feed combat through resolved stats rather than special-case combat logic.
 
+## Overall Hero Level
+
+The hero has one overall level that represents their long-term development as an adventurer.
+
+By gaining experience, the hero increases this level and gradually becomes stronger. Level serves as one of the main axes of vertical character progression.
+
+The exact sources of experience and the rewards granted by each level will be defined separately.
+
+The game does not use a separate TES-like progression system for every weapon type simply through repeated use — for example, separate Sword, Axe, or Bow levels that rise only because the hero frequently uses that weapon.
+
+> **Hero development should create meaningful differences rather than accumulate dozens of secondary progression tracks.**
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
