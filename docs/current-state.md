@@ -18,9 +18,10 @@ Implemented:
 - death, 100-tick natural resurrection, and city recovery;
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
 - thirteen matching initial-city quest templates;
-- autonomous choice among the current quest resources;
+- all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
+- autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
-- doubled personality modifiers in QuestScore and 10% category damage for Noble/Dishonorable;
+- current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and 10% category damage for Noble/Dishonorable;
 - headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, and one-selection quest guidance;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
@@ -139,14 +140,15 @@ After the 100th respawn tick:
 
 Full loot loss is still only a future hook because QuestLoot/inventory do not exist yet.
 
-
 ## Current quest content and selection
 
 Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains only inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward.
 
-The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
+The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. With the current single-city content set this means all thirteen templates are present simultaneously. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
 
-Only the accepted quest offer is regenerated: after a successful turn-in it is immediately replaced in its same tavern slot; after a fatal cancellation it is replaced when the hero finishes city recovery and returns to quest choice. Other offers retain their rolled values.
+There is intentionally no 5–7-offer cap in the current one-city Prototype 0 build. Stronger offers may remain visible in the tavern while Hard Filter prevents the hero from considering them until their base persistent HeroPower is sufficient.
+
+Only the accepted quest offer is regenerated: after a successful turn-in it is immediately replaced in its same tavern slot from the same immutable template; after a fatal cancellation it is replaced when the hero finishes city recovery and returns to quest choice. Other offers retain their rolled values.
 
 At every `CHOOSING_QUEST` decision point:
 
@@ -159,7 +161,7 @@ At every `CHOOSING_QUEST` decision point:
 5. `EstimatedCostPerMob = 1 fight tick + RelativeRecoveryCost`;
 6. `EstimatedQuestTicks = Distance + MobCount × EstimatedCostPerMob + Distance + 1 turn-in tick`;
 7. `BaseAttractiveness = GoldReward / EstimatedQuestTicks`;
-8. Courage, Morality, and Greed modifiers are applied from the hero's current traits; DivineModifier remains `0`;
+8. Courage, Morality, and Greed modifiers are applied from the hero's current traits; if one current eligible quest is guided by the god, that offer receives `DivineModifier = +0.20` for this selection only; otherwise DivineModifier is `0`;
 9. the highest final `QuestScore` is selected with no roulette.
 
 The currently selected quest is then handed to `QuestRunner`, which remains responsible only for execution.
@@ -213,8 +215,6 @@ Death, natural resurrection, and city recovery use structured events rather than
 
 The diary remains unimplemented and receives no gameplay events yet.
 
-
-
 ## Debug log window
 
 The debug log retains only the last 100 world ticks.
@@ -258,7 +258,9 @@ Current coverage includes:
 - exact 100-tick natural resurrection;
 - resurrection at 1 HP;
 - city recovery to full HP;
-- retention of earlier XP/levels and no Gold for a failed quest.
-
+- retention of earlier XP/levels and no Gold for a failed quest;
+- generic validity/progression checks for the current Goblin, Wolf, and Bear tuning cards;
+- offer replacement without assuming a fixed tavern pool size;
+- god ability integration, including the `+0.20` one-selection quest guidance modifier.
 
 UI note: during active combat, the hero panel displays live CombatSession HP rather than only the last committed HeroState HP.

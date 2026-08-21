@@ -62,22 +62,24 @@ Current decision flow:
 
 ```text
 CHOOSING_QUEST
-→ QuestPool available quests
-→ Hard Filter: MobPower <= HeroPower × 0.95
+→ QuestPool current single-city offers
+→ Hard Filter: MobPower <= base persistent HeroPower × 0.95
 → WeakestAllowedMobPower among allowed quests
 → RelativeRecoveryCost = MobPower / WeakestAllowedMobPower
 → EstimatedCostPerMob = 1 + RelativeRecoveryCost
 → EstimatedQuestTicks = Distance × 2 + MobCount × EstimatedCostPerMob + 1
 → BaseAttractiveness = GoldReward / EstimatedQuestTicks
 → current Courage / Morality / Greed modifiers
-→ current DivineModifier = 0
+→ optional DivineModifier = +0.20 for the currently guided eligible offer, otherwise 0
 → strict highest QuestScore
 → selected QuestOffer assigned to QuestRunner
 → QuestRunner executes
 ```
 
 Contracts:
-- Hard Filter compares full HeroPower, not current injured HP;
+- Hard Filter uses full-HP **base persistent HeroPower**, not current injured HP and not temporary combat-only bonuses;
+- temporary finite effects such as the divine five-fight `+3 Attack` do not alter HeroPower or Hard Filter;
+- conditional Noble/Dishonorable +10% category damage does not alter HeroPower or Hard Filter;
 - mob count does not affect Hard Filter;
 - filtered-out quests never participate in QuestScore;
 - the weakest allowed mob is normalized to recovery cost `1`;
@@ -87,13 +89,17 @@ Contracts:
 - starting traits use the shared seeded RNG and opposing traits are mutually exclusive;
 - personality modifiers apply only after Hard Filter;
 - Noble deals 10% more actual damage to MONSTER and Dishonorable to HUMANOID;
+- quest guidance may add `+0.20` only to one current eligible offer for the next selection action and cannot bypass Hard Filter;
 - QuestEvaluator must not execute quests;
 - QuestRunner must not calculate Hard Filter or QuestScore;
 - UI must not choose quests;
 - changing `.tres` mob/quest tuning must not require changing selection code.
 
-`QuestPool` loads immutable reusable quest templates from `data/quests` and uses the shared seeded RNG to create current `QuestOffer` objects. Templates contain only inclusive ranges. Each offer owns rolled count, distance, and gold per mob; its total Gold is a derived value, always `MobCount × GoldPerMob`. After a successful turn-in, only that accepted offer is regenerated in the same slot. After fatal cancellation, its replacement waits until city recovery returns the hero to `CHOOSING_QUEST`. Unaccepted offers must retain their exact runtime values and identities.
+`QuestPool` loads immutable reusable quest templates from `data/quests` and uses the shared seeded RNG to create current `QuestOffer` objects. In the current one-city Prototype 0 build, every current initial-city template is exposed simultaneously; with the present content set this means 13 offers. Templates contain only inclusive ranges. Each offer owns rolled count, distance, and gold per mob; its total Gold is a derived value, always `MobCount × GoldPerMob`.
 
+There is no current 5–7-offer cap. Stronger offers remain in the single-city pool and are excluded from actual consideration by Hard Filter until the hero is strong enough.
+
+After a successful turn-in, only that accepted offer is regenerated from the same immutable template in the same slot. After fatal cancellation, its regeneration waits until city recovery returns the hero to `CHOOSING_QUEST`. Unaccepted offers must retain their exact runtime values and identities.
 
 ## Quest execution and death
 
@@ -141,7 +147,7 @@ The diary remains separate and is not implemented as part of the death slice.
 
 ## UI boundary
 
-`main_ui.gd` only displays simulation state.
+`main_ui.gd` only displays simulation state and sends commands through `Simulation`.
 
 It may read `QuestRunner.respawn_ticks_remaining` for the current developer-state label, but it does not decrement the timer or change HP/state.
 
@@ -166,6 +172,7 @@ resurrection
 - the active blessing consumes one HeroState effect charge after every finished fight and refreshes resolved stats when changed or removed;
 - Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
+- the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
 - UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
 
 ## Future loot hook
@@ -187,6 +194,9 @@ When it exists, death must clear only current-quest loot before entering the exi
 - 20% MaxHP city recovery;
 - full recovery before `CHOOSING_QUEST`.
 
+`tests/test_quest_offer_refresh_lifecycle.gd` protects replacement of only the accepted offer without assuming a fixed number of tavern slots.
+
+`tests/test_god_abilities_integration.gd` protects the one-selection `DivineModifier = +0.20` contract and the separation between base HeroPower and temporary combat effects.
 
 ## Combat validation telemetry
 
@@ -201,7 +211,6 @@ Contracts:
 
 `Simulation` may receive an explicit fixed quest for regression/development tests. Its default remains the existing Goblin quest. Passing `null` enables autonomous QuestPool selection; the developer UI now uses this autonomous mode.
 
-
 ## Debug-log retention
 
 Owner:
@@ -212,4 +221,3 @@ Contracts:
 - retention is based on world-tick ids, not entry count;
 - every line from one individual fight is tagged with the same upcoming world tick because one fight consumes exactly one world tick;
 - trimming log history must not affect simulation state or cumulative combat statistics.
-

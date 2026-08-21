@@ -441,11 +441,13 @@ A full mob armor system is not required for the first version; `DamageReduction 
 
 ## 7. Quest Pool
 
-Prototype 0 has one city / abstract tavern and approximately:
+Prototype 0 has one city / abstract tavern.
 
-> **5–7 available quests**
+For the current single-city Prototype 0 build, **all current initial-city quest templates are available simultaneously as tavern offers**. The current content set contains:
 
-at all times.
+> **13 available quest offers**
+
+There is no temporary 5–7-offer cap while Prototype 0 has only this one city. If multiple cities or a broader world are introduced later, offer distribution can be reconsidered then.
 
 Quests exist in the world as already available offers.
 
@@ -464,23 +466,23 @@ More varied quests, faction quests, reputation quests, and temporary quests caus
 
 ### 7.1. Pool Refresh
 
+The current single-city implementation keeps one runtime `QuestOffer` for each current quest template.
+
 After successful quest turn-in:
 
-1. the completed quest disappears;
-2. its slot is immediately filled by a new quest;
-3. the number of available offers remains approximately constant.
+1. the accepted offer disappears;
+2. the same tavern slot is regenerated from its immutable quest template using the shared seeded RNG;
+3. newly rolled mob count, distance, and gold-per-mob values may differ;
+4. every unaccepted offer keeps its existing rolled values and identity;
+5. the total number of available offers remains equal to the current template set.
 
-If the hero dies during a quest, that quest is considered canceled and also frees its slot; to keep the pool constant, the slot must be filled by a new quest.
+If the hero dies during a quest, that quest is considered canceled. Its accepted offer remains unchanged while the hero is dead and recovering, then that same slot is regenerated when the hero returns to `CHOOSING_QUEST` at full HP.
 
-The first code version does not need a fully designed quest generator in advance.
+The current implementation uses **13 test mob types** and **one simple combat quest template per mob type** in the single city.
 
-Implementation creates **5–7 test mob types** and **one simple quest per mob type**, so the test pool matches the accepted 5–7 quest range.
+Test quests differ by mob parameters, distance, number of enemies, and reward. Concrete numeric mob and quest cards are tuning data and may be adjusted during Prototype 0 testing without changing selection code.
 
-Test quests differ by mob parameters, distance, number of enemies, and reward. Exact numeric mob and quest cards are set while writing the first code version, then balanced from simulation results.
-
-After a quest is completed or canceled, its slot is filled again with an appropriate test quest so the pool remains functional.
-
-Any random variation, if used, must remain reproducible through the seed.
+Any random variation must remain reproducible through the shared seed.
 
 ---
 
@@ -718,7 +720,7 @@ When the hero reaches the quest location, the first fight begins without a separ
 
 A level gained in the middle of the quest affects the next fight.
 
-After quest turn-in, the hero receives the monetary reward, and the completed quest slot is replaced with a new quest.
+After quest turn-in, the hero receives the monetary reward, and the completed quest slot is replaced with a new quest offer rolled from the same template.
 
 ---
 
@@ -907,7 +909,7 @@ At minimum it shows:
 
 Example:
 
-> `Tick 142 — Wolves: Base 1.84 + Brave 0.11 + Noble 0.10 + Divine 0.00 = Final 2.05`
+> `Tick 142 — Wolves: Base 1.84 + Brave 0.11 + Noble 0.20 + Divine 0.00 = Final 2.15`
 
 The debug log may be long. Its purpose is to make the simulation explainable.
 
@@ -1028,7 +1030,7 @@ Minimum requirements:
 
 ### Quests
 
-- list of the current 5–7 quests;
+- list of the current single-city quest offers (13 with the present content set);
 - name;
 - mob;
 - count;
@@ -1072,7 +1074,7 @@ Where applicable, this includes:
 - starting trait selection;
 - limited random choice among nearly tied quests;
 - diary phrasing selection;
-- generation / selection of a replacement quest from the test set.
+- seeded regeneration of the accepted `QuestOffer` from its immutable quest template.
 
 The same seed and the same player actions should produce a repeatable run whenever possible.
 
@@ -1186,21 +1188,21 @@ There is no separate monster strength scale.
 
 ### 20.3. Test Mobs and Quests
 
-Exact numeric cards are created while writing the first code version.
+The current Prototype 0 single-city content set contains:
 
-The first run only needs:
-
-- **5–7 test mob types**;
+- **13 test mob types**;
 - both `HUMANOID / MONSTER` categories;
-- one simple test quest for each mob type.
+- one simple combat quest template for each mob type;
+- all 13 current templates exposed simultaneously as tavern offers.
+
+Concrete numeric cards remain tuning data and may be adjusted during testing.
 
 A full generator for varied quests is not required at this stage.
 
 ### 20.4. Quest Availability
+The current single-city content set is deliberately designed so at least some quests pass the starting hero's Hard Filter while stronger offers become available as the hero grows.
 
-The test set is deliberately designed so quests are not excessively strong relative to the starting hero.
-
-As the hero grows, they should instead gradually outgrow the existing test mobs and quests.
+All current initial-city offers remain present in the tavern even when they are temporarily too strong for the hero. Hard Filter determines which of those offers the hero actually considers.
 
 Therefore Prototype 0 does not design a complex fallback for the case where “all quests are too strong.”
 
@@ -1246,9 +1248,9 @@ There is nothing to spend Gold on in Prototype 0 yet.
 
 Hard Filter uses:
 
-> **Full HeroPower based on MaxHP and final combat stats**
+> **base persistent HeroPower based on MaxHP and BaseCombatStats**
 
-Current HP does not affect strength evaluation for quest selection.
+Current HP does not affect strength evaluation for quest selection. Temporary finite buffs and conditional category-damage trait bonuses are intentionally excluded from Hard Filter.
 
 After resurrection the hero has `1 HP`, then recovers in the city at `20% MaxHP` per world tick until fully healed, and only then returns to choosing a new quest.
 
@@ -1284,14 +1286,14 @@ The next tick already belongs to execution of the chosen action.
 
 ### Stage 3 — Autonomous Quest Loop
 
-- pool of 5–7 quests;
+- pool containing all current single-city quest offers;
 - Hard Filter;
 - BaseAttractiveness;
 - QuestScore;
 - separate `CHOOSING_QUEST` tick;
 - travel / combat / recovery / return / turn-in states;
 - city recovery after resurrection;
-- replacement of completed and canceled quests.
+- regeneration of the accepted offer after completion or cancellation.
 
 ### Stage 4 — Personality
 
@@ -1497,7 +1499,6 @@ In the first version an item may be little more than a wrapper around `ItemDefin
 Final hero combat stats must not be calculated directly inside `hero_state.gd`.
 
 A separate layer is required:
-
 > **`stat_resolver.gd`**
 
 It combines all stat sources:
@@ -1605,10 +1606,10 @@ Quest logic is split into three parts.
 
 Responsible for:
 
-- current 5–7 quests;
-- adding;
-- removing;
-- replacing completed / canceled quests.
+- all current single-city quest offers (13 with the present content set);
+- creating one runtime offer per immutable quest template;
+- preserving unaccepted offers;
+- regenerating the accepted offer after completion or fatal cancellation recovery.
 
 #### `quest_evaluator.gd`
 
@@ -1797,7 +1798,6 @@ Prototype 0 does not need global:
 - GodManager.
 
 Most systems belong to the current Simulation.
-
 Use Autoload only for genuinely global functionality when a real need appears.
 
 A future candidate may be SaveManager if saves must serve multiple independent scenes.
@@ -2015,18 +2015,19 @@ Current Prototype 0 already uses:
 - death;
 - recovery between mobs.
 
-### 24.6. Old 3–5 Mixed Quest Types
+### 24.6. Old Small Mixed Quest Pool
 
-Older examples included ruins, errands, and other different activity types.
+Older examples included a small 3–5 or 5–7 quest pool and mixed activity types such as ruins and errands.
 
-For the first code version, this has intentionally been simplified.
+For the current single-city Prototype 0 this has intentionally been replaced.
 
 Current decision:
 
-- approximately **5–7 available quests** at all times;
-- several test mob types;
-- one simple combat quest per mob type;
-- more varied quest types are added later.
+- all current initial-city combat quest templates are available simultaneously;
+- the present content set contains **13 offers**;
+- one simple combat quest template exists per current mob type;
+- Hard Filter, not removal from the tavern, determines which stronger quests the hero considers feasible;
+- more varied quest types and distribution across multiple cities are added later.
 
 ### 24.7. The Hero Does Not Generate Their Own Quest
 
@@ -2034,9 +2035,9 @@ Quests exist as offers in the abstract city / tavern.
 
 The hero only evaluates the current pool.
 
-After a quest is completed or canceled, the freed slot is filled by a new quest.
+After a quest is completed, its accepted slot is regenerated from the same immutable template. After a fatal cancellation, that regeneration happens only after resurrection and full city recovery.
 
-Future factions, reputation, and world events may add special quests, but that is outside Prototype 0.
+Future factions, reputation, world events, and multiple cities may change how offers enter the pool, but that is outside Prototype 0.
 
 ### 24.8. Old Minimal God System
 
