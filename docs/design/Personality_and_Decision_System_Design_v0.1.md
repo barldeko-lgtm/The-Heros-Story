@@ -121,6 +121,26 @@ The hero chooses the option with the highest final evaluation.
 
 The concrete factors and formulas may differ between types of decisions and are defined by the system responsible for that decision.
 
+## Choice Modifiers
+
+After the base evaluation, an option’s attractiveness may change under the influence of the specific hero and the current situation.
+
+Relevant modifiers may include:
+
+- the hero’s personality and preferences;
+- combat traits and fears;
+- faction attitude or reputation;
+- personal attitude toward a specific character;
+- world events;
+- temporary opportunities;
+- the hero’s current condition;
+- divine influence;
+- other genuinely meaningful circumstances.
+
+For example, fear of the undead may reduce the attractiveness of a cemetery expedition, greed may increase the value of a profitable quest, good relations with someone may make their request more attractive, and a divine sign may strengthen the direction favored by the player.
+
+> **Traits and circumstances change the evaluation of a decision, but they do not replace the hero’s decision-making process itself.**
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
