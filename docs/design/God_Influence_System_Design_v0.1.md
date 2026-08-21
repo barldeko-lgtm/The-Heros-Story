@@ -160,6 +160,25 @@ In that case, deity personality should reflect **how the player tends to act** r
 
 This system is not required for the base game and may be designed later or never implemented.
 
+## Hero–Deity Relationship — Optional Later Layer
+
+A separate mechanic for the hero’s relationship with their deity is **not required for the base game**.
+
+If such a system later proves useful, the hero may gradually form their own attitude toward their patron. The hero may:
+
+- trust the deity;
+- doubt divine signs;
+- resist divine influence;
+- become more or less religious.
+
+High trust may potentially increase the weight of divine guidance, while low trust may reduce it.
+
+Even a deeply devoted hero must not become a fully controllable unit.
+
+> **Trust may strengthen divine influence, but it must not cancel the hero’s autonomy.**
+
+The need for this system and its exact mechanics will be decided later. It may never be implemented.
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
