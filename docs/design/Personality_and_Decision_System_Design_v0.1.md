@@ -82,19 +82,19 @@ A separate complex subsystem is not required at this stage. Preferences may use 
 
 ## General Decision-Making Model
 
-The autonomous hero should make decisions logically enough that the player can understand the reasons behind their behaviour, but the hero does not need to choose the same option every time under similar circumstances.
+The autonomous hero should make decisions logically enough that the player can understand the reasons behind their behaviour without reducing the hero to a single universal optimization formula.
 
 For most recurring decisions, the current general structure is:
 
-> **hard filtering → base weights → modifiers → choice**
+> **hard filtering → base evaluation → modifiers → highest final score**
 
-First, the hero removes clearly unsuitable options. The remaining reasonable options then receive a base attractiveness that can be modified by the hero’s personality, preferences, current condition, world circumstances, and other relevant factors.
+First, the hero removes clearly unsuitable options. Each remaining option then receives its own base evaluation from objective factors relevant to that type of decision. Personality, preferences, current condition, world circumstances, divine influence, and other relevant factors may then modify that evaluation.
 
-The hero then chooses among the remaining options.
+The hero chooses the option with the highest final evaluation.
 
-> **The hero should choose reasonably without becoming an algorithm that always calculates one mathematically optimal answer.**
+> **The hero should make understandable decisions, while different traits, preferences, experiences, and circumstances make different heroes value the same options differently.**
 
-The exact final selection method — probabilistic, deterministic, or mixed — is a working part of the system and may change through development and testing.
+The exact factors and formulas belong to the system that owns the relevant type of decision and may be refined through development and testing.
 
 ## Hard Filtering of Unsuitable Options
 
@@ -108,6 +108,18 @@ It is important to distinguish between:
 Hard filtering should be used only where genuinely necessary. It should not remove options in advance when they may still make sense because of the hero’s personality, circumstances, or divine influence.
 
 > **Filtering removes the impossible and clearly pointless. Everything else should remain space for the hero’s decision.**
+
+## Base Evaluation of Options
+
+After hard filtering, each remaining option receives its own base evaluation from objective factors appropriate to that type of decision.
+
+That evaluation is then modified by the hero’s personality, preferences, circumstances, and divine influence.
+
+The hero chooses the option with the highest final evaluation.
+
+> **First, the option is evaluated for practical sense; then the hero’s individuality changes how attractive it becomes.**
+
+The concrete factors and formulas may differ between types of decisions and are defined by the system responsible for that decision.
 
 ## Migration note
 
