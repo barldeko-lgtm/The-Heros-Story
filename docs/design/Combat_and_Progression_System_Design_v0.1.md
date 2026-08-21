@@ -194,6 +194,25 @@ Ideally, the combat log alone should make the hero’s class roughly recognizabl
 
 The exact mechanics of each class will be designed separately.
 
+## Basic Class Kit
+
+Each base class should have its own distinctive combat mechanic and a small set of characteristic abilities.
+
+The current working guideline is:
+
+- **one primary unique class mechanic**;
+- roughly **2–3 basic abilities** that the hero gains relatively early.
+
+The unique mechanic does not have to be represented by a separate resource bar.
+
+For example, a class mechanic may involve Mana for the Mage, Rage or combat momentum for the Warrior, distance and aiming for the Archer, or advantage and stealth for the Rogue.
+
+A separate artificial resource should not be created for every class merely for the sake of symmetry.
+
+The exact abilities, resources, and mechanics of each class will be defined separately and may change during development.
+
+> **Each class should have its own combat logic, but this does not require artificially giving every class the same amount or type of complexity.**
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
