@@ -141,6 +141,27 @@ For example, fear of the undead may reduce the attractiveness of a cemetery expe
 
 > **Traits and circumstances change the evaluation of a decision, but they do not replace the hero’s decision-making process itself.**
 
+## Final Choice
+
+After all modifiers are applied, the hero compares the final evaluations of the available options and chooses the option with the **highest final score**.
+
+The base decision model does not use a random roulette among otherwise valid options.
+
+Behavioural variety should instead come from differences in:
+
+- the hero’s personality and preferences;
+- current condition and lived experience;
+- world circumstances;
+- available options;
+- consequences of previous decisions;
+- divine influence.
+
+Therefore, a deterministic final choice does not mean that different heroes will behave identically.
+
+> **The hero chooses what best matches the combination of current circumstances and their own individuality.**
+
+The handling of exact ties between final scores may be defined later as a technical detail.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
