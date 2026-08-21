@@ -288,6 +288,107 @@ However, a permanent party, control over other heroes, and group content are **n
 
 This idea is not a commitment for early versions and may be revised or discarded entirely later.
 
+## Base Combat Model
+
+Combat is an important part of the hero’s journeys, but it is not the project’s primary gameplay core.
+
+The main focus is hero development, decisions, personality, fate, and the world’s influence on the hero’s life. Combat creates risk, victories, defeats, progression, and events that can affect the hero’s later story.
+
+Therefore, the base combat system should be:
+
+- automatic;
+- understandable;
+- varied enough to distinguish classes and opponents;
+- but not overloaded with micromanagement or excessive complexity.
+
+### Combat Format
+
+The base format is a **1v1 fight**.
+
+The hero and opponent each have a speed value that affects how frequently they can act.
+
+Combat does not have to follow a strict alternating sequence:
+
+> hero → opponent → hero → opponent.
+
+A faster participant receives opportunities to act more frequently.
+
+The exact speed and action-frequency formulas will be defined separately. Speed should not create absurd situations where one participant takes a huge number of actions in a row without allowing the other side to respond.
+
+### Auto-Attack
+
+The hero’s default action is an **automatic normal attack**.
+
+If there is no reason to use another action, the hero attacks the opponent normally without player input.
+
+### Abilities
+
+When appropriate, the hero may autonomously use a class ability instead of a normal attack.
+
+Abilities may be limited by:
+
+- cooldowns;
+- class resources;
+- situational requirements;
+- a combination of several simple conditions.
+
+There is no need to create an elaborate separate AI system for every individual ability.
+
+The hero should use abilities in a way that is **reasonably logical and understandable**, but does not need to play with mathematically perfect optimization.
+
+### Class Resources and Mechanics
+
+Different classes may build their combat logic around different mechanics.
+
+For example, the Mage may use Mana, the Warrior may build Rage or combat momentum, while other classes may use their own states or combat rules.
+
+A separate resource bar is not required for every class.
+
+### Item Use
+
+The hero may autonomously use appropriate consumable items, such as healing potions.
+
+An item should be used when the situation genuinely calls for it.
+
+As a rule, using an item counts as a separate action and should not be added for free to a normal attack.
+
+### Player Role in Combat
+
+The player does not directly control the hero’s attacks or abilities.
+
+The deity may provide only limited assistance, such as:
+
+- healing the hero;
+- temporarily empowering the hero;
+- later, using other rare forms of intervention.
+
+The hero should be capable of winning ordinary fights independently.
+
+Player assistance primarily allows the player to:
+
+- help the hero survive more fights without prolonged recovery;
+- rescue the hero from an especially unlucky situation;
+- help against a stronger opponent;
+- improve the chance of success in an important or risky adventure.
+
+Divine assistance should not be mandatory in every fight.
+
+> **The player does not win the fight instead of the hero — they only occasionally help the hero exceed their ordinary limits.**
+
+### Complexity Limit
+
+At the base level, combat should not be overloaded with complicated formulas, dozens of effects, huge ability sets, or excessively detailed tactical AI.
+
+The combat system should first prove that it is:
+
+- easy to read;
+- capable of genuinely differentiating classes;
+- capable of creating risk;
+- functional without player micromanagement;
+- supportive of the larger game about the hero’s life and fate.
+
+Additional depth should be added only when it genuinely makes the game more interesting.
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
