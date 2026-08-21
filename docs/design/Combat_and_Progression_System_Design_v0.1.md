@@ -175,6 +175,25 @@ The exact level or conditions for reaching the soft cap, as well as the pace of 
 
 > **After the soft cap, the hero does not stop developing — what changes is which sources matter most for further growth.**
 
+## Class Must Change Combat Logic
+
+Differences between classes should not be reduced only to weapons or slightly different damage numbers.
+
+Warrior, Archer, Mage, and Rogue should fight differently and use different ways to solve combat situations.
+
+A class should define:
+
+- the hero’s primary tools in combat;
+- characteristic abilities;
+- a key combat mechanic;
+- typical decisions and priorities during a fight.
+
+Ideally, the combat log alone should make the hero’s class roughly recognizable even if the class name itself is hidden.
+
+> **Class defines not only the hero’s power, but the logic of how they fight.**
+
+The exact mechanics of each class will be designed separately.
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
