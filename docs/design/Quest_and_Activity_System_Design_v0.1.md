@@ -105,6 +105,27 @@ As a result, the hero may naturally decide to travel to another city, change the
 
 This section does not own wars, relationships, travel, world simulation, or other external systems. It defines how the results of those systems may alter the hero’s adventure loop when they are relevant.
 
+## Events Should Disrupt the Usual Flow, Not Replace It
+
+Major unusual events should not happen every minute.
+
+If every adventure becomes a unique world-scale drama, unusual events quickly stop feeling special and the required amount of unique content becomes effectively endless.
+
+Ordinary adventures should already gain variety through the hero, the world, quests, travel, and changing circumstances. Against that background, **more significant events** occasionally occur that may:
+
+- change the hero’s current objective;
+- create an unusual opportunity;
+- force a change of route or plans;
+- affect personality or preferences;
+- create or change an attitude toward someone;
+- leave a long-term consequence.
+
+Such events should become noticeable episodes in the hero’s biography rather than merely another form of background routine.
+
+> **Everyday adventures create the flow of the hero’s life. Significant events create its turning points.**
+
+> **Decisions shape the hero. Events shape their history. The deity may change direction, but does not write the script for them.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
