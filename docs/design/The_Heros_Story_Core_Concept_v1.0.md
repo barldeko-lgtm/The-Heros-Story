@@ -52,6 +52,16 @@ The hero independently chooses activities, travels, fights, develops, finds and 
 
 Their autonomy must be real: decisions depend on personality, preferences, current state, available opportunities, and circumstances.
 
+## Simulating the Hero’s Journey, Not Their Entire Life
+
+The game does not attempt to simulate every detail of ordinary daily life.
+
+Hunger, routine meals, household needs, and similar processes are not valuable by themselves unless they create meaningful decisions, events, or consequences for the hero’s story.
+
+> **We simulate not the hero’s entire life, but their adventuring life and the events that can change their development and fate.**
+
+The basic gameplay loop should remain understandable. Depth should come from interacting systems, decisions, and events rather than from the number of everyday needs being tracked.
+
 ## Different Heroes, Different Stories
 
 Different playthroughs should lead to noticeably different life paths.
