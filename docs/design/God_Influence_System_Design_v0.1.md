@@ -46,6 +46,26 @@ They should not become the hero’s main source of power and development or turn
 
 > **The hero should first be interesting on their own. The deity helps influence the hero’s story rather than living that story in their place.**
 
+## Soft Divine Influence
+
+The player may softly nudge the hero toward certain decisions without issuing direct orders.
+
+Such influence may apply, for example, to:
+
+- choosing a travel direction;
+- choosing a quest;
+- attitudes toward risk;
+- interest in a particular character or faction;
+- other important hero decisions.
+
+A divine sign adds **additional weight** to the chosen option, but does not guarantee that the hero will follow it.
+
+The hero continues to consider their own personality, preferences, circumstances, and common sense, and may sometimes ignore the player’s wish.
+
+Internally, the influence may be calculated numerically, but the player should perceive it as a **sign, suggestion, or direction**, not as an abstract “+20% to choice” button.
+
+> **The deity may incline the hero toward a decision, but the decision still belongs to the hero.**
+
 ## Influence Acts at the Appropriate Decision Point
 
 Soft divine influence should not interrupt an action the hero is already performing.
