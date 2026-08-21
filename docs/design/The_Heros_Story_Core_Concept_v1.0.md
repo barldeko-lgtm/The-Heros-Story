@@ -62,6 +62,14 @@ Hunger, routine meals, household needs, and similar processes are not valuable b
 
 The basic gameplay loop should remain understandable. Depth should come from interacting systems, decisions, and events rather than from the number of everyday needs being tracked.
 
+## Setting
+
+The world is built on classic high fantasy: humans, elves, dwarves, magic, monsters, kingdoms, adventurers, and familiar fantasy weapons and equipment.
+
+The game does not try to distinguish itself through an unusual setting. Its main identity comes from the hero’s autonomous life, their unique path, and the player’s limited influence as patron.
+
+Specific nations, cultures, religions, history, and world structure are developed separately.
+
 ## Different Heroes, Different Stories
 
 Different playthroughs should lead to noticeably different life paths.
