@@ -43,6 +43,30 @@ The game does not use a separate TES-like progression system for every weapon ty
 
 > **Hero development should create meaningful differences rather than accumulate dozens of secondary progression tracks.**
 
+## Attribute Growth on Level-Up
+
+The player does not manually distribute all of the hero’s attributes after every level-up.
+
+Attribute growth is shared between three influences:
+
+1. **class** — guarantees part of the growth toward the class’s core attribute or attributes;
+2. **deity guidance** — allows the player to softly encourage one development direction;
+3. **the hero** — most growth is distributed autonomously according to the hero’s own tendencies and development logic.
+
+A current illustrative working model is:
+
+> **5 attribute points per level: 1 from class + 1 from deity guidance + 3 distributed by the hero.**
+
+These numbers are provisional design values, not final balance. The amount of growth and the proportions assigned to each source may change during development.
+
+The hero’s autonomous share should not be random. It may be influenced by biography, personality, preferences, lifestyle, and meaningful accumulated experience.
+
+Divine guidance should influence development without becoming ordinary manual point allocation by the player.
+
+> **The hero develops themselves; the player can only help shape the direction.**
+
+The exact attributes, weighting rules, and strength of each influence will be defined separately.
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
