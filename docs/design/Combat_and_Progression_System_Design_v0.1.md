@@ -67,6 +67,21 @@ Divine guidance should influence development without becoming ordinary manual po
 
 The exact attributes, weighting rules, and strength of each influence will be defined separately.
 
+## Hero Growth Must Be Understandable
+
+Although attribute growth is allocated automatically, the result should not feel random to the player.
+
+When the hero levels up, the player should be able to understand:
+
+- which attributes increased;
+- which part of the growth came from class;
+- which direction was encouraged by deity guidance;
+- which tendencies, preferences, or experiences influenced the hero’s autonomous share.
+
+The exact way this information is presented will be defined separately.
+
+> **The player does not directly control the hero’s development, but should understand why the hero is developing in that direction.**
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
