@@ -29,6 +29,23 @@ This document defines the player’s role as deity/patron and the rules for infl
 
 The player guides and occasionally intervenes. The player must not become the hero’s hidden direct controller.
 
+## Role of Divine Influence
+
+Divine influence is an additional layer on top of the hero’s autonomous life.
+
+The hero’s life, development, decisions, and fate should remain interesting on their own even if the player intervenes very little for a while.
+
+Deity mechanics may:
+
+- guide the hero;
+- help in particular situations;
+- accelerate or ease some processes;
+- allow the player to influence especially important moments.
+
+They should not become the hero’s main source of power and development or turn the player into a hidden commander.
+
+> **The hero should first be interesting on their own. The deity helps influence the hero’s story rather than living that story in their place.**
+
 ## Influence Acts at the Appropriate Decision Point
 
 Soft divine influence should not interrupt an action the hero is already performing.
