@@ -26,6 +26,18 @@ This document defines how the autonomous hero develops a recognizable personalit
 - divine ability rules — see `God_Influence_System_Design_v0.1.md`;
 - diary wording and storytelling — see `Narrative_and_Diary_System_Design_v0.1.md`.
 
+## Personality Has Mechanical Meaning
+
+The hero’s personality must not be merely a set of descriptive traits.
+
+The hero’s decisions and experiences gradually change their tendencies, and those tendencies influence future decisions:
+
+> **decisions → experience → personality and tendencies → new decisions**
+
+Personality traits should bias the hero’s choices without dictating them completely. Even a strong trait should not make the hero ignore obvious danger or basic common sense.
+
+The goal is for the hero’s behaviour to become recognizable and internally consistent over time without becoming fully predictable.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
