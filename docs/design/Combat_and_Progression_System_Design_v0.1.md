@@ -121,6 +121,46 @@ Temporary effects, consumable items, and divine assistance may strongly influenc
 
 The exact contribution of each source may change during development and balance work.
 
+## Two Stages of Hero Development
+
+Hero progression is provisionally divided into two broad stages. These are not two rigid game modes and there is no moment when the “real world” suddenly unlocks. The world exists from the beginning, while the transition between stages happens gradually as the hero develops.
+
+### Stage 1 — Formation
+
+Early in the game, level and basic attributes are among the hero’s main sources of power.
+
+During this period, the hero:
+
+- gains levels relatively quickly;
+- noticeably increases primary attributes;
+- gradually reveals personality and preferences;
+- gains and changes traits;
+- learns the core abilities of the class;
+- may later reach a specialization;
+- uses equipment, although equipment is not yet the primary source of progression.
+
+From the beginning, the world contains areas that are naturally appropriate for a young hero: safer cities, surroundings, and available activities. These are not isolated “starting zones.”
+
+The hero is formally able to travel anywhere, but when choosing a direction they consider their own strength, known threats, available activities, possible rewards, and whether the journey makes sense.
+
+A weak hero therefore usually prefers places where they can reasonably survive and find suitable things to do.
+
+Enemies should not automatically scale with the hero. As the hero becomes stronger, they should genuinely outgrow former threats.
+
+### Stage 2 — Maturity
+
+Once the hero is largely formed and approaches the soft cap of development, ordinary levels gradually become less significant.
+
+Level and attributes may continue to grow, but more slowly and should no longer be the primary source of increasing power.
+
+The world does not unlock again at this point — the hero simply becomes strong and experienced enough that opportunities that were previously too dangerous become practically relevant.
+
+During maturity, greater importance may shift toward equipment, rare items, abilities, specialization, combat traits, preparation for specific threats, and the hero’s participation in more serious world events.
+
+> **Early on, the hero is primarily becoming stronger. Later, what matters increasingly is who the hero has become, what they possess, and what kind of world they live in.**
+
+The exact pace and boundary between these stages are provisional and may change during development.
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
