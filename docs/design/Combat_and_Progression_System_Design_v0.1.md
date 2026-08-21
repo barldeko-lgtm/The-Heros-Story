@@ -213,6 +213,28 @@ The exact abilities, resources, and mechanics of each class will be defined sepa
 
 > **Each class should have its own combat logic, but this does not require artificially giving every class the same amount or type of complexity.**
 
+## Automatic Ability Use
+
+The player does not manually activate the hero’s combat abilities.
+
+The hero decides autonomously when and which available ability to use.
+
+The decision may be influenced by:
+
+- the current combat situation;
+- the hero’s health;
+- available class resource;
+- enemy strength and type;
+- the hero’s own assessment of their chances of victory;
+- personality and attitude toward risk;
+- the need to conserve resources for the rest of the journey.
+
+The hero should not use abilities merely in a mechanical rotation or immediately whenever a cooldown ends. Ability use should depend on the situation and the logic of that specific hero.
+
+> **The class defines the tools available to the hero, while the hero’s state, experience, and personality influence how those tools are used.**
+
+The exact ability-selection rules and weighting of these factors will be defined separately and may change during development.
+
 ## Hero Specialization
 
 Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
