@@ -96,6 +96,19 @@ The hero then chooses among the remaining options.
 
 The exact final selection method — probabilistic, deterministic, or mixed — is a working part of the system and may change through development and testing.
 
+## Hard Filtering of Unsuitable Options
+
+Before choosing, the hero excludes options that are objectively unavailable, impossible, or clearly unreasonable in the current situation.
+
+It is important to distinguish between:
+
+- **hard constraint** — the option is removed completely;
+- **soft preference** — the option remains available, but its attractiveness changes.
+
+Hard filtering should be used only where genuinely necessary. It should not remove options in advance when they may still make sense because of the hero’s personality, circumstances, or divine influence.
+
+> **Filtering removes the impossible and clearly pointless. Everything else should remain space for the hero’s decision.**
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
