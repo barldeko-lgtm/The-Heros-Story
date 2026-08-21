@@ -1,7 +1,7 @@
 # The Hero’s Story — Core Concept
 
 **Status:** Draft  
-**Document version:** 1.0 skeleton
+**Document version:** 1.0
 
 ## Purpose
 
@@ -36,6 +36,64 @@ Detailed rules for:
 
 Those belong in the corresponding system-design documents.
 
-## Migration note
+## Central Fantasy
 
-Content will be reviewed and migrated from `docs/The_Heros_Story_Concept_Design_Pillars_v2.7_EN.md`. This file is intentionally skeletal until that review begins.
+The main idea of **The Hero’s Story** is to observe the life of one autonomous hero who gradually becomes a distinct person with a history of their own.
+
+The hero should feel like someone who genuinely lives in the world, not like a game unit or an automated resource generator.
+
+Desired player feeling:
+
+> **“This is my hero. They live on their own, their path is not fully predictable, and I can sometimes guide or support them without making every decision for them.”**
+
+## A Living, Autonomous Hero
+
+The hero independently chooses activities, travels, fights, develops, finds and replaces equipment, reacts to circumstances, makes mistakes, succeeds, and gradually builds a personal history.
+
+Their autonomy must be real: decisions depend on personality, preferences, current state, available opportunities, and circumstances.
+
+## Different Heroes, Different Stories
+
+Different playthroughs should lead to noticeably different life paths.
+
+These differences should primarily emerge from a chain of causes and consequences:
+
+> **past → personality and tendencies → decisions → events and consequences → development and equipment → new possibilities → new decisions**
+
+Randomness may influence the path, but it should not be the only source of difference.
+
+## Hero Development Is the Main Source of Interest
+
+Combat, quests, equipment, personality, travel, the world, events, and divine influence exist primarily to make the hero’s development and fate interesting to observe.
+
+The player should notice not only larger numbers, but also changes in personality, habits, opportunities, equipment, successes, mistakes, and personal history.
+
+## A Game That Does Not Require Constant Attention
+
+The player should not need to watch the game constantly.
+
+The intended rhythm is:
+
+> **let the hero live → return → discover what happened → see how the hero changed → optionally influence what comes next → let the hero continue living**
+
+One of the main reasons to return should be curiosity about the diary: what the hero did, what happened to them, what they found, lost, or changed about themselves.
+
+The diary should not be a raw action log. Routine events should be summarized, while important decisions, consequences, discoveries, losses, and turning points should stand out.
+
+## The Player Is a Patron, Not a Commander
+
+The player influences the hero in limited and primarily indirect ways.
+
+The player changes direction and the probability of decisions rather than choosing every action directly.
+
+Influence must be limited enough to preserve the hero’s independence, but noticeable enough for the player’s choices to matter.
+
+## Core Principle
+
+> **The hero lives. The world creates circumstances. The player guides.**
+
+> **The player does not control the hero — the player influences the probability of the hero’s fate.**
+
+## Migration Note
+
+Content is being reviewed and migrated from `docs/The_Heros_Story_Concept_Design_Pillars_v2.7_EN.md`. Ideas are transferred only after review rather than copied automatically.
