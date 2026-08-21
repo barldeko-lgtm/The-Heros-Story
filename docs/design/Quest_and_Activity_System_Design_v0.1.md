@@ -126,6 +126,19 @@ Such events should become noticeable episodes in the hero’s biography rather t
 
 > **Decisions shape the hero. Events shape their history. The deity may change direction, but does not write the script for them.**
 
+## Criterion for New Systems
+
+Any new mechanic layered on top of the base adventure loop should do at least one of two things:
+
+1. **noticeably diversify the hero’s life and adventures**;
+2. **create consequences that affect the hero’s future fate**.
+
+If a system does neither, its value to the project is questionable.
+
+Complexity is not a virtue by itself. If the same meaningful result can be achieved through a simpler system, the simpler solution should be preferred.
+
+> **A new mechanic should either make the hero’s life more interesting now or change what may happen to them later. Otherwise, we probably do not need it.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
