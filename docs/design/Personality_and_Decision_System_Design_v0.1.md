@@ -56,6 +56,18 @@ Both ends of a scale should have advantages and drawbacks.
 
 The exact set of personality scales will be defined separately.
 
+## Personality Changes Through Accumulated Experience
+
+A single random action should not sharply rewrite the hero’s personality.
+
+If the hero repeatedly acts in a certain direction, the corresponding tendency can gradually strengthen. If they consistently act against an existing tendency, personality can slowly shift in the opposite direction.
+
+Strong or especially meaningful events may have a greater impact than ordinary experiences.
+
+Personality should be stable enough for the hero to remain recognizable, but flexible enough for a long personal history to genuinely change them.
+
+The exact experiences, events, and conditions that change personality will be defined separately.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
