@@ -95,6 +95,31 @@ The hero should overcome ordinary difficulties independently. Divine power becom
 
 The exact abilities, their costs, and their limitations will be defined separately.
 
+## Deity Power Progression — Confirmed but Later Layer
+
+Progression of the deity’s capabilities is part of the overall game concept, but the concrete progression system should not be fixed yet.
+
+The hero’s own development must be established and balanced first, including:
+
+- growth of real combat power;
+- levels and attributes;
+- abilities;
+- equipment;
+- the structure of threats;
+- the overall progression pace.
+
+Only after that should deity progression be designed on top of an understood hero system, so divine abilities do not break balance or compete with the hero for the role of the primary progression source.
+
+The current overall direction is:
+
+- deity power and capabilities develop **more slowly than the hero**;
+- stronger or more varied forms of influence gradually become available;
+- later, divine influence may extend beyond simple healing and temporary empowerment.
+
+The exact progression structure, resources, branches, and growth pace will be defined separately later.
+
+> **The hero develops first. Deity progression should be built on top of the hero’s progression rather than overshadowing it.**
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
