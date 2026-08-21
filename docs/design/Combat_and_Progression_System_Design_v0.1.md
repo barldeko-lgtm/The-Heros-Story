@@ -31,6 +31,20 @@ This document defines how the hero becomes stronger and how autonomous combat co
 
 Hero and enemy strength must remain comparable through one shared combat-stat and Power model. Equipment and temporary effects feed combat through resolved stats rather than special-case combat logic.
 
+## Combat Traits
+
+Combat traits are separate from the hero’s general personality and emerge from combat experience.
+
+They can reflect both positive and negative experience, such as growing confidence against certain threats or fear after severe defeats.
+
+A combat trait should come from repeated or especially meaningful experience rather than appearing randomly after one ordinary fight.
+
+Combat traits may strengthen, weaken, or disappear over time as the hero’s later experience changes.
+
+> **Combat traits should become part of the hero’s story, not simply an ever-growing list of modifiers.**
+
+The exact scale, categories, thresholds, and effects of combat traits will be defined separately.
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
