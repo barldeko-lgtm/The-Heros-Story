@@ -82,6 +82,24 @@ The exact way this information is presented will be defined separately.
 
 > **The player does not directly control the hero’s development, but should understand why the hero is developing in that direction.**
 
+## Hero Specialization
+
+Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
+
+A specialization should continue the original archetype rather than abruptly turning the hero into a fundamentally different class. It may:
+
+- grant roughly **1–2 new abilities**;
+- modify or expand the class’s core mechanic;
+- emphasize the individual path of that specific hero.
+
+Unlike the starting class, the specialization is chosen primarily by **the hero**. The choice may be influenced by attributes, personality, preferences, and lived experience.
+
+The player should be able to understand why the hero arrived at that specialization.
+
+> **The player chooses who the hero is at the beginning of the journey. The hero largely determines who they become.**
+
+The exact specialization system and whether the deity can softly influence this choice will be defined separately.
+
 ## Combat Traits
 
 Combat traits are separate from the hero’s general personality and emerge from combat experience.
