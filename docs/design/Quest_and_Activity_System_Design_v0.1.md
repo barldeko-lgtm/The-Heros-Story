@@ -248,6 +248,24 @@ There is no need to create a separate branch for every class or every trait. Alt
 
 > **Systems create the hero’s everyday life. Handcrafted events create its special episodes.**
 
+## Dungeons as Higher-Risk Adventures
+
+A dungeon is a more dangerous format of adventure than ordinary hunting or farming.
+
+Its main differences are:
+
+- several encounters may occur in sequence;
+- opportunities to recover calmly between encounters are limited;
+- the hero’s condition and remaining resources matter more;
+- the farther the hero progresses, the greater the potential reward and risk may become;
+- a boss or especially valuable objective may wait at the end;
+- the hero decides independently whether to continue or retreat;
+- divine assistance may be especially valuable in such situations.
+
+The exact rules for recovery, number of fights, dungeon structure, bosses, and rewards are not fixed yet.
+
+> **A dungeon should test not one fight, but the hero’s ability to survive an entire dangerous expedition.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
