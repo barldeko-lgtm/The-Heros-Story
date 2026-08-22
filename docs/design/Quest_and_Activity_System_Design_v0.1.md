@@ -139,6 +139,16 @@ Complexity is not a virtue by itself. If the same meaningful result can be achie
 
 > **A new mechanic should either make the hero’s life more interesting now or change what may happen to them later. Otherwise, we probably do not need it.**
 
+## Systemic Generation of Ordinary Quests
+
+Most ordinary quests should be created systemically from prepared game data and rules rather than existing only as individually authored one-off scenarios.
+
+This allows the game to keep providing suitable adventures without requiring an impractical amount of hand-authored disposable content.
+
+Systemic quests do not replace unique events or authored content. They provide the foundation of the hero’s adventuring life, while rarer special stories can be layered on top.
+
+> **Ordinary adventures should scale through systems; unique content should be used where its uniqueness is genuinely noticeable.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
