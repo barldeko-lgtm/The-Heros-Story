@@ -231,6 +231,23 @@ The system should **not deliberately starve the hero of quests** merely to force
 
 > **The hero changes location because opportunities in the world change, not because the game artificially switches the old location off.**
 
+## Unique Events Are Handcrafted
+
+Rare and significant events should be authored by hand because context, consequences, and meaningful alternative developments matter most in these situations.
+
+Such an event may take into account:
+
+- the hero’s class and capabilities;
+- personality and preferences;
+- relationships with participants;
+- current world state;
+- previous events;
+- possible divine influence.
+
+There is no need to create a separate branch for every class or every trait. Alternatives should exist only where they genuinely make sense for the situation.
+
+> **Systems create the hero’s everyday life. Handcrafted events create its special episodes.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
