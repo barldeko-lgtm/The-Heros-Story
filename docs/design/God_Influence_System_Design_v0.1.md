@@ -179,6 +179,22 @@ Even a deeply devoted hero must not become a fully controllable unit.
 
 The need for this system and its exact mechanics will be decided later. It may never be implemented.
 
+## Instant Resurrection by the Deity
+
+The player may choose not to wait for the hero’s natural return and instead **resurrect the hero immediately by spending divine energy**.
+
+The cost should depend on the time remaining before natural resurrection:
+
+- intervention is more expensive soon after death;
+- the cost decreases as natural resurrection approaches;
+- a small minimum cost may remain.
+
+Exact values are not fixed yet.
+
+Instant resurrection uses the same limited resource as other divine abilities, so the player must decide whether bringing the hero back immediately is worth giving up energy that could be used for another intervention.
+
+> **The deity may reduce the time cost of defeat, but doing so should consume part of its limited power.**
+
 ## Migration Note
 
 Prototype 0 divine-ability values are test values unless explicitly promoted into long-term design.
