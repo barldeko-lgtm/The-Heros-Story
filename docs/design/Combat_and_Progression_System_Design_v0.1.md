@@ -403,6 +403,14 @@ Combat traits may strengthen, weaken, or disappear over time as the hero’s lat
 
 The exact scale, categories, thresholds, and effects of combat traits will be defined separately.
 
+## Death Is a Defeat, Not the Loss of the Hero
+
+Hero death is not permanent and does not erase long-term development.
+
+After death, the hero may lose the current expedition, time, and part of temporarily acquired resources, but the hero themselves and their main story continue.
+
+> **Death should be a meaningful defeat, but it should not erase a character the player may have been following for dozens of hours.**
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
