@@ -151,6 +151,24 @@ Exact thresholds and effects will be defined later.
 
 > **Reputation should change how the world treats the hero gradually: from small advantages and inconveniences to genuine friendship or hostility.**
 
+## Reputation Drift Toward Neutrality
+
+If the hero does not interact with a faction for a long time, **small deviations in reputation gradually weaken and move back toward neutrality**.
+
+This represents minor favors, small conflicts, and unimportant actions gradually fading from memory.
+
+In general:
+
+- mild friendship or dislike may fade relatively easily;
+- strong friendship and serious hostility should change much more slowly;
+- especially significant actions by the hero should not be erased completely merely because time has passed.
+
+If the hero once saved a city or, conversely, caused a faction major harm, the emotional intensity of that relationship may soften over time, but the world does not have to forget the event entirely.
+
+The exact rates of reputation drift will be defined later.
+
+> **The world may forget small things with time, but important deeds should leave a longer memory.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
