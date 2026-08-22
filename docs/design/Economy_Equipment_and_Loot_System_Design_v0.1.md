@@ -77,6 +77,20 @@ The exact rarity names, colors, and numerical bonuses are not fixed yet.
 
 > **Item level defines the foundation of an item’s strength, while rarity defines how far that item may go beyond an ordinary piece of equipment.**
 
+## Item Power Budget
+
+Each item has a limited **stat budget** determined primarily by its level and rarity.
+
+This budget is distributed among the item’s stats.
+
+Two items of the same level and rarity may therefore have roughly comparable total power while distributing that power in very different ways.
+
+For example, one chest piece may provide more defense, while another provides less defense but adds other useful stats.
+
+> **Items of the same power tier do not have to be identical — their value may come from how that power is distributed.**
+
+The exact formulas and relative cost of individual stats will be defined later.
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
