@@ -39,6 +39,26 @@ Early in the game, level and basic attributes may provide most of the hero’s g
 
 > **The more established the hero becomes, the more their further strength depends on what they have managed to obtain and what they carry.**
 
+## Basic Equipment Slots
+
+At the current design stage, the hero has **10 equipment slots**.
+
+Armor uses five slots:
+
+- helmet;
+- chest armor, with shoulders included as part of the same item rather than a separate equipment slot;
+- gloves;
+- pants;
+- boots.
+
+Additional equipment slots are:
+
+- two ring slots;
+- one necklace slot;
+- two weapon slots.
+
+The current slot structure should remain compact. Additional slots such as a belt or earrings may be considered later if they provide a clear gameplay purpose, but they are not part of the current equipment structure.
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
