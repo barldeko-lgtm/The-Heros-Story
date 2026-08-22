@@ -105,6 +105,24 @@ Reputation should increase because of the hero’s **actual actions**, not merel
 
 > **A faction comes to regard the hero more favorably because the hero has done something for it.**
 
+## How Reputation Decreases
+
+The hero’s reputation with a faction decreases when their actions are **clearly directed against that faction**.
+
+For example, reputation may fall when the hero:
+
+- completes quests against the faction;
+- participates in war on the side of its enemies;
+- attacks its representatives;
+- helps its enemies during conflict events;
+- performs other clearly hostile actions.
+
+Ordinary assistance to one faction **should not automatically damage relations with another**.
+
+Negative reputation appears only when the hero’s action genuinely harms that specific faction — especially during wars and conflict events.
+
+> **Hostility should be a consequence of real conflict, not an automatic price for friendship with someone else.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
