@@ -62,6 +62,20 @@ This allows the player to observe the same hero for as long as they wish without
 
 > **The hero’s story ends because of their fate and decisions, not because the in-game calendar counted far enough into old age.**
 
+## Voluntary Conclusion of the Hero’s Story
+
+The game should not automatically end because the hero reaches a particular level, defeats a particular enemy, or crosses another mandatory milestone.
+
+The player may decide that this hero’s story has reached its conclusion and begin a **special final stage of their journey**.
+
+Until that point, the hero may continue living and developing for as long as the player wishes.
+
+The finale should summarize the hero’s **actually lived biography** rather than present the player with a ready-made choice between endings such as “A / B / C.” The outcome may reflect who the hero became, what they achieved, which relationships they formed, which major events they took part in, and what mark they left on the world.
+
+The narrative presentation of that final biography belongs to `Narrative_and_Diary_System_Design_v0.1.md`.
+
+> **The finale is a look back at the hero’s lived story, not a mandatory point where the game decides to stop on its own.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
