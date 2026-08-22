@@ -463,6 +463,20 @@ The design does not currently require a universal rule such as “always the nea
 
 > **Death ends the failed expedition and returns the hero to a safe part of their life.**
 
+## Natural Resurrection
+
+If the player does not intervene, the hero **returns to life automatically after a period of time**.
+
+While the hero is dead:
+
+- the hero’s own activity is paused;
+- the world continues to live and change while the game is running;
+- events and opportunities may pass without the hero’s participation.
+
+The exact resurrection delay is a balance parameter and is not fixed at this stage.
+
+> **Death temporarily removes the hero from the world, but does not pause the world itself.**
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
