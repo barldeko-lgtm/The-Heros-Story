@@ -177,6 +177,18 @@ The exact distribution and frequency of different difficulty levels are balance 
 
 > **The world does not have to offer the hero only safe or currently suitable quests. Some available opportunities may simply be beyond the hero’s present capabilities.**
 
+## Quest Offer Lifetime
+
+Available quests should not accumulate in a city forever.
+
+If the hero does not choose a quest for a long time, that offer may disappear and later be replaced by a new opportunity.
+
+An already accepted quest does not need a universal mandatory completion timer. Time limits may exist only where they make sense for the specific quest or event.
+
+The exact lifetime of quest offers is a balance parameter to be defined later.
+
+> **The available adventure pool should gradually change with the world rather than becoming a permanent archive of old quests.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
