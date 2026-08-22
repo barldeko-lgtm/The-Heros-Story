@@ -123,6 +123,34 @@ Negative reputation appears only when the hero’s action genuinely harms that s
 
 > **Hostility should be a consequence of real conflict, not an automatic price for friendship with someone else.**
 
+## Consequences of Reputation Levels
+
+As reputation changes, a faction’s attitude toward the hero should produce **noticeable gameplay consequences**.
+
+High reputation may unlock:
+
+- discounts and better trading conditions;
+- additional services;
+- special merchants;
+- faction equipment;
+- special quests;
+- unique events;
+- other opportunities connected to that faction.
+
+Low reputation may lead to:
+
+- less favorable prices;
+- restrictions on some faction services and opportunities;
+- negative attitudes from faction representatives;
+- loss of access to special quests and faction-specific content;
+- at extreme hostility, inability to freely use the faction’s cities or territories.
+
+A small amount of negative reputation **should not immediately break the hero’s basic gameplay loop**. Serious restrictions should appear only when relations have genuinely reached the level of open hostility.
+
+Exact thresholds and effects will be defined later.
+
+> **Reputation should change how the world treats the hero gradually: from small advantages and inconveniences to genuine friendship or hostility.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
