@@ -411,6 +411,23 @@ After death, the hero may lose the current expedition, time, and part of tempora
 
 > **Death should be a meaningful defeat, but it should not erase a character the player may have been following for dozens of hours.**
 
+## What Is Preserved After Death
+
+Death should not roll back the hero who has already been formed.
+
+After resurrection, the hero keeps:
+
+- overall level and permanent progression;
+- class, abilities, and specialization;
+- personality, preferences, and permanent traits;
+- reputation and persistent relationships;
+- hero history and biography;
+- equipped gear and other permanent equipment.
+
+Death interrupts the **current adventure**, but does not erase who the hero has become.
+
+> **The hero’s long-term story survives their defeats.**
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
