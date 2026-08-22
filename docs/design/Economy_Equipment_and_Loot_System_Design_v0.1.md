@@ -91,6 +91,23 @@ For example, one chest piece may provide more defense, while another provides le
 
 The exact formulas and relative cost of individual stats will be defined later.
 
+## Random Item Properties
+
+Additional item stats and properties are partially generated randomly so that items of the same type can differ meaningfully from one another.
+
+However, generation should not be completely unrestricted. Each item type has its own pool of allowed properties.
+
+For example:
+
+- heavy armor more often receives defensive stats;
+- bows favor physical, speed, and shooting-related properties;
+- magical weapons favor Intelligence, Mana, and magical effects;
+- jewelry may use a broader pool of specialized bonuses.
+
+Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
+
+> **Randomness should create item variety, not meaningless chaos.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
