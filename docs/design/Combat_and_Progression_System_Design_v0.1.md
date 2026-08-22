@@ -428,6 +428,25 @@ Death interrupts the **current adventure**, but does not erase who the hero has 
 
 > **The hero’s long-term story survives their defeats.**
 
+## What May Be Lost After Death
+
+Death should primarily punish the failure of the **current adventure** rather than take away accumulated long-term progress.
+
+The hero may lose:
+
+- loot and trophies that have not yet been safely delivered;
+- the current quest or expedition;
+- a temporary opportunity associated with that adventure;
+- potentially part of carried gold, if later testing shows that this meaningfully improves risk and balance.
+
+Equipped gear and other permanent equipment are not lost on death.
+
+The hero is not expected to return to the death location to recover a corpse or retrieve lost items.
+
+Exact loss amounts and rules will be determined later.
+
+> **Death puts the current loot and adventure at risk, not the life the hero has already built.**
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
