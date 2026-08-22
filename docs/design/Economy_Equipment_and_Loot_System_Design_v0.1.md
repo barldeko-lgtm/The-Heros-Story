@@ -146,6 +146,18 @@ The exact format of unique effects and the rules for generating them will be def
 
 > **The highest rarity should give an item individuality, not merely larger numbers.**
 
+## Equipment Sets — Possible Late System
+
+Equipment sets may be considered later as an additional layer of the item system.
+
+Several related pieces may grant additional effects or unlock special properties when equipped together.
+
+Sets are **not a required part of the base equipment system**. The game should first prove that individual item variety, generated upgrades, and unique items are interesting on their own.
+
+> **Sets should be added only if they create genuinely new development choices rather than becoming another mandatory way to gain extra stats.**
+
+The need for this system and its exact rules will be decided later and it may never be implemented.
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
