@@ -201,6 +201,18 @@ After the quest is completed, failed, or disappears, the related location may di
 
 The exact way this connection is presented on the map belongs to `World_Map_and_Travel_System_Design_v0.1.md`.
 
+## Quests Respond to World State
+
+The current state of the world may temporarily alter the available quest pool and create special opportunities on top of ordinary quests.
+
+A war, invasion, dangerous event, regional crisis, or another meaningful change may create related quests that would not exist there under normal conditions.
+
+When the underlying situation ends or changes, the quests created by it may also disappear, change, or be replaced by different opportunities.
+
+> **World events should affect the hero’s adventures not only through text, but through the real actions that become available to them.**
+
+The systems that create wars, invasions, regional states, and other world changes belong to `World_Simulation_System_Design_v0.1.md`; this document only defines how those changes may affect the hero’s available activities.
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
