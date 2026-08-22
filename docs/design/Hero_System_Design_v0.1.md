@@ -76,6 +76,18 @@ The narrative presentation of that final biography belongs to `Narrative_and_Dia
 
 > **The finale is a look back at the hero’s lived story, not a mandatory point where the game decides to stop on its own.**
 
+## Faction Reputation
+
+The hero has a separate relationship with each major faction in the world.
+
+At a high level, a faction’s attitude toward the hero moves along a scale such as:
+
+> **Hostility ← Neutrality → Friendship**
+
+Reputation is tracked independently for each faction. Good relations with one faction do not automatically imply good relations with another.
+
+The exact numerical scale and thresholds between reputation states are not fixed yet.
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
