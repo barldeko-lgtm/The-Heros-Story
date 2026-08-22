@@ -50,6 +50,18 @@ In the future, the biography may produce a **recommended starting class**. The p
 
 Choosing a class different from the biography recommendation should not by itself be treated as a mistake or impose a penalty on the hero.
 
+## Age and Natural Aging
+
+The hero’s age is not a separate gameplay attribute and should not limit the duration of a playthrough.
+
+The game does not require a system of natural aging, age-related penalties, or death from old age.
+
+Game time is used for travel, quests, and world processes, but it does not have to correspond literally to human years of life.
+
+This allows the player to observe the same hero for as long as they wish without being forced to regularly replace the character because of age.
+
+> **The hero’s story ends because of their fate and decisions, not because the in-game calendar counted far enough into old age.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
