@@ -128,6 +128,24 @@ As the hero develops, they should genuinely **outgrow old loot sources** and gai
 
 > **To find stronger equipment, the hero must seek stronger sources of loot rather than wait for the old world to automatically scale to their level.**
 
+## Legendary and Mythic Items
+
+Items of the highest rarity should differ from ordinary equipment by **more than just larger stat numbers**.
+
+Legendary and mythic items may have:
+
+- a unique property;
+- an unusual interaction with a class mechanic;
+- a modification to an existing ability;
+- their own active or passive ability;
+- another rare rule that noticeably changes how the item is used.
+
+Such an item should feel like a **significant discovery in the story of a particular hero**, rather than simply another piece of equipment with stats that are 15% higher.
+
+The exact format of unique effects and the rules for generating them will be defined later.
+
+> **The highest rarity should give an item individuality, not merely larger numbers.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
