@@ -59,6 +59,24 @@ Additional equipment slots are:
 
 The current slot structure should remain compact. Additional slots such as a belt or earrings may be considered later if they provide a clear gameplay purpose, but they are not part of the current equipment structure.
 
+## Item Level and Rarity
+
+Each item has two main characteristics that describe its quality:
+
+- **item level / base power** — determines the item’s general stat potential;
+- **rarity** — determines how rich and unusual the item may become.
+
+Higher rarity may provide:
+
+- a larger total stat budget;
+- more additional properties;
+- stronger rolls for those properties;
+- access to rarer or more unusual effects.
+
+The exact rarity names, colors, and numerical bonuses are not fixed yet.
+
+> **Item level defines the foundation of an item’s strength, while rarity defines how far that item may go beyond an ordinary piece of equipment.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
