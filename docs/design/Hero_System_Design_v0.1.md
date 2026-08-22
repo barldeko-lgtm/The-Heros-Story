@@ -88,6 +88,23 @@ Reputation is tracked independently for each faction. Good relations with one fa
 
 The exact numerical scale and thresholds between reputation states are not fixed yet.
 
+## How Reputation Increases
+
+The hero’s reputation with a faction increases when their actions **clearly benefit that faction**.
+
+For example, reputation may rise when the hero:
+
+- completes quests for the faction;
+- helps its representatives;
+- participates in events on its side;
+- defends its territory;
+- assists it during war;
+- performs other actions that directly benefit it.
+
+Reputation should increase because of the hero’s **actual actions**, not merely because the hero is nearby or because time passes.
+
+> **A faction comes to regard the hero more favorably because the hero has done something for it.**
+
 ## Migration note
 
 Content will be reviewed and migrated from the current concept document rather than copied automatically.
