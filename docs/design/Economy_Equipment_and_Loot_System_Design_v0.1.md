@@ -108,6 +108,26 @@ Rare unusual combinations are allowed, but an item should not receive a nonsensi
 
 > **Randomness should create item variety, not meaningless chaos.**
 
+## Item Power Depends on Its Source, Not the Hero’s Level
+
+The power of dropped items should **not automatically scale to the hero’s current level**.
+
+Loot quality and potential power depend primarily on its source, including:
+
+- the strength and type of enemy;
+- the difficulty of the activity;
+- the region;
+- the dungeon;
+- the boss;
+- the rarity of the event;
+- other relevant world conditions.
+
+Weak enemies from early areas should not begin dropping high-level equipment simply because the hero has become stronger.
+
+As the hero develops, they should genuinely **outgrow old loot sources** and gain a reason to seek more dangerous places and more serious adventures.
+
+> **To find stronger equipment, the hero must seek stronger sources of loot rather than wait for the old world to automatically scale to their level.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
