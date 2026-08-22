@@ -31,6 +31,14 @@ This document defines the complete item-value loop: how items enter the hero’s
 - personality algorithms used to prefer particular item styles — see `Personality_and_Decision_System_Design_v0.1.md`;
 - world-level economic simulation unless it materially affects hero gameplay — see `World_Simulation_System_Design_v0.1.md`.
 
+## Role of Equipment in Hero Progression
+
+Equipment is one of the hero’s main sources of permanent power.
+
+Early in the game, level and basic attributes may provide most of the hero’s growth. As the hero approaches the soft cap, their relative importance gradually decreases and finding and replacing equipment becomes an increasingly important way to continue developing.
+
+> **The more established the hero becomes, the more their further strength depends on what they have managed to obtain and what they carry.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
