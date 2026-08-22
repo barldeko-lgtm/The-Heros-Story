@@ -162,6 +162,26 @@ Therefore, a deterministic final choice does not mean that different heroes will
 
 The handling of exact ties between final scores may be defined later as a technical detail.
 
+## Long-Term Hero Goals
+
+In addition to immediate tasks, the hero may develop **long-term goals** that influence decisions over an extended period.
+
+Such goals may emerge from:
+
+- personality and preferences;
+- lived events;
+- relationships and conflicts;
+- the hero’s own desires;
+- the state of the world.
+
+Possible examples include saving for a desired item, reaching a particular place, taking revenge, becoming stronger, or earning recognition.
+
+A long-term goal is not an order. It makes related options more attractive and gradually gives direction to the hero’s life.
+
+> **Immediate decisions determine what the hero does now. Long-term goals help define what they are striving toward.**
+
+The number of simultaneous goals, their exact creation and completion rules, and whether the player may directly establish any of them remain open design questions.
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
