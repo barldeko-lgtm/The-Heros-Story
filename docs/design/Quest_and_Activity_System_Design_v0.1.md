@@ -213,6 +213,24 @@ When the underlying situation ends or changes, the quests created by it may also
 
 The systems that create wars, invasions, regional states, and other world changes belong to `World_Simulation_System_Design_v0.1.md`; this document only defines how those changes may affect the hero’s available activities.
 
+## Changing Opportunities Encourage Travel
+
+The hero’s current location does not need to provide an endless supply of suitable activities.
+
+Over time, the hero may find that:
+
+- available quests are too easy;
+- available quests are too dangerous;
+- the remaining opportunities are unattractive to this particular hero;
+- no suitable new opportunities have appeared yet;
+- another location currently offers a more attractive quest, rumor, or event.
+
+Such changes may naturally encourage the hero to wait, pursue another activity, or travel to another city or region.
+
+The system should **not deliberately starve the hero of quests** merely to force movement.
+
+> **The hero changes location because opportunities in the world change, not because the game artificially switches the old location off.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
