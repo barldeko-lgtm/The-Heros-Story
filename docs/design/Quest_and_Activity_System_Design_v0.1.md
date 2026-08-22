@@ -167,6 +167,16 @@ Quests should **not automatically scale to the hero’s current power**. The her
 
 > **The world offers what exists in that place. The hero decides what is within reach and worth pursuing.**
 
+## Different Quest Difficulties
+
+New quests in the same location may have different levels of difficulty.
+
+Most should fit the ordinary danger range of that region, but noticeably more dangerous opportunities may sometimes appear as well.
+
+The exact distribution and frequency of different difficulty levels are balance parameters and should be determined through prototyping and testing.
+
+> **The world does not have to offer the hero only safe or currently suitable quests. Some available opportunities may simply be beyond the hero’s present capabilities.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
