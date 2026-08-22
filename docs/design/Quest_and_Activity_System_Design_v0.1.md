@@ -189,6 +189,18 @@ The exact lifetime of quest offers is a balance parameter to be defined later.
 
 > **The available adventure pool should gradually change with the world rather than becoming a permanent archive of old quests.**
 
+## Geographic Quest Anchoring
+
+A quest should be tied to a specific place or area of the world whenever that matches its content.
+
+Its objective may be a camp, lair, dungeon, part of a region, event location, or another understandable destination.
+
+After the quest is completed, failed, or disappears, the related location may disappear, change state, or remain a permanent part of the world depending on its nature.
+
+> **A quest should feel like something happening somewhere in the world, not like an isolated line in a list.**
+
+The exact way this connection is presented on the map belongs to `World_Map_and_Travel_System_Design_v0.1.md`.
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
