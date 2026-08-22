@@ -266,6 +266,18 @@ The exact rules for recovery, number of fights, dungeon structure, bosses, and r
 
 > **A dungeon should test not one fight, but the hero’s ability to survive an entire dangerous expedition.**
 
+## Continue or Retreat Decision
+
+During a dangerous expedition, the hero should periodically reassess whether it is worth continuing or safer to retreat.
+
+First, the hero evaluates the objective situation: current condition, remaining recovery options and resources, the difficulty of previous fights, expected danger ahead, the value and proximity of the objective, and the possibility of retreating safely.
+
+That evaluation is then modified by the hero’s personality, willingness to take risks, current motives, personal importance of the objective, and divine influence.
+
+Personality should change the **acceptable level of risk**, not disable common sense. A cautious hero may retreat earlier, while a risk-seeking hero may push farther, but the hero should not repeatedly enter obviously hopeless situations without a serious reason.
+
+> **The same risk may be acceptable to one hero and too high for another.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
