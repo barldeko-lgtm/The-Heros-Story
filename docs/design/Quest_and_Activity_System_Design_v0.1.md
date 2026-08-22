@@ -149,6 +149,24 @@ Systemic quests do not replace unique events or authored content. They provide t
 
 > **Ordinary adventures should scale through systems; unique content should be used where its uniqueness is genuinely noticeable.**
 
+## Quests Depend on Location
+
+The ordinary quest pool should be determined by the **city and surrounding region**, not by the current level of the specific hero.
+
+Different places may offer different:
+
+- quest types;
+- enemies;
+- danger levels;
+- rewards;
+- local opportunities.
+
+Safer areas naturally tend to provide easier and moderate activities, while more dangerous regions may offer harder ones more often.
+
+Quests should **not automatically scale to the hero’s current power**. The hero evaluates what the world currently offers and decides what is suitable, worthwhile, and interesting.
+
+> **The world offers what exists in that place. The hero decides what is within reach and worth pursuing.**
+
 ## Migration note
 
 Prototype 0 quest rules remain implementation scope unless explicitly promoted into full-game design.
