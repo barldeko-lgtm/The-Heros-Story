@@ -447,6 +447,22 @@ Exact loss amounts and rules will be determined later.
 
 > **Death puts the current loot and adventure at risk, not the life the hero has already built.**
 
+## Resurrection Location
+
+After natural resurrection, the hero returns to life in a **safe location** rather than directly at the place where they died.
+
+This may be:
+
+- the nearest appropriate city;
+- a temple;
+- another logical safe location.
+
+The exact return location may depend on where the death occurred and which safe points are available to the hero.
+
+The design does not currently require a universal rule such as “always the nearest city” or “always a temple”; this should be defined together with the world map and travel systems.
+
+> **Death ends the failed expedition and returns the hero to a safe part of their life.**
+
 ## Migration note
 
 Prototype formulas are not automatically treated as final full-game balance.
