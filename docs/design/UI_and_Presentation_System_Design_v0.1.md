@@ -36,3 +36,21 @@ Separate detailed views may exist for:
 The design does not yet require these to be literal separate windows. They may later be implemented as windows, tabs, panels, or another navigation structure that best fits the final interface.
 
 > **The main screen is for observing the hero’s life; additional screens are for examining individual systems in detail.**
+
+## Player Control of Simulation Speed
+
+The player may be allowed to **pause and accelerate the simulation** so the pace of observation can be adjusted to the current situation.
+
+This is useful because different periods of the hero’s life have very different information density. At times the hero may be making an important decision or facing a dangerous event; at others they may simply be traveling for a long time, recovering, or performing ordinary activity.
+
+However:
+
+- the game should still feel good at its normal base speed;
+- the player should not be forced to use maximum acceleration merely to skip boring stretches;
+- speed control should not become an optimization mechanic of its own;
+- the final set of player-facing speed options should be determined through testing;
+- very high multipliers used during development may remain developer tools rather than release-facing modes.
+
+The existence of pause and time-speed control is therefore a valid design direction, while the exact speed multipliers are not fixed yet.
+
+> **Acceleration should help the player choose a comfortable pace of observation, not compensate for an uninteresting pace in the game itself.**
