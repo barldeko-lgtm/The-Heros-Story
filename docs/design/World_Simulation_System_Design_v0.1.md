@@ -93,6 +93,30 @@ The exact rules for retreat, death, succession, resource loss, and their contrib
 
 > **Named NPCs should be part of the history of the world, not merely unusually durable enemies.**
 
+## NPC Adventurers — Optional Future Layer
+
+In the future, the world may include a small number of **autonomous NPC adventurers** who live simplified adventuring lives of their own.
+
+They may:
+
+- travel between cities;
+- take part in some activities;
+- gradually become stronger;
+- occasionally replace equipment;
+- participate in world events;
+- cross paths with the main hero;
+- potentially join the hero in especially difficult group content later on.
+
+They should **not be simulated with the same depth as the main hero**. The game remains centered on one hero whose life and story receive the full simulation focus.
+
+This system is worth adding only if NPC adventurers create visible situations such as encounters, competition, shared events, consequences for the world, or meaningful intersections with the hero’s story.
+
+If they merely exist somewhere in the background and the player rarely notices their effects, the simulation cost is not justified.
+
+> **Other adventurers are useful only when their lives become part of the story of the main hero.**
+
+This remains an **optional future layer**, not a commitment for the base game.
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
