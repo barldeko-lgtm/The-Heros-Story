@@ -176,11 +176,17 @@ Such goals may emerge from:
 
 Possible examples include saving for a desired item, reaching a particular place, taking revenge, becoming stronger, or earning recognition.
 
+The player may also establish **one active long-term direction for the hero**. This represents persistent divine guidance rather than a direct command. While it is active, related options become more attractive in the hero’s normal decision-making process, but the hero still decides how and when to pursue that direction according to their own personality, circumstances, and available opportunities.
+
+The player-guided direction should remain active until it is completed or otherwise resolved rather than being freely replaced whenever a more convenient option appears. Once it is resolved, the player may choose another long-term direction.
+
+This does not limit the hero to only one long-term goal. Other goals may emerge independently from the hero’s own life and coexist with the player-guided direction. The exact number of simultaneous hero-generated goals is not fixed yet.
+
 A long-term goal is not an order. It makes related options more attractive and gradually gives direction to the hero’s life.
 
-> **Immediate decisions determine what the hero does now. Long-term goals help define what they are striving toward.**
+> **Immediate decisions determine what the hero does now. Long-term goals help define what they are striving toward. The player may guide one long thread of that journey without taking ownership of the hero’s choices.**
 
-The number of simultaneous goals, their exact creation and completion rules, and whether the player may directly establish any of them remain open design questions.
+The exact creation, completion, conflict-resolution, and priority rules for long-term goals will be defined later.
 
 ## Reputation as a Decision Factor
 
