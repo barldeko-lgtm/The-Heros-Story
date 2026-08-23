@@ -462,6 +462,12 @@ Combat traits may strengthen, weaken, or disappear over time as the hero’s lat
 
 The exact scale, categories, thresholds, and effects of combat traits will be defined separately.
 
+## Combat Trait Persistence — Possible Later Extension
+
+A combat trait reinforced for a long time may become more deeply rooted and require stronger opposite experience to weaken or remove.
+
+This is a possible later extension, not a required part of the base system.
+
 ## Death Is a Defeat, Not the Loss of the Hero
 
 Hero death is not permanent and does not erase long-term development.
