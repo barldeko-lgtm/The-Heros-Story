@@ -70,6 +70,18 @@ The game does not try to distinguish itself through an unusual setting. Its main
 
 Specific nations, cultures, religions, history, and world structure are developed separately.
 
+## Design References
+
+**The Hero’s Story** uses other games as references for specific ideas rather than attempting to copy their overall structure.
+
+- **Majesty** — autonomous heroes, indirect control, and incentives instead of direct orders. The project does not inherit its RTS structure, kingdom building, or control over many heroes.
+- **Space Rangers** — a world that develops independently of the player, competing powers, and events that can resolve without the hero. The world simulation should not become so complex that the player can no longer understand its consequences.
+- **Godville** — the relationship between one deity and one hero, hero autonomy, and the pleasure of observing an independent character. The project does not inherit excessive player passivity or a fully comedic foundation.
+- **The Tale** — personality and preferences as part of autonomous behavior, gradual personality formation, and soft influence over development. MMO structure and collective player systems are not part of the project’s direction.
+- **TBH: Task Bar Hero** — play that does not require constant attention, short check-ins, and the sense that the hero’s life continues while the player is busy. The project should not become a conventional idle clicker, a multiplier race, or a resource generator.
+
+> **References help clarify individual solutions. They do not define the structure of the game as a whole and always remain subordinate to the core concept of The Hero’s Story.**
+
 ## Different Heroes, Different Stories
 
 Different playthroughs should lead to noticeably different life paths.
