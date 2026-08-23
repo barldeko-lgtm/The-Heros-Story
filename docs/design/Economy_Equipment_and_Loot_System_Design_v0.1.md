@@ -134,6 +134,35 @@ The hero’s personality develops through their background, lived experience, de
 
 > **Equipment can change what the hero is capable of, but it does not rewrite who the hero is.**
 
+## Elemental Resistances
+
+The current elemental resistance set contains three defensive stats:
+
+- **Fire Resistance**;
+- **Cold Resistance**;
+- **Lightning Resistance**.
+
+Each resistance reduces only damage of its matching elemental type.
+
+Elemental resistance uses the same diminishing-return formula as Armor:
+
+`Final Damage = Raw Damage × 100 / (100 + Resistance)`
+
+Examples:
+
+- 100 Resistance reduces matching elemental damage by 50%;
+- 300 Resistance would mathematically reduce damage by 75%.
+
+Damage reduction from any single elemental resistance is capped at **75%**. Additional resistance above the value required to reach the cap does not reduce incoming damage further.
+
+Elemental resistance values cannot be negative.
+
+Resistances are valid defensive item stats and may appear on equipment through appropriate prefixes, suffixes, base properties, or other item rules defined later.
+
+At the current design stage there is no resistance penetration, resistance reduction below zero, or other advanced resistance interaction.
+
+> **Elemental resistances use the same defensive logic as Armor: more resistance provides diminishing returns, with a hard maximum of 75% damage reduction.**
+
 ## Item Power Depends on Its Source, Not the Hero’s Level
 
 The power of dropped items should **not automatically scale to the hero’s current level**.
