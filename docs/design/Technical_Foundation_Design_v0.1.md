@@ -40,3 +40,36 @@ Godot is a good fit for the project because:
 Choosing Godot does **not** define the game’s architecture by itself. The architecture should be built around the needs of The Hero’s Story: an autonomous hero and world simulation separated from UI and presentation.
 
 > **Godot is the implementation tool, not the source of the project’s architecture.**
+
+## Main Architectural Principle
+
+The simulation of the hero’s life and the world should be **logically separated from the visual interface**.
+
+The interface displays the state of the simulation and lets the player interact with it, but it should **not be the source of gameplay rules or world state**.
+
+Conceptually:
+
+> simulation determines what happened → game state changes → UI displays the result.
+
+Not:
+
+> a UI button or window calculates what happened in the world by itself.
+
+This separation is especially important because the game is designed for:
+
+- long-running sessions;
+- a minimized window;
+- a relatively small amount of constantly active graphics;
+- simulation that should continue independently of which screen is currently open.
+
+In the future, this separation should make it possible to:
+
+- test the simulation separately from graphics;
+- run large batches of automated playthroughs for balancing;
+- reproduce and analyze hero decisions;
+- save and load world state independently of the interface;
+- reduce unnecessary load when the visual layer is not needed.
+
+The exact classes, data structures, and technical implementation may change as development continues.
+
+> **UI shows the game. It should not be where the game itself lives.**
