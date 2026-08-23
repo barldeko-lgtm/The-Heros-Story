@@ -248,6 +248,28 @@ The concrete rules for quests, trade, and travel remain the responsibility of th
 
 > **Global simulation has value only when its consequences become a noticeable part of the hero’s ordinary life.**
 
+## Complete World Defeat as a Rare Natural Ending
+
+The global threat capturing part of the continent does **not mean Game Over**.
+
+The hero continues living in a changed world:
+
+- cities may be lost;
+- territories may become more dangerous;
+- familiar routes may disappear;
+- surviving factions may retreat;
+- the hero may continue their own life amid the wider crisis.
+
+However, at a very late stage of a playthrough, the global threat may theoretically achieve **the near-complete destruction or subjugation of the world**.
+
+If no genuinely safe place remains that can support the hero’s continued life and organized resistance has effectively collapsed, the hero’s death under those circumstances may become **a natural ending of that playthrough**.
+
+This should be a rare result of long-term world development, not a punishment for the player failing to watch the game for a while.
+
+Such an ending should feel less like an ordinary defeat screen and more like part of the hero’s biography: **they lived a life in a world that eventually fell**.
+
+> **The world may lose its own story, but that should be an event of an age, not an accidental Game Over.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
