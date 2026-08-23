@@ -71,6 +71,32 @@ The player therefore reads the hero’s story from the outside rather than readi
 
 > **The player observes the hero’s life through a narrator, rather than through a mandatory first-person diary.**
 
+## Narrative Tone
+
+The primary narrative style is an **adventure chronicle with a lively authorial voice**.
+
+The narrator may use:
+
+- light dry irony;
+- occasional sarcastic remarks;
+- observational humor;
+- emphasis on recurring habits, awkward choices, or the absurdity of a particular situation.
+
+This should never turn the game into a comedy or parody.
+
+The more serious an event is, the more restrained the narration should become. An ordinary wolf-hunting contract may support a touch of irony; the hero’s death, the fall of a city, a major defeat, or a decisive turning point in their life should be treated with appropriate weight.
+
+Narrative should not drift into:
+
+- constant jokes;
+- memes;
+- modern internet slang;
+- fourth-wall breaking;
+- mockery of the hero;
+- a mandatory punchline in every entry.
+
+> **Humor should make the chronicle feel alive without making the world or the hero’s fate feel trivial.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
