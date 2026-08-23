@@ -136,6 +136,34 @@ The player does not need to see this internal structure directly. They should se
 
 > **The internal map exists to create circumstances around the hero, not to turn the game into a hidden grand strategy.**
 
+## Faction Borders and Wars
+
+When the territories or spheres of influence of **hostile factions meet**, the surrounding area may become a conflict zone.
+
+Such areas may generate more frequent:
+
+- small skirmishes;
+- major battles;
+- military camps;
+- patrols;
+- temporary quests;
+- other war-related events.
+
+War may gradually change territorial control and the position of faction borders.
+
+If the hero is nearby, they may gain an opportunity to become involved. Participation remains **the hero’s own decision** and may depend on:
+
+- relations with the factions involved;
+- personality and willingness to take risks;
+- the hero’s current objective;
+- current condition and power;
+- potential reward;
+- other circumstances and divine influence.
+
+War should affect the hero’s ordinary life **through real changes in the world and the situations those changes create**, rather than existing only as a line in the chronicle.
+
+> **War matters not because influence numbers change somewhere in the simulation, but because it changes the world through which the hero lives and travels.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
