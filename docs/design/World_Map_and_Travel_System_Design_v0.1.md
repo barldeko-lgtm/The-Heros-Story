@@ -34,6 +34,112 @@ The map is treated as a gameplay system, not merely as a visual screen.
 
 The map must support the fantasy of following one hero’s journey through a living world without turning the game into an RTS or direct movement-control game.
 
+## Overall World Structure
+
+The main game world is located on **one continent**.
+
+For the full game, a working scale is roughly **around 10 major cities** connected by roads, regions, and different points of interest. The exact number is not fixed in advance and should depend on how many genuinely distinct and useful gameplay areas the game needs.
+
+Small villages, farms, and other settlements are **not required by default**. They should be added only when they serve a distinct gameplay function or create meaningful situations for the hero.
+
+The world is conceptually **open from the beginning**. The game does not prohibit the hero from traveling to a distant region simply because their level is too low.
+
+Instead, the autonomous hero evaluates factors such as:
+
+- whether suitable opportunities exist there;
+- how dangerous the journey and known threats are;
+- whether the hero is strong enough;
+- whether traveling there makes practical sense;
+- whether a quest, event, long-term goal, or another motive provides a reason to go.
+
+A young hero therefore normally remains near safer areas **not because the rest of the world is locked, but because traveling into much more dangerous regions is not yet a sensible choice**.
+
+> **The world is open in advance; the hero’s own development makes more of it practically relevant over time.**
+
+## The Map as a Visual Reflection of the Living World
+
+The map should be one of the main ways the player **understands where the hero is and what is happening in the world**.
+
+It should be primarily **schematic, readable, and functional** rather than trying to represent the continent with maximum geographical detail.
+
+The map may display:
+
+- cities;
+- major regions and territories;
+- points of interest;
+- the hero’s current position;
+- the current route or direction of travel;
+- areas of faction influence;
+- borders and territorial changes.
+
+The map becomes especially important during major changes in the world, such as:
+
+- wars;
+- sieges;
+- border changes;
+- invasions;
+- the appearance of major threats;
+- other events that significantly alter the state of regions.
+
+The player should be able to **see that the world has changed**, rather than learning about every major development only through text.
+
+At the same time, the map remains a tool for observation and understanding. It must **not become an interface for directly controlling the hero or commanding armies**.
+
+> **The map should show the life and changes of the world, not merely serve as a background for icons.**
+
+## Important Named Characters on the Map
+
+The location of especially important named characters may be shown on the map **when that location is known to the player**.
+
+This allows the player to see that significant figures in the world actually move and participate in events: they may remain in a city, travel toward a front, take part in a siege, or retreat after a defeat.
+
+The map does not have to give the player constant omniscient knowledge of every such character’s exact location.
+
+## Types of Points of Interest
+
+Points of interest may differ by how persistent they are in the world:
+
+- **Permanent** — stable parts of the world such as ruins, known caves, mountain passes, or ancient shrines.
+- **Exhaustible** — locations tied to a situation that can be resolved, cleared, or otherwise changed, such as a bandit camp, monster lair, or dungeon objective.
+- **Temporary** — locations or opportunities created by world events for a limited time, such as a caravan, military camp, invasion, rare creature, portal, or battlefield.
+
+A physical location does not always need to disappear when its current activity ends. It may instead remain on the map in a changed state.
+
+The detailed lifecycle of quest-linked locations belongs to `Quest_and_Activity_System_Design_v0.1.md`; this section only defines the map-level categories.
+
+> **Not every opportunity on the map is permanent: some places remain, some are resolved, and some appear only because the world is currently changing.**
+
+## Partial World Variation Between Playthroughs
+
+Different heroes may begin their lives in **somewhat different states of the same broader world**.
+
+The geography of the continent does not need to be generated from scratch for every new game. The underlying structure should instead be authored in advance, including elements such as:
+
+- the continent shape;
+- major natural regions;
+- valid positions for cities;
+- possible roads and connections;
+- suitable locations for permanent points of interest.
+
+When a new playthrough begins, some elements may be assembled differently within those prepared constraints, for example:
+
+- which cities are used and which valid positions they occupy;
+- which factions control those cities;
+- initial spheres of influence;
+- some permanent and exhaustible points of interest;
+- starting threats;
+- the initial political situation of the world.
+
+Variation must still respect **the logic of the setting**. For example, a dwarven city should appear in a suitable mountainous region rather than being placed arbitrarily only for the sake of randomness.
+
+The goal is not to generate an entirely new continent each time, but to allow a new hero to be born into **a somewhat different version of a familiar world**.
+
+The technical cost and actual value of this system should be evaluated much later. It remains a desirable future direction rather than a requirement for the base game.
+
+> **It is better to rearrange well-designed world elements within clear rules than to procedurally generate everything for its own sake.**
+
+The detailed simulation of initial faction control and political state belongs to `World_Simulation_System_Design_v0.1.md`.
+
 ## Migration note
 
 Prototype 0’s abstract single-city distance model is not automatically the final world-map design.

@@ -41,3 +41,5 @@ After migration is complete and verified, the old concept document may be marked
 8. `World_Simulation_System_Design_v0.1.md`
 9. `World_Map_and_Travel_System_Design_v0.1.md`
 10. `Narrative_and_Diary_System_Design_v0.1.md`
+11. `UI_and_Presentation_System_Design_v0.1.md`
+12. `Technical_Foundation_Design_v0.1.md`
