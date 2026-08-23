@@ -183,6 +183,25 @@ The exact nature of this force, its pace of development, transition conditions, 
 
 > **A major threat develops as part of the world’s history, not as a story boss that activates when the hero reaches the required level.**
 
+## The Global Threat Is Not a Mandatory Main Quest
+
+The appearance of a major threat does **not automatically turn the hero into the chosen savior of the world**.
+
+Depending on personality, goals, relationships, and the history that has developed around them, the hero may:
+
+- actively fight the threat;
+- defend a particular city or friendly faction;
+- participate only in selected related events;
+- try to stay away from the war;
+- move to a safer region;
+- exploit the resulting chaos for personal goals.
+
+In exceptional cases, it may also be possible for the hero to **end up on the side of the threat itself**, but only if that path emerges naturally from the hero’s lived history. This must not be a simple starting choice such as “play as the evil faction.”
+
+The global threat may become **the defining story of one particular hero**, while for another hero it may remain a huge world event that unfolded alongside a largely different personal life.
+
+> **The world may be living through the greatest war of its age without the game appointing our hero as its main character.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
