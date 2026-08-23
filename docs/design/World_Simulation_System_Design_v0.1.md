@@ -117,6 +117,25 @@ If they merely exist somewhere in the background and the player rarely notices t
 
 This remains an **optional future layer**, not a commitment for the base game.
 
+## Internal Spatial Representation of the World
+
+For simulation purposes, the world may be internally divided into **hidden spatial areas**.
+
+These may be cells, regions, or another convenient structure. The exact technical format is not fixed at the design level.
+
+A spatial area may store information such as:
+
+- faction ownership or influence;
+- terrain type;
+- current danger;
+- active events;
+- presence of a global threat;
+- other parameters needed by the world simulation.
+
+The player does not need to see this internal structure directly. They should see its **results** through border changes, appearing threats, events, dangerous territories, and other visible consequences in the world.
+
+> **The internal map exists to create circumstances around the hero, not to turn the game into a hidden grand strategy.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
