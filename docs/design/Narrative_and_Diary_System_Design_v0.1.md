@@ -282,6 +282,30 @@ Not every event should appear in every layer. An ordinary potion purchase may re
 
 > **The fact is the same. Different layers answer different questions about its meaning.**
 
+## Primary Goal of the Narrative
+
+Narrative should transform a dry sequence of systemic facts such as:
+
+> quest selected → battle → level gained → item found
+
+into:
+
+> **a piece of one specific hero’s biography.**
+
+Ideally, the player should remember situations more than numbers:
+
+- where the hero went when they probably should not have;
+- what they used to fear;
+- whom they unexpectedly managed to defeat;
+- which city they lost or helped save;
+- when they first began to feel genuinely powerful;
+- which recurring habit kept getting them into trouble;
+- what ultimately came to define their life.
+
+If the text merely reports gameplay facts but does not help such memories form, it is not fulfilling its primary purpose.
+
+> **A good chronicle should leave the player remembering not a list of events, but the story of a specific life.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
