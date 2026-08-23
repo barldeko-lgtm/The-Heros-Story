@@ -225,6 +225,29 @@ The exact mathematics of faction strength, warfare, and territorial pressure wil
 
 > **The hero can change the fate of the world, but the world should not be helpless without them.**
 
+## Consequences of War Must Reach the Hero’s Life
+
+A change in territorial control should not amount only to **a color changing on the map**.
+
+War and other major changes in the world should pass consequences into other game systems and genuinely alter the circumstances around the hero.
+
+They may affect:
+
+- available quests and events;
+- enemies and the danger level of a region;
+- the appearance and disappearance of points of interest;
+- road and route safety;
+- the condition of cities;
+- trading opportunities;
+- faction relations;
+- the appearance of sieges, camps, battles, and other temporary situations.
+
+The hero does not have to participate in the war itself. Even when avoiding it, the changed world may force the hero to choose another route, look for work elsewhere, or encounter new dangers and opportunities.
+
+The concrete rules for quests, trade, and travel remain the responsibility of their respective system documents.
+
+> **Global simulation has value only when its consequences become a noticeable part of the hero’s ordinary life.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
