@@ -97,6 +97,28 @@ Narrative should not drift into:
 
 > **Humor should make the chronicle feel alive without making the world or the hero’s fate feel trivial.**
 
+## Narrative Tone Examples
+
+These examples are **tone references rather than fixed templates**. Final text should still reflect the actual simulation facts and the specific hero involved.
+
+**Ordinary situation — light irony is appropriate:**
+
+> For the third time that week, Alric agreed to clear the same forest of wolves. The local guard appeared to have concluded that wolves were, quite specifically, Alric’s problem.
+
+**Serious event — no joke is needed:**
+
+> By evening, the gates of Dornholm had fallen. The remaining defenders withdrew to the inner walls, while General Torvin left the city with what remained of the garrison.
+
+**Good dry humor:**
+
+> The reward for the goblins looked modest. After some thought, Edgar decided that twenty silver coins were still preferable to another evening in the tavern without twenty silver coins.
+
+**Tone to avoid:**
+
+> Edgar epically wrecked the goblins and gained +20 awesomeness.
+
+The purpose of such examples is to keep future narrative writing aligned with the intended balance of seriousness, observation, and restrained humor.
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
