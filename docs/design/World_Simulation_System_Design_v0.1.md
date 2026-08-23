@@ -202,6 +202,29 @@ The global threat may become **the defining story of one particular hero**, whil
 
 > **The world may be living through the greatest war of its age without the game appointing our hero as its main character.**
 
+## The World Resists Without the Hero
+
+Ordinary factions should autonomously **respond to wars, invasions, and the global threat** even when the hero does not participate in those events.
+
+They may:
+
+- defend their territories;
+- wage wars;
+- hold cities;
+- lose and regain regions;
+- temporarily cooperate against a common threat;
+- use their own powerful characters and resources.
+
+The hero’s absence should **not automatically mean the world loses**.
+
+At the same time, the global threat should remain strong enough to genuinely reshape the map and create pressure. The world should not be guaranteed to defeat it on its own in every playthrough.
+
+Different playthroughs may develop differently: in some, factions successfully contain the threat; in others, they lose territory; and the hero’s involvement may noticeably change the outcome of particular events.
+
+The exact mathematics of faction strength, warfare, and territorial pressure will be defined later.
+
+> **The hero can change the fate of the world, but the world should not be helpless without them.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
