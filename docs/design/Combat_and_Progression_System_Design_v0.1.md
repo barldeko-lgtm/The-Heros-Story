@@ -317,6 +317,131 @@ The exact Power formula may change as the combat system develops, but the princi
 
 > **The hero and enemies should be measured with the same ruler, based on their real combat capabilities.**
 
+### Provisional Full-Game Warrior Power Model
+
+The current working full-game baseline for the Warrior preserves the existing structural idea:
+
+`Power = sqrt(EffectiveHP × EffectiveDPS)`
+
+This is a **design model for future combat**, not a change to the currently implemented Prototype 0 calculator. Its purpose is to establish how the expanded combat-stat set can contribute to one comparable Power number.
+
+Primary attributes are not added directly to Power. Strength, Dexterity, Constitution, equipment, and other sources first modify resolved combat stats; Power is then calculated from those resolved stats. This prevents the same source from being counted twice.
+
+#### Offensive side
+
+For a physical Warrior, the base expected damage output is:
+
+`CritModifier = 1 + CritChance × (CritDamage - 1)`
+
+`RawDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier`
+
+Accuracy cannot be evaluated in isolation because its actual combat value depends on the target’s Dodge. For a universal Power estimate, the current working model therefore evaluates Accuracy against a **reference target with 50 Dodge**.
+
+Reference hit chance is calculated using the normal Accuracy/Dodge formula:
+
+`ReferenceHitChance = 1 - 50 / (50 + Accuracy + 100)`
+
+At `Accuracy = 0`, that reference hit chance is `0.6667`. To ensure that zero Accuracy does not reduce the character below the baseline Power model, Accuracy is normalized against that value:
+
+`AccuracyFactor = ReferenceHitChance / 0.6667`
+
+Equivalent form:
+
+`AccuracyFactor = 1.5 × (Accuracy + 100) / (Accuracy + 150)`
+
+Examples:
+
+| Accuracy | AccuracyFactor |
+| ---: | ---: |
+| 0 | 1.000 |
+| 50 | 1.125 |
+| 100 | 1.200 |
+| 200 | 1.286 |
+
+As Accuracy approaches extremely high values, this factor approaches `1.50`, giving Accuracy diminishing returns in the universal Power estimate.
+
+The provisional offensive term is therefore:
+
+`EffectiveDPS = RawDPS × AccuracyFactor`
+
+#### Defensive side
+
+Dodge also depends on an opponent’s Accuracy. For the universal Power estimate, the current working model evaluates Dodge against a **reference attacker with 100 Accuracy**.
+
+`ReferenceDodgeChance = Dodge / (Dodge + 100 + 100)`
+
+The normal `50%` Dodge cap still applies.
+
+Dodge increases effective survivability through:
+
+`DodgeEHPFactor = 1 / (1 - ReferenceDodgeChance)`
+
+Examples:
+
+| Dodge | Reference Dodge Chance | DodgeEHPFactor |
+| ---: | ---: | ---: |
+| 0 | 0% | 1.00 |
+| 50 | 20% | 1.25 |
+| 100 | 33.3% | 1.50 |
+| 200 | 50% | 2.00 |
+
+Armor and elemental resistances cannot be valued as if every enemy dealt the same damage type. For the universal Power estimate, the current working **reference incoming-damage mix** is:
+
+- **70% physical**;
+- **10% fire**;
+- **10% cold**;
+- **10% lightning**.
+
+These percentages are tuning values, not permanent world rules. They exist only to give the universal Power calculation a stable reference environment and must later be tested against the actual distribution of enemies and damage types.
+
+For each damage type, calculate the fraction of damage that remains after the relevant defense:
+
+`PhysicalTaken = 100 / (100 + Armor)`
+
+`FireTaken = 100 / (100 + FireResistance)`
+
+`ColdTaken = 100 / (100 + ColdResistance)`
+
+`LightningTaken = 100 / (100 + LightningResistance)`
+
+Elemental-resistance caps defined elsewhere still apply. If the final Armor mitigation rule or cap changes later, `PhysicalTaken` must follow that final Armor rule rather than creating a separate Power-only Armor formula.
+
+The weighted reference damage taken is:
+
+`AverageDamageTaken = 0.70 × PhysicalTaken + 0.10 × FireTaken + 0.10 × ColdTaken + 0.10 × LightningTaken`
+
+The provisional defensive term is:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+
+This makes Health, Armor, Dodge, and elemental resistances contribute through expected survivability instead of being converted into arbitrary flat Power points.
+
+#### Final provisional Warrior Power
+
+The current working formula is therefore:
+
+`WarriorPower = sqrt(EffectiveHP × EffectiveDPS)`
+
+where:
+
+`EffectiveDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier × AccuracyFactor`
+
+and:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+
+Block is **not yet included** because its exact combat formula and eligible attack types have not been defined. Warrior abilities and Wisdom-based Skill Level are also not given an arbitrary separate Power bonus at this stage; they should enter Power only after their real combat effects can be represented consistently.
+
+#### Universal Power vs. specific matchup strength
+
+This Power value represents the character’s **general combat strength**, not a prediction against one specific opponent.
+
+A character with very high Fire Resistance may gain only a moderate amount of universal Power because fire is only part of the reference damage mix, while being dramatically stronger in practice against a fire-focused enemy. Likewise, Accuracy may be much more valuable against a particularly evasive target than the universal Power number suggests.
+
+A future matchup or threat assessment may use the real opponent’s Accuracy, Dodge, damage types, resistances, abilities, and other relevant properties. That calculation should remain separate from the character’s universal Power value.
+
+The reference values currently used by the universal model — **50 reference Dodge, 100 reference Accuracy, and the 70/10/10/10 incoming-damage mix** — are provisional tuning parameters. They must be validated through large batches of automated fights. If equal or similar Power does not correspond to roughly comparable actual general combat strength, these reference values or the formula itself must be revised.
+
 ## Class Must Change Combat Logic
 
 Differences between classes should not be reduced only to weapons or slightly different damage numbers.
