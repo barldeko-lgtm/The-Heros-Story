@@ -120,7 +120,7 @@ For example:
 
 Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
 
-The exact modifier pools, individual stats, tiers, and numerical ranges are not defined yet.
+The current primary and secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, which stats may appear on which item types, modifier tiers, and numerical roll ranges are not defined yet.
 
 > **Randomness should create item variety, not meaningless chaos.**
 
@@ -162,6 +162,16 @@ Resistances are valid defensive item stats and may appear on equipment through a
 At the current design stage there is no resistance penetration, resistance reduction below zero, or other advanced resistance interaction.
 
 > **Elemental resistances use the same defensive logic as Armor: more resistance provides diminishing returns, with a hard maximum of 75% damage reduction.**
+
+## Accuracy and Dodge on Equipment
+
+**Accuracy** and **Dodge** are valid combat stats that may appear on equipment through appropriate modifiers or base properties.
+
+Their exact combat interaction is owned by `Combat_and_Progression_System_Design_v0.1.md`. In the current model, Accuracy counters Dodge rather than increasing hit chance above 100%, and both stats use the same shared hit-resolution formula for the hero and enemies.
+
+The item system should therefore evaluate Accuracy primarily as a way to improve performance against targets that possess Dodge, while Dodge provides a defensive chance to avoid eligible attacks.
+
+The exact item-type pools, modifier tiers, and numerical ranges for Accuracy and Dodge will be defined together with the broader modifier system.
 
 ## Item Power Depends on Its Source, Not the Hero’s Level
 
