@@ -106,7 +106,7 @@ The current working contribution of **each single point** of a primary attribute
 | **Constitution (CON)** | +20 maximum Health; +2 Armor |
 | **Wisdom (WIS)** | +1 Skill Level |
 
-These values are **provisional balance values**, intended to establish the role of each primary attribute before final formulas and stat ranges are known. They may be adjusted substantially during balance work. Dodge in particular does not yet have a final conversion formula, so its current numerical contribution should not be treated as final.
+These values are **provisional balance values**, intended to establish the role of each primary attribute before final stat ranges are known. They may be adjusted substantially during balance work. The Accuracy/Dodge interaction now has a defined working formula, but the current +10 Accuracy and +5 Dodge gained from each point of Dexterity remain provisional balance values.
 
 Primary attributes may also influence appropriate event checks and outcomes independently of these combat contributions.
 
@@ -145,7 +145,7 @@ The exact Block formula and its interaction with different attack types will be 
 ### Offensive stats
 
 - **Damage** — the base strength of attacks or damaging actions before relevant mitigation;
-- **Accuracy** — determines the ability to successfully hit a target;
+- **Accuracy** — reduces the target’s effective chance to avoid an eligible attack through Dodge;
 - **Critical Chance** — determines the chance that an eligible hit becomes a critical hit;
 - **Critical Damage** — determines how much additional damage a critical hit deals;
 - **Attack Speed** — affects the speed or frequency of weapon attacks;
@@ -154,6 +154,38 @@ The exact Block formula and its interaction with different attack types will be 
 These stats may be derived from primary attributes, class, equipment, abilities, temporary effects, and other valid sources.
 
 The current list is the working base set. Additional secondary stats should be introduced only when they create a clear gameplay purpose rather than unnecessary complexity.
+
+### Accuracy and Dodge
+
+Accuracy and Dodge use **one shared hit-resolution check**. The game does not first roll a separate chance to miss and then make an additional independent Dodge roll for the same attack.
+
+If the target has **0 Dodge**, an otherwise eligible ordinary attack has a **100% chance to hit**. Accuracy cannot increase hit chance above 100%; its purpose is to counter the target’s Dodge.
+
+When the target has Dodge, the current working formula is:
+
+`Dodge Chance = Dodge / (Dodge + Accuracy + 100)`
+
+The corresponding chance to hit is:
+
+`Hit Chance = 1 - Dodge Chance`
+
+The same formula applies to the hero and to enemies.
+
+Examples:
+
+| Accuracy | Dodge | Dodge Chance | Hit Chance |
+| ---: | ---: | ---: | ---: |
+| 100 | 0 | 0% | 100% |
+| 100 | 50 | 20% | 80% |
+| 100 | 100 | 33.3% | 66.7% |
+| 200 | 50 | 14.3% | 85.7% |
+| 200 | 100 | 25% | 75% |
+
+Dodge Chance is capped at **50%**. No amount of Dodge can make ordinary eligible attacks less than 50% likely to hit under this base rule.
+
+This model intentionally gives both stats diminishing returns. Every positive amount of Dodge has some effect against an attacker, while Accuracy continuously reduces that effect instead of creating a hard threshold where Dodge provides no benefit until it exceeds Accuracy.
+
+> **Dodge creates a chance to avoid attacks; Accuracy counters Dodge rather than creating hit chance above 100%.**
 
 ## Sources of Permanent Hero Power
 
