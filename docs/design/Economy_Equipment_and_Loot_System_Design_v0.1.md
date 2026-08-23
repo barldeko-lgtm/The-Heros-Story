@@ -63,19 +63,21 @@ The current slot structure should remain compact. Additional slots such as a bel
 
 Each item has two main characteristics that describe its quality:
 
-- **item level / base power** — determines the item’s general stat potential;
-- **rarity** — determines how rich and unusual the item may become.
+- **item level / base power** — determines the item’s general stat potential and which modifier value ranges may be available;
+- **rarity** — determines the fixed number of prefixes and suffixes generated on the item.
 
-Higher rarity may provide:
+The current rarity structure is:
 
-- a larger total stat budget;
-- more additional properties;
-- stronger rolls for those properties;
-- access to rarer or more unusual effects.
+| Rarity | Color | Prefixes | Suffixes |
+| --- | --- | ---: | ---: |
+| Normal | White | 0 | 0 |
+| Uncommon | Green | 1 | 1 |
+| Rare | Blue | 2 | 2 |
+| Epic | Purple | 3 | 3 |
 
-The exact rarity names, colors, and numerical bonuses are not fixed yet.
+Modifier slots are never empty. If an item has a given rarity, it always receives the complete number of prefixes and suffixes defined for that rarity.
 
-> **Item level defines the foundation of an item’s strength, while rarity defines how far that item may go beyond an ordinary piece of equipment.**
+> **Item level defines the foundation of an item’s strength, while rarity defines how many additional modifiers are added to that foundation.**
 
 ## Item Power Budget
 
@@ -91,11 +93,23 @@ For example, one chest piece may provide more defense, while another provides le
 
 The exact formulas and relative cost of individual stats will be defined later.
 
-## Random Item Properties
+## Prefixes, Suffixes, and Random Generation
 
-Additional item stats and properties are partially generated randomly so that items of the same type can differ meaningfully from one another.
+Generated equipment follows the general structure:
 
-However, generation should not be completely unrestricted. Each item type has its own pool of allowed properties.
+> **base item → item level → rarity → prefixes and suffixes → rolled modifier values**
+
+The base item defines the item type, equipment slot, and its inherent base characteristics.
+
+After rarity is determined, the item receives the exact number of prefixes and suffixes required by that rarity. Prefixes and suffixes are selected from modifier pools available to that specific type of item.
+
+The random part of item generation comes from:
+
+- which eligible prefixes are selected;
+- which eligible suffixes are selected;
+- the numerical value rolled for each selected modifier within its allowed range.
+
+Generation should not be completely unrestricted. Each item type has its own pool of allowed properties so that items remain coherent with their function.
 
 For example:
 
@@ -106,7 +120,19 @@ For example:
 
 Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
 
+The exact modifier pools, individual stats, tiers, and numerical ranges are not defined yet.
+
 > **Randomness should create item variety, not meaningless chaos.**
+
+## Equipment Does Not Modify Personality
+
+Equipment may affect the hero’s combat capabilities, resources, stats, and other gameplay properties directly connected to what the item physically or mechanically provides.
+
+Equipment does **not** modify the hero’s personality, morality, character traits, preferences, or decision-making tendencies merely because the item is equipped.
+
+The hero’s personality develops through their background, lived experience, decisions, and meaningful events rather than through ordinary equipment bonuses.
+
+> **Equipment can change what the hero is capable of, but it does not rewrite who the hero is.**
 
 ## Item Power Depends on Its Source, Not the Hero’s Level
 
@@ -127,24 +153,6 @@ Weak enemies from early areas should not begin dropping high-level equipment sim
 As the hero develops, they should genuinely **outgrow old loot sources** and gain a reason to seek more dangerous places and more serious adventures.
 
 > **To find stronger equipment, the hero must seek stronger sources of loot rather than wait for the old world to automatically scale to their level.**
-
-## Legendary and Mythic Items
-
-Items of the highest rarity should differ from ordinary equipment by **more than just larger stat numbers**.
-
-Legendary and mythic items may have:
-
-- a unique property;
-- an unusual interaction with a class mechanic;
-- a modification to an existing ability;
-- their own active or passive ability;
-- another rare rule that noticeably changes how the item is used.
-
-Such an item should feel like a **significant discovery in the story of a particular hero**, rather than simply another piece of equipment with stats that are 15% higher.
-
-The exact format of unique effects and the rules for generating them will be defined later.
-
-> **The highest rarity should give an item individuality, not merely larger numbers.**
 
 ## Equipment Sets — Possible Late System
 
