@@ -94,7 +94,21 @@ At the current design stage, the hero has **five primary developable attributes*
 
 Primary attributes are long-term characteristics of the hero. They contribute to secondary combat stats and may also be used by appropriate non-combat events, checks, and outcomes when the nature of the situation makes that attribute relevant.
 
-The exact secondary-stat contributions, event checks, formulas, and relative value of each primary attribute will be defined separately.
+### Provisional Primary Attribute Contributions
+
+The current working contribution of **each single point** of a primary attribute is:
+
+| Primary attribute | Current provisional contribution per point |
+| --- | --- |
+| **Strength (STR)** | +2 physical Damage; +5% Critical Damage |
+| **Dexterity (DEX)** | +10 Accuracy; +5 Dodge; +3% Critical Chance |
+| **Intelligence (INT)** | +2 magical Damage; +20 Mana |
+| **Constitution (CON)** | +20 maximum Health; +2 Armor |
+| **Wisdom (WIS)** | +1 Skill Level |
+
+These values are **provisional balance values**, intended to establish the role of each primary attribute before final formulas and stat ranges are known. They may be adjusted substantially during balance work. Dodge in particular does not yet have a final conversion formula, so its current numerical contribution should not be treated as final.
+
+Primary attributes may also influence appropriate event checks and outcomes independently of these combat contributions.
 
 Separate from those attributes are hero resources:
 
