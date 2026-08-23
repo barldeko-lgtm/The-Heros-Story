@@ -255,6 +255,33 @@ It is not yet fixed that the player automatically knows everything occurring acr
 
 > **The hero chronicle answers “what happened to them?” The world chronicle answers “what was happening around them and without them?”**
 
+## Relationship Between the Narrative Layers
+
+The same real simulation event may appear in **more than one textual layer** when it is important enough, but each layer presents it for a different purpose and at a different level of detail.
+
+For example, the hero defeats a dangerous necromancer.
+
+**Detailed action and decision log:**
+
+> Healing potion used.  
+> Class ability activated.  
+> Necromancer defeated.  
+> Rare staff obtained.
+
+**Main hero chronicle:**
+
+> The fight proved harder than Edgar expected. By the time the necromancer finally fell, almost nothing remained of his supplies except his confidence — and even that had been badly shaken.
+
+**Milestone of the hero’s life:**
+
+> Edgar defeated a necromancer significantly stronger than himself for the first time.
+
+If that victory also changed a larger world event — for example, by disrupting an undead offensive or affecting the fate of a city — it may also appear in the **world chronicle**.
+
+Not every event should appear in every layer. An ordinary potion purchase may remain only in the detailed log; an important victory may appear in the chronicle and milestones; a war unrelated to the hero may appear only in the world chronicle.
+
+> **The fact is the same. Different layers answer different questions about its meaning.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
