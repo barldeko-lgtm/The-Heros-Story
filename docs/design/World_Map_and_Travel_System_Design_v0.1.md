@@ -101,6 +101,37 @@ The detailed lifecycle of quest-linked locations belongs to `Quest_and_Activity_
 
 > **Not every opportunity on the map is permanent: some places remain, some are resolved, and some appear only because the world is currently changing.**
 
+## Partial World Variation Between Playthroughs
+
+Different heroes may begin their lives in **somewhat different states of the same broader world**.
+
+The geography of the continent does not need to be generated from scratch for every new game. The underlying structure should instead be authored in advance, including elements such as:
+
+- the continent shape;
+- major natural regions;
+- valid positions for cities;
+- possible roads and connections;
+- suitable locations for permanent points of interest.
+
+When a new playthrough begins, some elements may be assembled differently within those prepared constraints, for example:
+
+- which cities are used and which valid positions they occupy;
+- which factions control those cities;
+- initial spheres of influence;
+- some permanent and exhaustible points of interest;
+- starting threats;
+- the initial political situation of the world.
+
+Variation must still respect **the logic of the setting**. For example, a dwarven city should appear in a suitable mountainous region rather than being placed arbitrarily only for the sake of randomness.
+
+The goal is not to generate an entirely new continent each time, but to allow a new hero to be born into **a somewhat different version of a familiar world**.
+
+The technical cost and actual value of this system should be evaluated much later. It remains a desirable future direction rather than a requirement for the base game.
+
+> **It is better to rearrange well-designed world elements within clear rules than to procedurally generate everything for its own sake.**
+
+The detailed simulation of initial faction control and political state belongs to `World_Simulation_System_Design_v0.1.md`.
+
 ## Migration note
 
 Prototype 0’s abstract single-city distance model is not automatically the final world-map design.
