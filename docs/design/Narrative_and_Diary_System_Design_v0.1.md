@@ -51,6 +51,26 @@ The goal is not to list every action, but to help the player see **the life of o
 
 > **The simulation creates events. Narrative turns them into the hero’s story.**
 
+## Third-Person External Narrator
+
+The hero’s primary story is told **in the third person**.
+
+The game does not pretend that the hero is constantly writing a detailed personal diary about everything that happens. Instead, the events of their life are presented by a consistent external narrator.
+
+The narrator may:
+
+- describe the hero’s actions;
+- connect separate events into coherent episodes;
+- emphasize causes and consequences;
+- notice recurring habits and patterns of behavior;
+- help turn a sequence of simulation events into a readable story.
+
+The narrator is **not a separate character inside the world** and should not interfere with events.
+
+The player therefore reads the hero’s story from the outside rather than reading a literal diary the hero is required to write themselves.
+
+> **The player observes the hero’s life through a narrator, rather than through a mandatory first-person diary.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
