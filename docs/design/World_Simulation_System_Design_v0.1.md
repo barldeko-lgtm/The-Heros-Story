@@ -67,6 +67,32 @@ The basic gameplay loop should not be blocked by ordinary neutral or mildly nega
 
 > **Factions should make cities feel different and affect the hero’s life without splitting the core gameplay loop into several separate games.**
 
+## Named Faction Characters
+
+Major factions may have **important persistent characters in the world**: commanders, rulers, renowned warriors, mages, and other significant figures.
+
+They do not need to be simulated with the same depth as the main hero. Their role is to be recognizable participants in the history of the world and, when appropriate, to contribute to the strength and resilience of their faction.
+
+Such characters may:
+
+- begin as very powerful figures;
+- possess recognizable equipment of their own;
+- remain in cities or move between locations important to their faction;
+- participate in wars, sieges, and major events;
+- influence the military strength or resilience of the region where they are present.
+
+The hero should not be able to simply enter a peaceful city and repeatedly farm such a character as an ordinary enemy.
+
+They become genuinely vulnerable mainly during **major events** such as sieges, decisive battles, the fall of a city, or comparable situations in which normal faction protection has broken down.
+
+Defeat of a named character **does not have to mean death**. They may retreat, lose resources, or reappear in another city belonging to their faction.
+
+Permanent death of an important character should be a rare historical event rather than an ordinary consequence of a random encounter.
+
+The exact rules for retreat, death, succession, resource loss, and their contribution to faction strength will be defined later.
+
+> **Named NPCs should be part of the history of the world, not merely unusually durable enemies.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
