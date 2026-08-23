@@ -201,6 +201,31 @@ The relationship between the two layers is simple:
 
 > **The player should not have to read the entire simulation. They should be able to read the hero’s life.**
 
+## Milestones of the Hero’s Life
+
+Alongside the current chronicle, the hero should accumulate a **long-term record of the most important events of their life**.
+
+This layer should not collect ordinary routine. It preserves only events that genuinely matter to the hero’s biography, such as:
+
+- significant stages of development;
+- gaining or losing important traits;
+- acquiring or losing especially rare or memorable items;
+- the first victory over an enemy type that had previously represented a major danger;
+- major defeats;
+- deaths and returns;
+- important changes in relationships with factions or significant characters;
+- participation in major wars or world events;
+- decisions that noticeably changed the hero’s later path;
+- the fall or salvation of a city when the hero was meaningfully connected to the event;
+- completion of a long-term goal;
+- other genuinely unique achievements and turning points.
+
+An ordinary completed quest does not belong here. A first victory over a troll the hero once feared, however, may become a genuine milestone.
+
+Over time, this record becomes **the memory of the entire playthrough** and one of the main sources for the hero’s final biography when their story ends or they retire.
+
+> **The main chronicle tells the hero’s life as it unfolds. Milestones preserve what that life is ultimately remembered for.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
