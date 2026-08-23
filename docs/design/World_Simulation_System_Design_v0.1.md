@@ -39,6 +39,34 @@ The hero can influence the world, but is not the center of all its processes.
 
 Only changes capable of creating noticeable circumstances, opportunities, or consequences for the hero’s story should be simulated. World complexity is not a goal by itself.
 
+## Cities and Factions
+
+Major cities in the world belong to different **significant factions**.
+
+As a current working foundation, the world may use:
+
+- Humans;
+- Elves;
+- Dwarves.
+
+This list is not considered final. Different factions also do not need to control the same number of cities.
+
+Regardless of who owns a city, the hero should still have access to the core elements of the ordinary adventuring loop: finding activities, trading, recovering, and continuing their journey.
+
+Faction ownership should add **differences and additional opportunities** rather than require the game to build an entirely separate basic gameplay loop for every people or faction.
+
+As the hero’s reputation with a faction improves, additional content may become available, such as:
+
+- special quests;
+- distinctive merchants;
+- faction equipment;
+- additional events;
+- special services or locations.
+
+The basic gameplay loop should not be blocked by ordinary neutral or mildly negative reputation. Serious restrictions may appear only when relations have developed into genuine hostility.
+
+> **Factions should make cities feel different and affect the hero’s life without splitting the core gameplay loop into several separate games.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
