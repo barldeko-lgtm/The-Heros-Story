@@ -54,3 +54,21 @@ However:
 The existence of pause and time-speed control is therefore a valid design direction, while the exact speed multipliers are not fixed yet.
 
 > **Acceleration should help the player choose a comfortable pace of observation, not compensate for an uninteresting pace in the game itself.**
+
+## Time During Combat
+
+Combat should run at a pace that lets the player **understand what is happening**, notice a dangerous situation, and, if desired, have time to use divine intervention.
+
+This does not require the entire game to automatically slow down during every encounter.
+
+A more flexible principle is:
+
+- an active fight may run in its own short time context;
+- long-term world simulation does not need to advance in parallel during the few seconds of an active fight;
+- the player’s selected simulation speed may also affect combat playback speed;
+- at normal player-facing speeds, combat should remain readable;
+- the behavior of very high speed multipliers during combat should be determined through testing.
+
+The current prototype direction, where world ticks temporarily stop advancing while an active combat session resolves separately, is a valid working model, but this specific technical implementation is not treated as permanently fixed at the design level.
+
+> **Combat should remain a moment in the hero’s life that the player can understand and, when necessary, still have time to influence, rather than flashing past inside an accelerated simulation.**
