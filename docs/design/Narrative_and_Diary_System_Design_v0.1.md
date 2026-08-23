@@ -226,6 +226,35 @@ Over time, this record becomes **the memory of the entire playthrough** and one 
 
 > **The main chronicle tells the hero’s life as it unfolds. Milestones preserve what that life is ultimately remembered for.**
 
+## World Chronicle
+
+Separate from the hero’s personal story, the game may provide a **chronicle of major world events** that helps show that the world continues to change independently of the hero.
+
+This may include:
+
+- the beginning and ending of wars and sieges;
+- notable border changes;
+- the capture or loss of cities;
+- the death, defeat, or retreat of significant characters;
+- major world events;
+- development of a global threat;
+- rare disasters and other serious changes to world state.
+
+For example:
+
+> The human army began the siege of Liaris.  
+> The Eastern Pass came under elven control.  
+> General Torvin retreated from Dornholm.  
+> The first confirmed undead detachments were sighted in the north.
+
+The hero does **not need to participate** in these events. Their purpose is to give the player a wider context for the personal story unfolding inside that world.
+
+The world chronicle should not overwhelm the hero’s main chronicle with hundreds of low-value simulation messages. Only events significant enough to matter to the player’s understanding of the wider world should be surfaced here.
+
+It is not yet fixed that the player automatically knows everything occurring across the entire world. The exact rules for which world information can become visible to the player should remain consistent with later map, discovery, and information-visibility rules.
+
+> **The hero chronicle answers “what happened to them?” The world chronicle answers “what was happening around them and without them?”**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
