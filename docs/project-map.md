@@ -166,7 +166,7 @@ Displays:
 
 The main developer controls and the Inventory shell are separate UI layers under the same `MainUI`. Switching between them changes visibility only; the existing `Simulation` instance continues advancing.
 
-`assets/ui/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. The chest slot displays equipped state and the separate equipment texture over the portrait. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
+`assets/ui/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. All five armor slots display equipped state. The chest keeps its separate portrait texture; helmet, gloves, pants, and boots currently use distinct placeholder SVG icons under `assets/items/boar_set/` with no portrait overlays. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
 
 ## Item data
 
@@ -176,12 +176,19 @@ Immutable item card: id, display name, equipment slot, icon, hero overlay, and c
 ### `scripts/model/runtime/item_instance.gd`
 One concrete acquired item referencing its immutable definition.
 
+### `scripts/items/item_power_calculator.gd`
+Calculates static ItemPower through the shared `PowerCalculator`. It applies item bonuses to the approved minimal reference combat profile and subtracts that profile's baseline Power, avoiding arbitrary item-score coefficients.
+
 ### `data/items/boar_chestplate.tres`
 Defines Common `Кираса Вепря`: +20 direct MaxHP, +10 Armor, +1 Strength.
 
 `data/items/boar_chestplate_uncommon.tres` defines Uncommon `Кираса Вепря`: +25 direct MaxHP, +15 Armor, +2 Strength. `data/items/boar_chestplate_rare.tres` defines Rare: +35 direct MaxHP, +20 Armor, +3 Strength. All three reuse the supplied icon and portrait overlay.
 
-`data/quests/0005_boars_in_fields.tres` references all three definitions as an equal-third item reward pool. Every successful turn-in rolls one reward through the shared seeded RNG. `Simulation` equips the first chest, upgrades only to a higher quality, and routes non-equipped/replaced items through FIFO Inventory.
+The same three-quality stat progression is defined for `boar_helmet*`, `boar_gauntlets*`, `boar_leggings*`, and `boar_boots*`. Their names are `Шлем Вепря`, `Рукавицы Вепря`, `Поножи Вепря`, and `Сапоги Вепря`; their overlay field remains empty.
+
+Five quests reference equal-third quality pools: `boars_in_fields` → chest, `wolf_hunt` → helmet, `bear_hunt` → gloves, `granary_rat_problem` → pants, and `trade_road_ambush` → boots. Every successful turn-in rolls one reward through the shared seeded RNG. `Simulation` equips the first item per slot, upgrades only to a higher quality in that slot, and routes non-equipped/replaced items through FIFO Inventory.
+
+Item tooltips call their definition's ItemPower calculation and display the stable result alongside quality and raw bonuses.
 
 The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately.
 

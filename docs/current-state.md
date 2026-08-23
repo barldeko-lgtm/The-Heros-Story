@@ -18,8 +18,9 @@ Implemented:
 - death, 100-tick natural resurrection, and city recovery;
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
 - thirteen matching initial-city quest templates;
-- one `Кираса Вепря` reward after every successful `boars_in_fields` turn-in, rolled in exact equal thirds across Common, Uncommon, and Rare qualities;
-- automatic quality-based chest replacement plus a 36-slot FIFO inventory for retained rewards;
+- a five-piece Boar armor set (helmet, chest, gloves, pants, boots), each with Common, Uncommon, and Rare definitions using the same quality stat progression;
+- five quest reward pools: boars/chest, wolves/helmet, bears/gloves, granary rats/pants, and trade-road bandits/boots;
+- automatic per-slot quality replacement plus a 36-slot FIFO inventory for retained rewards;
 - all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
@@ -104,6 +105,8 @@ HeroState + HeroProgression + Equipment
 
 Persistent equipment contributes to both views. Current Armor conversion is `1 Armor = 0.5% damage reduction`, capped below 100%. Common, Uncommon, and Rare boar chestplates provide `20/10/1`, `25/15/2`, and `35/20/3` direct MaxHP/Armor/Strength respectively; Strength additionally contributes its normal +5 MaxHP and +1 Attack per point.
 
+Every `ItemDefinition` also exposes static ItemPower for tooltips. It applies the item's secondary effects to the fixed reference profile `1 HP, 1 Attack, 1.0 AttackSpeed, 10% CritChance, 150% CritDamage, 0 Armor`, calculates both results through the shared `PowerCalculator`, then subtracts the reference Power (`0.724568837`). Current Common/Uncommon/Rare results are `4.64`, `7.10`, and `10.18`.
+
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
 After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
@@ -147,7 +150,7 @@ Full loot loss is still only a future hook because QuestLoot/inventory do not ex
 
 ## Current quest content and selection
 
-Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward. The boar template additionally references its three fixed item-quality definitions as an equal-chance reward pool.
+Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward. Five current templates additionally reference three ordered Common/Uncommon/Rare item definitions as equal-chance reward pools.
 
 The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. With the current single-city content set this means all thirteen templates are present simultaneously. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
 
@@ -241,7 +244,7 @@ Current layout:
 - opponent panel on the right;
 - developer speed controls in the bottom-right corner.
 
-The Inventory button opens the current inventory screen. The main developer content is hidden while the shared top menu remains visible; the Inventory button becomes Back, and a separate red close button provides the same return action. The screen displays the hero over a dark `256 × 464` portrait panel, with five armor slots on the left and five empty weapon/jewelry slots on the right. A titled `6 × 6` grid displays up to 36 retained item instances. Better chest quality automatically replaces the equipped item and moves the old one into inventory; equal or worse rewards enter inventory directly. Adding item 37 drops the oldest retained item. Common icons have no outline, Uncommon icons use a soft three-band green outline, and Rare icons use the same blue treatment. Hovering equipped or inventory items opens the custom tooltip with quality, name, and bonuses. Manual equipping, dragging, selling, and item comparison beyond quality rank are not implemented. This UI-only screen switch does not pause or replace `Simulation`, so world time and autonomous gameplay continue normally.
+The Inventory button opens the current inventory screen. The main developer content is hidden while the shared top menu remains visible; the Inventory button becomes Back, and a separate red close button provides the same return action. The screen displays the hero over a dark `256 × 464` portrait panel, with five functional armor slots on the left and five empty weapon/jewelry slots on the right. Helmet, chest, gloves, pants, and boots show their equipped icons, quality outlines, and shared hover tooltip; only the chest currently has a portrait overlay, while the four new pieces use temporary distinct SVG icons. A titled `6 × 6` grid displays up to 36 retained item instances. Better quality replaces the equipped item in the matching slot and moves the old one into inventory; equal or worse rewards enter inventory directly. Adding item 37 drops the oldest retained item. Manual equipping, dragging, selling, and set bonuses are not implemented. This UI-only screen switch does not pause or replace `Simulation`, so world time and autonomous gameplay continue normally.
 
 The hero panel displays HP with one decimal place and now shows:
 - dead state with remaining resurrection ticks;
