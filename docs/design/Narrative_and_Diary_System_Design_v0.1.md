@@ -147,6 +147,31 @@ Narrative must not invent a personality the hero does not actually have. It shou
 
 > **The hero’s personality should be visible not only in decision formulas, but also in how the story of their life reads.**
 
+## Detailed Action and Decision Log
+
+In addition to the narrative chronicle, the game may provide a **more detailed informational log** whose purpose is to explain what happened inside the simulation.
+
+When desired, the player should be able to understand:
+
+- what the hero actually did;
+- which important options were available;
+- why the hero preferred the chosen option;
+- what happened in combat;
+- what the hero bought, sold, found, or lost;
+- which key traits, circumstances, relationships, or other factors materially affected the decision.
+
+This log should **not become a dump of internal formulas and coefficients**. Its purpose is to make cause and effect understandable in player-facing language.
+
+For example, a useful explanation might be:
+
+> Edgar rejected the dangerous contract because the enemy was significantly stronger, and his cautious nature reduced the appeal of taking that risk even further.
+
+A technical presentation such as raw score calculations, internal multipliers, or evaluator traces belongs in developer and debug tools rather than in the ordinary player-facing log.
+
+The detailed log is also **not the hero’s diary or chronicle**. The chronicle turns events into a readable story; this layer exists so the player can inspect the mechanics behind what happened when they want more detail.
+
+> **The player does not need to see the internals of the simulation constantly, but should be able to understand why the hero acted the way they did.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
