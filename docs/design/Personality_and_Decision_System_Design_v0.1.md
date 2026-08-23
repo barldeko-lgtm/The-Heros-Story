@@ -182,6 +182,21 @@ A long-term goal is not an order. It makes related options more attractive and g
 
 The number of simultaneous goals, their exact creation and completion rules, and whether the player may directly establish any of them remain open design questions.
 
+## Reputation as a Decision Factor
+
+Reputation affects **how attractive the hero considers options connected to a particular faction**.
+
+For example:
+
+- good relations may increase the attractiveness of a faction’s quest;
+- the hero may be more willing to consider that faction’s city as a travel destination;
+- poor relations may reduce the attractiveness of interaction;
+- at extreme hostility, objectively unavailable options may be removed during hard filtering.
+
+Reputation should **not determine the decision by itself** while an option remains available. The hero may also consider reward, risk, current goals, personality, current condition, personal attitudes toward specific characters, divine influence, and other relevant circumstances.
+
+> **Reputation changes the evaluation of an option, but it does not replace the hero’s decision.**
+
 ## Migration note
 
 Existing personality and autonomous-choice ideas will be reviewed individually before being moved here.
