@@ -81,6 +81,14 @@ Such characters may:
 - participate in wars, sieges, and major events;
 - influence the military strength or resilience of the region where they are present.
 
+Important named characters exist with **their own strength and development**, independently of the main hero’s progression.
+
+They may be far stronger than a beginning hero from the first hours of a playthrough and should **not automatically gain levels or power merely because the hero becomes stronger**.
+
+If their strength changes over time, that change should come from events and the logic of the world rather than from an attempt to preserve the same relative difficulty for the hero.
+
+> **Important characters belong to the world’s own power structure; they do not scale around the hero.**
+
 The hero should not be able to simply enter a peaceful city and repeatedly farm such a character as an ordinary enemy.
 
 They become genuinely vulnerable mainly during **major events** such as sieges, decisive battles, the fall of a city, or comparable situations in which normal faction protection has broken down.
