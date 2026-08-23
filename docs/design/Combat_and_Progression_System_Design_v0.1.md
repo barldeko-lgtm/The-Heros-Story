@@ -175,6 +175,30 @@ The exact level or conditions for reaching the soft cap, as well as the pace of 
 
 > **After the soft cap, the hero does not stop developing — what changes is which sources matter most for further growth.**
 
+## Enemies Do Not Automatically Scale to the Hero
+
+The combat strength of ordinary enemies should **not increase simply because the hero’s level or Power has increased**.
+
+If the hero becomes much stronger than wolves, bandits, or other early threats, they should genuinely outgrow them. An old enemy should not silently become a much stronger version merely to preserve the same relative difficulty.
+
+More dangerous combat should instead come from things such as:
+
+- more dangerous regions;
+- different enemy types;
+- elite enemies and bosses;
+- more demanding mechanics;
+- world events;
+- wars and invasions;
+- temporary changes in local danger.
+
+A familiar region may still become more dangerous when the **world itself changes** — for example because of an invasion or major event. That is different from secretly adjusting enemy stats to match the hero.
+
+This principle is important to the feeling of progression: an enemy that once posed a serious threat may later become easy because the hero has genuinely grown beyond it.
+
+> **Hero growth should change the hero’s place in the world, not force the entire world to grow invisibly alongside them.**
+
+The distribution of enemy strength across regions and changing world conditions belongs to the world-map and world-simulation systems.
+
 ## Class Must Change Combat Logic
 
 Differences between classes should not be reduced only to weapons or slightly different damage numbers.
