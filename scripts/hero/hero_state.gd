@@ -1,6 +1,9 @@
 class_name HeroState
 extends RefCounted
 
+const EquipmentScript = preload("res://scripts/hero/equipment.gd")
+const InventoryScript = preload("res://scripts/hero/inventory.gd")
+
 const CHOOSING_QUEST := "CHOOSING_QUEST"
 const TRAVEL_TO_QUEST := "TRAVEL_TO_QUEST"
 const DOING_QUEST := "DOING_QUEST"
@@ -26,6 +29,8 @@ var traits: Array[String] = []
 var loop_state: String = CHOOSING_QUEST
 var active_quest
 var active_effects: Array[Dictionary] = []
+var equipment = EquipmentScript.new()
+var inventory = InventoryScript.new()
 
 func _init(initial_name: String) -> void:
 	hero_name = initial_name

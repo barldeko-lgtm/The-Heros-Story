@@ -8,6 +8,7 @@ var mob_definition: Resource
 var mob_count: int
 var distance_km: float
 var gold_per_mob: int
+var item_reward_pool: Array[Resource] = []
 
 var gold_reward: int:
 	get:
@@ -21,3 +22,4 @@ func _init(initial_template: Resource, initial_mob_count: int, initial_distance_
 	mob_count = initial_mob_count
 	distance_km = initial_distance_km
 	gold_per_mob = initial_gold_per_mob
+	item_reward_pool.assign(template.item_reward_pool)

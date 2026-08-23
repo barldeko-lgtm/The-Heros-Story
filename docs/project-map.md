@@ -4,6 +4,7 @@
 
 - `project.godot` — Godot project configuration and main scene.
 - `.github/workflows/tests.yml` — GitHub Actions regression-test workflow.
+- `assets/` — supplied visual assets used by the current UI.
 - `data/` — concrete game data.
 - `scenes/` — Godot scenes.
 - `scripts/` — runtime/gameplay/UI code.
@@ -42,7 +43,13 @@ Mutable hero state and centralized loop-state ids, including:
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
-Also owns current `active_effects`, including the remaining fights of the divine combat blessing.
+Also owns current `active_effects`, the hero's `Equipment`, and the current 36-item FIFO `Inventory`.
+
+### `scripts/hero/equipment.gd`
+Owns equipped `ItemInstance` objects by slot, replaces an item when Simulation approves a better quality, and exposes persistent stat totals.
+
+### `scripts/hero/inventory.gd`
+Stores up to 36 retained item instances in acquisition order. Adding item 37 removes and returns the oldest item.
 
 ### `scripts/hero/hero_traits.gd`
 Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible starting traits, Russian display names, QuestScore personality constants, and the Noble/Dishonorable category-damage multiplier.
@@ -51,7 +58,7 @@ Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible start
 Owns XP and Warrior level growth.
 
 ### `scripts/hero/stat_resolver.gd`
-Builds stable base stats and effective combat stats from the same sources. Effective stats include generic bonuses from `HeroState.active_effects`; base stats intentionally exclude finite temporary buffs for HeroPower/Hard Filter.
+Builds stable base stats and effective combat stats from the same sources. Persistent equipment contributes to both; effective stats additionally include generic bonuses from `HeroState.active_effects`. Ten Armor currently resolves to 5% damage reduction.
 
 ## Combat
 
@@ -59,7 +66,7 @@ Builds stable base stats and effective combat stats from the same sources. Effec
 Creates one live duel from already resolved hero and mob `CombatStats`.
 
 ### `scripts/combat/combat_session.gd`
-Owns only one fight: internal combat time, HP, attacks, crits, conditional hero damage multiplier, and victory/defeat.
+Owns only one fight: internal combat time, HP, attacks, crits, target damage reduction, conditional hero damage multiplier, and victory/defeat.
 
 It does not own resurrection, quest cancellation, god ability state, or flat stat-bonus injection.
 
@@ -148,12 +155,33 @@ Empty diary store; diary generation is not implemented yet.
 Current developer UI.
 
 Displays:
+- persistent top navigation;
 - hero panel left;
 - god energy and Healing/Blessing/Resurrection controls above the narrative panel;
 - log/diary center;
 - active opponent right;
 - current death-respawn countdown through the hero state label;
-- fixed bottom-right cumulative combat-statistics panel.
+- fixed bottom-right cumulative combat-statistics panel;
+- an Inventory visual shell with Back and close-button navigation, a scaled hero portrait, two five-slot equipment columns, and a titled `6 × 6` empty inventory grid.
+
+The main developer controls and the Inventory shell are separate UI layers under the same `MainUI`. Switching between them changes visibility only; the existing `Simulation` instance continues advancing.
+
+`assets/ui/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. The chest slot displays equipped state and the separate equipment texture over the portrait. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
+
+## Item data
+
+### `scripts/model/definitions/item_definition.gd`
+Immutable item card: id, display name, equipment slot, icon, hero overlay, and current stat bonuses.
+
+### `scripts/model/runtime/item_instance.gd`
+One concrete acquired item referencing its immutable definition.
+
+### `data/items/boar_chestplate.tres`
+Defines Common `Кираса Вепря`: +20 direct MaxHP, +10 Armor, +1 Strength.
+
+`data/items/boar_chestplate_uncommon.tres` defines Uncommon `Кираса Вепря`: +25 direct MaxHP, +15 Armor, +2 Strength. `data/items/boar_chestplate_rare.tres` defines Rare: +35 direct MaxHP, +20 Armor, +3 Strength. All three reuse the supplied icon and portrait overlay.
+
+`data/quests/0005_boars_in_fields.tres` references all three definitions as an equal-third item reward pool. Every successful turn-in rolls one reward through the shared seeded RNG. `Simulation` equips the first chest, upgrades only to a higher quality, and routes non-equipped/replaced items through FIFO Inventory.
 
 The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately.
 

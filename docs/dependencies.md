@@ -151,6 +151,8 @@ The diary remains separate and is not implemented as part of the death slice.
 
 It may read `QuestRunner.respawn_ticks_remaining` for the current developer-state label, but it does not decrement the timer or change HP/state.
 
+The inventory page reads equipped and retained-item state to display icons, quality outlines, tooltips, and the portrait overlay. It does not grant, equip, drop, or modify items.
+
 ## God-system core
 
 `scripts/god/god_state.gd` owns god energy, cooldowns, and pending quest guidance. `HeroState.active_effects` owns the active blessing and remaining fights. `Simulation` owns command validation and coordination with hero, quest, stats, and combat systems.
@@ -175,11 +177,37 @@ resurrection
 - the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
 - UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
 
-## Future loot hook
+## Current equipment reward slice and future loot hook
 
-QuestLoot is not implemented yet.
+Current one-item flow:
 
-When it exists, death must clear only current-quest loot before entering the existing respawn path. Permanent inventory/equipment must remain separate.
+```text
+boars_in_fields QuestDefinition
+→ equal-third Common / Uncommon / Rare ItemDefinition pool
+→ every successful turn-in event
+→ Simulation rolls through shared seeded RNG and creates ItemInstance
+→ quality comparison against HeroState.Equipment CHEST
+→ equip/replace or HeroState.Inventory
+→ StatResolver refreshes BaseCombatStats / CombatStats
+→ UI displays equipment/inventory icons, quality outlines, tooltip, and hero overlay
+```
+
+Contracts:
+- `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
+- one reward is granted after every successful boar turn-in, never on defeat;
+- the three definitions are selected with exact equal thirds (`randi_range(0, 2)`), not rounded independent 33% checks;
+- `QuestRunner` does not equip the item or calculate its stats;
+- `Simulation` coordinates reward rolling, quality comparison, automatic equip/replacement, inventory routing, stat refresh, HP adjustment, and logging;
+- the first chest equips automatically; only strictly higher quality replaces it; equal or worse quality enters Inventory;
+- replaced equipment enters Inventory before the new item becomes the active stat source;
+- Inventory keeps at most 36 item instances in FIFO order; adding item 37 drops the oldest regardless of quality;
+- persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
+- `1 Armor = 0.5% damage reduction`; 10 Armor therefore means 5%, and `CombatSession` applies the target's resolved reduction to actual hit damage;
+- Common/Uncommon/Rare direct bonuses are `20/10/1`, `25/15/2`, and `35/20/3` MaxHP/Armor/Strength;
+- increasing MaxHP at turn-in increases current HP by the same delta, preserving full-health state;
+- Common has no outline; Uncommon uses a soft green 1.0/0.55/0.25 three-band outline; Rare uses the same blue outline.
+
+General item interactions and QuestLoot are still not implemented. When QuestLoot exists, death must clear only current-quest loot before entering the existing respawn path. Permanent equipment and retained Inventory must remain separate.
 
 ## Tests protecting this contract
 

@@ -17,6 +17,7 @@ const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
+const ItemInstanceScript = preload("res://scripts/model/runtime/item_instance.gd")
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const TIME_EPSILON: float = 0.000001
@@ -219,6 +220,54 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		return
 	refresh_finished_quest_offer_if_needed(event)
 	debug_log.record_event(completed_tick, quest_narrator.describe(event))
+	grant_quest_item_reward_if_available(event, completed_tick)
+
+func grant_quest_item_reward_if_available(event, completed_tick: int) -> bool:
+	if event.event_type != QuestEvent.HERO_TURNED_IN_QUEST:
+		return false
+	var item_definition = roll_quest_item_reward(event.quest_definition)
+	if item_definition == null:
+		return false
+	receive_item_reward(item_definition, completed_tick)
+	return true
+
+func roll_quest_item_reward(quest_definition):
+	if quest_definition == null or quest_definition.item_reward_pool.is_empty():
+		return null
+	var reward_index: int = seeded_rng.get_rng().randi_range(0, quest_definition.item_reward_pool.size() - 1)
+	return quest_definition.item_reward_pool[reward_index]
+
+func receive_item_reward(item_definition: Resource, completed_tick: int = 0) -> Dictionary:
+	var result: Dictionary = {
+		"equipped": false,
+		"inventory_item": null,
+		"dropped_item": null,
+	}
+	if item_definition == null:
+		return result
+
+	var item_instance = ItemInstanceScript.new(item_definition)
+	var equipped_item = hero_state.equipment.get_item(item_definition.equipment_slot)
+	var should_equip: bool = equipped_item == null or item_definition.quality > equipped_item.definition.quality
+	if should_equip:
+		var previous_max_hp: float = combat_stats.max_hp
+		var replaced_item = hero_state.equipment.replace_item(item_instance)
+		if replaced_item != null:
+			result["inventory_item"] = replaced_item
+			result["dropped_item"] = hero_state.inventory.add_item(replaced_item)
+		refresh_combat_stats()
+		hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
+		result["equipped"] = true
+		debug_log.record_event(completed_tick, "%s получил «%s» (%s) и надел предмет." % [hero_state.hero_name, item_definition.display_name, item_definition.get_quality_display_name()])
+	else:
+		result["inventory_item"] = item_instance
+		result["dropped_item"] = hero_state.inventory.add_item(item_instance)
+		debug_log.record_event(completed_tick, "%s получил «%s» (%s) и убрал предмет в инвентарь." % [hero_state.hero_name, item_definition.display_name, item_definition.get_quality_display_name()])
+
+	if result["dropped_item"] != null:
+		var dropped_definition = result["dropped_item"].definition
+		debug_log.record_event(completed_tick, "Инвентарь переполнен: самый старый предмет «%s» (%s) выпал." % [dropped_definition.display_name, dropped_definition.get_quality_display_name()])
+	return result
 
 func use_instant_resurrection() -> bool:
 	if hero_state.loop_state != HeroState.DEAD_RESPAWNING:

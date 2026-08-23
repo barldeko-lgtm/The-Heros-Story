@@ -18,6 +18,8 @@ Implemented:
 - death, 100-tick natural resurrection, and city recovery;
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
 - thirteen matching initial-city quest templates;
+- one `Кираса Вепря` reward after every successful `boars_in_fields` turn-in, rolled in exact equal thirds across Common, Uncommon, and Rare qualities;
+- automatic quality-based chest replacement plus a 36-slot FIFO inventory for retained rewards;
 - all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
@@ -91,7 +93,7 @@ Each level:
 Final combat stats remain:
 
 ```text
-HeroState + HeroProgression
+HeroState + HeroProgression + Equipment
 → StatResolver
 → CombatStats
 ```
@@ -99,6 +101,8 @@ HeroState + HeroProgression
 `StatResolver` now produces:
 - stable `BaseCombatStats` for primary UI values, HeroPower, and Hard Filter;
 - effective `CombatStats` including active temporary effects for actual combat.
+
+Persistent equipment contributes to both views. Current Armor conversion is `1 Armor = 0.5% damage reduction`, capped below 100%. Common, Uncommon, and Rare boar chestplates provide `20/10/1`, `25/15/2`, and `35/20/3` direct MaxHP/Armor/Strength respectively; Strength additionally contributes its normal +5 MaxHP and +1 Attack per point.
 
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
@@ -114,6 +118,7 @@ Current behaviour:
 - same-timestamp attacks resolve together;
 - a simultaneous death counts as hero defeat;
 - critical hits retain fractional damage internally;
+- target damage reduction is applied to the final resolved hit damage;
 - each resolved strike enters the debug log immediately while the world clock is frozen.
 
 Victory grants the defeated mob's XP through `HeroProgression`, then starts normal post-fight recovery.
@@ -142,7 +147,7 @@ Full loot loss is still only a future hook because QuestLoot/inventory do not ex
 
 ## Current quest content and selection
 
-Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains only inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward.
+Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward. The boar template additionally references its three fixed item-quality definitions as an equal-chance reward pool.
 
 The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. With the current single-city content set this means all thirteen templates are present simultaneously. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
 
@@ -229,10 +234,14 @@ The UI defers its scroll update until TextEdit wrapping/layout is complete, so e
 ## UI
 
 Current layout:
+- a persistent top menu with Hero, Inventory, Map, and Menu buttons;
 - hero panel on the left;
 - god-energy panel and three ability buttons above the center log/diary;
 - log/diary in the center;
-- opponent panel on the right.
+- opponent panel on the right;
+- developer speed controls in the bottom-right corner.
+
+The Inventory button opens the current inventory screen. The main developer content is hidden while the shared top menu remains visible; the Inventory button becomes Back, and a separate red close button provides the same return action. The screen displays the hero over a dark `256 × 464` portrait panel, with five armor slots on the left and five empty weapon/jewelry slots on the right. A titled `6 × 6` grid displays up to 36 retained item instances. Better chest quality automatically replaces the equipped item and moves the old one into inventory; equal or worse rewards enter inventory directly. Adding item 37 drops the oldest retained item. Common icons have no outline, Uncommon icons use a soft three-band green outline, and Rare icons use the same blue treatment. Hovering equipped or inventory items opens the custom tooltip with quality, name, and bonuses. Manual equipping, dragging, selling, and item comparison beyond quality rank are not implemented. This UI-only screen switch does not pause or replace `Simulation`, so world time and autonomous gameplay continue normally.
 
 The hero panel displays HP with one decimal place and now shows:
 - dead state with remaining resurrection ticks;

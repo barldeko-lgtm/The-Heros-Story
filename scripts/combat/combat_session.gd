@@ -56,14 +56,14 @@ func advance(delta_seconds: float) -> Array:
 		var mob_damage := 0.0
 
 		if hero_attacks_now:
-			var hero_hit = create_hit("hero", hero_stats, hero_damage_multiplier)
+			var hero_hit = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier)
 			hero_hit.time_seconds = elapsed_seconds
 			actions.append(hero_hit)
 			resolved_actions.append(hero_hit)
 			hero_damage = hero_hit.damage
 			hero_next_attack_time += hero_attack_interval
 		if mob_attacks_now:
-			var mob_hit = create_hit("mob", mob_stats)
+			var mob_hit = create_hit("mob", mob_stats, hero_stats)
 			mob_hit.time_seconds = elapsed_seconds
 			actions.append(mob_hit)
 			resolved_actions.append(mob_hit)
@@ -81,10 +81,11 @@ func advance(delta_seconds: float) -> Array:
 func get_result():
 	return CombatResultScript.new(hero_remaining_hp > 0.0, hero_remaining_hp, mob_remaining_hp, elapsed_seconds, actions)
 
-func create_hit(attacker_id: String, combat_stats: CombatStats, damage_multiplier: float = 1.0):
-	var is_critical := combat_stats.crit_chance > 0.0 and random_number_generator.randf() < combat_stats.crit_chance
-	var damage := combat_stats.attack
+func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: CombatStats, damage_multiplier: float = 1.0):
+	var is_critical := attacker_stats.crit_chance > 0.0 and random_number_generator.randf() < attacker_stats.crit_chance
+	var damage := attacker_stats.attack
 	if is_critical:
-		damage *= combat_stats.crit_damage
+		damage *= attacker_stats.crit_damage
 	damage *= damage_multiplier
+	damage *= 1.0 - clampf(target_stats.damage_reduction, 0.0, 0.95)
 	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical)
