@@ -84,13 +84,17 @@ The exact way this information is presented will be defined separately.
 
 ## Base Attributes and Resources
 
-At the current design stage, the main developable hero attributes are:
+At the current design stage, the hero has **five primary developable attributes**:
 
-- **Strength**;
-- **Dexterity**;
-- **Intelligence**.
+- **Strength (STR)**;
+- **Dexterity (DEX)**;
+- **Intelligence (INT)**;
+- **Constitution (CON)**;
+- **Wisdom (WIS)**.
 
-These are the current working attributes used by the level-up growth system. The list is not considered permanently closed: additional primary attributes may be introduced later if they create a clear gameplay purpose rather than unnecessary complexity.
+Primary attributes are long-term characteristics of the hero. They contribute to secondary combat stats and may also be used by appropriate non-combat events, checks, and outcomes when the nature of the situation makes that attribute relevant.
+
+The exact secondary-stat contributions, event checks, formulas, and relative value of each primary attribute will be defined separately.
 
 Separate from those attributes are hero resources:
 
