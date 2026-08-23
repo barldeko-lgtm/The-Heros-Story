@@ -119,6 +119,34 @@ These examples are **tone references rather than fixed templates**. Final text s
 
 The purpose of such examples is to keep future narrative writing aligned with the intended balance of seriousness, observation, and restrained humor.
 
+## The Hero’s Personality Should Be Visible in the Writing
+
+The same systemic event does not have to be described identically for different heroes.
+
+The hero’s real characteristics may influence the narration, including:
+
+- personality and persistent traits;
+- past experience;
+- combat traits;
+- recurring habits;
+- attitude toward risk;
+- reaction to rewards;
+- attitude toward specific enemies and factions.
+
+These may affect **which details are emphasized, the phrasing, and the emotional shade of the text**, while the narration still remains in the third person.
+
+For example, a cautious hero approaching a bandit camp might be described as:
+
+> He set out for the bandit camp only after checking his supplies and buying another potion. His previous experience had been more than enough to stop treating preparation as a form of cowardice.
+
+A risk-seeking hero in a similar situation might instead be described as:
+
+> He remembered the supplies only after passing through the city gates. Going back for something so trivial seemed far more dangerous to his reputation than the bandits themselves.
+
+Narrative must not invent a personality the hero does not actually have. It should reflect characteristics, history, and behavioral patterns that genuinely exist in the simulation state.
+
+> **The hero’s personality should be visible not only in decision formulas, but also in how the story of their life reads.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
