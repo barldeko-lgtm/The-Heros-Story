@@ -84,13 +84,31 @@ The exact way this information is presented will be defined separately.
 
 ## Base Attributes and Resources
 
-At the current design stage, the main developable hero attributes are:
+At the current design stage, the hero has **five primary developable attributes**:
 
-- **Strength**;
-- **Dexterity**;
-- **Intelligence**.
+- **Strength (STR)**;
+- **Dexterity (DEX)**;
+- **Intelligence (INT)**;
+- **Constitution (CON)**;
+- **Wisdom (WIS)**.
 
-These are the current working attributes used by the level-up growth system. The list is not considered permanently closed: additional primary attributes may be introduced later if they create a clear gameplay purpose rather than unnecessary complexity.
+Primary attributes are long-term characteristics of the hero. They contribute to secondary combat stats and may also be used by appropriate non-combat events, checks, and outcomes when the nature of the situation makes that attribute relevant.
+
+### Provisional Primary Attribute Contributions
+
+The current working contribution of **each single point** of a primary attribute is:
+
+| Primary attribute | Current provisional contribution per point |
+| --- | --- |
+| **Strength (STR)** | +2 physical Damage; +5% Critical Damage |
+| **Dexterity (DEX)** | +10 Accuracy; +5 Dodge; +3% Critical Chance |
+| **Intelligence (INT)** | +2 magical Damage; +20 Mana |
+| **Constitution (CON)** | +20 maximum Health; +2 Armor |
+| **Wisdom (WIS)** | +1 Skill Level |
+
+These values are **provisional balance values**, intended to establish the role of each primary attribute before final stat ranges are known. They may be adjusted substantially during balance work. The Accuracy/Dodge interaction now has a defined working formula, but the current +10 Accuracy and +5 Dodge gained from each point of Dexterity remain provisional balance values.
+
+Primary attributes may also influence appropriate event checks and outcomes independently of these combat contributions.
 
 Separate from those attributes are hero resources:
 
@@ -100,9 +118,74 @@ Separate from those attributes are hero resources:
 
 These resources do not have to be distributed like normal attributes. Their values may depend on level, class, primary attributes, equipment, abilities, or other systems.
 
-Damage, armor, speed, critical hits, dodge, accuracy, and similar values are treated as **secondary stats**. They may be derived from primary attributes, class, equipment, abilities, temporary effects, and other sources.
+## Secondary Combat Stats
 
-The exact list of secondary stats, formulas, and even the final set of primary attributes may change as the combat system develops.
+The current secondary combat-stat set is deliberately compact and is divided into defensive and offensive stats.
+
+### Defensive stats
+
+- **Health** — determines how much damage the combatant can survive before being defeated;
+- **Armor** — reduces incoming physical damage;
+- **Dodge** — allows an incoming attack to be avoided entirely;
+- **Fire Resistance** — reduces incoming fire damage;
+- **Cold Resistance** — reduces incoming cold damage;
+- **Lightning Resistance** — reduces incoming lightning damage;
+- **Block** — represents the combatant’s ability to block an incoming attack when the current equipment or combat setup allows blocking.
+
+Health remains a hero combat resource, but bonuses to maximum Health are also treated as part of the defensive combat-stat layer when resolving equipment and other stat sources.
+
+The three elemental resistances use the same diminishing-return model as Armor:
+
+`Final Damage = Raw Damage × 100 / (100 + Resistance)`
+
+Resistance values cannot be negative. Damage reduction from any single elemental resistance is capped at **75%**.
+
+The exact Block formula and its interaction with different attack types will be defined separately.
+
+### Offensive stats
+
+- **Damage** — the base strength of attacks or damaging actions before relevant mitigation;
+- **Accuracy** — reduces the target’s effective chance to avoid an eligible attack through Dodge;
+- **Critical Chance** — determines the chance that an eligible hit becomes a critical hit;
+- **Critical Damage** — determines how much additional damage a critical hit deals;
+- **Attack Speed** — affects the speed or frequency of weapon attacks;
+- **Cast Speed** — affects the speed of spell casting and other actions explicitly treated as casts.
+
+These stats may be derived from primary attributes, class, equipment, abilities, temporary effects, and other valid sources.
+
+The current list is the working base set. Additional secondary stats should be introduced only when they create a clear gameplay purpose rather than unnecessary complexity.
+
+### Accuracy and Dodge
+
+Accuracy and Dodge use **one shared hit-resolution check**. The game does not first roll a separate chance to miss and then make an additional independent Dodge roll for the same attack.
+
+If the target has **0 Dodge**, an otherwise eligible ordinary attack has a **100% chance to hit**. Accuracy cannot increase hit chance above 100%; its purpose is to counter the target’s Dodge.
+
+When the target has Dodge, the current working formula is:
+
+`Dodge Chance = Dodge / (Dodge + Accuracy + 100)`
+
+The corresponding chance to hit is:
+
+`Hit Chance = 1 - Dodge Chance`
+
+The same formula applies to the hero and to enemies.
+
+Examples:
+
+| Accuracy | Dodge | Dodge Chance | Hit Chance |
+| ---: | ---: | ---: | ---: |
+| 100 | 0 | 0% | 100% |
+| 100 | 50 | 20% | 80% |
+| 100 | 100 | 33.3% | 66.7% |
+| 200 | 50 | 14.3% | 85.7% |
+| 200 | 100 | 25% | 75% |
+
+Dodge Chance is capped at **50%**. No amount of Dodge can make ordinary eligible attacks less than 50% likely to hit under this base rule.
+
+This model intentionally gives both stats diminishing returns. Every positive amount of Dodge has some effect against an attacker, while Accuracy continuously reduces that effect instead of creating a hard threshold where Dodge provides no benefit until it exceeds Accuracy.
+
+> **Dodge creates a chance to avoid attacks; Accuracy counters Dodge rather than creating hit chance above 100%.**
 
 ## Sources of Permanent Hero Power
 
@@ -233,6 +316,131 @@ Stats from equipment, class, permanent progression, temporary effects, and other
 The exact Power formula may change as the combat system develops, but the principle remains stable:
 
 > **The hero and enemies should be measured with the same ruler, based on their real combat capabilities.**
+
+### Provisional Full-Game Warrior Power Model
+
+The current working full-game baseline for the Warrior preserves the existing structural idea:
+
+`Power = sqrt(EffectiveHP × EffectiveDPS)`
+
+This is a **design model for future combat**, not a change to the currently implemented Prototype 0 calculator. Its purpose is to establish how the expanded combat-stat set can contribute to one comparable Power number.
+
+Primary attributes are not added directly to Power. Strength, Dexterity, Constitution, equipment, and other sources first modify resolved combat stats; Power is then calculated from those resolved stats. This prevents the same source from being counted twice.
+
+#### Offensive side
+
+For a physical Warrior, the base expected damage output is:
+
+`CritModifier = 1 + CritChance × (CritDamage - 1)`
+
+`RawDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier`
+
+Accuracy cannot be evaluated in isolation because its actual combat value depends on the target’s Dodge. For a universal Power estimate, the current working model therefore evaluates Accuracy against a **reference target with 50 Dodge**.
+
+Reference hit chance is calculated using the normal Accuracy/Dodge formula:
+
+`ReferenceHitChance = 1 - 50 / (50 + Accuracy + 100)`
+
+At `Accuracy = 0`, that reference hit chance is `0.6667`. To ensure that zero Accuracy does not reduce the character below the baseline Power model, Accuracy is normalized against that value:
+
+`AccuracyFactor = ReferenceHitChance / 0.6667`
+
+Equivalent form:
+
+`AccuracyFactor = 1.5 × (Accuracy + 100) / (Accuracy + 150)`
+
+Examples:
+
+| Accuracy | AccuracyFactor |
+| ---: | ---: |
+| 0 | 1.000 |
+| 50 | 1.125 |
+| 100 | 1.200 |
+| 200 | 1.286 |
+
+As Accuracy approaches extremely high values, this factor approaches `1.50`, giving Accuracy diminishing returns in the universal Power estimate.
+
+The provisional offensive term is therefore:
+
+`EffectiveDPS = RawDPS × AccuracyFactor`
+
+#### Defensive side
+
+Dodge also depends on an opponent’s Accuracy. For the universal Power estimate, the current working model evaluates Dodge against a **reference attacker with 100 Accuracy**.
+
+`ReferenceDodgeChance = Dodge / (Dodge + 100 + 100)`
+
+The normal `50%` Dodge cap still applies.
+
+Dodge increases effective survivability through:
+
+`DodgeEHPFactor = 1 / (1 - ReferenceDodgeChance)`
+
+Examples:
+
+| Dodge | Reference Dodge Chance | DodgeEHPFactor |
+| ---: | ---: | ---: |
+| 0 | 0% | 1.00 |
+| 50 | 20% | 1.25 |
+| 100 | 33.3% | 1.50 |
+| 200 | 50% | 2.00 |
+
+Armor and elemental resistances cannot be valued as if every enemy dealt the same damage type. For the universal Power estimate, the current working **reference incoming-damage mix** is:
+
+- **70% physical**;
+- **10% fire**;
+- **10% cold**;
+- **10% lightning**.
+
+These percentages are tuning values, not permanent world rules. They exist only to give the universal Power calculation a stable reference environment and must later be tested against the actual distribution of enemies and damage types.
+
+For each damage type, calculate the fraction of damage that remains after the relevant defense:
+
+`PhysicalTaken = 100 / (100 + Armor)`
+
+`FireTaken = 100 / (100 + FireResistance)`
+
+`ColdTaken = 100 / (100 + ColdResistance)`
+
+`LightningTaken = 100 / (100 + LightningResistance)`
+
+Elemental-resistance caps defined elsewhere still apply. If the final Armor mitigation rule or cap changes later, `PhysicalTaken` must follow that final Armor rule rather than creating a separate Power-only Armor formula.
+
+The weighted reference damage taken is:
+
+`AverageDamageTaken = 0.70 × PhysicalTaken + 0.10 × FireTaken + 0.10 × ColdTaken + 0.10 × LightningTaken`
+
+The provisional defensive term is:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+
+This makes Health, Armor, Dodge, and elemental resistances contribute through expected survivability instead of being converted into arbitrary flat Power points.
+
+#### Final provisional Warrior Power
+
+The current working formula is therefore:
+
+`WarriorPower = sqrt(EffectiveHP × EffectiveDPS)`
+
+where:
+
+`EffectiveDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier × AccuracyFactor`
+
+and:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+
+Block is **not yet included** because its exact combat formula and eligible attack types have not been defined. Warrior abilities and Wisdom-based Skill Level are also not given an arbitrary separate Power bonus at this stage; they should enter Power only after their real combat effects can be represented consistently.
+
+#### Universal Power vs. specific matchup strength
+
+This Power value represents the character’s **general combat strength**, not a prediction against one specific opponent.
+
+A character with very high Fire Resistance may gain only a moderate amount of universal Power because fire is only part of the reference damage mix, while being dramatically stronger in practice against a fire-focused enemy. Likewise, Accuracy may be much more valuable against a particularly evasive target than the universal Power number suggests.
+
+A future matchup or threat assessment may use the real opponent’s Accuracy, Dodge, damage types, resistances, abilities, and other relevant properties. That calculation should remain separate from the character’s universal Power value.
+
+The reference values currently used by the universal model — **50 reference Dodge, 100 reference Accuracy, and the 70/10/10/10 incoming-damage mix** — are provisional tuning parameters. They must be validated through large batches of automated fights. If equal or similar Power does not correspond to roughly comparable actual general combat strength, these reference values or the formula itself must be revised.
 
 ## Class Must Change Combat Logic
 
