@@ -19,3 +19,20 @@ At the same time, the main screen should not try to display **every stat and eve
 The exact panel layout, dimensions, and visual style are not fixed yet.
 
 > **When the player returns to the game after a break, they should be able to quickly see the hero, understand what is happening to them, read the important recent events, and decide whether they want to intervene.**
+
+## Additional Screens
+
+The main screen presents the **current state of the hero and the world**, while more detailed information is opened only when needed.
+
+Separate detailed views may exist for:
+
+- hero attributes, class, progression, and traits;
+- equipment and inventory;
+- the full world map;
+- the expanded chronicle or diary;
+- factions and reputation;
+- other systems that genuinely need dedicated space.
+
+The design does not yet require these to be literal separate windows. They may later be implemented as windows, tabs, panels, or another navigation structure that best fits the final interface.
+
+> **The main screen is for observing the hero’s life; additional screens are for examining individual systems in detail.**
