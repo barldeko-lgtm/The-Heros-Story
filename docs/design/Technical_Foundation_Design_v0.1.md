@@ -22,3 +22,21 @@ A web version may be added later as an additional option, but only if it does no
 - stability of long-running sessions.
 
 **The web version is not the primary platform and should not determine key architectural decisions for the project.**
+
+## Engine
+
+The project’s primary engine is **Godot 4.x**.
+
+The exact patch version is determined by the current state of development and may be updated later when necessary.
+
+Godot is a good fit for the project because:
+
+- the game is primarily 2D;
+- much of the interface is built around text, panels, windows, lists, and a map;
+- the simulation can be kept cleanly separated from the visual layer;
+- the project does not require the heavy 3D feature set of larger engines;
+- the engine does not introduce licensing constraints for the project.
+
+Choosing Godot does **not** define the game’s architecture by itself. The architecture should be built around the needs of The Hero’s Story: an autonomous hero and world simulation separated from UI and presentation.
+
+> **Godot is the implementation tool, not the source of the project’s architecture.**
