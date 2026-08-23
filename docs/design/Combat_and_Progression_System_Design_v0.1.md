@@ -199,6 +199,41 @@ This principle is important to the feeling of progression: an enemy that once po
 
 The distribution of enemy strength across regions and changing world conditions belongs to the world-map and world-simulation systems.
 
+## Shared Power for Hero and Enemies
+
+The hero and enemies use **one shared Power system** for estimating combat strength.
+
+Power is not an independent stat that directly makes a combatant stronger. It is a summary estimate calculated from that combatant’s **resolved real combat stats**.
+
+Conceptually, the flow is:
+
+> **stat sources → resolved Combat Stats → shared Power calculation → Power**
+
+The hero and ordinary enemies should pass through the same principle of calculation so their strength remains comparable on one scale.
+
+Power is primarily useful for quick relative danger assessment, such as determining whether:
+
+- the hero is clearly stronger;
+- the two sides are roughly comparable;
+- the enemy is clearly stronger.
+
+Power does **not guarantee the outcome of a fight** and does not replace combat simulation itself.
+
+Two combatants with similar Power may perform differently against one another because of:
+
+- specific abilities;
+- class mechanics;
+- enemy-specific mechanics;
+- combat traits;
+- current condition and remaining resources;
+- other situational factors.
+
+Stats from equipment, class, permanent progression, temporary effects, and other sources must feed into the resolved Combat Stats before Power is calculated. They should **not then be added again as separate Power bonuses** if their effect is already represented in those final stats.
+
+The exact Power formula may change as the combat system develops, but the principle remains stable:
+
+> **The hero and enemies should be measured with the same ruler, based on their real combat capabilities.**
+
 ## Class Must Change Combat Logic
 
 Differences between classes should not be reduced only to weapons or slightly different damage numbers.
