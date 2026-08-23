@@ -270,6 +270,33 @@ Such an ending should feel less like an ordinary defeat screen and more like par
 
 > **The world may lose its own story, but that should be an event of an age, not an accidental Game Over.**
 
+## Game Time
+
+The hero and world simulation operate in **accelerated game time**. Travel, recovery, events, and other long-running processes happen noticeably faster than their literal real-world equivalents would.
+
+Game time is primarily **an abstraction that supports the simulation**, not an attempt to reproduce a person’s calendar life literally.
+
+The game therefore does not inherently require the player to see:
+
+- a numbered day;
+- a calendar date;
+- passing years;
+- the hero’s exact age;
+- a literal mapping between game time and real-world days or years.
+
+The pace of simulation should be tuned through prototyping so that all of the following remain true:
+
+- the hero can noticeably live and develop while the game is left running;
+- events do not accumulate so quickly that the player loses track of what is happening;
+- important situations remain readable;
+- short check-ins regularly reveal something new or meaningful.
+
+The concrete internal representation of time — ticks, seconds, conceptual hours, or a combination of these — belongs to implementation and may change.
+
+> **Game time should serve the rhythm of the hero’s life and the world, rather than force the simulation to obey a literal calendar.**
+
+How this time is presented to the player belongs to `UI_and_Presentation_System_Design_v0.1.md`.
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
