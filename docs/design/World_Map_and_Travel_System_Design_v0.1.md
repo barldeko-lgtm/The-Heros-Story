@@ -87,6 +87,20 @@ At the same time, the map remains a tool for observation and understanding. It m
 
 > **The map should show the life and changes of the world, not merely serve as a background for icons.**
 
+## Types of Points of Interest
+
+Points of interest may differ by how persistent they are in the world:
+
+- **Permanent** — stable parts of the world such as ruins, known caves, mountain passes, or ancient shrines.
+- **Exhaustible** — locations tied to a situation that can be resolved, cleared, or otherwise changed, such as a bandit camp, monster lair, or dungeon objective.
+- **Temporary** — locations or opportunities created by world events for a limited time, such as a caravan, military camp, invasion, rare creature, portal, or battlefield.
+
+A physical location does not always need to disappear when its current activity ends. It may instead remain on the map in a changed state.
+
+The detailed lifecycle of quest-linked locations belongs to `Quest_and_Activity_System_Design_v0.1.md`; this section only defines the map-level categories.
+
+> **Not every opportunity on the map is permanent: some places remain, some are resolved, and some appear only because the world is currently changing.**
+
 ## Migration note
 
 Prototype 0’s abstract single-city distance model is not automatically the final world-map design.
