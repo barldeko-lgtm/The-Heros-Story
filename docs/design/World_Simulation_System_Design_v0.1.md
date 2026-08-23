@@ -164,6 +164,25 @@ War should affect the hero’s ordinary life **through real changes in the world
 
 > **War matters not because influence numbers change somewhere in the simulation, but because it changes the world through which the hero lives and travels.**
 
+## Global Threat as a Long-Term World Process
+
+The world may contain a **major hostile force** that is not one of the ordinary factions and can gradually become a threat to a significant part of the continent.
+
+It should not begin a world-scale war immediately at the start of a new game. Its influence develops gradually. At a high level, several stages may exist:
+
+- **quiet** — the threat exists but has little effect on the rest of the world;
+- **first signs** — rumors, isolated enemies, local events, and unusual points of interest begin to appear;
+- **spread** — the threat starts taking territory, creating persistent pressure, and affecting cities and roads;
+- **major conflict** — it becomes one of the main forces noticeably reshaping the state of the wider world.
+
+Progress between these stages should depend primarily on **time and the state of the world itself**, not on the hero’s level.
+
+The hero may accelerate, slow, or alter particular developments, but the global threat should not wait for the hero to reach an appropriate level before it is allowed to progress.
+
+The exact nature of this force, its pace of development, transition conditions, and scale of influence will be defined later.
+
+> **A major threat develops as part of the world’s history, not as a story boss that activates when the hero reaches the required level.**
+
 ## Migration note
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.
