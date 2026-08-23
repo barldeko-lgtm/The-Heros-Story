@@ -158,6 +158,34 @@ Sets are **not a required part of the base equipment system**. The game should f
 
 The need for this system and its exact rules will be decided later and it may never be implemented.
 
+## Item Visual Direction
+
+The primary visual reference for equipment in **The Hero’s Story** is **Shop Heroes**.
+
+This applies primarily to armor, while also informing weapons, helmets, accessories, and other wearable items.
+
+The reference contributes:
+
+- large, readable silhouettes;
+- a stylized fantasy direction;
+- moderately cartoon-like forms;
+- clean and expressive rendering;
+- clearly distinguishable materials;
+- a strong sense of volume without excessive small-detail clutter;
+- good readability at reduced display sizes;
+- a sense of value and visible progression between items of different quality tiers.
+
+**Shop Heroes is a reference for items specifically**, not automatically for:
+
+- the hero;
+- the world;
+- the map;
+- the interface;
+- environments;
+- the game’s overall visual tone.
+
+> **Item art should feel coherent and recognizable without dictating the visual identity of the entire game.**
+
 ## Migration note
 
 This document describes the future full-game item loop. Its existence does not authorize premature implementation during Prototype 0.
