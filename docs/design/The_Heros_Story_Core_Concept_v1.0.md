@@ -79,6 +79,7 @@ Specific nations, cultures, religions, history, and world structure are develope
 - **Godville** — the relationship between one deity and one hero, hero autonomy, and the pleasure of observing an independent character. The project does not inherit excessive player passivity or a fully comedic foundation.
 - **The Tale** — personality and preferences as part of autonomous behavior, gradual personality formation, and soft influence over development. MMO structure and collective player systems are not part of the project’s direction.
 - **TBH: Task Bar Hero** — play that does not require constant attention, short check-ins, and the sense that the hero’s life continues while the player is busy. The project should not become a conventional idle clicker, a multiplier race, or a resource generator.
+- **Mount & Blade II: Bannerlord** — sequential choices about the hero’s past as a reference for character-creation structure. In **The Hero’s Story**, these choices primarily establish initial personality, tendencies, interests, and preferences rather than granting direct attribute bonuses.
 
 > **References help clarify individual solutions. They do not define the structure of the game as a whole and always remain subordinate to the core concept of The Hero’s Story.**
 
