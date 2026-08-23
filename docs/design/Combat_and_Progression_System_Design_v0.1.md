@@ -100,9 +100,42 @@ Separate from those attributes are hero resources:
 
 These resources do not have to be distributed like normal attributes. Their values may depend on level, class, primary attributes, equipment, abilities, or other systems.
 
-Damage, armor, speed, critical hits, dodge, accuracy, and similar values are treated as **secondary stats**. They may be derived from primary attributes, class, equipment, abilities, temporary effects, and other sources.
+## Secondary Combat Stats
 
-The exact list of secondary stats, formulas, and even the final set of primary attributes may change as the combat system develops.
+The current secondary combat-stat set is deliberately compact and is divided into defensive and offensive stats.
+
+### Defensive stats
+
+- **Health** — determines how much damage the combatant can survive before being defeated;
+- **Armor** — reduces incoming physical damage;
+- **Dodge** — allows an incoming attack to be avoided entirely;
+- **Fire Resistance** — reduces incoming fire damage;
+- **Cold Resistance** — reduces incoming cold damage;
+- **Lightning Resistance** — reduces incoming lightning damage;
+- **Block** — represents the combatant’s ability to block an incoming attack when the current equipment or combat setup allows blocking.
+
+Health remains a hero combat resource, but bonuses to maximum Health are also treated as part of the defensive combat-stat layer when resolving equipment and other stat sources.
+
+The three elemental resistances use the same diminishing-return model as Armor:
+
+`Final Damage = Raw Damage × 100 / (100 + Resistance)`
+
+Resistance values cannot be negative. Damage reduction from any single elemental resistance is capped at **75%**.
+
+The exact Block formula and its interaction with different attack types will be defined separately.
+
+### Offensive stats
+
+- **Damage** — the base strength of attacks or damaging actions before relevant mitigation;
+- **Accuracy** — determines the ability to successfully hit a target;
+- **Critical Chance** — determines the chance that an eligible hit becomes a critical hit;
+- **Critical Damage** — determines how much additional damage a critical hit deals;
+- **Attack Speed** — affects the speed or frequency of weapon attacks;
+- **Cast Speed** — affects the speed of spell casting and other actions explicitly treated as casts.
+
+These stats may be derived from primary attributes, class, equipment, abilities, temporary effects, and other valid sources.
+
+The current list is the working base set. Additional secondary stats should be introduced only when they create a clear gameplay purpose rather than unnecessary complexity.
 
 ## Sources of Permanent Hero Power
 
