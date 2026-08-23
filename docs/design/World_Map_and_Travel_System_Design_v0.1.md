@@ -56,6 +56,37 @@ A young hero therefore normally remains near safer areas **not because the rest 
 
 > **The world is open in advance; the hero’s own development makes more of it practically relevant over time.**
 
+## The Map as a Visual Reflection of the Living World
+
+The map should be one of the main ways the player **understands where the hero is and what is happening in the world**.
+
+It should be primarily **schematic, readable, and functional** rather than trying to represent the continent with maximum geographical detail.
+
+The map may display:
+
+- cities;
+- major regions and territories;
+- points of interest;
+- the hero’s current position;
+- the current route or direction of travel;
+- areas of faction influence;
+- borders and territorial changes.
+
+The map becomes especially important during major changes in the world, such as:
+
+- wars;
+- sieges;
+- border changes;
+- invasions;
+- the appearance of major threats;
+- other events that significantly alter the state of regions.
+
+The player should be able to **see that the world has changed**, rather than learning about every major development only through text.
+
+At the same time, the map remains a tool for observation and understanding. It must **not become an interface for directly controlling the hero or commanding armies**.
+
+> **The map should show the life and changes of the world, not merely serve as a background for icons.**
+
 ## Migration note
 
 Prototype 0’s abstract single-city distance model is not automatically the final world-map design.
