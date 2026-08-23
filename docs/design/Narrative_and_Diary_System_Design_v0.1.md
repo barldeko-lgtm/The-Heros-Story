@@ -172,6 +172,35 @@ The detailed log is also **not the hero’s diary or chronicle**. The chronicle 
 
 > **The player does not need to see the internals of the simulation constantly, but should be able to understand why the hero acted the way they did.**
 
+## Main Hero Chronicle
+
+The **main hero chronicle** is the primary narrative layer the player reads regularly, especially when returning to the game after time away from the window.
+
+It should not repeat the detailed informational log line by line. Instead, it gathers multiple actions and events into **coherent episodes of the hero’s life**, preserving the important chain of cause and effect: decision → preparation → journey → encounter → result → consequences.
+
+The chronicle should:
+
+- read like an adventure story;
+- preserve meaningful causes and consequences;
+- emphasize what matters;
+- omit insignificant micro-actions;
+- reveal the hero’s personality through choices, habits, and reactions;
+- let the player understand a meaningful stretch of the hero’s life within a few minutes.
+
+The exact size of one chronicle entry is not fixed. It may cover several connected events or a broader period of life. The important requirement is that the player understands **not merely what happened, but what piece of the hero’s story was lived**.
+
+For example:
+
+> Edgar briefly considered dealing with the troll and decided to leave that honor to someone more desperate. Instead, he accepted a contract on the wolves along the northern road. Before leaving, he did buy a potion after all — his previous trip through those parts had noticeably improved his respect for preparation.
+>
+> The pack turned out to be larger than promised, but by evening the job was finished. Edgar returned to the city tired, carrying several new scratches and a pair of boots that looked considerably better than the ones he had been wearing that morning.
+
+The relationship between the two layers is simple:
+
+> **The detailed log explains what happened and why. The main chronicle turns those events into a story.**
+
+> **The player should not have to read the entire simulation. They should be able to read the hero’s life.**
+
 ## Migration note
 
 The current debug log and future player-facing diary are separate concepts and should not be conflated.
