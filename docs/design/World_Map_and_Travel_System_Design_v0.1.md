@@ -87,6 +87,14 @@ At the same time, the map remains a tool for observation and understanding. It m
 
 > **The map should show the life and changes of the world, not merely serve as a background for icons.**
 
+## Important Named Characters on the Map
+
+The location of especially important named characters may be shown on the map **when that location is known to the player**.
+
+This allows the player to see that significant figures in the world actually move and participate in events: they may remain in a city, travel toward a front, take part in a siege, or retreat after a defeat.
+
+The map does not have to give the player constant omniscient knowledge of every such character’s exact location.
+
 ## Types of Points of Interest
 
 Points of interest may differ by how persistent they are in the world:
