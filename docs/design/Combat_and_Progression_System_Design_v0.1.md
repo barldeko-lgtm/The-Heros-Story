@@ -47,25 +47,42 @@ The game does not use a separate TES-like progression system for every weapon ty
 
 The player does not manually distribute all of the hero’s attributes after every level-up.
 
-Attribute growth is shared between three influences:
+Before specialization, attribute growth is shared between three influences:
 
 1. **class** — guarantees part of the growth toward the class’s core attribute or attributes;
 2. **deity guidance** — allows the player to softly encourage one development direction;
 3. **the hero** — most growth is distributed autonomously according to the hero’s own tendencies and development logic.
 
-A current illustrative working model is:
+The current working baseline before the first specialization is:
 
 > **5 attribute points per level: 1 from class + 1 from deity guidance + 3 distributed by the hero.**
 
-These numbers are provisional design values, not final balance. The amount of growth and the proportions assigned to each source may change during development.
+After the hero gains the first specialization at level 40, that specialization becomes an additional permanent influence on future level-ups. Future level-ups gain **+1 additional attribute point directed by the first specialization**, bringing the working total to 6 points per level while that tier is active.
+
+After the hero gains the second specialization tier at level 80, the final specialization adds **another +1 directed attribute point** to future level-ups, bringing the working total to 7 points per level.
+
+The intended structure is therefore:
+
+- before the first specialization: `1 class + 3 hero + 1 deity = 5`;
+- after the first specialization: the same growth + `1 first-specialization point = 6`;
+- after the second specialization: the same growth + `1 first-specialization point + 1 final-specialization point = 7`.
+
+Specialization-directed points go toward the attribute or attributes that define that specialization. The exact distribution inside a specialization profile will be defined when the individual class branches are designed.
+
+Specialization milestones also provide an immediate stat increase so that choosing a new path creates a noticeable jump rather than only changing future growth:
+
+- **level 40 / first specialization:** immediately gain **+5 profile attribute points** from the chosen specialization;
+- **level 80 / final specialization:** immediately gain **+10 profile attribute points** from the chosen final specialization.
+
+These milestone points follow the specialization’s own stat profile. Whether all points go into one primary attribute or are divided among several profile attributes depends on the individual specialization design.
+
+The current numbers are working design values and may be tuned during implementation, but the structural principle is that each specialization tier both grants an immediate stat step and permanently adds a new directed component to later level-up growth.
 
 The hero’s autonomous share should not be random. It may be influenced by biography, personality, preferences, lifestyle, and meaningful accumulated experience.
 
 Divine guidance should influence development without becoming ordinary manual point allocation by the player.
 
-> **The hero develops themselves; the player can only help shape the direction.**
-
-The exact attributes, weighting rules, and strength of each influence will be defined separately.
+> **The hero develops themselves; class, specialization, and the deity shape the direction without replacing the hero’s own growth.**
 
 ## Hero Growth Must Be Understandable
 
@@ -75,6 +92,7 @@ When the hero levels up, the player should be able to understand:
 
 - which attributes increased;
 - which part of the growth came from class;
+- which part came from the hero’s current specialization path;
 - which direction was encouraged by deity guidance;
 - which tendencies, preferences, or experiences influenced the hero’s autonomous share.
 
@@ -219,7 +237,7 @@ During this period, the hero:
 - gradually reveals personality and preferences;
 - gains and changes traits;
 - learns the core abilities of the class;
-- may later reach a specialization;
+- reaches the first and then the final specialization tier;
 - uses equipment, although equipment is not yet the primary source of progression.
 
 From the beginning, the world contains areas that are naturally appropriate for a young hero: safer cities, surroundings, and available activities. These are not isolated “starting zones.”
@@ -242,21 +260,23 @@ During maturity, greater importance may shift toward equipment, rare items, abil
 
 > **Early on, the hero is primarily becoming stronger. Later, what matters increasingly is who the hero has become, what they possess, and what kind of world they live in.**
 
-The exact pace and boundary between these stages are provisional and may change during development.
+The exact pace of progression beyond the current soft cap remains a balance question.
 
 ## Soft Cap
 
-The hero has a **soft cap** after which ordinary vertical progression gradually slows down without stopping completely.
+The current working soft cap is **level 100**.
 
-After reaching this stage, the hero may still gain levels, increase attributes, and continue developing class abilities, but each additional increase becomes less significant.
+Reaching level 100 does not end progression and does not create a hard maximum level. The hero may continue gaining levels afterward, but post-100 level progression should become **much slower** than progression during the formation stage.
 
-The purpose of the soft cap is not to stop hero development. It is to gradually shift the main source of interest away from simple level and attribute growth toward equipment, abilities, specialization, the hero’s individual characteristics, and participation in the living world.
+The current working direction is that ordinary class-skill progression is essentially complete by the soft cap. Skills are not expected to keep increasing indefinitely after level 100 unless a later design layer explicitly introduces a reason for further skill development.
+
+The purpose of the soft cap is not to stop hero development. It is to shift the main source of interest away from ordinary level and skill growth toward equipment, the completed specialization path, combat traits, preparation for specific threats, and the hero’s participation in the living world.
+
+A possible later layer may further improve each final specialization without creating additional branches, but this is not part of the currently defined progression structure.
 
 The early stage should not feel like a long tutorial before the “real game.” World events and larger processes exist from the beginning; a young hero simply has far less ability to affect them.
 
-The exact level or conditions for reaching the soft cap, as well as the pace of progression beyond it, will be defined separately and may change during development.
-
-> **After the soft cap, the hero does not stop developing — what changes is which sources matter most for further growth.**
+> **Level 100 is the current formation soft cap: progression continues beyond it, but much more slowly and with the hero’s main class path already formed.**
 
 ## Enemies Do Not Automatically Scale to the Hero
 
@@ -379,7 +399,7 @@ Dodge increases effective survivability through:
 Examples:
 
 | Dodge | Reference Dodge Chance | DodgeEHPFactor |
-| ---: | ---: | ---: |
+| ---: | ---: |
 | 0 | 0% | 1.00 |
 | 50 | 20% | 1.25 |
 | 100 | 33.3% | 1.50 |
@@ -463,12 +483,14 @@ The exact mechanics of each class will be designed separately.
 
 ## Basic Class Kit
 
-Each base class should have its own distinctive combat mechanic and a small set of characteristic abilities.
+Each base class should have its own distinctive combat mechanic and a deliberately small set of characteristic abilities.
 
-The current working guideline is:
+The current class-progression structure is:
 
 - **one primary unique class mechanic**;
-- roughly **2–3 basic abilities** that the hero gains relatively early.
+- **two base-class abilities**;
+- the first base-class ability unlocks at **level 10**;
+- the second base-class ability unlocks at **level 20**.
 
 The unique mechanic does not have to be represented by a separate resource bar.
 
@@ -476,9 +498,11 @@ For example, a class mechanic may involve Mana for the Mage, Rage or combat mome
 
 A separate artificial resource should not be created for every class merely for the sake of symmetry.
 
+Later specialization tiers each add one additional ability along the hero’s chosen path, so a fully formed level-90 hero currently has four main class-path abilities in total: two from the base class, one from the first specialization, and one from the final specialization.
+
 The exact abilities, resources, and mechanics of each class will be defined separately and may change during development.
 
-> **Each class should have its own combat logic, but this does not require artificially giving every class the same amount or type of complexity.**
+> **The ability set should stay small enough for autonomous combat to remain readable while still making the class and specialization path recognizable.**
 
 ## Automatic Ability Use
 
@@ -504,21 +528,57 @@ The exact ability-selection rules and weighting of these factors will be defined
 
 ## Hero Specialization
 
-Later in the hero’s development, they may gain the opportunity to advance their base class through a specialization.
+Each base class currently has a **two-tier branching specialization structure** during the hero’s formation stage.
 
-A specialization should continue the original archetype rather than abruptly turning the hero into a fundamentally different class. It may:
+### First Specialization Tier — Level 40
 
-- grant roughly **1–2 new abilities**;
-- modify or expand the class’s core mechanic;
-- emphasize the individual path of that specific hero.
+At **level 40**, the base class branches into **two first-tier specializations**.
 
-Unlike the starting class, the specialization is chosen primarily by **the hero**. The choice may be influenced by attributes, personality, preferences, and lived experience.
+The hero chooses one of those two paths primarily through their own development logic. The choice may be influenced by attributes, personality, preferences, and lived experience. The player should be able to understand why the hero arrived at that choice.
 
-The player should be able to understand why the hero arrived at that specialization.
+Receiving the first specialization immediately grants the specialization’s **+5 profile attribute points** and permanently adds its **+1 specialization-directed attribute point** to future level-ups, as defined in the attribute-growth section.
 
-> **The player chooses who the hero is at the beginning of the journey. The hero largely determines who they become.**
+At **level 50**, the hero unlocks **one ability belonging to the chosen first-tier specialization**.
 
-The exact specialization system and whether the deity can softly influence this choice will be defined separately.
+### Final Specialization Tier — Level 80
+
+At **level 80**, the hero’s chosen first-tier specialization branches again into **two final specializations**.
+
+Because each of the two first-tier specializations has two final branches, every base class currently has **four possible final specialization outcomes**.
+
+Receiving the final specialization immediately grants the specialization’s **+10 profile attribute points** and permanently adds another **+1 specialization-directed attribute point** to future level-ups.
+
+At **level 90**, the hero unlocks **one ability belonging to the chosen final specialization**.
+
+The current class-path structure is therefore:
+
+```text
+Base Class
+├─ Specialization A [40]
+│  ├─ Final A1 [80]
+│  └─ Final A2 [80]
+└─ Specialization B [40]
+   ├─ Final B1 [80]
+   └─ Final B2 [80]
+```
+
+and the current ability milestones are:
+
+- **level 10:** base-class ability 1;
+- **level 20:** base-class ability 2;
+- **level 40:** first specialization + immediate specialization stat bonus;
+- **level 50:** first-specialization ability;
+- **level 80:** final specialization + immediate final-specialization stat bonus;
+- **level 90:** final-specialization ability;
+- **level 100:** current soft cap / completion of the main formation progression.
+
+A specialization should continue the original archetype rather than abruptly turning the hero into a fundamentally different class. Each tier should make the chosen path increasingly recognizable through its stat direction, abilities, and possible changes to the class’s core mechanic.
+
+Unlike the starting class, specialization choices are made primarily by **the hero**. Whether the deity can softly influence these choices is still to be defined.
+
+A possible future progression layer may further improve each of the four final specializations without another branching choice. That possibility is deliberately left undefined for now.
+
+> **The player chooses the starting class; the hero’s development progressively determines which of that class’s four final paths they become.**
 
 ## Base Starting Classes
 
@@ -529,7 +589,7 @@ The current set of starting classes consists of four archetypes:
 - **Mage**;
 - **Rogue**.
 
-This set is sufficient as the game’s current base class structure. Exact abilities, resources, specializations, and complete class mechanics will be designed separately and may change during development.
+This set is sufficient as the game’s current base class structure. Exact abilities, resources, specialization names, and complete class mechanics will be designed separately and may change during development.
 
 When developing each class further, it should be checked against these questions:
 
