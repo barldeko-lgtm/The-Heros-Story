@@ -174,17 +174,36 @@ It consists only of the base properties appropriate to its item type and item le
 
 For Uncommon, Rare, Epic, and Legendary items, **item level and rarity together define a range for the total Modifier Budget**. The final total budget is rolled somewhere inside that range.
 
-A purely illustrative example for one unspecified item level could be:
+The current provisional rarity multipliers for the modifier-budget scale are:
 
-| Rarity | Modifiers | Example total Modifier Budget range |
-| --- | ---: | ---: |
-| Normal | 0 | 0 |
-| Uncommon | 1 | 100–120 |
-| Rare | 2 | 150–170 |
-| Epic | 3 | 200–250 |
-| Legendary | 4 | higher than Epic; exact range TBD |
+| Rarity | Working budget multiplier |
+| --- | ---: |
+| Uncommon | ×1.0 |
+| Rare | ×1.5 |
+| Epic | ×2.0 |
+| Legendary | ×2.5 |
 
-These numbers are examples only and are **not final balance values**. Higher or lower item levels move the relevant budget ranges accordingly.
+These multipliers are provisional balance values. Their purpose is to establish the relative strength of rarities before exact item-level ranges are known.
+
+The current working progression target is:
+
+> **A Legendary item from the current item tier should have approximately the same total modifier budget as a Rare item from the next item tier.**
+
+To produce that relationship with the working rarity multipliers, the base modifier-budget scale between adjacent item tiers grows by approximately **×1.67**:
+
+`2.5 / 1.5 ≈ 1.67`
+
+This is a design target, not a requirement that the final game expose discrete ten-level tiers or use exactly this multiplier after balance testing.
+
+Purely illustrative control points for the current working scale are:
+
+| Example ilvl | Uncommon | Rare | Epic | Legendary |
+| ---: | ---: | ---: | ---: | ---: |
+| 10 | 54–66 | 81–99 | 108–132 | 135–165 |
+| 20 | 90–110 | 135–165 | 180–220 | 225–275 |
+| 30 | 150–184 | 225–276 | 300–367 | 375–459 |
+
+These numbers are **not final balance values** and do not yet define the final item-level range of the game. They exist only to anchor the intended growth relationship: modifier budget rises with ilvl, higher rarity raises the available budget, and a sufficiently higher-ilvl lower-rarity item can overtake an older high-rarity item.
 
 The rolled total budget is then distributed among all mandatory modifiers on the item. It does not have to be divided equally.
 
@@ -277,16 +296,54 @@ These pools are working design rules, not a claim that the final game will never
 
 Modifier Budget is an abstract measure of power, not a direct number of visible stat points.
 
-Different secondary stats have different costs. Therefore:
+Different secondary stats have different costs. Therefore equal numerical values of different stats are not assumed to have equal combat value.
 
-- `1 budget` does not equal `+1 Accuracy`;
-- `1 budget` does not equal `+1 Armor`;
-- `1 budget` does not equal `+1% Critical Chance`;
-- and equal numerical values of different stats are not assumed to have equal combat value.
+The current **provisional modifier-cost scale** is derived from the working Warrior Power model in `Combat_and_Progression_System_Design_v0.1.md`. The comparison uses an illustrative reference Warrior around:
 
-Each allowed modifier stat will later receive a **budget cost / conversion rule** that converts the budget assigned to that modifier into its actual rolled stat value.
+- 1000 Health;
+- 100 Armor;
+- 100 Fire, Cold, and Lightning Resistance;
+- 50 Dodge;
+- 100 Accuracy;
+- 100 physical Damage;
+- 25% Critical Chance;
+- 200% Critical Damage.
 
-This allows the generator to compare and distribute different secondary stat types on one shared power-budget scale without pretending that their visible numbers are directly equivalent.
+The scale is normalized so that approximately **+1 Armor = 10 Modifier Budget** near that reference build.
+
+| Modifier gain | Provisional budget cost |
+| --- | ---: |
+| +1 Health | ~3 |
+| +1 Armor | ~10 |
+| +1 Dodge | ~12 |
+| +1 Accuracy | ~3 |
+| +1 Damage | ~30 |
+| +1 percentage point Critical Chance | ~25 |
+| +1 percentage point Critical Damage | ~6 |
+| +1% Attack Speed | ~30 |
+| +1% Cast Speed | ~30, provisional |
+| +1 elemental Resistance | ~5, provisional |
+| Block | TBD |
+
+As a rough readability example, **100 Modifier Budget** would currently correspond to approximately one of the following single-stat amounts near the reference build:
+
+- +33 Health;
+- +10 Armor;
+- +8 Dodge;
+- +33 Accuracy;
+- +3.3 Damage;
+- +4 percentage points Critical Chance;
+- +16–17 percentage points Critical Damage;
+- +3.3% Attack Speed;
+- +20 of one elemental Resistance.
+
+These prices are **working local weights, not permanent universal exchange rates**. Armor, Dodge, Accuracy, resistances, Critical Chance, and Critical Damage have nonlinear or context-dependent value. Their marginal value changes with the hero’s existing stats, and some stats depend on the opponent or damage type.
+
+Elemental Resistance is intentionally priced more conservatively than a literal derivative of the universal Power formula would suggest. The universal Warrior Power reference environment weights each individual element at only 10% of incoming damage, which would otherwise make a single resistance artificially cheap in the item generator even though it can be very strong in the matching real encounter.
+
+Cast Speed is provisionally valued near Attack Speed until caster damage and casting mechanics are defined. Block remains unpriced until its actual combat formula is established.
+
+> **Modifier costs should keep different stats in roughly comparable power territory without pretending that every build and every matchup gives those stats identical value.**
 
 ## Random Modifier Generation
 
@@ -311,7 +368,7 @@ Generation should not be completely unrestricted. Each item type has its own poo
 
 The same random modifier cannot be selected twice for one item. Higher-rarity items therefore draw multiple different properties from their valid pool rather than stacking duplicate modifier entries.
 
-The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. Stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
+The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. Exact final stat costs, final budget ranges, distribution bounds, item-level scale, and numerical roll rules remain balance questions.
 
 > **Randomness should create item variety, not meaningless chaos.**
 
