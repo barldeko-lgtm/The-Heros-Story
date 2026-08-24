@@ -80,6 +80,19 @@ Preferences should influence autonomous choices and may form or change through t
 
 A separate complex subsystem is not required at this stage. Preferences may use the same underlying decision-weight mechanisms as personality while remaining conceptually distinct.
 
+## Discovery-Related Personality Traits
+
+Two provisional personality traits are reserved for later development because they may affect how easily the hero notices hidden locations, unusual signs, and nearby opportunities while travelling:
+
+- **Observant / Наблюдательный** — expected to improve the hero’s ability to notice hidden locations, unusual signs, or nearby opportunities;
+- **Inattentive / Невнимательный** — expected to reduce that ability.
+
+Their exact numerical effects, acquisition rules, interaction with other traits, and whether they form a strict opposing pair are **not yet defined**.
+
+The map and discovery systems may use these traits as modifiers to their own base discovery chances, but the definition, ownership, and future development of the traits belong to the personality system.
+
+> **The world defines what can be noticed; the hero’s personality may affect how likely they are to notice it.**
+
 ## General Decision-Making Model
 
 The autonomous hero should make decisions logically enough that the player can understand the reasons behind their behaviour without reducing the hero to a single universal optimization formula.
