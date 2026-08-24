@@ -192,7 +192,7 @@ The same formula applies to the hero and to enemies.
 Examples:
 
 | Accuracy | Dodge | Dodge Chance | Hit Chance |
-| ---: | ---: | ---: | ---: |
+| ---: | ---: | ---: |
 | 100 | 0 | 0% | 100% |
 | 100 | 50 | 20% | 80% |
 | 100 | 100 | 33.3% | 66.7% |
@@ -494,15 +494,26 @@ The current class-progression structure is:
 
 The unique mechanic does not have to be represented by a separate resource bar.
 
-For example, a class mechanic may involve Mana for the Mage, Rage or combat momentum for the Warrior, distance and aiming for the Archer, or advantage and stealth for the Rogue.
-
 A separate artificial resource should not be created for every class merely for the sake of symmetry.
 
 Later specialization tiers each add one additional ability along the hero’s chosen path, so a fully formed level-90 hero currently has four main class-path abilities in total: two from the base class, one from the first specialization, and one from the final specialization.
 
-The exact abilities, resources, and mechanics of each class will be defined separately and may change during development.
+### Current Working Warrior Base Kit
 
-> **The ability set should stay small enough for autonomous combat to remain readable while still making the class and specialization path recognizable.**
+The Warrior is the first class for which the initial combat kit is defined at a conceptual level.
+
+The Warrior’s core class resource is **Rage**. Rage represents combat momentum and is built during fighting through offensive action and through taking damage. The exact maximum Rage, generation amounts, decay rules, and ability costs are intentionally left for prototyping and balance.
+
+The two current base abilities are:
+
+- **Level 10 — Power Strike:** a strong weapon attack that spends Rage to deal meaningfully more damage than an ordinary attack. It is intended to work across the normal Warrior weapon setups rather than belonging to one later specialization.
+- **Level 20 — Battle Guard:** a defensive Rage-spending ability that temporarily reduces incoming danger or damage. It does **not** require a shield, allowing every future Warrior path to retain a basic defensive tool.
+
+This creates a simple autonomous resource decision even before specialization: the Warrior may spend accumulated Rage offensively through Power Strike or preserve/spend it defensively through Battle Guard when survival becomes more important.
+
+No exact damage multiplier, Rage cost, mitigation amount, duration, cooldown, or trigger threshold is fixed at the concept stage.
+
+> **The basic Warrior should already choose between converting combat momentum into offense or using it to survive.**
 
 ## Automatic Ability Use
 
@@ -604,21 +615,63 @@ The player should eventually receive enough information about possible future pa
 
 The Warrior is the first class used to test the specialization structure.
 
-The current working high-level tree is:
+The current working tree is:
 
 ```text
 Warrior
-├─ Defensive Path [40; final name TBD]
+├─ Protector [40]
 │  ├─ Paladin [80]
 │  └─ Guardian [80]
-└─ Offensive Path [40; final name TBD]
+└─ Slayer [40]
    ├─ Berserker [80]
    └─ Champion [80]
 ```
 
-The first-tier names are not fixed yet. Their purpose is to separate a broad **defensive/protective direction** from a broad **offensive/aggressive direction** before each later divides into two distinct final identities.
+#### Protector — First Defensive Specialization
 
-The current working differentiation is:
+**Protector** is the Warrior’s first-tier defensive/protective specialization.
+
+Its current conceptual identity is:
+
+- profile stat direction: primarily **CON**;
+- equipment identity: **one-handed weapon + shield**;
+- general combat direction: durability, protection, control, and making the shield an active part of combat rather than only a passive stat source.
+
+At **level 50**, Protector gains **Shield Bash**:
+
+- requires a shield;
+- combines a shield attack with a control effect;
+- may disrupt, delay, stagger, or later interrupt an eligible enemy action depending on the final combat implementation;
+- exact damage, control duration, cooldown, and interaction rules are not fixed yet.
+
+Protector later divides into:
+
+- **Paladin** — the defensive path that combines shield-based durability with self-healing / holy-supportive tools;
+- **Guardian** — the heavier pure-defense path focused on a large or tower-style shield, Block, Armor, Health, and maximum durability.
+
+#### Slayer — First Offensive Specialization
+
+**Slayer** is the Warrior’s first-tier offensive specialization.
+
+Its current conceptual identity is:
+
+- profile stat direction: primarily **STR**;
+- equipment identity: **no shield**;
+- supported weapon directions: a heavy two-handed weapon or two one-handed weapons;
+- general combat direction: sustained offensive pressure and turning combat momentum into increasingly dangerous attacks.
+
+At **level 50**, Slayer gains **Onslaught**:
+
+- performs a powerful weapon attack;
+- after the attack, temporarily increases the Warrior’s attack tempo / attack speed for following attacks;
+- exact damage, speed increase, duration, cooldown, Rage interaction, and number of affected attacks are intentionally left undefined for prototyping.
+
+Slayer later divides into:
+
+- **Berserker** — the more reckless, rage-driven and risk-tolerant offensive path;
+- **Champion** — the more controlled weapon-mastery path emphasizing precision, critical performance and disciplined offense.
+
+The four final Warrior paths currently differ as follows:
 
 | Final Warrior path | Primary stat tendency | Character tendency | Combat identity |
 | --- | --- | --- | --- |
@@ -629,8 +682,8 @@ The current working differentiation is:
 
 At the first specialization tier, the broad split should follow the same logic rather than a single hard stat check:
 
-- the **Defensive Path** is naturally supported by stronger CON and protective/cautious character tendencies, with WIS or STR helping determine the later direction;
-- the **Offensive Path** is naturally supported by stronger STR and greater willingness to take risks, with DEX, CON and character differences helping determine the later direction.
+- **Protector** is naturally supported by stronger CON and protective/cautious character tendencies, with WIS or STR helping determine the later Paladin/Guardian direction;
+- **Slayer** is naturally supported by stronger STR and greater willingness to take risks, with DEX, CON and character differences helping determine the later Champion/Berserker direction.
 
 These are **conceptual affinities, not final formulas or thresholds**. A high CON value alone should not automatically force Guardian, and a high STR value alone should not automatically force Berserker. The final choice should reflect the combination of the hero’s character and the development that character has produced.
 
@@ -727,7 +780,7 @@ The hero should use abilities in a way that is **reasonably logical and understa
 
 Different classes may build their combat logic around different mechanics.
 
-For example, the Mage may use Mana, the Warrior may build Rage or combat momentum, while other classes may use their own states or combat rules.
+The current Warrior uses **Rage** as its working class resource, building combat momentum during fighting and spending it on class abilities. Other classes may use different resources, states, or combat rules; for example, the Mage may use Mana.
 
 A separate resource bar is not required for every class.
 
