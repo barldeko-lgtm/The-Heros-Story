@@ -139,10 +139,12 @@ Exact allowed weapon families, specialization bonuses, dual-wield rules, and cas
 
 ## Item Level and Rarity
 
-Each item has two main characteristics that describe its quality:
+Each item has two main characteristics that describe its mechanical quality:
 
-- **item level / base power** — determines the item’s general stat potential and which modifier value ranges may be available;
-- **rarity** — determines the fixed number of prefixes and suffixes generated on the item.
+- **item level / ilvl** — determines the strength of the item’s inherent base stats and establishes the power scale used for its affix budget;
+- **rarity** — determines the fixed number of prefixes and suffixes and, together with item level, the range of the item’s total affix budget.
+
+For items of the same base type and item level, rarity does **not** automatically increase the inherent base stat merely because the item is a different color. The extra power of higher rarity comes primarily from its affixes and the larger budget available to those affixes.
 
 The current rarity structure is:
 
@@ -155,37 +157,75 @@ The current rarity structure is:
 
 Modifier slots are never empty. If an item has a given rarity, it always receives the complete number of prefixes and suffixes defined for that rarity.
 
-> **Item level defines the foundation of an item’s strength, while rarity defines how many additional modifiers are added to that foundation.**
+> **Item level determines the strength scale of the item. Rarity determines how many affixes it receives and how much total affix power can be distributed among them.**
 
-## Item Power Budget
+## Affix Power Budget
 
-Each item has a limited **stat budget** determined primarily by its level and rarity.
+The item’s inherent base stats are determined separately from its affix budget.
 
-This budget is distributed among the item’s stats.
+A **Normal / White** item has no prefixes or suffixes and therefore has:
 
-Two items of the same level and rarity may therefore have roughly comparable total power while distributing that power in very different ways.
+> **Affix Budget = 0**
 
-For example, one chest piece may provide more defense, while another provides less defense but adds other useful stats.
+It consists only of the base properties appropriate to its item type and item level.
 
-> **Items of the same power tier do not have to be identical — their value may come from how that power is distributed.**
+For Uncommon, Rare, and Epic items, **item level and rarity together define a range for the total Affix Budget**. The final total budget is rolled somewhere inside that range.
 
-The exact formulas and relative cost of individual stats will be defined later.
+A purely illustrative example for one unspecified item level could be:
+
+| Rarity | Affixes total | Example total Affix Budget range |
+| --- | ---: | ---: |
+| Normal | 0 | 0 |
+| Uncommon | 2 | 100–120 |
+| Rare | 4 | 150–170 |
+| Epic | 6 | 200–250 |
+
+These numbers are examples only and are **not final balance values**. Higher or lower item levels move the relevant budget ranges accordingly.
+
+The rolled total budget is then distributed among all mandatory affixes on the item. It does not have to be divided equally.
+
+For example, a Rare item with four affixes may devote more of its budget to one modifier and less to another. However, distribution must remain bounded so that generation cannot spend almost the entire budget on one modifier while leaving the remaining mandatory affixes nearly worthless.
+
+The exact minimum and maximum share an individual affix may receive relative to the average share are tuning parameters and will be defined through testing.
+
+> **Rarity creates both more affixes and a larger total affix budget, while controlled random distribution creates meaningful variation between items of the same level and rarity.**
+
+### Stat Cost
+
+Affix Budget is an abstract measure of power, not a direct number of stat points.
+
+Different stats have different costs. Therefore:
+
+- `1 budget` does not equal `+1 Strength`;
+- `1 budget` does not equal `+1 Accuracy`;
+- `1 budget` does not equal `+1% Critical Chance`;
+- and equal numerical values of different stats are not assumed to have equal combat value.
+
+Each allowed affix stat will later receive a **budget cost / conversion rule** that converts the budget assigned to that affix into its actual rolled stat value.
+
+For example, if two affixes each receive 30 budget, one might convert that budget into several points of a primary attribute while another converts it into a smaller percentage-based Critical Chance bonus. The exact conversion values are not yet defined.
+
+This allows the generator to compare and distribute different stat types on one shared power-budget scale without pretending that their visible numbers are directly equivalent.
 
 ## Prefixes, Suffixes, and Random Generation
 
 Generated equipment follows the general structure:
 
-> **base item → item level → rarity → prefixes and suffixes → rolled modifier values**
+> **base item → item level → rarity → total Affix Budget roll → prefixes and suffixes → budget distribution → rolled stat values**
 
 The base item defines the item type, equipment slot, and its inherent base characteristics.
 
-After rarity is determined, the item receives the exact number of prefixes and suffixes required by that rarity. Prefixes and suffixes are selected from modifier pools available to that specific type of item.
+Item level establishes the strength of those base characteristics and the relevant affix-budget scale. Rarity then determines the exact number of prefixes and suffixes and selects the corresponding total-budget range.
 
-The random part of item generation comes from:
+After the total budget is rolled, prefixes and suffixes are selected from modifier pools available to that specific type of item. The rolled budget is distributed among those mandatory affixes within the allowed distribution limits, and each affix converts its assigned budget into its actual stat value according to that stat’s cost rule.
+
+The random part of item generation therefore comes from:
 
 - which eligible prefixes are selected;
 - which eligible suffixes are selected;
-- the numerical value rolled for each selected modifier within its allowed range.
+- where inside the rarity-and-ilvl budget range the item’s total Affix Budget lands;
+- how that total budget is distributed among the mandatory affixes within allowed limits;
+- any later approved final-value rounding or small roll variation inside the stat conversion rules.
 
 Generation should not be completely unrestricted. Each item type has its own pool of allowed properties so that items remain coherent with their function.
 
@@ -198,7 +238,7 @@ For example:
 
 Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
 
-The current primary and secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, which stats may appear on which item types, modifier tiers, and numerical roll ranges are not defined yet.
+The current primary and secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
 
 > **Randomness should create item variety, not meaningless chaos.**
 
