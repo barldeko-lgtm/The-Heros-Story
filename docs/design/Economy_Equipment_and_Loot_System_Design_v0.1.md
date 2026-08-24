@@ -372,6 +372,123 @@ The current secondary combat stats are defined in `Combat_and_Progression_System
 
 > **Randomness should create item variety, not meaningless chaos.**
 
+## Initial Gold Economy
+
+The first economy should connect adventuring, loot, gold, shops, and equipment progression without turning the game into a trading or maintenance simulator.
+
+The basic economic loop is:
+
+> **quest / combat → gold and loot → return to town → evaluate loot → equip or retain useful items → sell unwanted items and trophies → inspect shop stock → buy a worthwhile available upgrade when appropriate → choose the next activity**
+
+The hero should be able to perform this loop autonomously.
+
+### Gold Sources
+
+The current basic sources of gold are:
+
+- **quest rewards** — a stable and important source of direct income;
+- **direct currency loot from humanoid enemies**, when it is reasonable for that enemy to carry money;
+- **selling unwanted equipment and trophies** obtained through adventures.
+
+Beasts and ordinary monsters do **not** drop gold merely because they were defeated. They may instead provide equipment, trophies, or other sellable loot appropriate to the creature and activity.
+
+> **Currency should come from sources that make sense in the world rather than appearing automatically from every defeated creature.**
+
+### Item Reference Value and Resale
+
+Every equipment item has a reference shop value even if that rarity is not normally offered by ordinary shops.
+
+The exact price formula is not finalized, but the working structure is:
+
+> **reference item value = value of the base item at its ilvl and type + value created by its generated modifier strength**
+
+Modifier Budget can therefore contribute to item value without making visible stat numbers directly interchangeable with gold.
+
+When the hero sells equipment to an ordinary shop, the current rule is:
+
+> **Sell Price = 10% of the item’s reference shop value**
+
+This large buy/sell spread prevents found equipment from becoming almost equivalent to liquid gold and makes buying an item a meaningful expenditure rather than a nearly reversible exchange.
+
+The exact gold-value coefficients for ilvl, item type, and Modifier Budget remain balance parameters.
+
+### Ordinary Shops Are Not the Main Source of High-Rarity Gear
+
+Ordinary shops exist primarily to provide baseline equipment, fill weak slots, and offer practical incremental upgrades. They should not allow the hero to convert enough repetitive quest gold directly into the best equipment in the game.
+
+The default ordinary-shop rarity pool is:
+
+- **Normal / White**;
+- **Uncommon / Green**.
+
+**Rare / Blue** shop access may be unlocked through sufficiently high reputation with relevant factions or organizations. The exact reputation thresholds and which factions provide such access will be defined with the reputation and faction systems.
+
+**Epic / Purple** shop access may be considered later as an exceptional high-reputation or special-market reward, but is not part of the normal shop baseline.
+
+**Legendary** equipment is not part of ordinary shop progression.
+
+High-quality equipment should primarily come from gameplay sources such as:
+
+- enemy and activity drops;
+- dungeons;
+- bosses;
+- special events;
+- exceptional or special quests;
+- other rare world opportunities.
+
+> **Gold buys what the world’s merchants can actually offer; accumulating enough gold alone should not unlock the best equipment.**
+
+### Shop Strength Depends on the City, Not the Hero
+
+A shop’s potential item level is determined by the city or settlement and its economic / progression tier rather than scaling automatically to the current hero.
+
+The current illustrative structure, assuming a future overall item-level cap around **150**, is:
+
+| City / shop tier | Illustrative ordinary-shop ilvl ceiling |
+| --- | ---: |
+| Starting / low-tier city | up to ~30 |
+| Mid-tier city | up to ~60 |
+| Advanced / high-tier city | up to ~100 |
+
+These values are provisional control points rather than final world-map assignments.
+
+Under this model, ordinary shops do not provide the highest item levels at all. Equipment above the normal high-tier shop ceiling must come from adventuring sources rather than simply waiting for a merchant to stock it.
+
+A developed hero may therefore completely outgrow the commercial equipment available in weaker cities.
+
+> **Merchants belong to places in the world; their inventory does not secretly level up because the hero did.**
+
+### Limited and Changing Shop Stock
+
+Shops have a **limited assortment** rather than offering every legal item type and every possible stat combination on demand.
+
+Their stock is generated within the rules of that shop, including:
+
+- city / shop item-level range;
+- allowed rarities;
+- relevant item families;
+- any reputation-gated access;
+- other future local restrictions where they have a clear purpose.
+
+The assortment changes periodically. The hero may therefore find a useful upgrade on one visit and nothing worthwhile on another.
+
+The exact stock size and refresh interval are balance parameters to be defined later.
+
+### Hero Purchase Evaluation
+
+The hero evaluates shop equipment autonomously by comparing the offered item with their current equipment, the practical improvement it provides, and the gold cost.
+
+A technically positive but negligible increase should not automatically trigger a purchase. For example, an improvement from approximately `500 Power` to `501 Power` should normally be treated as too small to justify meaningful expenditure.
+
+The exact purchase threshold is intentionally not fixed yet because it depends on the broader role of gold:
+
+- if equipment remains the hero’s only important gold expenditure, the hero can rationally spend more freely on meaningful upgrades;
+- if other strategically important gold sinks are introduced later, the hero should preserve a reserve and weigh equipment upgrades against those competing uses.
+
+The purchase model should therefore eventually consider both **upgrade value** and **opportunity cost**, rather than simply buying every item with a positive Power difference.
+
+> **The hero should value a real upgrade, but should not waste accumulated resources on changes that barely matter.**
+
 ## Equipment Does Not Modify Personality
 
 Equipment may affect the hero’s combat capabilities, resources, stats, and other gameplay properties directly connected to what the item physically or mechanically provides.
