@@ -57,9 +57,9 @@ The current working baseline before the first specialization is:
 
 > **5 attribute points per level: 1 from class + 1 from deity guidance + 3 distributed by the hero.**
 
-After the hero gains the first specialization at level 40, that specialization becomes an additional permanent influence on future level-ups. Future level-ups gain **+1 additional attribute point directed by the first specialization**, bringing the working total to 6 points per level while that tier is active.
+After the hero actually gains the first specialization, unlocked from level 40 through the specialization-quest structure defined later in this document and in `Quest_and_Activity_System_Design_v0.1.md`, that specialization becomes an additional permanent influence on future level-ups. Future level-ups gain **+1 additional attribute point directed by the first specialization**, bringing the working total to 6 points per level while that tier is active.
 
-After the hero gains the second specialization tier at level 80, the final specialization adds **another +1 directed attribute point** to future level-ups, bringing the working total to 7 points per level.
+After the hero actually gains the second specialization tier, unlocked from level 80 through the same progression structure, the final specialization adds **another +1 directed attribute point** to future level-ups, bringing the working total to 7 points per level.
 
 The intended structure is therefore:
 
@@ -69,10 +69,10 @@ The intended structure is therefore:
 
 Specialization-directed points go toward the attribute or attributes that define that specialization. The exact distribution inside a specialization profile will be defined when the individual class branches are designed.
 
-Specialization milestones also provide an immediate stat increase so that choosing a new path creates a noticeable jump rather than only changing future growth:
+Receiving a specialization also provides an immediate stat increase so that completing that development milestone creates a noticeable jump rather than only changing future growth:
 
-- **level 40 / first specialization:** immediately gain **+5 profile attribute points** from the chosen specialization;
-- **level 80 / final specialization:** immediately gain **+10 profile attribute points** from the chosen final specialization.
+- **first specialization:** immediately gain **+5 profile attribute points** from the chosen specialization;
+- **final specialization:** immediately gain **+10 profile attribute points** from the chosen final specialization.
 
 These milestone points follow the specialization’s own stat profile. Whether all points go into one primary attribute or are divided among several profile attributes depends on the individual specialization design.
 
@@ -399,7 +399,7 @@ Dodge increases effective survivability through:
 Examples:
 
 | Dodge | Reference Dodge Chance | DodgeEHPFactor |
-| ---: | ---: |
+| ---: | ---: | ---: |
 | 0 | 0% | 1.00 |
 | 50 | 20% | 1.25 |
 | 100 | 33.3% | 1.50 |
@@ -530,51 +530,111 @@ The exact ability-selection rules and weighting of these factors will be defined
 
 Each base class currently has a **two-tier branching specialization structure** during the hero’s formation stage.
 
+Reaching a specialization level does **not** automatically transform the hero into a new subclass. The level milestone makes a new class path available; the hero first determines which branch fits them and then must complete a dedicated long-term **Specialization Quest**. The new specialization is granted only after that quest is completed. The quest and its special dungeon are defined in `Quest_and_Activity_System_Design_v0.1.md`.
+
 ### First Specialization Tier — Level 40
 
-At **level 40**, the base class branches into **two first-tier specializations**.
+At **level 40**, the base class opens **two first-tier specialization paths**.
 
-The hero chooses one of those two paths primarily through their own development logic. The choice may be influenced by attributes, personality, preferences, and lived experience. The player should be able to understand why the hero arrived at that choice.
+The hero autonomously determines which of the two paths they are moving toward. After that direction is selected, the corresponding Specialization Quest becomes the long-term requirement for actually gaining the subclass.
 
-Receiving the first specialization immediately grants the specialization’s **+5 profile attribute points** and permanently adds its **+1 specialization-directed attribute point** to future level-ups, as defined in the attribute-growth section.
+Once the quest is completed and the first specialization is received, the hero immediately gains the specialization’s **+5 profile attribute points** and permanently adds its **+1 specialization-directed attribute point** to future level-ups, as defined in the attribute-growth section.
 
-At **level 50**, the hero unlocks **one ability belonging to the chosen first-tier specialization**.
+At **level 50**, the progression structure contains **one ability belonging to the chosen first-tier specialization**. The exact handling of unusual cases where the specialization quest is completed later than the normal milestone is an implementation/balance question rather than part of the current concept.
 
 ### Final Specialization Tier — Level 80
 
-At **level 80**, the hero’s chosen first-tier specialization branches again into **two final specializations**.
+At **level 80**, the hero’s chosen first-tier path opens **two possible final specializations**.
 
-Because each of the two first-tier specializations has two final branches, every base class currently has **four possible final specialization outcomes**.
+The hero again determines which branch best fits who they have become, after which the corresponding long-term Specialization Quest must be completed before the final specialization is actually granted.
 
-Receiving the final specialization immediately grants the specialization’s **+10 profile attribute points** and permanently adds another **+1 specialization-directed attribute point** to future level-ups.
+Because each of the two first-tier paths has two final branches, every base class currently has **four possible final specialization outcomes**.
 
-At **level 90**, the hero unlocks **one ability belonging to the chosen final specialization**.
+Once the quest is completed and the final specialization is received, the hero immediately gains the specialization’s **+10 profile attribute points** and permanently adds another **+1 specialization-directed attribute point** to future level-ups.
+
+At **level 90**, the progression structure contains **one ability belonging to the chosen final specialization**.
 
 The current class-path structure is therefore:
 
 ```text
 Base Class
-├─ Specialization A [40]
-│  ├─ Final A1 [80]
-│  └─ Final A2 [80]
-└─ Specialization B [40]
-   ├─ Final B1 [80]
-   └─ Final B2 [80]
+├─ Specialization Path A [available from 40]
+│  ├─ Final A1 [available from 80]
+│  └─ Final A2 [available from 80]
+└─ Specialization Path B [available from 40]
+   ├─ Final B1 [available from 80]
+   └─ Final B2 [available from 80]
 ```
 
-and the current ability milestones are:
+and the current ability/progression milestones are:
 
 - **level 10:** base-class ability 1;
 - **level 20:** base-class ability 2;
-- **level 40:** first specialization + immediate specialization stat bonus;
-- **level 50:** first-specialization ability;
-- **level 80:** final specialization + immediate final-specialization stat bonus;
-- **level 90:** final-specialization ability;
+- **level 40:** first specialization paths become available; the hero chooses a direction and receives its Specialization Quest;
+- **after completing the first Specialization Quest:** first specialization is granted, with the immediate `+5` profile-stat bonus and future `+1` specialization-directed point per level;
+- **level 50:** first-specialization ability milestone;
+- **level 80:** the chosen first path branches into two final paths; the hero chooses a direction and receives its next Specialization Quest;
+- **after completing the final Specialization Quest:** final specialization is granted, with the immediate `+10` profile-stat bonus and another future `+1` specialization-directed point per level;
+- **level 90:** final-specialization ability milestone;
 - **level 100:** current soft cap / completion of the main formation progression.
 
-A specialization should continue the original archetype rather than abruptly turning the hero into a fundamentally different class. Each tier should make the chosen path increasingly recognizable through its stat direction, abilities, and possible changes to the class’s core mechanic.
+A specialization should continue the original archetype rather than abruptly turning the hero into a fundamentally different class. Each tier should make the chosen path increasingly recognizable through its stat direction, abilities, equipment tendencies, and possible changes to the class’s core mechanic.
 
-Unlike the starting class, specialization choices are made primarily by **the hero**. Whether the deity can softly influence these choices is still to be defined.
+### How the Hero Chooses a Specialization
+
+The specialization choice should be **autonomous but understandable**. It should emerge from who the hero has become rather than from a random roll or direct player selection.
+
+The current conceptual inputs are deliberately kept small:
+
+- the hero’s **personality / character tendencies**;
+- the hero’s **actual primary-attribute profile**;
+- potentially a **soft divine direction** from the player.
+
+Personality and attributes should not be treated as completely independent evidence and blindly added at full weight. The hero’s attributes are already partly the result of their autonomous development, which itself is influenced by personality and preferences. The final selection method should therefore avoid effectively counting the same underlying tendency twice.
+
+For now, **lived combat experience is not a separate specialization-choice factor**. It may be reconsidered only if later design or testing shows that it adds meaningful information that is not already represented by character and development.
+
+The deity may be allowed to nudge the hero toward one of the available paths, but this should remain a soft influence rather than a direct subclass-selection button.
+
+The player should eventually receive enough information about possible future paths for divine guidance to be meaningful rather than a blind guess. The exact level at which potential specializations become visible, how strongly they are previewed, and how the UI presents the hero’s current inclination remain open design questions.
+
+> **A specialization choice should feel inevitable in hindsight without being manually predetermined in advance.**
+
+### Current Working Warrior Specialization Tree
+
+The Warrior is the first class used to test the specialization structure.
+
+The current working high-level tree is:
+
+```text
+Warrior
+├─ Defensive Path [40; final name TBD]
+│  ├─ Paladin [80]
+│  └─ Guardian [80]
+└─ Offensive Path [40; final name TBD]
+   ├─ Berserker [80]
+   └─ Champion [80]
+```
+
+The first-tier names are not fixed yet. Their purpose is to separate a broad **defensive/protective direction** from a broad **offensive/aggressive direction** before each later divides into two distinct final identities.
+
+The current working differentiation is:
+
+| Final Warrior path | Primary stat tendency | Character tendency | Combat identity |
+| --- | --- | --- | --- |
+| **Paladin** | **WIS + CON**, with STR secondary | altruism, mercy, honesty, protective tendencies | one-handed weapon + shield; durable defense combined with self-healing / supportive holy-style tools |
+| **Guardian** | **CON + STR** | caution, conservatism, steadiness, low appetite for unnecessary risk | one-handed weapon + large/tower shield; maximum physical durability, Block/Armor/Health focus |
+| **Berserker** | **STR + CON** | high risk tolerance, directness, aggression in approach; cruelty is not required | no shield; heavy two-handed weapon or two one-handed weapons; overwhelming offense and rage-like pressure |
+| **Champion** | **STR + DEX** | more controlled, calculated and disciplined than the Berserker; mastery over recklessness | offensive weapon specialist without the Guardian/Paladin shield identity; precision, critical performance and weapon mastery |
+
+At the first specialization tier, the broad split should follow the same logic rather than a single hard stat check:
+
+- the **Defensive Path** is naturally supported by stronger CON and protective/cautious character tendencies, with WIS or STR helping determine the later direction;
+- the **Offensive Path** is naturally supported by stronger STR and greater willingness to take risks, with DEX, CON and character differences helping determine the later direction.
+
+These are **conceptual affinities, not final formulas or thresholds**. A high CON value alone should not automatically force Guardian, and a high STR value alone should not automatically force Berserker. The final choice should reflect the combination of the hero’s character and the development that character has produced.
+
+In particular, Berserker is not defined as an evil or cruel Warrior. A kind hero may still become a Berserker if their combat-development direction is highly aggressive and risk-tolerant. Moral traits should be used only where they genuinely distinguish the fantasy of one path from another.
 
 A possible future progression layer may further improve each of the four final specializations without another branching choice. That possibility is deliberately left undefined for now.
 
@@ -589,7 +649,7 @@ The current set of starting classes consists of four archetypes:
 - **Mage**;
 - **Rogue**.
 
-This set is sufficient as the game’s current base class structure. Exact abilities, resources, specialization names, and complete class mechanics will be designed separately and may change during development.
+This set is sufficient as the game’s current base class structure. Exact abilities, resources, and complete class mechanics will be designed separately and may change during development.
 
 When developing each class further, it should be checked against these questions:
 
