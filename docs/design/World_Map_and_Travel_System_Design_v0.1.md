@@ -119,6 +119,40 @@ Additional mutable properties should be added only when they are needed by concr
 
 > **Persistent attributes define the place. Mutable attributes define what is happening there now.**
 
+## Hex Tags and Rule-Based Placement
+
+In addition to its ordinary attributes, a hex may expose a small set of **placement tags** describing qualities that content-generation systems can query.
+
+The purpose of these tags is to let quests, temporary events, POIs, and later other location-based content define **where they are allowed to appear** without hardcoding a particular Hex ID into every content template.
+
+A hex may have more than one tag at the same time. In particular, terrain and functional use are separate concepts. For example:
+
+- `forest + road`;
+- `plains + wilderness`;
+- `mountain + wilderness`.
+
+Current tag categories may include:
+
+- **terrain tags** — `forest`, `plains`, `mountain`, `swamp`, `water`, and other later-defined terrain types;
+- **use / location tags** — `road`, `city`, `wilderness`, and other tags added only when concrete systems require them.
+
+Content templates may then define placement criteria such as:
+
+- a distance range from a city or another anchor;
+- **required / allowed conditions** — qualities that make a hex eligible;
+- **forbidden conditions** — qualities that make a hex ineligible;
+- **preferred conditions** — qualities that make one eligible hex more desirable than another without making them mandatory.
+
+For example, a quest template could request a target **5–8 hexes from its city**, allow or prefer `forest` and `plains`, and forbid `road`, `mountain`, `water`, and `city`. The generator searches the map for suitable candidate hexes and chooses among those that satisfy the template rather than storing one permanent target hex in the quest definition.
+
+Likewise, a temporary travel event such as a broken wagon may require or prefer `road`, while a wilderness encounter may prefer `forest` and forbid `city` or `water`.
+
+`preferred` conditions are useful because they allow authored content to express flavour without making generation unnecessarily brittle. If a preferred location is unavailable, a valid fallback may still be used when the template explicitly permits it.
+
+The exact final tag vocabulary should remain small and be expanded only when a real content-placement need appears.
+
+> **The map describes what each place is; content templates describe what kinds of places they can use.**
+
 ## The Map as a Visual Reflection of the Living World
 
 The map should be one of the main ways the player **understands where the hero is and what is happening in the world**.
