@@ -486,16 +486,21 @@ The hero decides when using a potion is worthwhile rather than automatically con
 
 Discovering a dungeon does **not** make the hero immediately interrupt the current trip and enter it.
 
-The hero records the dungeon as a known opportunity, finishes or resolves the current activity, returns to a city, and later decides whether to make a dedicated dungeon expedition.
+The hero records the dungeon as a known opportunity, finishes or resolves the current activity, returns to a city, and prepares for a dedicated dungeon expedition.
 
-Before such an expedition, the hero may prepare in town by:
+For a dungeon attempt that the hero currently considers eligible, the Belt must be **fully stocked** before departure. The hero tries to purchase healing potions until every available Belt potion slot is filled.
 
-- reviewing and improving equipment when useful;
-- ensuring the Belt has the desired healing potions available;
-- purchasing missing potions with gold;
-- then travelling specifically to the dungeon.
+If the hero does not have enough gold to fill all available Belt slots, they do **not** leave for the dungeon with a partially filled Belt. Instead, they return to ordinary progression — such as available quests and other normal activities — to earn more gold. After later returning to town, they check preparation again.
 
-A dungeon attempt is therefore not a free side trip. Preparation can consume gold, especially as stronger potion levels become available and more expensive.
+Once every available Belt potion slot is filled, the preparation requirement is satisfied and the hero may set out specifically for the dungeon.
+
+This full-Belt requirement does not erase knowledge gained from a previous failed dungeon attempt. If the hero already learned that the dungeon is beyond their current readiness, they must also satisfy the normal retry-readiness rule before another expedition becomes eligible.
+
+A dungeon attempt is therefore not a free side trip. Preparation consumes gold, and stronger potion levels or a Belt with more slots can increase the cost of a fully prepared expedition.
+
+The current preparation loop is:
+
+> **known eligible dungeon → return to city → try to fill every Belt potion slot → insufficient gold: continue ordinary adventures → enough gold: fill all slots → dedicated dungeon expedition**
 
 > **A dungeon is something the hero prepares for and sets out to attempt, not something they casually enter while passing by.**
 
@@ -520,6 +525,25 @@ The hero should then avoid immediately repeating the same hopeless attempt and i
 For an early implementation, a simple threshold such as waiting for roughly **+100 Hero Power after a clearly failed attempt** may be used as a provisional test rule, but it is not a final universal formula. The eventual retry rule should reflect both how badly the previous attempt failed and whether the hero’s real expedition readiness has improved.
 
 > **The first attempt teaches the hero what the dungeon is; later attempts are informed by experience rather than exact advance knowledge.**
+
+### Cleared Dungeons Are Replaced Over Time
+
+A successfully completed dungeon is exhausted as that specific adventure and does not immediately reset in the same location.
+
+After some game time has passed, a **new dungeon appears in another suitable location near the same city / within the same local region**. The exact replacement delay is a tuning value to be determined later.
+
+The replacement dungeon is a newly generated adventure rather than a copy of the cleared one. Its defining combat and reward parameters are selected again, and the new dungeon should differ from the cleared dungeon in meaningful ways, including:
+
+- combat strength / danger;
+- ordinary enemy type or composition;
+- unique boss;
+- final dungeon-completion reward.
+
+The new dungeon’s strength is determined by the dungeon / regional generation rules rather than scaling automatically to the hero’s current Power. A replacement may therefore be easier or harder than the dungeon that was just completed.
+
+The new dungeon begins **unknown to the hero** and must be discovered through the normal dungeon-discovery systems, including exploration, rumors, or an applicable divine information ability.
+
+> **Clearing a dungeon removes one known adventure; after a delay the region creates a different unknown dungeon rather than simply resetting the old one.**
 
 ## Continue or Retreat Decision
 
