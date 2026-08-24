@@ -141,104 +141,134 @@ Exact allowed weapon families, specialization bonuses, dual-wield rules, and cas
 
 Each item has two main characteristics that describe its mechanical quality:
 
-- **item level / ilvl** — determines the strength of the item’s inherent base stats and establishes the power scale used for its affix budget;
-- **rarity** — determines the fixed number of prefixes and suffixes and, together with item level, the range of the item’s total affix budget.
+- **item level / ilvl** — determines the strength of the item’s inherent base stats and establishes the power scale used for its modifier budget;
+- **rarity** — determines the fixed number of random modifiers and, together with item level, the range of the item’s total modifier budget.
 
-For items of the same base type and item level, rarity does **not** automatically increase the inherent base stat merely because the item is a different color. The extra power of higher rarity comes primarily from its affixes and the larger budget available to those affixes.
+For items of the same base type and item level, rarity does **not** automatically increase the inherent base stat merely because the item is a different color. The extra power of higher rarity comes primarily from additional modifiers and the larger budget available to those modifiers.
+
+The item system does **not** use a mechanical prefix/suffix split. Random properties are simply **modifiers** selected from the valid modifier pool for that item type.
 
 The current rarity structure is:
 
-| Rarity | Color | Prefixes | Suffixes |
-| --- | --- | ---: | ---: |
-| Normal | White | 0 | 0 |
-| Uncommon | Green | 1 | 1 |
-| Rare | Blue | 2 | 2 |
-| Epic | Purple | 3 | 3 |
+| Rarity | Color | Random modifiers |
+| --- | --- | ---: |
+| Normal | White | 0 |
+| Uncommon | Green | 1 |
+| Rare | Blue | 2 |
+| Epic | Purple | 3 |
+| Legendary | Orange | 4 |
 
-Modifier slots are never empty. If an item has a given rarity, it always receives the complete number of prefixes and suffixes defined for that rarity.
+Modifier slots are never empty. If an item has a given rarity, it always receives the complete number of random modifiers defined for that rarity.
 
-> **Item level determines the strength scale of the item. Rarity determines how many affixes it receives and how much total affix power can be distributed among them.**
+> **Item level determines the strength scale of the item. Rarity determines how many modifiers it receives and how much total modifier power can be distributed among them.**
 
-## Affix Power Budget
+## Modifier Power Budget
 
-The item’s inherent base stats are determined separately from its affix budget.
+The item’s inherent base stats are determined separately from its modifier budget.
 
-A **Normal / White** item has no prefixes or suffixes and therefore has:
+A **Normal / White** item has no random modifiers and therefore has:
 
-> **Affix Budget = 0**
+> **Modifier Budget = 0**
 
 It consists only of the base properties appropriate to its item type and item level.
 
-For Uncommon, Rare, and Epic items, **item level and rarity together define a range for the total Affix Budget**. The final total budget is rolled somewhere inside that range.
+For Uncommon, Rare, Epic, and Legendary items, **item level and rarity together define a range for the total Modifier Budget**. The final total budget is rolled somewhere inside that range.
 
 A purely illustrative example for one unspecified item level could be:
 
-| Rarity | Affixes total | Example total Affix Budget range |
+| Rarity | Modifiers | Example total Modifier Budget range |
 | --- | ---: | ---: |
 | Normal | 0 | 0 |
-| Uncommon | 2 | 100–120 |
-| Rare | 4 | 150–170 |
-| Epic | 6 | 200–250 |
+| Uncommon | 1 | 100–120 |
+| Rare | 2 | 150–170 |
+| Epic | 3 | 200–250 |
+| Legendary | 4 | higher than Epic; exact range TBD |
 
 These numbers are examples only and are **not final balance values**. Higher or lower item levels move the relevant budget ranges accordingly.
 
-The rolled total budget is then distributed among all mandatory affixes on the item. It does not have to be divided equally.
+The rolled total budget is then distributed among all mandatory modifiers on the item. It does not have to be divided equally.
 
-For example, a Rare item with four affixes may devote more of its budget to one modifier and less to another. However, distribution must remain bounded so that generation cannot spend almost the entire budget on one modifier while leaving the remaining mandatory affixes nearly worthless.
+For example, a Rare item with two modifiers may devote more of its budget to one modifier and less to the other. However, distribution must remain bounded so that generation cannot spend almost the entire budget on one modifier while leaving the remaining mandatory modifiers nearly worthless.
 
-The exact minimum and maximum share an individual affix may receive relative to the average share are tuning parameters and will be defined through testing.
+The exact minimum and maximum share an individual modifier may receive relative to the average share are tuning parameters and will be defined through testing.
 
-> **Rarity creates both more affixes and a larger total affix budget, while controlled random distribution creates meaningful variation between items of the same level and rarity.**
+> **Rarity creates both more modifiers and a larger total modifier budget, while controlled random distribution creates meaningful variation between items of the same level and rarity.**
+
+### Modifier Stat Scope
+
+Standard randomly generated item modifiers use **secondary combat stats only**.
+
+Primary hero attributes such as Strength, Dexterity, Intelligence, Constitution, and Wisdom are **not rolled as ordinary equipment modifiers**.
+
+This preserves a clean distinction between:
+
+- the hero’s own long-term development through primary attributes;
+- equipment’s effect on the hero’s resolved combat capabilities through secondary stats.
+
+For example, generated modifiers may later include valid secondary stats such as:
+
+- Health;
+- Armor;
+- Dodge;
+- Fire Resistance;
+- Cold Resistance;
+- Lightning Resistance;
+- Block where the item type supports it;
+- Damage;
+- Accuracy;
+- Critical Chance;
+- Critical Damage;
+- Attack Speed;
+- Cast Speed where appropriate.
+
+The exact modifier pool available to each item type is still to be defined.
 
 ### Stat Cost
 
-Affix Budget is an abstract measure of power, not a direct number of stat points.
+Modifier Budget is an abstract measure of power, not a direct number of visible stat points.
 
-Different stats have different costs. Therefore:
+Different secondary stats have different costs. Therefore:
 
-- `1 budget` does not equal `+1 Strength`;
 - `1 budget` does not equal `+1 Accuracy`;
+- `1 budget` does not equal `+1 Armor`;
 - `1 budget` does not equal `+1% Critical Chance`;
 - and equal numerical values of different stats are not assumed to have equal combat value.
 
-Each allowed affix stat will later receive a **budget cost / conversion rule** that converts the budget assigned to that affix into its actual rolled stat value.
+Each allowed modifier stat will later receive a **budget cost / conversion rule** that converts the budget assigned to that modifier into its actual rolled stat value.
 
-For example, if two affixes each receive 30 budget, one might convert that budget into several points of a primary attribute while another converts it into a smaller percentage-based Critical Chance bonus. The exact conversion values are not yet defined.
+This allows the generator to compare and distribute different secondary stat types on one shared power-budget scale without pretending that their visible numbers are directly equivalent.
 
-This allows the generator to compare and distribute different stat types on one shared power-budget scale without pretending that their visible numbers are directly equivalent.
-
-## Prefixes, Suffixes, and Random Generation
+## Random Modifier Generation
 
 Generated equipment follows the general structure:
 
-> **base item → item level → rarity → total Affix Budget roll → prefixes and suffixes → budget distribution → rolled stat values**
+> **base item → item level → rarity → total Modifier Budget roll → modifier selection → budget distribution → rolled stat values**
 
 The base item defines the item type, equipment slot, and its inherent base characteristics.
 
-Item level establishes the strength of those base characteristics and the relevant affix-budget scale. Rarity then determines the exact number of prefixes and suffixes and selects the corresponding total-budget range.
+Item level establishes the strength of those base characteristics and the relevant modifier-budget scale. Rarity then determines the exact number of random modifiers and selects the corresponding total-budget range.
 
-After the total budget is rolled, prefixes and suffixes are selected from modifier pools available to that specific type of item. The rolled budget is distributed among those mandatory affixes within the allowed distribution limits, and each affix converts its assigned budget into its actual stat value according to that stat’s cost rule.
+After the total budget is rolled, modifiers are selected from the pool available to that specific type of item. The rolled budget is distributed among those mandatory modifiers within the allowed distribution limits, and each modifier converts its assigned budget into its actual stat value according to that stat’s cost rule.
 
 The random part of item generation therefore comes from:
 
-- which eligible prefixes are selected;
-- which eligible suffixes are selected;
-- where inside the rarity-and-ilvl budget range the item’s total Affix Budget lands;
-- how that total budget is distributed among the mandatory affixes within allowed limits;
+- which eligible modifiers are selected;
+- where inside the rarity-and-ilvl budget range the item’s total Modifier Budget lands;
+- how that total budget is distributed among the mandatory modifiers within allowed limits;
 - any later approved final-value rounding or small roll variation inside the stat conversion rules.
 
-Generation should not be completely unrestricted. Each item type has its own pool of allowed properties so that items remain coherent with their function.
+Generation should not be completely unrestricted. Each item type has its own pool of allowed secondary combat stats so that items remain coherent with their function.
 
 For example:
 
-- heavy armor more often receives defensive stats;
-- bows favor physical, speed, and shooting-related properties;
-- magical weapons favor Intelligence, Mana, and magical effects;
-- jewelry may use a broader pool of specialized bonuses.
+- armor may favor defensive secondary stats;
+- physical weapons may favor offensive secondary stats appropriate to their weapon family;
+- magical weapons may favor magical offensive secondary stats and casting-related properties;
+- jewelry may use a broader pool of specialized secondary bonuses.
 
 Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
 
-The current primary and secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
+The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
 
 > **Randomness should create item variety, not meaningless chaos.**
 
@@ -275,7 +305,7 @@ Damage reduction from any single elemental resistance is capped at **75%**. Addi
 
 Elemental resistance values cannot be negative.
 
-Resistances are valid defensive item stats and may appear on equipment through appropriate prefixes, suffixes, base properties, or other item rules defined later.
+Resistances are valid defensive item stats and may appear as base properties or appropriate random modifiers under the item-generation rules.
 
 At the current design stage there is no resistance penetration, resistance reduction below zero, or other advanced resistance interaction.
 
@@ -283,7 +313,7 @@ At the current design stage there is no resistance penetration, resistance reduc
 
 ## Accuracy and Dodge on Equipment
 
-**Accuracy** and **Dodge** are valid combat stats that may appear on equipment through appropriate modifiers or base properties.
+**Accuracy** and **Dodge** are valid secondary combat stats that may appear on equipment through appropriate random modifiers or base properties where explicitly defined.
 
 Their exact combat interaction is owned by `Combat_and_Progression_System_Design_v0.1.md`. In the current model, Accuracy counters Dodge rather than increasing hit chance above 100%, and both stats use the same shared hit-resolution formula for the hero and enemies.
 
