@@ -51,13 +51,91 @@ Armor uses five slots:
 - pants;
 - boots.
 
-Additional equipment slots are:
+Jewelry uses three slots:
 
 - two ring slots;
-- one necklace slot;
-- two weapon slots.
+- one necklace slot.
+
+The remaining two slots are:
+
+- **Main Hand**;
+- **Off Hand**.
+
+These replace the earlier generic concept of two identical weapon slots.
+
+A one-handed weapon occupies Main Hand. Depending on class and equipment rules, Off Hand may contain a shield, a second weapon, a magical focus, or another class-appropriate item.
+
+A **two-handed weapon occupies both Main Hand and Off Hand simultaneously**. While a two-handed weapon is equipped, no separate Off Hand item can be used.
 
 The current slot structure should remain compact. Additional slots such as a belt or earrings may be considered later if they provide a clear gameplay purpose, but they are not part of the current equipment structure.
+
+## Base Stats by Equipment Group
+
+Equipment is divided into several broad mechanical groups. Items within one group do not need completely different base-stat rules merely because they occupy different visual slots.
+
+### Armor
+
+Helmet, chest armor, gloves, pants, and boots share the same basic mechanical identity:
+
+- their inherent base defensive stat is **Armor**.
+
+Exact Armor values depend on item level and later balance rules. The current design does not require separate fundamental Armor formulas for each armor slot unless testing later shows that slot-specific weighting creates useful gameplay.
+
+### Jewelry
+
+Rings and necklaces use elemental resistance as their current base defensive identity.
+
+A jewelry item may inherently provide one of:
+
+- **Fire Resistance**;
+- **Cold Resistance**;
+- **Lightning Resistance**.
+
+The exact selection rules, value ranges, and whether some jewelry types later receive different base properties remain tuning questions.
+
+### Main-Hand Weapons
+
+Weapons use two core base combat properties:
+
+- **Damage**;
+- **Attack Speed**.
+
+These properties should be considered together rather than as unrelated bonuses. Different weapon families may trade higher per-hit Damage for lower Attack Speed, or lower per-hit Damage for higher Attack Speed.
+
+The exact weapon families and their numerical profiles will be designed together with class combat mechanics.
+
+### Off-Hand Items
+
+Off Hand is a slot, not one universal item category.
+
+Its mechanical identity depends on the item type and the class using it. Examples include:
+
+- **Shield** — primarily associated with Block;
+- second one-handed weapon — used when the class or specialization supports dual wielding;
+- magical focus, tome, orb, or similar item — possible future caster-oriented Off Hand;
+- other class-specific Off Hand types if they gain a clear mechanical purpose.
+
+Only the shield’s association with **Block** is currently established. Exact rules for other Off Hand item types will be defined when the corresponding classes and specializations are designed.
+
+## Weapon Access by Class and Specialization
+
+Weapon access is tied to combat identity rather than being universally available to every hero.
+
+The current principle is:
+
+> **The base class defines which weapon families the hero can use. A later specialization primarily strengthens or favors particular weapon styles and may unlock additional options, but should not normally remove weapon families the hero already knew how to use.**
+
+This allows a class to support meaningfully different equipment styles without turning most weapon drops into unusable items after specialization.
+
+For example, a Warrior may eventually support several broad styles such as:
+
+- one-handed weapon + shield;
+- two-handed weapon;
+- dual wielding, if that style is approved for an appropriate specialization.
+
+These are examples of the structural rule, not a finalized Warrior weapon list.
+
+Exact allowed weapon families, specialization bonuses, dual-wield rules, and caster/ranged Off Hand behaviour will be defined together with the detailed class designs.
 
 ## Item Level and Rarity
 
