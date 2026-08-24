@@ -462,13 +462,13 @@ They still award their normal **combat experience**.
 
 The material reward belongs to the dungeon as a whole and is received only after the hero defeats the final boss and completes the dungeon.
 
-If the hero retreats, dies, or otherwise fails before completion, the hero keeps the experience already earned from completed fights but receives **no dungeon completion loot**.
+If the hero dies or otherwise fails before completion, the hero keeps the experience already earned from completed fights but receives **no dungeon completion loot**.
 
 This makes the dungeon an expedition with a real finish line rather than a place where the hero can collect most of the material value from a partial clear and leave.
 
 > **Experience is earned fight by fight; dungeon loot is earned only by completing the dungeon.**
 
-Repeated-entry experience farming may need a safeguard if testing shows that intentionally clearing early rooms and retreating becomes more efficient than ordinary progression. No special anti-farming rule is fixed yet.
+Repeated failed attempts may need an experience-farming safeguard if testing shows that repeatedly earning experience from early dungeon rooms becomes more efficient than ordinary progression. No special anti-farming rule is fixed yet.
 
 ### No Free Healing Between Dungeon Fights
 
@@ -476,11 +476,23 @@ The earlier working idea of automatic one-tick / 20% Max Health recovery between
 
 The hero does not receive free dungeon-specific HP restoration between encounters.
 
-Instead, healing between fights comes from **healing potions carried in the hero’s Belt slots** as defined in `Economy_Equipment_and_Loot_System_Design_v0.1.md`.
+Instead, healing comes from **healing potions carried in the hero’s Belt slots** as defined in `Economy_Equipment_and_Loot_System_Design_v0.1.md`.
 
-This makes accumulated damage meaningful and turns preparation into part of the dungeon challenge. A stronger or higher-rarity Belt, access to stronger potions, and the gold required to purchase those potions can materially change how far the hero is able to progress even when ordinary Hero Power changes little or not at all.
+Potions may be used **only between fights**, never during combat, and the hero may drink more than one potion during the same break.
 
-The hero decides when using a potion is worthwhile rather than automatically consuming one after every fight. Exact potion-use thresholds and decision logic remain tuning questions.
+Between ordinary encounters, the hero uses only potions whose healing can be applied at full value. The hero does not spend a potion if doing so would waste part of its healing through overheal.
+
+For one potion type with a fixed healing amount, the working rule is:
+
+`Potions used = floor(Missing Health / Potion Healing)`, limited by the number of potions still available.
+
+For example, at `750 / 1000 HP` with potions that restore `100 HP`, the hero drinks two potions and continues at `950 / 1000 HP`. A third potion is kept because only half of its healing would be effective.
+
+Immediately before the boss, the rule changes: the hero tries to enter the boss fight at **100% Health**. The hero may therefore use a final potion even when part of its healing is wasted by overheal. If there are not enough potions to restore full Health, the hero uses all remaining potions and still proceeds to the boss.
+
+Running out of potions does not create a retreat option in the current dungeon version. The expedition continues without further potion healing until the dungeon is completed or the hero dies.
+
+> **Ordinary rooms favor efficient potion use; before the boss, survival takes priority over avoiding overheal.**
 
 ### Dungeon Preparation Happens in Town
 
@@ -512,19 +524,17 @@ The first expedition is intentionally uncertain. The hero may know the dungeon�
 
 Dungeons are expected to kill the hero sometimes. Failure is part of learning the dungeon rather than automatically evidence that the balance is broken.
 
-After a failed attempt, the hero gains practical knowledge from how far they progressed and what defeated them. A hero who dies in the first ordinary encounter should understand that the dungeon is far beyond their present readiness, while a hero who reaches the boss before dying should understand that they are much closer to being capable of clearing it.
+After a failed attempt, the hero gains practical knowledge from how far they progressed and what defeated them. The retry threshold is based on the hero’s **Hero Power at the moment that failed attempt began**:
 
-The hero should then avoid immediately repeating the same hopeless attempt and instead wait until their **readiness has meaningfully improved** through some combination of:
+- if the hero dies before killing even one ordinary dungeon enemy, the dungeon becomes eligible for another attempt only after Hero Power has increased by at least **20%**;
+- if the hero kills at least one ordinary dungeon enemy but dies before reaching the boss, the dungeon becomes eligible again after at least **15%** more Hero Power;
+- if the hero reaches the boss and dies during the boss fight, the dungeon becomes eligible again after at least **10%** more Hero Power.
 
-- higher Hero Power;
-- better equipment;
-- a better Belt;
-- more or stronger healing potions;
-- other later-approved preparation factors.
+For example, if the failed attempt began at `500 Hero Power`, the corresponding retry thresholds are `600`, `575`, or `550 Hero Power` depending on how far the hero progressed.
 
-For an early implementation, a simple threshold such as waiting for roughly **+100 Hero Power after a clearly failed attempt** may be used as a provisional test rule, but it is not a final universal formula. The eventual retry rule should reflect both how badly the previous attempt failed and whether the hero’s real expedition readiness has improved.
+The percentage threshold is a minimum readiness gate, not a replacement for normal preparation. Before the next attempt, the hero must still return to town and fully refill all available Belt potion slots.
 
-> **The first attempt teaches the hero what the dungeon is; later attempts are informed by experience rather than exact advance knowledge.**
+> **The farther the hero proved they could progress, the less additional strength they need before trying that same dungeon again.**
 
 ### Cleared Dungeons Are Replaced Over Time
 
@@ -545,17 +555,20 @@ The new dungeon begins **unknown to the hero** and must be discovered through th
 
 > **Clearing a dungeon removes one known adventure; after a delay the region creates a different unknown dungeon rather than simply resetting the old one.**
 
-## Continue or Retreat Decision
+## No Retreat During the Current Dungeon Version
 
-During a dungeon run, the hero should periodically reassess whether it is worth continuing or safer to retreat.
+The current dungeon design has **no voluntary retreat behaviour once the hero has entered the dungeon**.
 
-First, the hero evaluates the objective situation: current Health, remaining healing potions and other relevant resources, the difficulty of previous fights, expected danger ahead based on current knowledge, the value and proximity of the boss / completion reward, and the possibility of retreating safely.
+The hero continues through the encounter chain until either:
 
-That evaluation is then modified by the hero’s personality, willingness to take risks, current motives, personal importance of the objective, and divine influence.
+- the final boss is defeated and the dungeon is completed; or
+- the hero dies.
 
-Personality should change the **acceptable level of risk**, not disable common sense. A cautious hero may retreat earlier, while a risk-seeking hero may push farther, but the hero should not repeatedly enter obviously hopeless situations without a serious reason.
+Low Health or having no healing potions remaining does not create a retreat decision. The hero simply continues with the resources still available.
 
-> **The same risk may be acceptable to one hero and too high for another.**
+This is intentionally simple for the first implementation. Retreat logic may be reconsidered later only if testing shows that it adds useful behaviour rather than unnecessary complexity.
+
+> **For now, entering a dungeon means committing to the attempt: victory or death.**
 
 ## Migration note
 
