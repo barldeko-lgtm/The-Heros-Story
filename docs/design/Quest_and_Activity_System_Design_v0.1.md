@@ -438,27 +438,94 @@ There is no need to create a separate branch for every class or every trait. Alt
 
 ## Dungeons as Higher-Risk Adventures
 
-A dungeon is a more dangerous format of adventure than ordinary hunting or farming.
+A dungeon is a separate, higher-risk adventure format built around a sequence of encounters rather than one ordinary quest fight.
 
-Its main differences are:
+A dungeon definition currently contains:
 
-- several encounters may occur in sequence;
-- opportunities to recover calmly between encounters are limited;
-- the hero’s condition and remaining resources matter more;
-- the farther the hero progresses, the greater the potential reward and risk may become;
-- a boss or especially valuable objective may wait at the end;
-- the hero decides independently whether to continue or retreat;
-- divine assistance may be especially valuable in such situations.
+- the ordinary enemy type or enemy set used by its regular encounters;
+- the number of ordinary encounters / rooms;
+- how many ordinary enemies appear in each encounter;
+- one **unique boss** at the end;
+- one **final dungeon-completion reward**.
 
-The exact rules for recovery, number of fights, dungeon structure, bosses, and rewards are not fixed yet.
+For the first implementation, ordinary rooms may deliberately use the same enemy composition repeatedly. More varied room compositions can be added later if testing shows that repetition inside the dungeon itself becomes a problem.
 
-> **A dungeon should test not one fight, but the hero’s ability to survive an entire dangerous expedition.**
+The basic structure is:
+
+> **ordinary encounter → recovery decision → ordinary encounter → recovery decision → ... → unique boss → final dungeon reward**
+
+### Dungeon Loot Is All-or-Nothing
+
+Ordinary dungeon enemies and the dungeon boss do **not** provide normal gold, equipment drops, or sellable trophy loot during the run.
+
+They still award their normal **combat experience**.
+
+The material reward belongs to the dungeon as a whole and is received only after the hero defeats the final boss and completes the dungeon.
+
+If the hero retreats, dies, or otherwise fails before completion, the hero keeps the experience already earned from completed fights but receives **no dungeon completion loot**.
+
+This makes the dungeon an expedition with a real finish line rather than a place where the hero can collect most of the material value from a partial clear and leave.
+
+> **Experience is earned fight by fight; dungeon loot is earned only by completing the dungeon.**
+
+Repeated-entry experience farming may need a safeguard if testing shows that intentionally clearing early rooms and retreating becomes more efficient than ordinary progression. No special anti-farming rule is fixed yet.
+
+### No Free Healing Between Dungeon Fights
+
+The earlier working idea of automatic one-tick / 20% Max Health recovery between dungeon fights is **removed**.
+
+The hero does not receive free dungeon-specific HP restoration between encounters.
+
+Instead, healing between fights comes from **healing potions carried in the hero’s Belt slots** as defined in `Economy_Equipment_and_Loot_System_Design_v0.1.md`.
+
+This makes accumulated damage meaningful and turns preparation into part of the dungeon challenge. A stronger or higher-rarity Belt, access to stronger potions, and the gold required to purchase those potions can materially change how far the hero is able to progress even when ordinary Hero Power changes little or not at all.
+
+The hero decides when using a potion is worthwhile rather than automatically consuming one after every fight. Exact potion-use thresholds and decision logic remain tuning questions.
+
+### Dungeon Preparation Happens in Town
+
+Discovering a dungeon does **not** make the hero immediately interrupt the current trip and enter it.
+
+The hero records the dungeon as a known opportunity, finishes or resolves the current activity, returns to a city, and later decides whether to make a dedicated dungeon expedition.
+
+Before such an expedition, the hero may prepare in town by:
+
+- reviewing and improving equipment when useful;
+- ensuring the Belt has the desired healing potions available;
+- purchasing missing potions with gold;
+- then travelling specifically to the dungeon.
+
+A dungeon attempt is therefore not a free side trip. Preparation can consume gold, especially as stronger potion levels become available and more expensive.
+
+> **A dungeon is something the hero prepares for and sets out to attempt, not something they casually enter while passing by.**
+
+### First Attempt Has Uncertain Difficulty
+
+The hero should not know a dungeon’s exact effective combat strength before the first real attempt.
+
+The first expedition is intentionally uncertain. The hero may know the dungeon’s identity, location, visible theme, or other authored information, but should not receive a precise number equivalent to "Dungeon Power 600" that makes the decision identical to waiting until Hero Power reaches the same value.
+
+Dungeons are expected to kill the hero sometimes. Failure is part of learning the dungeon rather than automatically evidence that the balance is broken.
+
+After a failed attempt, the hero gains practical knowledge from how far they progressed and what defeated them. A hero who dies in the first ordinary encounter should understand that the dungeon is far beyond their present readiness, while a hero who reaches the boss before dying should understand that they are much closer to being capable of clearing it.
+
+The hero should then avoid immediately repeating the same hopeless attempt and instead wait until their **readiness has meaningfully improved** through some combination of:
+
+- higher Hero Power;
+- better equipment;
+- a better Belt;
+- more or stronger healing potions;
+- other later-approved preparation factors.
+
+For an early implementation, a simple threshold such as waiting for roughly **+100 Hero Power after a clearly failed attempt** may be used as a provisional test rule, but it is not a final universal formula. The eventual retry rule should reflect both how badly the previous attempt failed and whether the hero’s real expedition readiness has improved.
+
+> **The first attempt teaches the hero what the dungeon is; later attempts are informed by experience rather than exact advance knowledge.**
 
 ## Continue or Retreat Decision
 
-During a dangerous expedition, the hero should periodically reassess whether it is worth continuing or safer to retreat.
+During a dungeon run, the hero should periodically reassess whether it is worth continuing or safer to retreat.
 
-First, the hero evaluates the objective situation: current condition, remaining recovery options and resources, the difficulty of previous fights, expected danger ahead, the value and proximity of the objective, and the possibility of retreating safely.
+First, the hero evaluates the objective situation: current Health, remaining healing potions and other relevant resources, the difficulty of previous fights, expected danger ahead based on current knowledge, the value and proximity of the boss / completion reward, and the possibility of retreating safely.
 
 That evaluation is then modified by the hero’s personality, willingness to take risks, current motives, personal importance of the objective, and divine influence.
 
