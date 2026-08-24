@@ -146,6 +146,141 @@ Such events should become noticeable episodes in the hero’s biography rather t
 
 > **Decisions shape the hero. Events shape their history. The deity may change direction, but does not write the script for them.**
 
+## Temporary Travel Events
+
+Temporary travel events are short-lived situations that physically exist on the map and may interrupt or redirect the hero while they are already travelling.
+
+Their purpose is to make the hero’s life less repetitive and to ensure that the ordinary quest loop remains a stable fallback rather than the only thing the player repeatedly watches. The hero should regularly return to routine, but changing circumstances should often make the route between two routine stages more interesting than a simple uninterrupted walk.
+
+At the current design stage, this system concerns only events that the hero can physically encounter while travelling. Tavern rumours, dungeon discovery, remote map information, and other ways of learning about distant opportunities are separate systems.
+
+### When Travel Events Can Activate
+
+A temporary travel event can currently activate only while the hero is moving through the world in one of three ordinary travel contexts:
+
+- **city → quest or activity target**;
+- **quest or activity target → city**;
+- **city → another city**.
+
+These events do not activate merely because the hero is standing still, spending time inside a city, or resolving the main objective of an already active quest.
+
+The event exists before the hero reaches it. It is not generated solely because the hero happened to enter a particular hex.
+
+### Event Position and Activation Area
+
+Each temporary travel event has a **central hex** and an **activation radius**.
+
+The current basic possibilities are:
+
+- **Radius 0** — only the central hex activates the event;
+- **Radius 1** — the central hex and the six immediately adjacent hexes all belong to the same event activation area.
+
+Using a small activation area allows an event to represent a situation affecting a local part of the world rather than requiring the hero to cross one exact hex by chance.
+
+At the current design stage, **one hex may belong to only one active temporary travel event at a time**. If an event with Radius 1 occupies seven hexes, those hexes are reserved by that event and should not simultaneously host another unrelated temporary travel event.
+
+When the travelling hero enters any hex belonging to the event’s active area, the event begins.
+
+### Event Lifetime
+
+Temporary travel events exist for a limited amount of game time.
+
+If the hero never enters their activation area before that time expires, the event may disappear or resolve without the hero. Exact expiration outcomes are defined by the individual event where useful.
+
+Time continues to matter after the hero becomes involved. A detour, another event, a difficult fight, or another delay may cause an unresolved event to expire before the hero returns to it.
+
+The exact lifetime ranges and world-generation frequency remain tuning questions for later testing.
+
+### Handcrafted Decisions and Conditional Options
+
+Temporary events are authored by hand. Their variety comes from the situation itself and from how different heroes can respond to it.
+
+As a working rule, an event should normally contain:
+
+- **one or two standard decisions** available to almost any hero;
+- any number of additional decisions, improved outcomes, or alternative actions that are included only when they make sense for that specific event.
+
+Conditional options may depend on factors such as:
+
+- primary attributes;
+- personality traits;
+- class;
+- current resources or condition;
+- relationships or reputation where relevant;
+- other explicit event-specific requirements.
+
+An event does **not** need a special branch for every class, every primary attribute, or every personality trait. One event may reward physical strength, another wisdom or intelligence, another a particular personality tendency, and another may have no class-specific branch at all.
+
+For example, an event in which a merchant is trapped under a damaged wagon could have a normal option to help at a cost of time and a healing resource, while sufficiently high Strength might allow the hero to lift or overturn part of the wagon and improve the outcome. A cunning hero might gain a separate dishonest opportunity while the merchant is distracted. These numbers and rewards are illustrative rather than final balance rules.
+
+> **Events should react to who this hero has become without requiring every event to test every part of the character sheet.**
+
+### Availability, Choice, and Success Are Separate
+
+A requirement may make an option available without forcing the hero to choose it.
+
+For example, high Strength may unlock an intimidation or lifting option, while the hero’s personality and circumstances still determine whether that option is attractive enough to use.
+
+Likewise, selecting an option and succeeding at it are conceptually separate. Some special options may guarantee an improved result when their requirement is met; others may still involve risk or a success check if that better fits the authored event.
+
+The hero’s event decision should use the normal decision philosophy from `Personality_and_Decision_System_Design_v0.1.md`: objective circumstances establish what makes sense, while personality, preferences, current goals, risk, reward, and other relevant factors affect which available response the hero actually chooses.
+
+### Events Can Create Temporary Detours
+
+Some events are resolved locally in the place where the hero encounters them. Others may create a **temporary detour objective** in another hex.
+
+For example, the hero may meet a shepherd whose calf was taken by a wolf. If the hero decides to help, the event may direct them three hexes west to find the animal and defeat the wolf.
+
+In this case the hero’s previous route is **suspended rather than forgotten**:
+
+> **original destination → event encounter → temporary detour target → required return or resolution step → resume original destination**
+
+The exact structure depends on the authored event. Some detours may require returning to the original event location for a reward or conclusion; others may resolve at the remote target and allow the hero to continue from there.
+
+While following a detour, the hero is still travelling through the normal world. They may therefore discover locations, encounter another eligible temporary event, or experience other systems that normally operate during travel.
+
+This is intentional: one event may create circumstances that naturally lead into another part of the hero’s story.
+
+### Importance, Urgency, and Interrupting the Current Goal
+
+Temporary events may have different **base importance** and **urgency**.
+
+Importance represents how significant the situation is as a potential priority. Urgency represents how quickly the opportunity or danger may disappear or become impossible to resolve.
+
+These values are not intended to replace personality or rational evaluation. The hero compares the new situation against the objective they are already pursuing.
+
+For example:
+
+- while searching for a missing pig, the hero may reasonably abandon or suspend that task to respond to a kidnapped child;
+- while already trying to rescue a kidnapped child, the hero should normally not abandon that urgent objective merely because a shepherd has lost an animal.
+
+The final priority may therefore depend on:
+
+- the event’s base importance;
+- remaining event lifetime / urgency;
+- importance and urgency of the hero’s current goal;
+- distance and expected additional travel time;
+- danger and expected chance of success;
+- reward or other consequences;
+- personality and preferences;
+- relationships or reputation;
+- current condition and resources;
+- divine influence where applicable.
+
+The important question is not simply whether the new event is attractive. It is whether it is important enough to justify interrupting what the hero is already doing.
+
+### No Hard Detour-Nesting Limit Yet
+
+The current design does **not** impose a fixed maximum number of nested temporary detours.
+
+Instead, importance, urgency, travel time, current objectives, and event expiration should naturally prevent the hero from following every distraction they encounter.
+
+This intentionally remains a testable design choice. If later playtesting shows that heroes repeatedly become trapped in long chains of low-value interruptions and rarely return to meaningful goals, a hard or soft nesting limit may be added as a safety rule.
+
+Until such a problem actually appears, the system should prefer believable autonomous prioritization over an arbitrary numerical cap.
+
+> **The hero should be distractible because life creates circumstances, not because the game has forgotten what the hero was trying to do.**
+
 ## Criterion for New Systems
 
 Any new mechanic layered on top of the base adventure loop should do at least one of two things:
