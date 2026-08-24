@@ -41,7 +41,7 @@ Early in the game, level and basic attributes may provide most of the hero’s g
 
 ## Basic Equipment Slots
 
-At the current design stage, the hero has **10 equipment slots**.
+At the current design stage, the hero has **12 equipment slots**.
 
 Armor uses five slots:
 
@@ -51,23 +51,28 @@ Armor uses five slots:
 - pants;
 - boots.
 
-Jewelry uses three slots:
+Jewelry and utility equipment use five slots:
 
-- two ring slots;
-- one necklace slot.
+- ring slot 1;
+- ring slot 2;
+- necklace;
+- earrings;
+- belt.
 
 The remaining two slots are:
 
 - **Main Hand**;
 - **Off Hand**.
 
-These replace the earlier generic concept of two identical weapon slots.
-
 A one-handed weapon occupies Main Hand. Depending on class and equipment rules, Off Hand may contain a shield, a second weapon, a magical focus, or another class-appropriate item.
 
 A **two-handed weapon occupies both Main Hand and Off Hand simultaneously**. While a two-handed weapon is equipped, no separate Off Hand item can be used.
 
-The current slot structure should remain compact. Additional slots such as a belt or earrings may be considered later if they provide a clear gameplay purpose, but they are not part of the current equipment structure.
+Earrings are treated as one equipment slot representing a wearable pair rather than creating separate left-ear and right-ear slots.
+
+The Belt is mechanically distinct from ordinary jewelry because it also controls the hero’s carried healing-potion capacity for dungeon expeditions.
+
+> **The current structure is 5 armor + 5 jewelry/utility + 2 hand slots.**
 
 ## Base Stats by Equipment Group
 
@@ -83,15 +88,29 @@ Exact Armor values depend on item level and later balance rules. The current des
 
 ### Jewelry
 
-Rings and necklaces use elemental resistance as their current base defensive identity.
+Rings, necklaces, and earrings use elemental resistance as their current base defensive identity.
 
-A jewelry item may inherently provide one of:
+A standard jewelry item may inherently provide one of:
 
 - **Fire Resistance**;
 - **Cold Resistance**;
 - **Lightning Resistance**.
 
+Earrings follow the same base-stat and random-modifier rules as rings and necklaces unless a later design gives them a distinct purpose.
+
 The exact selection rules, value ranges, and whether some jewelry types later receive different base properties remain tuning questions.
+
+### Belt
+
+The Belt is a special utility equipment type rather than ordinary jewelry.
+
+At the current design stage its inherent combat stat is:
+
+- **Health**, with the base Health amount determined by item level.
+
+The Belt does **not** currently roll the ordinary jewelry modifier pool or other random combat affixes. Its rarity instead determines healing-potion capacity, while its item level determines both its base Health scale and the maximum potion item level its slots can accept.
+
+Detailed Belt and potion rules are defined below.
 
 ### Main-Hand Weapons
 
@@ -142,15 +161,17 @@ Exact allowed weapon families, specialization bonuses, dual-wield rules, and cas
 Each item has two main characteristics that describe its mechanical quality:
 
 - **item level / ilvl** — determines the strength of the item’s inherent base stats and establishes the power scale used for its modifier budget;
-- **rarity** — determines the fixed number of random modifiers and, together with item level, the range of the item’s total modifier budget.
+- **rarity** — normally determines the fixed number of random modifiers and, together with item level, the range of the item’s total modifier budget.
 
-For items of the same base type and item level, rarity does **not** automatically increase the inherent base stat merely because the item is a different color. The extra power of higher rarity comes primarily from additional modifiers and the larger budget available to those modifiers.
+For ordinary generated equipment of the same base type and item level, rarity does **not** automatically increase the inherent base stat merely because the item is a different color. The extra power of higher rarity normally comes primarily from additional modifiers and the larger budget available to those modifiers.
+
+The **Belt is an explicit exception** to the ordinary rarity/modifier rule. At the current design stage, Belt rarity determines the number of potion slots rather than the number of random combat modifiers.
 
 The item system does **not** use a mechanical prefix/suffix split. Random properties are simply **modifiers** selected from the valid modifier pool for that item type.
 
-The current rarity structure is:
+The current ordinary rarity structure is:
 
-| Rarity | Color | Random modifiers |
+| Rarity | Color | Random modifiers on standard equipment |
 | --- | --- | ---: |
 | Normal | White | 0 |
 | Uncommon | Green | 1 |
@@ -158,21 +179,21 @@ The current rarity structure is:
 | Epic | Purple | 3 |
 | Legendary | Orange | 4 |
 
-Modifier slots are never empty. If an item has a given rarity, it always receives the complete number of random modifiers defined for that rarity.
+Modifier slots on standard equipment are never empty. If a standard item has a given rarity, it always receives the complete number of random modifiers defined for that rarity.
 
-> **Item level determines the strength scale of the item. Rarity determines how many modifiers it receives and how much total modifier power can be distributed among them.**
+> **For standard equipment, item level determines the strength scale and rarity determines modifier structure. Special-purpose item types such as the Belt may give rarity a different explicit mechanical role.**
 
 ## Modifier Power Budget
 
 The item’s inherent base stats are determined separately from its modifier budget.
 
-A **Normal / White** item has no random modifiers and therefore has:
+A **Normal / White** standard item has no random modifiers and therefore has:
 
 > **Modifier Budget = 0**
 
 It consists only of the base properties appropriate to its item type and item level.
 
-For Uncommon, Rare, Epic, and Legendary items, **item level and rarity together define a range for the total Modifier Budget**. The final total budget is rolled somewhere inside that range.
+For standard Uncommon, Rare, Epic, and Legendary items, **item level and rarity together define a range for the total Modifier Budget**. The final total budget is rolled somewhere inside that range.
 
 The current provisional rarity multipliers for the modifier-budget scale are:
 
@@ -187,7 +208,7 @@ These multipliers are provisional balance values. Their purpose is to establish 
 
 The current working progression target is:
 
-> **A Legendary item from the current item tier should have approximately the same total modifier budget as a Rare item from the next item tier.**
+> **A Legendary standard item from the current item tier should have approximately the same total modifier budget as a Rare item from the next item tier.**
 
 To produce that relationship with the working rarity multipliers, the base modifier-budget scale between adjacent item tiers grows by approximately **×1.67**:
 
@@ -211,7 +232,7 @@ For example, a Rare item with two modifiers may devote more of its budget to one
 
 The exact minimum and maximum share an individual modifier may receive relative to the average share are tuning parameters and will be defined through testing.
 
-> **Rarity creates both more modifiers and a larger total modifier budget, while controlled random distribution creates meaningful variation between items of the same level and rarity.**
+> **Rarity creates both more modifiers and a larger total modifier budget on standard equipment, while controlled random distribution creates meaningful variation between items of the same level and rarity.**
 
 ### Modifier Stat Scope
 
@@ -224,7 +245,7 @@ This preserves a clean distinction between:
 - the hero’s own long-term development through primary attributes;
 - equipment’s effect on the hero’s resolved combat capabilities through secondary stats.
 
-An item’s inherent base stat is allowed to appear again as one of its random modifiers. For example, armor has inherent Armor but may also roll an additional Armor modifier, and a weapon may roll additional Damage or its appropriate speed modifier.
+An item’s inherent base stat is allowed to appear again as one of its random modifiers where that item type supports ordinary modifiers. For example, armor has inherent Armor but may also roll an additional Armor modifier, and a weapon may roll additional Damage or its appropriate speed modifier.
 
 However, **the same random modifier cannot appear more than once on the same item**. Base properties do not count as duplicates for this rule.
 
@@ -264,7 +285,7 @@ Attack Speed and Cast Speed are not interchangeable on every weapon. The appropr
 
 #### Jewelry
 
-Ring and necklace random modifiers are selected from:
+Ring, necklace, and earrings random modifiers are selected from:
 
 - **Fire Resistance**;
 - **Cold Resistance**;
@@ -276,6 +297,18 @@ Ring and necklace random modifiers are selected from:
 - **Critical Damage**.
 
 Jewelry therefore has the broadest current modifier pool and can bridge offensive, defensive, and situational elemental needs.
+
+#### Belt
+
+The Belt does not currently use a random modifier pool.
+
+Its current mechanical identity is fully defined by:
+
+- base Health from item level;
+- potion-slot count from rarity;
+- maximum allowed potion item level from Belt item level.
+
+Additional Belt affixes should not be introduced until this utility role has been tested and shown to need more complexity.
 
 #### Off-Hand Items
 
@@ -347,7 +380,7 @@ Cast Speed is provisionally valued near Attack Speed until caster damage and cas
 
 ## Item Power as Approximate Hero-Power Contribution
 
-Each equipment item should expose a visible **Item Power / Item Strength** value in its information panel in addition to its actual stats.
+Standard equipment items should expose a visible **Item Power / Item Strength** value in their information panel in addition to their actual stats.
 
 This value is intended to answer a simple player-facing question:
 
@@ -391,11 +424,30 @@ Its purpose is to provide a stable, understandable, approximately comparable est
 
 > **Item Power is a reference estimate of how much Hero Power the item contributes, not a personalized prediction for the current hero.**
 
+### Belt Is Not Assigned Ordinary Item Power
+
+The Belt is currently excluded from the ordinary displayed Item Power calculation because a major part of its value is **expedition healing capacity**, which does not translate cleanly into the single-fight Hero Power formula.
+
+Its permanent base Health remains a normal resolved combat stat, but the Belt as a complete item should not receive a misleading combined Item Power number that pretends potion capacity is ordinary combat Power.
+
+For comparing Belt utility, the current simple secondary measure is:
+
+`Potion Healing Capacity = number of potion slots × healing of the strongest potion allowed by the Belt`
+
+This assumes all slots are filled with the strongest legal healing potion and is meant as an understandable capacity measure, not a replacement for full dungeon decision logic.
+
+The hero may therefore compare two Belts using both:
+
+- their inherent base Health;
+- their total potential potion-healing capacity.
+
+> **A Belt can make the hero much better prepared for an expedition without pretending that this is the same thing as increasing single-fight Hero Power.**
+
 ## Hero Equipment Evaluation Uses Virtual Equip
 
-When the autonomous hero decides whether a found or offered item is actually better for them, the displayed Item Power is not the final decision rule.
+When the autonomous hero decides whether a found or offered standard item is actually better for them, the displayed Item Power is not the final decision rule.
 
-The hero evaluates equipment through a **virtual equip** operation:
+The hero evaluates standard equipment through a **virtual equip** operation:
 
 1. temporarily place the candidate item into its legal equipment slot or slot combination;
 2. resolve the hero’s complete resulting `CombatStats` through the normal `StatResolver` pipeline;
@@ -407,19 +459,62 @@ The virtual equip does not physically change the hero’s equipment until the co
 
 This method also handles interactions that a simple per-item score cannot represent exactly. A lower-Item-Power object may sometimes be the better upgrade for a particular hero because of the hero’s current stats, while a nominally stronger item may add less real Power to that specific build.
 
-At the current design stage, the ordinary equipment decision can remain simple: **if the candidate legal configuration produces more Hero Power, it is the stronger equipment choice**. More situational equipment logic may be considered later only if it creates useful decisions.
+At the current design stage, the ordinary equipment decision can remain simple: **if the candidate legal configuration produces more Hero Power, it is the stronger standard equipment choice**. More situational equipment logic may be considered later only if it creates useful decisions.
 
-> **Item Power helps the player understand the item; virtual equip determines what is actually stronger for this hero.**
+The Belt is a special case because the hero must consider both the base-Health change from virtual equip and the practical change in potion capacity for dungeon preparation.
+
+> **Item Power helps the player understand standard items; virtual equip determines what is actually stronger for this hero; Belt utility additionally depends on expedition capacity.**
+
+## Belt and Healing Potions
+
+The Belt provides the hero with a limited number of slots for healing potions used during dungeon expeditions and any later activities that explicitly support this resource.
+
+### Belt Rarity Determines Potion Slots
+
+The current Belt slot progression is:
+
+| Belt rarity | Potion slots |
+| --- | ---: |
+| Normal / White | 1 |
+| Uncommon / Green | 2 |
+| Rare / Blue | 3 |
+| Epic / Purple | 4 |
+| Legendary | 5 |
+
+This slot count is the Belt’s main rarity benefit. Belt rarity does not currently add ordinary random affixes.
+
+### Belt Item Level Limits Potion Item Level
+
+Every potion slot on a Belt uses the same item-level limit as the Belt itself.
+
+A potion may be inserted only when:
+
+`Potion ilvl ≤ Belt ilvl`
+
+The slots do not have separate individual item levels.
+
+For example:
+
+- an `ilvl 10` Belt can hold healing potions up to `ilvl 10`;
+- an `ilvl 20` Belt can hold healing potions up to `ilvl 20`.
+
+Illustratively, an ilvl 10 healing potion might restore about **50 HP**, while an ilvl 20 potion might restore about **100 HP**. These values are provisional examples rather than final potion scaling.
+
+Higher-ilvl healing potions restore more Health and also cost more gold. The exact healing curve and price curve will be tuned together so that stronger dungeon preparation carries a meaningful economic cost.
+
+The hero does not receive free replacement potions merely because a dungeon attempt begins. Filling or refilling the Belt is an economic preparation step.
+
+> **A better Belt allows more and stronger healing resources, but using that capacity costs real gold.**
 
 ## Random Modifier Generation
 
-Generated equipment follows the general structure:
+Generated standard equipment follows the general structure:
 
 > **base item → item level → rarity → total Modifier Budget roll → modifier selection → budget distribution → rolled stat values**
 
 The base item defines the item type, equipment slot, and its inherent base characteristics.
 
-Item level establishes the strength of those base characteristics and the relevant modifier-budget scale. Rarity then determines the exact number of random modifiers and selects the corresponding total-budget range.
+Item level establishes the strength of those base characteristics and the relevant modifier-budget scale. Rarity then determines the exact number of random modifiers and selects the corresponding total-budget range for item types that use the standard modifier system.
 
 After the total budget is rolled, modifiers are selected from the pool available to that specific type of item. The rolled budget is distributed among those mandatory modifiers within the allowed distribution limits, and each modifier converts its assigned budget into its actual stat value according to that stat’s cost rule.
 
@@ -432,7 +527,9 @@ The random part of item generation therefore comes from:
 
 Generation should not be completely unrestricted. Each item type has its own pool of allowed secondary combat stats so that items remain coherent with their function.
 
-The same random modifier cannot be selected twice for one item. Higher-rarity items therefore draw multiple different properties from their valid pool rather than stacking duplicate modifier entries.
+The same random modifier cannot be selected twice for one item. Higher-rarity standard items therefore draw multiple different properties from their valid pool rather than stacking duplicate modifier entries.
+
+Special-purpose types such as the Belt follow their explicitly defined generation rules instead of being forced through the ordinary modifier pipeline.
 
 The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. Exact final stat costs, final budget ranges, distribution bounds, item-level scale, and numerical roll rules remain balance questions.
 
@@ -446,7 +543,7 @@ Each ordinary mob type is assigned a specific **equipment item level** for its n
 
 The current ordinary-mob equipment generation sequence is:
 
-> **mob defeated → ordinary creature loot → 5% equipment-drop check → equipment slot / item type roll → rarity roll → if colored, Modifier Budget roll → modifier selection → budget distribution → final stat values**
+> **mob defeated → ordinary creature loot → 5% equipment-drop check → equipment slot / item type roll → rarity roll → standard modifier generation where applicable → final stats**
 
 ### Ordinary Creature Loot
 
@@ -466,7 +563,7 @@ The 5% value is provisional and may be tuned later, but it is intentionally sepa
 
 ### Equipment Slot and Item Type
 
-After the equipment-drop check succeeds, the game rolls the equipment slot with an equal basic chance across the ordinary equipment-slot structure.
+After the equipment-drop check succeeds, the game rolls the equipment slot with an equal basic chance across the current equipment-slot structure unless a specific loot source later defines a different table.
 
 If the selected slot can contain more than one concrete item family, a further item-type roll determines the actual dropped item. For example, a Main Hand or Off Hand result may later resolve into one of the item families valid for that slot.
 
@@ -490,26 +587,26 @@ Ordinary mobs do not randomly generate Epic or Legendary equipment. Higher rarit
 
 ### Final Item Generation After Rarity
 
-A White result receives the base properties appropriate to the rolled item type and the mob’s assigned equipment ilvl, with no random modifiers.
+A White result receives the base properties appropriate to the rolled item type and the mob’s assigned equipment ilvl, with no ordinary random modifiers.
 
-If the rarity is Green or Blue, the item then continues through the existing modifier-generation system:
+If the selected item type uses the standard modifier system and rarity is Green or Blue, the item then continues through the existing modifier-generation system:
 
 1. roll the total Modifier Budget inside the range defined by that item level and rarity;
 2. select the required number of different modifiers from the valid pool for the rolled item type;
 3. distribute the rolled budget among those modifiers within the current distribution rules;
 4. convert each modifier’s assigned budget into its final visible stat value.
 
-The rarity roll therefore controls **quality**, while the source mob controls **item level**, and the modifier system controls the exact shape and strength of a colored item.
+Special-purpose item types such as the Belt instead apply their own rarity-specific rules after slot and rarity are known.
 
-> **Source determines ilvl; the drop check determines whether equipment appears; the slot roll determines what appeared; rarity determines its quality; Modifier Budget and modifiers determine the final colored item.**
+> **Source determines ilvl; the drop check determines whether equipment appears; the slot roll determines what appeared; rarity determines its quality structure; the item-type rules determine the final item.**
 
 ## Initial Gold Economy
 
-The first economy should connect adventuring, loot, gold, shops, and equipment progression without turning the game into a trading or maintenance simulator.
+The first economy should connect adventuring, loot, gold, shops, equipment progression, and dungeon preparation without turning the game into a trading or maintenance simulator.
 
 The basic economic loop is:
 
-> **quest / combat → collect loot in backpack → complete the objective → review loot and equip worthwhile upgrades → return to town → turn in the quest and receive gold → go to the market → sell all trophies and all unequipped equipment → inspect shop stock → buy a worthwhile available upgrade when appropriate → recalculate the hero’s resulting strength → choose the next activity**
+> **quest / combat → collect loot in backpack → complete the objective → review loot and equip worthwhile upgrades → return to town → turn in the quest and receive gold → go to the market → sell all trophies and all unequipped equipment → inspect shop stock → buy a worthwhile available upgrade when appropriate → refill or improve dungeon healing potions when relevant → recalculate the hero’s resulting strength and readiness → choose the next activity**
 
 The hero should be able to perform this loop autonomously. At the current design stage, equipment that is not chosen during the post-quest review is not kept as a spare or situational set; it is sold when the hero reaches the market.
 
@@ -529,13 +626,18 @@ Beasts and ordinary monsters do **not** drop gold merely because they were defea
 
 ### Current Gold Uses
 
-At the current design stage, the hero spends gold **only on equipment purchases**.
+At the current design stage, the hero spends gold on two meaningful progression uses:
 
-There are currently no regular gold costs for repair, taverns, healing, travel, taxes, or other maintenance systems. Additional gold sinks may be introduced later only if they create useful decisions rather than existing merely to remove currency from the economy.
+- **equipment purchases**;
+- **healing potions**, especially when preparing or refilling the Belt for dungeon expeditions.
 
-Because equipment is currently the only meaningful expenditure, the hero does not need to preserve a mandatory abstract gold reserve. They may spend freely on worthwhile upgrades, while still rejecting negligible improvements.
+There are currently no regular gold costs for repair, taverns, travel, taxes, or other maintenance systems. Additional gold sinks may be introduced later only if they create useful decisions rather than existing merely to remove currency from the economy.
 
-> **For the initial economy, gold exists to help the hero improve equipment, not to fund routine chores.**
+Higher-ilvl healing potions cost more than weaker potions, so improved expedition capacity also increases the potential price of fully preparing for a dungeon attempt.
+
+The hero does not need to preserve a mandatory abstract gold reserve. They may spend on worthwhile upgrades and preparation according to current goals, while still rejecting negligible improvements or unnecessarily expensive preparation.
+
+> **Gold should support meaningful progression and risky expeditions, not routine chores.**
 
 ### Item Reference Value and Resale
 
@@ -582,6 +684,8 @@ At the current control points this means, for example:
 
 This large buy/sell spread prevents found equipment from becoming almost equivalent to liquid gold and makes buying an item a meaningful expenditure rather than a nearly reversible exchange.
 
+Healing-potion pricing uses its own progression curve rather than the equipment resale formula. The only current fixed principle is that **higher-ilvl potions heal more and cost more**.
+
 ### Ordinary Shops Are Not the Main Source of High-Rarity Gear
 
 Ordinary shops exist primarily to provide baseline equipment, fill weak slots, and offer practical incremental upgrades. Their main systemic role is **bad-luck protection**: if random drops leave one equipment slot significantly behind the rest of the hero's gear, the hero can use accumulated gold to replace that weak slot with an available baseline White or Green item.
@@ -590,7 +694,7 @@ Shops therefore **supplement loot progression rather than replace it**. A hero w
 
 They should not allow the hero to convert enough repetitive quest gold directly into the best equipment in the game.
 
-The default ordinary-shop rarity pool is:
+The default ordinary-shop equipment rarity pool is:
 
 - **Normal / White**;
 - **Uncommon / Green**.
@@ -609,6 +713,8 @@ High-quality equipment should primarily come from gameplay sources such as:
 - special events;
 - exceptional or special quests;
 - other rare world opportunities.
+
+Healing potions are a separate consumable shop category and are not governed by the equipment rarity-access rule above. Their availability may depend on the city/shop progression tier and their own potion ilvl.
 
 > **Gold buys what the world’s merchants can actually offer; accumulating enough gold alone should not unlock the best equipment.**
 
@@ -630,13 +736,15 @@ Under this model, ordinary shops do not provide the highest item levels at all. 
 
 A developed hero may therefore completely outgrow the commercial equipment available in weaker cities.
 
+Potion availability should follow the same world-facing principle: a weak city should not secretly sell top-tier healing potions merely because the current hero owns a high-ilvl Belt.
+
 > **Merchants belong to places in the world; their inventory does not secretly level up because the hero did.**
 
 ### Limited and Changing Shop Stock
 
 Shops have a **limited assortment** rather than offering every legal item type and every possible stat combination on demand.
 
-Their stock is generated within the rules of that shop, including:
+Their equipment stock is generated within the rules of that shop, including:
 
 - city / shop item-level range;
 - allowed rarities;
@@ -646,21 +754,25 @@ Their stock is generated within the rules of that shop, including:
 
 The assortment changes periodically. The hero may therefore find a useful upgrade on one visit and nothing worthwhile on another.
 
+Healing potions may use a simpler consumable stock rule if testing shows that fully random potion absence makes dungeon preparation frustrating rather than interesting. The exact potion availability model is not fixed yet.
+
 The exact stock size and refresh interval are balance parameters to be defined later.
 
 ### Hero Purchase Evaluation
 
 The hero evaluates shop equipment autonomously by comparing the offered item with their current equipment, the practical improvement it provides, and the gold cost.
 
-For the equipment-strength part of this decision, the offered item is tested through the same **virtual equip** process used for found loot: the candidate is temporarily substituted into the legal equipment configuration, complete `CombatStats` are resolved, and the hero’s resulting real Hero Power is recalculated before any purchase is made.
+For the equipment-strength part of this decision, a standard offered item is tested through the same **virtual equip** process used for found loot: the candidate is temporarily substituted into the legal equipment configuration, complete `CombatStats` are resolved, and the hero’s resulting real Hero Power is recalculated before any purchase is made.
 
 A technically positive but negligible increase should not automatically trigger a purchase. For example, an improvement from approximately `500 Power` to `501 Power` should normally be treated as too small to justify meaningful expenditure.
 
-Because equipment is currently the hero’s only meaningful gold expenditure, the hero may spend relatively freely on a **meaningful** upgrade when they can afford it. However, the system should still consider the size of the improvement relative to the price and the possibility that a better shop offer may appear after stock refresh.
+Belt purchases additionally consider the change in base Health and potion-healing capacity rather than relying on ordinary Item Power alone.
+
+Potion purchases are evaluated as preparation resources. The hero considers how many Belt slots need filling, the strongest potion level the Belt allows, potion availability, current gold, and whether a dungeon expedition or another supported activity makes the expenditure worthwhile.
 
 There is currently no mandatory gold-reserve rule. If other strategically important gold sinks are introduced later, purchase behaviour can be revised to account for competing uses of currency.
 
-> **The hero should value a real upgrade, but should not waste accumulated resources on changes that barely matter.**
+> **The hero should value a real upgrade or useful preparation, but should not waste accumulated resources on changes that barely matter.**
 
 ## Equipment Does Not Modify Personality
 
