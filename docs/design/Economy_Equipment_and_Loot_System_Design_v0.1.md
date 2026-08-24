@@ -372,6 +372,71 @@ The current secondary combat stats are defined in `Combat_and_Progression_System
 
 > **Randomness should create item variety, not meaningless chaos.**
 
+## Ordinary Mob Loot Generation
+
+Ordinary enemies use a source-driven loot model. Their equipment drops are not scaled to the hero and are not filtered to guarantee that the hero can use them.
+
+Each ordinary mob type is assigned a specific **equipment item level** for its normal equipment drops. For example, if a Wild Boar is defined as an `ilvl 10` loot source, any ordinary equipment item generated from that boar uses ilvl 10 regardless of the hero’s current level or equipment.
+
+The current ordinary-mob equipment generation sequence is:
+
+> **mob defeated → ordinary creature loot → 5% equipment-drop check → equipment slot / item type roll → rarity roll → if colored, Modifier Budget roll → modifier selection → budget distribution → final stat values**
+
+### Ordinary Creature Loot
+
+A defeated ordinary mob may provide its normal creature-appropriate loot independently of the equipment-drop check.
+
+- humanoid enemies may carry **gold** when this makes sense for that enemy;
+- beasts and monsters normally provide an appropriate **trophy or other sellable creature loot** rather than direct currency;
+- specific mob definitions may later refine their ordinary loot profile when there is a clear world reason.
+
+This ordinary loot does not replace the separate chance to generate equipment.
+
+### Equipment Drop Chance
+
+Each ordinary mob currently has a working **5% chance** to generate one equipment item when defeated.
+
+The 5% value is provisional and may be tuned later, but it is intentionally separate from rarity. First the game decides whether an equipment item exists at all. Only after a successful equipment-drop check does it determine what kind of item dropped and how rare it is.
+
+### Equipment Slot and Item Type
+
+After the equipment-drop check succeeds, the game rolls the equipment slot with an equal basic chance across the ordinary equipment-slot structure.
+
+If the selected slot can contain more than one concrete item family, a further item-type roll determines the actual dropped item. For example, a Main Hand or Off Hand result may later resolve into one of the item families valid for that slot.
+
+The drop is **not filtered to the current hero’s class, specialization, weapon access, or immediate usefulness**. A Warrior may find a caster-oriented item, and a Mage may find a heavy weapon they cannot use. Such items can still be sold or otherwise handled through the normal inventory economy.
+
+> **The world generates loot from the source, not a personalized reward list for the current hero.**
+
+### Ordinary-Mob Rarity Roll
+
+After the equipment slot / item type has been selected, rarity is rolled independently using the current working distribution:
+
+| Rarity | Chance among successful ordinary equipment drops |
+| --- | ---: |
+| Normal / White | 70% |
+| Uncommon / Green | 25% |
+| Rare / Blue | 5% |
+
+For ordinary mobs, **Rare / Blue is the maximum possible rarity**.
+
+Ordinary mobs do not randomly generate Epic or Legendary equipment. Higher rarities require stronger or more exceptional loot sources such as elites, bosses, dungeons, major events, or special quest structures that explicitly support them.
+
+### Final Item Generation After Rarity
+
+A White result receives the base properties appropriate to the rolled item type and the mob’s assigned equipment ilvl, with no random modifiers.
+
+If the rarity is Green or Blue, the item then continues through the existing modifier-generation system:
+
+1. roll the total Modifier Budget inside the range defined by that item level and rarity;
+2. select the required number of different modifiers from the valid pool for the rolled item type;
+3. distribute the rolled budget among those modifiers within the current distribution rules;
+4. convert each modifier’s assigned budget into its final visible stat value.
+
+The rarity roll therefore controls **quality**, while the source mob controls **item level**, and the modifier system controls the exact shape and strength of a colored item.
+
+> **Source determines ilvl; the drop check determines whether equipment appears; the slot roll determines what appeared; rarity determines its quality; Modifier Budget and modifiers determine the final colored item.**
+
 ## Initial Gold Economy
 
 The first economy should connect adventuring, loot, gold, shops, and equipment progression without turning the game into a trading or maintenance simulator.
@@ -389,6 +454,8 @@ The current basic sources of gold are:
 - **quest rewards** — a stable and important source of direct income;
 - **direct currency loot from humanoid enemies**, when it is reasonable for that enemy to carry money;
 - **selling unwanted equipment and trophies** obtained through adventures.
+
+At the current design stage, **ordinary / simple quests give gold as their completion reward and do not directly award random equipment**. Equipment gained during a normal quest comes from the adventure itself, primarily through mob drops. Special or exceptional quests may later explicitly award items as a separate, authored reward type.
 
 Beasts and ordinary monsters do **not** drop gold merely because they were defeated. They may instead provide equipment, trophies, or other sellable loot appropriate to the creature and activity.
 
