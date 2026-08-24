@@ -218,18 +218,15 @@ If a location is not discovered from farther away, moving closer may create a ne
 
 These percentages are current working values and may later be tuned through testing.
 
-### Personality Hooks for Discovery
+### Personality Modifiers to Discovery
 
-Two new provisional personality traits are reserved for later development:
+The discovery system may modify the base chances above using relevant personality traits owned by `Personality_and_Decision_System_Design_v0.1.md`.
 
-- **Observant** — expected to improve the hero’s ability to notice hidden locations, unusual signs, or nearby opportunities;
-- **Inattentive** — expected to reduce that ability.
+The currently reserved discovery-related traits are **Observant / Наблюдательный** and **Inattentive / Невнимательный**. Their definitions, acquisition, development, exact numerical effects, and relationship to other traits belong to the personality system rather than the map system.
 
-Their exact numerical effect, acquisition rules, interaction with other traits, and whether they form a strict opposing pair are **not yet defined**.
+The map system only consumes their eventual discovery modifiers; it does not define or own the traits themselves.
 
-The discovery system should allow such traits to modify the base chances above without requiring separate discovery logic for every content type.
-
-> **The world may contain opportunities before the hero knows about them; information comes through rumours or through what the hero notices while actually living and travelling in that world.**
+> **The map defines the opportunity to discover something; the personality system may change how likely this particular hero is to notice it.**
 
 ## Partial World Variation Between Playthroughs
 
