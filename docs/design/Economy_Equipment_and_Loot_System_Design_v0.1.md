@@ -451,7 +451,11 @@ This large buy/sell spread prevents found equipment from becoming almost equival
 
 ### Ordinary Shops Are Not the Main Source of High-Rarity Gear
 
-Ordinary shops exist primarily to provide baseline equipment, fill weak slots, and offer practical incremental upgrades. They should not allow the hero to convert enough repetitive quest gold directly into the best equipment in the game.
+Ordinary shops exist primarily to provide baseline equipment, fill weak slots, and offer practical incremental upgrades. Their main systemic role is **bad-luck protection**: if random drops leave one equipment slot significantly behind the rest of the hero's gear, the hero can use accumulated gold to replace that weak slot with an available baseline White or Green item.
+
+Shops therefore **supplement loot progression rather than replace it**. A hero who is lucky with drops may need merchants much less, while a hero who repeatedly misses a useful item for one slot still has a controlled way to repair that weakness. Ordinary shops should not become the most efficient or reliable route to strong equipment.
+
+They should not allow the hero to convert enough repetitive quest gold directly into the best equipment in the game.
 
 The default ordinary-shop rarity pool is:
 
