@@ -82,10 +82,11 @@ In addition to soft influence, the player has access to rarer forms of direct in
 
 These abilities consume a limited divine resource that regenerates slowly enough that direct assistance cannot be used in every ordinary fight.
 
-At the base stage, the main forms of intervention are expected to be:
+At the base stage, forms of intervention may include:
 
 - **healing the hero**;
-- **a temporary combat blessing or empowerment**.
+- **a temporary combat blessing or empowerment**;
+- **information-revealing abilities such as Vision**.
 
 Later deity progression may unlock additional forms of direct intervention.
 
@@ -93,7 +94,33 @@ The hero should overcome ordinary difficulties independently. Divine power becom
 
 > **Direct intervention helps the hero in an exceptional moment, but does not replace the hero’s own strength during ordinary play.**
 
-The exact abilities, their costs, and their limitations will be defined separately.
+Exact values are defined per ability where already agreed and remain provisional balance values unless explicitly finalized.
+
+## Vision — Reveal an Unknown Dungeon
+
+**Vision** is a direct divine information ability that lets the player reveal one hidden dungeon to the hero without commanding the hero to enter it.
+
+Current working values:
+
+- **Cost:** 80 Divine Energy;
+- **Cooldown:** 1500 ticks.
+
+When activated, Vision selects **one random existing dungeon that is currently unknown to the hero in the region where the hero is currently located**.
+
+The selected dungeon’s location becomes known to the hero.
+
+Vision does **not** reveal:
+
+- the dungeon’s exact combat strength;
+- its ordinary enemy composition;
+- its unique boss;
+- its completion reward.
+
+Vision does not create a dungeon. It can only reveal a dungeon that already exists in the current region and is still unknown to the hero. If there is no valid unknown dungeon in the current region, there is no valid Vision target; exact invalid-use UI behaviour can be decided during implementation.
+
+Revealing a dungeon does not force the hero to go there. The newly known dungeon enters the normal autonomous dungeon logic from `Quest_and_Activity_System_Design_v0.1.md`: the hero returns to town, prepares, fills all Belt potion slots when they can afford to do so, and only then makes a dedicated dungeon expedition when the dungeon is otherwise eligible for an attempt.
+
+> **Vision gives the hero knowledge, not an order.**
 
 ## Deity Power Progression — Confirmed but Later Layer
 
