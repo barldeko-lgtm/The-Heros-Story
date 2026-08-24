@@ -56,6 +56,69 @@ A young hero therefore normally remains near safer areas **not because the rest 
 
 > **The world is open in advance; the hero’s own development makes more of it practically relevant over time.**
 
+## Hex-Based Spatial Structure
+
+The continent is divided into a **hexagonal grid**. Hexes are the basic spatial unit used by travel, quests, points of interest, and later world events.
+
+The geography is currently intended to be authored rather than continuously generated during play. The map may eventually gain a generator, but even in that case the terrain layout is created before a playthrough begins and then remains spatially stable during that playthrough.
+
+The current working physical scale is:
+
+> **1 hex = approximately 3 km**
+
+Game systems may work internally in hex steps, while the UI, diary, and narrative may convert those steps into kilometres so that journeys remain understandable to the player.
+
+For example, a quest located 5 hexes from its city is approximately 15 km away. If the hero returns to the same city after completing it, the ordinary round trip is approximately 10 hexes / 30 km before accounting for any future detours or interruptions.
+
+### Quest Distance Uses Hex Position
+
+A quest that occurs outside a city is assigned to a **specific target hex**.
+
+Its distance from the city is no longer an independent abstract kilometre roll. Distance is derived from the number of hex steps between the city hex and the quest hex.
+
+At the current design stage:
+
+- all traversable hexes have the same movement cost;
+- terrain does not yet make one hex slower than another;
+- water, impassable mountains, and other route-blocking terrain are not yet part of the travel model;
+- therefore the ordinary travel distance is simply the shortest number of hex steps between the origin and destination.
+
+This may become more sophisticated later, but terrain-dependent movement cost or blocked routes should be added only when they create useful gameplay.
+
+> **The map determines distance; kilometres are the human-readable presentation of that distance.**
+
+## Hex Attributes
+
+Each hex contains a small set of properties used by the world simulation. These properties are deliberately divided into **persistent map attributes** and **mutable world-state attributes**.
+
+### Persistent Map Attributes
+
+These describe what the hex fundamentally is and normally do not change during a playthrough.
+
+Current confirmed attributes are:
+
+- **Hex ID / coordinates** — the unique identity and position of the hex in the grid;
+- **Terrain Type** — the authored physical terrain of the hex, such as plains, forest, mountains, swamp, or another later-defined terrain category;
+- **Base Danger** — the normal local danger band, expressed primarily through the level range of ordinary enemies that may naturally appear in that hex.
+
+A broader **region / city association** is likely to become another persistent attribute, but its exact meaning has not yet been finalized. It may describe which city the hex naturally belongs to geographically without necessarily being identical to current political control.
+
+Terrain is not expected to change during normal play. Base Danger represents the underlying natural danger of the area; temporary events may later make the current situation more or less dangerous without rewriting the hex’s base value.
+
+### Mutable World-State Attributes
+
+These describe what is currently happening in the hex and may change during the simulation.
+
+Current working examples include:
+
+- **Faction / political control** — which faction currently controls or influences the hex. It is not yet decided whether this is always inherited from a controlling city or calculated independently for individual hexes during wars;
+- **Point-of-Interest state** — whether a temporary, renewable, or otherwise active location currently exists in the hex;
+- **Active events and temporary conditions** — later events, threats, battles, caravans, unusual creatures, invasions, and other situations may temporarily occupy or modify a hex.
+
+Additional mutable properties should be added only when they are needed by concrete gameplay systems.
+
+> **Persistent attributes define the place. Mutable attributes define what is happening there now.**
+
 ## The Map as a Visual Reflection of the Living World
 
 The map should be one of the main ways the player **understands where the hero is and what is happening in the world**.
@@ -95,19 +158,29 @@ This allows the player to see that significant figures in the world actually mov
 
 The map does not have to give the player constant omniscient knowledge of every such character’s exact location.
 
-## Types of Points of Interest
+## Points of Interest as Renewable World Content
 
-Points of interest may differ by how persistent they are in the world:
+A Point of Interest (POI) is a **location or temporary place of interest attached to a hex**, while an event is something that happens in the world. An event may create, modify, renew, or remove a POI.
 
-- **Permanent** — stable parts of the world such as ruins, known caves, mountain passes, or ancient shrines.
-- **Exhaustible** — locations tied to a situation that can be resolved, cleared, or otherwise changed, such as a bandit camp, monster lair, or dungeon objective.
-- **Temporary** — locations or opportunities created by world events for a limited time, such as a caravan, military camp, invasion, rare creature, portal, or battlefield.
+The current direction is that **all or nearly all gameplay-relevant POIs should be temporary, renewable, reusable, or capable of returning in another form** rather than existing as a finite set of one-time locations that can all be permanently exhausted.
 
-A physical location does not always need to disappear when its current activity ends. It may instead remain on the map in a changed state.
+Examples may include:
 
-The detailed lifecycle of quest-linked locations belongs to `Quest_and_Activity_System_Design_v0.1.md`; this section only defines the map-level categories.
+- monster lairs;
+- bandit camps;
+- temporary caves or discovered ruins used by an activity;
+- military camps;
+- portals;
+- battlefields;
+- other quest- or event-related locations.
 
-> **Not every opportunity on the map is permanent: some places remain, some are resolved, and some appear only because the world is currently changing.**
+Some authored geographical landmarks may remain permanently visible as part of the map, but their **gameplay opportunities should not necessarily be permanently consumed after one visit**. A ruin can remain a ruin while different situations later occur there.
+
+This prevents a long-running hero from gradually clearing every interesting place on the continent until the map becomes empty after many hours of play.
+
+The exact lifecycle, respawn rules, cooldowns, and conditions for POI renewal are not yet defined.
+
+> **The geography can persist while the opportunities attached to it change and return over time.**
 
 ## Partial World Variation Between Playthroughs
 
@@ -117,17 +190,17 @@ The geography of the continent does not need to be generated from scratch for ev
 
 - the continent shape;
 - major natural regions;
+- the hex terrain layout;
 - valid positions for cities;
 - possible roads and connections;
-- suitable locations for permanent points of interest.
+- suitable areas or anchors for POIs and events.
 
 When a new playthrough begins, some elements may be assembled differently within those prepared constraints, for example:
 
 - which cities are used and which valid positions they occupy;
 - which factions control those cities;
 - initial spheres of influence;
-- some permanent and exhaustible points of interest;
-- starting threats;
+- some initial POIs and threats;
 - the initial political situation of the world.
 
 Variation must still respect **the logic of the setting**. For example, a dwarven city should appear in a suitable mountainous region rather than being placed arbitrarily only for the sake of randomness.
