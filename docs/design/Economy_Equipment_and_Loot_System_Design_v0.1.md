@@ -345,6 +345,72 @@ Cast Speed is provisionally valued near Attack Speed until caster damage and cas
 
 > **Modifier costs should keep different stats in roughly comparable power territory without pretending that every build and every matchup gives those stats identical value.**
 
+## Item Power as Approximate Hero-Power Contribution
+
+Each equipment item should expose a visible **Item Power / Item Strength** value in its information panel in addition to its actual stats.
+
+This value is intended to answer a simple player-facing question:
+
+> **Approximately how much Hero Power would this item add under ordinary reference conditions?**
+
+Item Power is calculated with the same current Hero Power formula owned by `Combat_and_Progression_System_Design_v0.1.md`, but it is evaluated against one fixed reference combat-stat profile so that the value printed on an item does not change depending on who is currently holding it.
+
+The current reference profile is:
+
+- 1000 Health;
+- 100 Armor;
+- 50 Dodge;
+- 100 Accuracy;
+- 100 physical Damage;
+- 1.0 Attack Speed;
+- 25% Critical Chance;
+- 200% Critical Damage;
+- 100 Fire Resistance;
+- 100 Cold Resistance;
+- 100 Lightning Resistance.
+
+Under the current Warrior Power formula, this reference profile has a baseline Power of approximately:
+
+`Reference Power ≈ 433.0`
+
+The item’s full resolved contribution — its inherent base properties plus all rolled modifiers — is then applied on top of that fixed reference profile and Power is recalculated.
+
+The working formula is:
+
+`Item Power = Power(Reference Stats + Item Stats) - Power(Reference Stats)`
+
+or equivalently:
+
+`Item Power = Power(Reference Stats + Item Stats) - 433.0`
+
+The UI should display this direct result without an arbitrary cosmetic multiplier. Rounding and decimal display are presentation questions, but the underlying value should remain on the same scale as Hero Power so that, conceptually, an item showing `Item Power 18` means that it adds roughly eighteen points of Hero Power to the fixed reference build.
+
+Item Power is **not a promise of the exact Power increase for the current hero**. The real gain from an item may be higher or lower because Armor, Dodge, Accuracy, Critical Chance, resistances, and other stats have nonlinear or context-dependent value and interact with the hero’s existing build.
+
+Its purpose is to provide a stable, understandable, approximately comparable estimate of an item’s combat strength while preserving the real Hero Power formula as the underlying evaluator.
+
+> **Item Power is a reference estimate of how much Hero Power the item contributes, not a personalized prediction for the current hero.**
+
+## Hero Equipment Evaluation Uses Virtual Equip
+
+When the autonomous hero decides whether a found or offered item is actually better for them, the displayed Item Power is not the final decision rule.
+
+The hero evaluates equipment through a **virtual equip** operation:
+
+1. temporarily place the candidate item into its legal equipment slot or slot combination;
+2. resolve the hero’s complete resulting `CombatStats` through the normal `StatResolver` pipeline;
+3. recalculate the hero’s real Hero Power using the shared Power formula;
+4. compare that result with the Power of the current equipment configuration;
+5. prefer the legal configuration with the higher resulting Hero Power, subject to any later approved non-Power decision rules.
+
+The virtual equip does not physically change the hero’s equipment until the comparison has been completed and the hero has decided to use the item.
+
+This method also handles interactions that a simple per-item score cannot represent exactly. A lower-Item-Power object may sometimes be the better upgrade for a particular hero because of the hero’s current stats, while a nominally stronger item may add less real Power to that specific build.
+
+At the current design stage, the ordinary equipment decision can remain simple: **if the candidate legal configuration produces more Hero Power, it is the stronger equipment choice**. More situational equipment logic may be considered later only if it creates useful decisions.
+
+> **Item Power helps the player understand the item; virtual equip determines what is actually stronger for this hero.**
+
 ## Random Modifier Generation
 
 Generated equipment follows the general structure:
@@ -443,9 +509,9 @@ The first economy should connect adventuring, loot, gold, shops, and equipment p
 
 The basic economic loop is:
 
-> **quest / combat → gold and loot → return to town → evaluate loot → equip or retain useful items → sell unwanted items and trophies → inspect shop stock → buy a worthwhile available upgrade when appropriate → choose the next activity**
+> **quest / combat → collect loot in backpack → complete the objective → review loot and equip worthwhile upgrades → return to town → turn in the quest and receive gold → go to the market → sell all trophies and all unequipped equipment → inspect shop stock → buy a worthwhile available upgrade when appropriate → recalculate the hero’s resulting strength → choose the next activity**
 
-The hero should be able to perform this loop autonomously.
+The hero should be able to perform this loop autonomously. At the current design stage, equipment that is not chosen during the post-quest review is not kept as a spare or situational set; it is sold when the hero reaches the market.
 
 ### Gold Sources
 
@@ -585,6 +651,8 @@ The exact stock size and refresh interval are balance parameters to be defined l
 ### Hero Purchase Evaluation
 
 The hero evaluates shop equipment autonomously by comparing the offered item with their current equipment, the practical improvement it provides, and the gold cost.
+
+For the equipment-strength part of this decision, the offered item is tested through the same **virtual equip** process used for found loot: the candidate is temporarily substituted into the legal equipment configuration, complete `CombatStats` are resolved, and the hero’s resulting real Hero Power is recalculated before any purchase is made.
 
 A technically positive but negligible increase should not automatically trigger a purchase. For example, an improvement from approximately `500 Power` to `501 Power` should normally be treated as too small to justify meaningful expenditure.
 
