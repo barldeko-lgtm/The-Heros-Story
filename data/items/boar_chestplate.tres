@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_item_definition")
 id = "boar_chestplate"
-display_name = "Кираса Вепря"
+display_name = "Кираса Авангарда Железного Оплота"
 equipment_slot = "chest"
 quality = 0
 icon_texture = ExtResource("2_icon")

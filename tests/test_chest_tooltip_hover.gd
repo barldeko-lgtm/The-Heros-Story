@@ -28,7 +28,7 @@ func run_test() -> void:
 	chest_slot.mouse_entered.emit()
 	await process_frame
 	assert(tooltip_panel.visible, "Hovering the equipped chest slot must show the custom tooltip panel.")
-	assert(tooltip_label.text.contains("Кираса Вепря"), "Visible tooltip must show the item name.")
+	assert(tooltip_label.text.contains("Кираса Авангарда Железного Оплота"), "Visible tooltip must show the item name.")
 	assert(tooltip_label.text.contains("Максимальное здоровье: +20"), "Visible tooltip must show MaxHP.")
 	assert(tooltip_label.text.contains("Броня: +10"), "Visible tooltip must show Armor.")
 	assert(tooltip_label.text.contains("Сила: +1"), "Visible tooltip must show Strength.")

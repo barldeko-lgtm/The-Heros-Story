@@ -20,7 +20,9 @@ static func calculate(item_definition: Resource) -> float:
 		return 0.0
 	var item_stats = create_reference_stats()
 	item_stats.max_hp += item_definition.max_hp_bonus + item_definition.strength_bonus * 5.0
-	item_stats.attack += item_definition.strength_bonus
+	item_stats.attack += item_definition.strength_bonus + item_definition.attack_bonus
+	item_stats.crit_chance += item_definition.crit_chance_bonus
+	item_stats.crit_damage += item_definition.crit_damage_bonus
 	item_stats.damage_reduction = clampf(
 		REFERENCE_DAMAGE_REDUCTION + item_definition.armor_bonus * StatResolverScript.DAMAGE_REDUCTION_PER_ARMOR_POINT,
 		0.0,

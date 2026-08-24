@@ -45,3 +45,21 @@ func get_armor_bonus() -> int:
 	for item_instance in equipped_items.values():
 		total += item_instance.definition.armor_bonus
 	return total
+
+func get_attack_bonus() -> float:
+	var total: float = 0.0
+	for item_instance in equipped_items.values():
+		total += item_instance.definition.attack_bonus
+	return total
+
+func get_crit_chance_bonus() -> float:
+	var total: float = 0.0
+	for item_instance in equipped_items.values():
+		total += item_instance.definition.crit_chance_bonus
+	return total
+
+func get_crit_damage_bonus() -> float:
+	var total: float = 0.0
+	for item_instance in equipped_items.values():
+		total += item_instance.definition.crit_damage_bonus
+	return total

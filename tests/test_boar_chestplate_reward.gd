@@ -38,7 +38,7 @@ func run_test() -> void:
 	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + 1.0), "+1 Strength must add 1 Attack.")
 	assert(is_equal_approx(simulation.base_combat_stats.damage_reduction, 0.05), "10 Armor must provide five percent damage reduction.")
 	assert(is_equal_approx(simulation.hero_state.current_hp, starting_hp + 25.0), "Equipping at full health must increase current HP with the new maximum.")
-	assert(simulation.debug_log.get_text().contains("Кираса Вепря"), "The reward and automatic equip must be reported in the debug log.")
+	assert(simulation.debug_log.get_text().contains("Кираса Авангарда Железного Оплота"), "The reward and automatic equip must be reported in the debug log.")
 
 	var first_item_instance = equipped_item
 	simulation.hero_state.loop_state = HeroState.TURNING_IN_QUEST
@@ -59,7 +59,7 @@ func run_test() -> void:
 		return
 	assert(chest_icon.texture == equipped_item.definition.icon_texture, "The equipped slot must use chest2 from the item definition.")
 	assert(chest_overlay.visible and chest_overlay.texture == equipped_item.definition.hero_overlay_texture, "The portrait must show chest1 from the item definition.")
-	assert(chest_slot.tooltip_text.contains("Кираса Вепря"), "Hover tooltip must show the item name.")
+	assert(chest_slot.tooltip_text.contains("Кираса Авангарда Железного Оплота"), "Hover tooltip must show the item name.")
 	assert(chest_slot.tooltip_text.contains("Максимальное здоровье: +20"), "Hover tooltip must show MaxHP.")
 	assert(chest_slot.tooltip_text.contains("Броня: +10"), "Hover tooltip must show Armor.")
 	assert(chest_slot.tooltip_text.contains("Сила: +1"), "Hover tooltip must show Strength.")

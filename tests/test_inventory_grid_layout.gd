@@ -20,17 +20,19 @@ func run_test() -> void:
 
 	var portrait_panel := main_ui.find_child("HeroPortraitPanel", true, false) as PanelContainer
 	var armor_slots := main_ui.find_child("ArmorSlots", true, false) as VBoxContainer
-	var equipment_slots := main_ui.find_child("WeaponAndJewelrySlots", true, false) as VBoxContainer
+	var weapon_slots := main_ui.find_child("WeaponSlots", true, false) as HBoxContainer
+	var jewelry_slots := main_ui.find_child("JewelrySlots", true, false) as VBoxContainer
 	var inventory_title := main_ui.find_child("InventoryTitle", true, false) as Label
 	var inventory_slots := main_ui.find_child("InventorySlots", true, false) as GridContainer
-	if portrait_panel == null or armor_slots == null or equipment_slots == null or inventory_title == null or inventory_slots == null:
+	if portrait_panel == null or armor_slots == null or weapon_slots == null or jewelry_slots == null or inventory_title == null or inventory_slots == null:
 		fail_test("Inventory screen must contain the scaled equipment layout and inventory grid.")
 		return
 
 	assert(portrait_panel.size == Vector2(256.0, 464.0), "Hero display must be reduced by exactly 20 percent.")
 	assert(armor_slots.size == Vector2(86.0, 464.0), "Armor column must scale with the hero display using whole UI pixels.")
-	assert(equipment_slots.size == Vector2(86.0, 464.0), "Weapon and jewelry column must scale with the hero display using whole UI pixels.")
-	for slot in armor_slots.get_children() + equipment_slots.get_children():
+	assert(weapon_slots.size == Vector2(180.0, 86.0), "Two weapon slots must fit below the hero display.")
+	assert(jewelry_slots.size == Vector2(86.0, 464.0), "Jewelry column must scale with the hero display using whole UI pixels.")
+	for slot in armor_slots.get_children() + weapon_slots.get_children() + jewelry_slots.get_children():
 		assert(slot.size == Vector2(86.0, 86.0), "Equipment slots must use the nearest whole-pixel size to a 20 percent reduction.")
 
 	assert(inventory_title.text == "Инвентарь", "Inventory grid must have its title.")

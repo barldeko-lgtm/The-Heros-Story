@@ -152,15 +152,22 @@ func create_inventory_equipment_layout() -> void:
 	hero_chest_overlay.visible = false
 	portrait_panel.add_child(hero_chest_overlay)
 
-	var weapon_and_jewelry_slots := create_equipment_slot_column("WeaponAndJewelrySlots", [
+	var weapon_slots := create_equipment_slot_row("WeaponSlots", [
 		"WeaponSlot1",
 		"WeaponSlot2",
+	])
+	weapon_slots.position = Vector2(172.4, 620.0)
+	inventory_screen.add_child(weapon_slots)
+
+	var jewelry_slots := create_equipment_slot_column("JewelrySlots", [
+		"NecklaceSlot",
+		"EarringsSlot",
 		"RingSlot1",
 		"RingSlot2",
-		"NecklaceSlot",
+		"BeltSlot",
 	])
-	weapon_and_jewelry_slots.position = Vector2(406.4, 148.0)
-	inventory_screen.add_child(weapon_and_jewelry_slots)
+	jewelry_slots.position = Vector2(406.4, 148.0)
+	inventory_screen.add_child(jewelry_slots)
 
 	var inventory_title := Label.new()
 	inventory_title.name = "InventoryTitle"
@@ -244,36 +251,48 @@ func create_equipment_slot_column(column_name: String, slot_names: Array[String]
 	column.size = Vector2(86.0, 464.0)
 	column.add_theme_constant_override("separation", 8)
 	for slot_name in slot_names:
-		var slot := PanelContainer.new()
-		slot.name = slot_name
-		slot.custom_minimum_size = Vector2(86.0, 86.0)
-		var slot_style := StyleBoxFlat.new()
-		slot_style.bg_color = Color("252b34")
-		slot_style.border_color = Color("8994a2")
-		slot_style.set_border_width_all(2)
-		slot_style.set_corner_radius_all(10)
-		slot_style.shadow_color = Color(0.0, 0.0, 0.0, 0.25)
-		slot_style.shadow_size = 3
-		slot_style.shadow_offset = Vector2(0.0, 2.0)
-		slot.add_theme_stylebox_override("panel", slot_style)
-		var equipment_slot_id: String = get_equipment_slot_id(slot_name)
-		if not equipment_slot_id.is_empty():
-			var item_icon := TextureRect.new()
-			item_icon.name = get_equipment_icon_node_name(equipment_slot_id)
-			item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			item_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			item_icon.visible = false
-			slot.mouse_entered.connect(show_equipped_item_tooltip.bind(equipment_slot_id))
-			slot.mouse_exited.connect(hide_item_tooltip)
-			slot.add_child(item_icon)
-			equipment_slot_controls[equipment_slot_id] = slot
-			equipment_item_icons[equipment_slot_id] = item_icon
-			if equipment_slot_id == "chest":
-				chest_equipment_slot = slot
-				chest_equipment_icon = item_icon
-		column.add_child(slot)
+		column.add_child(create_equipment_slot(slot_name))
 	return column
+
+func create_equipment_slot_row(row_name: String, slot_names: Array[String]) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = row_name
+	row.size = Vector2(180.0, 86.0)
+	row.add_theme_constant_override("separation", 8)
+	for slot_name in slot_names:
+		row.add_child(create_equipment_slot(slot_name))
+	return row
+
+func create_equipment_slot(slot_name: String) -> PanelContainer:
+	var slot := PanelContainer.new()
+	slot.name = slot_name
+	slot.custom_minimum_size = Vector2(86.0, 86.0)
+	var slot_style := StyleBoxFlat.new()
+	slot_style.bg_color = Color("252b34")
+	slot_style.border_color = Color("8994a2")
+	slot_style.set_border_width_all(2)
+	slot_style.set_corner_radius_all(10)
+	slot_style.shadow_color = Color(0.0, 0.0, 0.0, 0.25)
+	slot_style.shadow_size = 3
+	slot_style.shadow_offset = Vector2(0.0, 2.0)
+	slot.add_theme_stylebox_override("panel", slot_style)
+	var equipment_slot_id: String = get_equipment_slot_id(slot_name)
+	if not equipment_slot_id.is_empty():
+		var item_icon := TextureRect.new()
+		item_icon.name = get_equipment_icon_node_name(equipment_slot_id)
+		item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		item_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item_icon.visible = false
+		slot.mouse_entered.connect(show_equipped_item_tooltip.bind(equipment_slot_id))
+		slot.mouse_exited.connect(hide_item_tooltip)
+		slot.add_child(item_icon)
+		equipment_slot_controls[equipment_slot_id] = slot
+		equipment_item_icons[equipment_slot_id] = item_icon
+		if equipment_slot_id == "chest":
+			chest_equipment_slot = slot
+			chest_equipment_icon = item_icon
+	return slot
 
 func get_equipment_slot_id(slot_node_name: String) -> String:
 	match slot_node_name:
@@ -282,6 +301,13 @@ func get_equipment_slot_id(slot_node_name: String) -> String:
 		"GlovesSlot": return "gloves"
 		"PantsSlot": return "pants"
 		"BootsSlot": return "boots"
+		"WeaponSlot1": return "weapon"
+		"WeaponSlot2": return "shield"
+		"NecklaceSlot": return "necklace"
+		"EarringsSlot": return "earrings"
+		"RingSlot1": return "ring_1"
+		"RingSlot2": return "ring_2"
+		"BeltSlot": return "belt"
 	return ""
 
 func get_equipment_icon_node_name(slot_id: String) -> String:
@@ -291,6 +317,13 @@ func get_equipment_icon_node_name(slot_id: String) -> String:
 		"gloves": return "GlovesEquipmentIcon"
 		"pants": return "PantsEquipmentIcon"
 		"boots": return "BootsEquipmentIcon"
+		"weapon": return "WeaponEquipmentIcon"
+		"shield": return "ShieldEquipmentIcon"
+		"necklace": return "NecklaceEquipmentIcon"
+		"earrings": return "EarringsEquipmentIcon"
+		"ring_1": return "Ring1EquipmentIcon"
+		"ring_2": return "Ring2EquipmentIcon"
+		"belt": return "BeltEquipmentIcon"
 	return "EquipmentIcon"
 
 func update_inventory_equipment_display() -> void:

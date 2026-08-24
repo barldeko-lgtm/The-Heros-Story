@@ -49,7 +49,7 @@ func run_test() -> void:
 	pants_slot.mouse_entered.emit()
 	await process_frame
 	assert(tooltip_panel.visible, "Hovering any equipped armor slot must show tooltip.")
-	assert(tooltip_label.text.contains("Поножи Вепря"), "Tooltip must show the correct equipped item name.")
+	assert(tooltip_label.text.contains("Поножи Авангарда Железного Оплота"), "Tooltip must show the correct equipped item name.")
 	assert(tooltip_label.text.contains("Качество: Редкое"), "Tooltip must show item quality.")
 	assert(tooltip_label.text.contains("Сила предмета: 10.18"), "Tooltip must show universal ItemPower.")
 
