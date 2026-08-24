@@ -394,23 +394,60 @@ Beasts and ordinary monsters do **not** drop gold merely because they were defea
 
 > **Currency should come from sources that make sense in the world rather than appearing automatically from every defeated creature.**
 
+### Current Gold Uses
+
+At the current design stage, the hero spends gold **only on equipment purchases**.
+
+There are currently no regular gold costs for repair, taverns, healing, travel, taxes, or other maintenance systems. Additional gold sinks may be introduced later only if they create useful decisions rather than existing merely to remove currency from the economy.
+
+Because equipment is currently the only meaningful expenditure, the hero does not need to preserve a mandatory abstract gold reserve. They may spend freely on worthwhile upgrades, while still rejecting negligible improvements.
+
+> **For the initial economy, gold exists to help the hero improve equipment, not to fund routine chores.**
+
 ### Item Reference Value and Resale
 
 Every equipment item has a reference shop value even if that rarity is not normally offered by ordinary shops.
 
-The exact price formula is not finalized, but the working structure is:
+The current provisional price scale is anchored by **item level and rarity**. For Normal / White equipment, the current working control points are:
 
-> **reference item value = value of the base item at its ilvl and type + value created by its generated modifier strength**
+| Item level | Approximate White reference shop value |
+| ---: | ---: |
+| 1 | ~100 gold |
+| 10 | ~500 gold |
+| 20 | ~1000 gold |
 
-Modifier Budget can therefore contribute to item value without making visible stat numbers directly interchangeable with gold.
+These are provisional economy control points, not a finalized pricing formula. The exact curve between these points, the curve above ilvl 20, and any later item-type price weighting remain tuning questions.
+
+For Uncommon / Green equipment, the current working rule is:
+
+> **Green reference value ≈ 3 × the White reference value at the same ilvl**
+
+This gives the following illustrative values:
+
+| Item level | White | Green |
+| ---: | ---: | ---: |
+| 1 | ~100 | ~300 |
+| 10 | ~500 | ~1500 |
+| 20 | ~1000 | ~3000 |
+
+The exact reference-value rules for Rare, Epic, and Legendary items are not fixed yet. Those rarities still require a reference value even when ordinary shops do not sell them, because the value is used for resale and other future economy calculations.
+
+The final pricing model may later account for the exact rolled Modifier Budget or item type if testing shows that doing so improves the economy. For now, the control points above define the starting scale without prematurely locking a detailed formula.
 
 When the hero sells equipment to an ordinary shop, the current rule is:
 
 > **Sell Price = 10% of the item’s reference shop value**
 
-This large buy/sell spread prevents found equipment from becoming almost equivalent to liquid gold and makes buying an item a meaningful expenditure rather than a nearly reversible exchange.
+At the current control points this means, for example:
 
-The exact gold-value coefficients for ilvl, item type, and Modifier Budget remain balance parameters.
+- ilvl 1 White: ~10 gold resale;
+- ilvl 10 White: ~50 gold resale;
+- ilvl 20 White: ~100 gold resale;
+- ilvl 1 Green: ~30 gold resale;
+- ilvl 10 Green: ~150 gold resale;
+- ilvl 20 Green: ~300 gold resale.
+
+This large buy/sell spread prevents found equipment from becoming almost equivalent to liquid gold and makes buying an item a meaningful expenditure rather than a nearly reversible exchange.
 
 ### Ordinary Shops Are Not the Main Source of High-Rarity Gear
 
@@ -480,12 +517,9 @@ The hero evaluates shop equipment autonomously by comparing the offered item wit
 
 A technically positive but negligible increase should not automatically trigger a purchase. For example, an improvement from approximately `500 Power` to `501 Power` should normally be treated as too small to justify meaningful expenditure.
 
-The exact purchase threshold is intentionally not fixed yet because it depends on the broader role of gold:
+Because equipment is currently the hero’s only meaningful gold expenditure, the hero may spend relatively freely on a **meaningful** upgrade when they can afford it. However, the system should still consider the size of the improvement relative to the price and the possibility that a better shop offer may appear after stock refresh.
 
-- if equipment remains the hero’s only important gold expenditure, the hero can rationally spend more freely on meaningful upgrades;
-- if other strategically important gold sinks are introduced later, the hero should preserve a reserve and weigh equipment upgrades against those competing uses.
-
-The purchase model should therefore eventually consider both **upgrade value** and **opportunity cost**, rather than simply buying every item with a positive Power difference.
+There is currently no mandatory gold-reserve rule. If other strategically important gold sinks are introduced later, purchase behaviour can be revised to account for competing uses of currency.
 
 > **The hero should value a real upgrade, but should not waste accumulated resources on changes that barely matter.**
 
