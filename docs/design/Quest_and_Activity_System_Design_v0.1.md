@@ -170,6 +170,12 @@ The event exists before the hero reaches it. It is not generated solely because 
 
 Each temporary travel event has a **central hex** and an **activation radius**.
 
+The central hex does not have to be hardcoded into the event template. A handcrafted event may instead define geographic placement criteria and let the map choose a suitable central hex using the shared tag system from `World_Map_and_Travel_System_Design_v0.1.md`.
+
+Such criteria may include a distance range from a city or other anchor plus required, forbidden, or preferred hex tags. For example, a damaged-wagon event may require or prefer `road`, while a wilderness encounter may prefer `forest` or `plains` and forbid `city` or `water`.
+
+After a suitable central hex is selected, the event uses its normal activation radius.
+
 The current basic possibilities are:
 
 - **Radius 0** — only the central hex activates the event;
@@ -355,6 +361,33 @@ After the quest is completed, failed, or disappears, the related location may di
 > **A quest should feel like something happening somewhere in the world, not like an isolated line in a list.**
 
 The exact way this connection is presented on the map belongs to `World_Map_and_Travel_System_Design_v0.1.md`.
+
+### Rule-Based Quest Placement
+
+A quest template does not need to hardcode the exact Hex ID where every generated instance must occur.
+
+Instead, the template may define **placement criteria**, while the map provides candidate hexes through the shared tag system defined in `World_Map_and_Travel_System_Design_v0.1.md`.
+
+Placement criteria may include:
+
+- minimum and maximum distance from the quest’s city or another geographic anchor;
+- required or otherwise allowed hex tags;
+- forbidden hex tags;
+- preferred hex tags used to rank otherwise valid candidates.
+
+For example, a quest may specify:
+
+- distance: **5–8 hexes from the city**;
+- suitable terrain: `forest` or `plains`;
+- forbidden: `road`, `mountain`, `water`, `city`.
+
+The generator first finds hexes in the correct distance band, removes those that violate the forbidden conditions, keeps those that satisfy the template’s eligibility rules, and then selects a target among the remaining candidates. Preferred tags may make some valid candidates more likely without being mandatory.
+
+This keeps quest content independent from one exact authored coordinate while preserving geographic logic. Moving a road, changing terrain layout, or later using a different prepared map does not require rewriting every quest template as long as suitable tagged locations still exist.
+
+The same underlying map-tag mechanism may be reused by temporary events and other location-based content; each content type owns its own placement criteria while the map owns the tags themselves.
+
+> **The quest defines what kind of place it needs; the map finds where that place exists.**
 
 ## Quests Respond to World State
 
