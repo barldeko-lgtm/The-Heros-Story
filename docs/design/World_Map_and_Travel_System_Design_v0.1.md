@@ -182,6 +182,55 @@ The exact lifecycle, respawn rules, cooldowns, and conditions for POI renewal ar
 
 > **The geography can persist while the opportunities attached to it change and return over time.**
 
+## Hidden Locations, Rumours, and Nearby Discovery
+
+Not every dungeon, POI, or temporary opportunity that physically exists on the map is automatically known to the hero.
+
+A location may exist in a specific hex while remaining **unknown** until information about it reaches the hero.
+
+For dungeons, the current working world-density assumption is approximately **two dungeon locations around each major city**. This number is provisional and the internal dungeon structure will be designed separately later.
+
+The hero has two current basic ways to learn about an unknown dungeon or another discoverable opportunity:
+
+1. **Tavern rumours** — during the hero’s regular tavern visit in a city, there is a chance to hear useful information about an unknown dungeon, event, or other opportunity in the surrounding area. The exact rumour probability and selection rules are not yet defined.
+2. **Nearby discovery while adventuring** — while the hero is travelling through the surrounding world for a quest, event, hunt, or another off-road activity, they may notice information about hidden locations in nearby hexes without entering the exact target hex.
+
+Ordinary travel **between cities along established roads does not perform these nearby-discovery checks by default**. The hero is following a known route rather than actively moving through surrounding wilderness in the same way as during an adventure.
+
+### Nearby Discovery Chances
+
+When the hero enters a new relevant hex during an adventure, the game may check unknown discoverable locations around that position.
+
+The current base chances are:
+
+| Distance from hero | Base discovery chance |
+| --- | ---: |
+| within 1 hex | **85%** |
+| 2 hexes | **30%** |
+| 3 hexes | **10%** |
+| 4+ hexes | **0%** |
+
+The hero therefore does **not** need to stand in the same hex as a dungeon or event to learn that it exists.
+
+A discovery check is tied to movement into a new hex rather than repeated continuously while the hero remains in place. A specific unknown object should not receive unlimited repeated rolls merely because the hero waits or repeatedly samples the same position.
+
+If a location is not discovered from farther away, moving closer may create a new check at the new distance.
+
+These percentages are current working values and may later be tuned through testing.
+
+### Personality Hooks for Discovery
+
+Two new provisional personality traits are reserved for later development:
+
+- **Observant** — expected to improve the hero’s ability to notice hidden locations, unusual signs, or nearby opportunities;
+- **Inattentive** — expected to reduce that ability.
+
+Their exact numerical effect, acquisition rules, interaction with other traits, and whether they form a strict opposing pair are **not yet defined**.
+
+The discovery system should allow such traits to modify the base chances above without requiring separate discovery logic for every content type.
+
+> **The world may contain opportunities before the hero knows about them; information comes through rumours or through what the hero notices while actually living and travelling in that world.**
+
 ## Partial World Variation Between Playthroughs
 
 Different heroes may begin their lives in **somewhat different states of the same broader world**.
