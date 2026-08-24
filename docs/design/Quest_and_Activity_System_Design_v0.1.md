@@ -35,24 +35,38 @@ Most of the hero’s ordinary adventuring life follows one stable RPG loop.
 The current working structure is:
 
 1. the hero arrives at a tavern or another place where jobs are available;
-2. evaluates suitable quests;
+2. evaluates suitable quests using their current real combat strength and circumstances;
 3. autonomously chooses one;
 4. prepares if necessary;
 5. sets out to complete it;
 6. travels, encounters enemies, and fulfills the objective;
-7. returns;
-8. turns in the quest and receives the reward;
-9. goes to the market;
-10. sells trophies and unwanted items;
-11. evaluates whether anything is worth buying or replacing in their equipment;
-12. returns to looking for a suitable activity;
-13. the loop repeats.
+7. equipment and trophies found during the active quest are collected into the hero’s backpack rather than being equipped immediately during the adventure;
+8. after the quest objective is completed, but before returning to the city, the hero reviews the collected equipment, compares it with currently equipped items, equips worthwhile upgrades, and recalculates resolved CombatStats and Power;
+9. the hero returns to the city;
+10. turns in the quest and receives its completion reward;
+11. goes to the market;
+12. sells all trophies and all equipment that was not equipped during the post-quest loot review; at the current design stage, the hero does not retain spare or situational equipment for later use;
+13. evaluates whether anything in the current shop stock is worth buying and, if a purchase changes equipment, recalculates CombatStats and Power again;
+14. with the updated equipment, stats, and real power, returns to evaluating the available quests and activities;
+15. the loop repeats.
 
 The player should not have to manually service every step of this process.
 
 > **This is the hero’s basic rhythm of adventuring life, and the hero should be able to sustain it autonomously.**
 
 The systems responsible for travel, combat, equipment, economy, personality, world state, and divine influence may modify individual stages of this loop without taking ownership of the loop itself.
+
+### Equipment Is Reviewed at a Natural Adventure Break
+
+Ordinary equipment drops do not cause the hero to stop in the middle of an active quest and repeatedly change gear after every enemy.
+
+During the quest, dropped equipment is collected. Once the objective has been completed, the hero has a natural decision point before the return journey: they review the new items, equip any worthwhile improvements, and continue with the resulting updated combat state.
+
+This means the hero may already benefit from newly found equipment during the journey back to the city or in any incidental encounter after the quest objective, while avoiding constant mid-combat or mid-objective gear switching.
+
+At the current design stage there is no routine policy of keeping alternative equipment sets or situational spare items. If a dropped item is not chosen for equipment during this review, it remains in the backpack only until the hero reaches the market, where it is sold.
+
+> **Loot is collected during the adventure, evaluated after the objective, and economically resolved in town.**
 
 ## The Base Loop Should Not Feel Routine
 
@@ -65,10 +79,12 @@ The underlying pattern may remain familiar:
 - set out;
 - encounter danger;
 - complete the objective;
+- review collected loot and update equipment;
 - return;
 - receive the reward;
-- deal with loot and equipment;
-- decide what to do next.
+- sell trophies and unused equipment;
+- inspect possible purchases;
+- decide what to do next using the hero’s updated strength.
 
 However, the player should not constantly experience:
 
