@@ -205,23 +205,73 @@ This preserves a clean distinction between:
 - the hero’s own long-term development through primary attributes;
 - equipment’s effect on the hero’s resolved combat capabilities through secondary stats.
 
-For example, generated modifiers may later include valid secondary stats such as:
+An item’s inherent base stat is allowed to appear again as one of its random modifiers. For example, armor has inherent Armor but may also roll an additional Armor modifier, and a weapon may roll additional Damage or its appropriate speed modifier.
 
-- Health;
-- Armor;
-- Dodge;
+However, **the same random modifier cannot appear more than once on the same item**. Base properties do not count as duplicates for this rule.
+
+### Current Modifier Pools by Equipment Group
+
+The following pools are the current working set. They are intentionally compact and may expand later if additional secondary combat stats gain a clear mechanical purpose.
+
+#### Armor
+
+Normal armor has only its inherent base Armor. Random armor modifiers are selected from:
+
+- **Health**;
+- **Armor**;
+- **Dodge**.
+
+Starting at **Epic** rarity, armor may additionally roll **one elemental resistance** chosen from:
+
 - Fire Resistance;
 - Cold Resistance;
-- Lightning Resistance;
-- Block where the item type supports it;
-- Damage;
-- Accuracy;
-- Critical Chance;
-- Critical Damage;
-- Attack Speed;
-- Cast Speed where appropriate.
+- Lightning Resistance.
 
-The exact modifier pool available to each item type is still to be defined.
+An armor item may never contain more than **one elemental-resistance random modifier**, even at Legendary rarity.
+
+Under the current pool and no-duplicate rule, Legendary armor necessarily uses Health, Armor, Dodge, and exactly one elemental resistance. This consequence may change later if the armor modifier pool expands.
+
+#### Weapons
+
+Weapon random modifiers are selected from:
+
+- **Damage**;
+- **Accuracy**;
+- **Critical Chance**;
+- **Critical Damage**;
+- **Attack Speed** or **Cast Speed**, depending on the weapon family and its combat role.
+
+Attack Speed and Cast Speed are not interchangeable on every weapon. The appropriate speed stat is determined by the weapon’s intended combat logic.
+
+#### Jewelry
+
+Ring and necklace random modifiers are selected from:
+
+- **Fire Resistance**;
+- **Cold Resistance**;
+- **Lightning Resistance**;
+- **Health**;
+- **Dodge**;
+- **Accuracy**;
+- **Critical Chance**;
+- **Critical Damage**.
+
+Jewelry therefore has the broadest current modifier pool and can bridge offensive, defensive, and situational elemental needs.
+
+#### Off-Hand Items
+
+Dedicated Off Hand items use the current general pool:
+
+- **Accuracy**;
+- **Critical Chance**;
+- **Critical Damage**;
+- one **item-type-specific Off Hand stat**, where such a stat has been defined.
+
+For a shield, the currently defined item-type-specific stat is **Block**.
+
+Other dedicated Off Hand types may receive their own specific stat later when their class mechanics are defined. A second one-handed weapon used in the Off Hand remains a weapon and follows the modifier rules of its weapon family rather than the dedicated Off Hand-item pool.
+
+These pools are working design rules, not a claim that the final game will never gain additional secondary stats.
 
 ### Stat Cost
 
@@ -259,16 +309,9 @@ The random part of item generation therefore comes from:
 
 Generation should not be completely unrestricted. Each item type has its own pool of allowed secondary combat stats so that items remain coherent with their function.
 
-For example:
+The same random modifier cannot be selected twice for one item. Higher-rarity items therefore draw multiple different properties from their valid pool rather than stacking duplicate modifier entries.
 
-- armor may favor defensive secondary stats;
-- physical weapons may favor offensive secondary stats appropriate to their weapon family;
-- magical weapons may favor magical offensive secondary stats and casting-related properties;
-- jewelry may use a broader pool of specialized secondary bonuses.
-
-Rare unusual combinations are allowed, but an item should not receive a nonsensical set of properties that completely contradicts its intended nature.
-
-The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. The exact modifier pools, stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
+The current secondary combat stats are defined in `Combat_and_Progression_System_Design_v0.1.md`. Stat costs, budget ranges, distribution bounds, tiers, and numerical roll ranges are not defined yet.
 
 > **Randomness should create item variety, not meaningless chaos.**
 
@@ -319,7 +362,7 @@ Their exact combat interaction is owned by `Combat_and_Progression_System_Design
 
 The item system should therefore evaluate Accuracy primarily as a way to improve performance against targets that possess Dodge, while Dodge provides a defensive chance to avoid eligible attacks.
 
-The exact item-type pools, modifier tiers, and numerical ranges for Accuracy and Dodge will be defined together with the broader modifier system.
+The exact modifier tiers and numerical ranges for Accuracy and Dodge will be defined together with the broader modifier balance.
 
 ## Item Power Depends on Its Source, Not the Hero’s Level
 
