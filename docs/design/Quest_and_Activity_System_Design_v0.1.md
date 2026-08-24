@@ -34,7 +34,7 @@ Most of the hero’s ordinary adventuring life follows one stable RPG loop.
 
 The current working structure is:
 
-1. the hero arrives at a tavern or another place where jobs are available;
+1. while in the city, the hero reviews the currently known quests and ordinary activities available there;
 2. evaluates suitable quests using their current real combat strength and circumstances;
 3. autonomously chooses one;
 4. prepares if necessary;
@@ -47,8 +47,11 @@ The current working structure is:
 11. goes to the market;
 12. sells all trophies and all equipment that was not equipped during the post-quest loot review; at the current design stage, the hero does not retain spare or situational equipment for later use;
 13. evaluates whether anything in the current shop stock is worth buying and, if a purchase changes equipment, recalculates CombatStats and Power again;
-14. with the updated equipment, stats, and real power, returns to evaluating the available quests and activities;
-15. the loop repeats.
+14. makes a routine visit to the tavern, where they may hear rumours or other useful information about currently unknown dungeons, events, or opportunities in the surrounding world;
+15. with updated equipment, stats, real power, and any newly learned information, evaluates the currently known quests and activities again;
+16. the loop repeats.
+
+The tavern-information step is part of the hero’s ordinary city routine, but it does not guarantee that new information appears on every visit. Exact rumour probabilities, discovery ranges, and map-reveal rules belong to `World_Map_and_Travel_System_Design_v0.1.md`.
 
 The player should not have to manually service every step of this process.
 
@@ -84,7 +87,8 @@ The underlying pattern may remain familiar:
 - receive the reward;
 - sell trophies and unused equipment;
 - inspect possible purchases;
-- decide what to do next using the hero’s updated strength.
+- visit the tavern and possibly hear new rumours or information;
+- decide what to do next using the hero’s updated strength and knowledge.
 
 However, the player should not constantly experience:
 
