@@ -154,7 +154,7 @@ Empty diary store; diary generation is not implemented yet.
 ## UI
 
 ### `scripts/ui/main_ui.gd`
-Current developer UI.
+Top-level developer UI coordinator and screen-navigation owner.
 
 Displays:
 - persistent top navigation;
@@ -163,10 +163,21 @@ Displays:
 - log/diary center;
 - active opponent right;
 - current death-respawn countdown through the hero state label;
-- fixed bottom-right cumulative combat-statistics panel;
-- an Inventory screen with Back and close-button navigation, a scaled hero portrait, five left-side armor slots, two weapon slots below the portrait, a right-side necklace/earrings/two-rings/belt column, and a titled `6 × 6` inventory grid.
+- fixed bottom-right cumulative combat-statistics panel.
 
-The main developer controls and the Inventory shell are separate UI layers under the same `MainUI`. Switching between them changes visibility only; the existing `Simulation` instance continues advancing.
+`MainUI` instantiates the dedicated Inventory, God, and Narrative components and passes each the existing `Simulation`. It refreshes high-level screen state and owns Inventory Back/close navigation. Switching screens changes visibility only; the same `Simulation` instance continues advancing.
+
+### `scenes/ui/screens/inventory_screen.tscn`
+Dedicated Inventory screen root instantiated by `MainUI`.
+
+### `scripts/ui/screens/inventory_screen.gd`
+Owns Inventory presentation: the scaled hero portrait and armor overlays, equipment slots, the `6 × 6` retained-item grid, quality outlines, and item tooltips. It reads equipment/inventory state from the supplied `Simulation` but does not grant, equip, replace, or drop items.
+
+### `scenes/ui/components/god_panel.tscn` / `scripts/ui/components/god_panel.gd`
+Owns the God panel presentation and button commands: energy, cooldowns, healing, combat blessing, and instant resurrection. It sends approved requests through the supplied `Simulation` and reports hero-display changes back to `MainUI` through a signal.
+
+### `scenes/ui/components/narrative_panel.tscn` / `scripts/ui/components/narrative_panel.gd`
+Owns the current Log/Diary tab container, subscribes to `DebugLog` and world-tick updates, and keeps wrapped log output scrolled to the newest entry. It displays narrative state but does not create gameplay outcomes.
 
 `assets/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. All five armor slots plus the main-hand and off-hand slots display equipped state. The right jewelry column exposes stable empty slots for necklace, earrings, two separate rings, and belt. Helmet, gloves, pants, and boots use supplied `300 × 300` RGBA PNG icons under `assets/items/icons/ironward_vanguard/`; chest, sword, and shield retain their current icon assets. Helmet, chest, gloves, pants, and boots each provide a dedicated `441 × 800` paper-doll overlay under `assets/items/overlays/ironward_vanguard/`; the UI layers equipped armor over the base hero in stable back-to-front order. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
 

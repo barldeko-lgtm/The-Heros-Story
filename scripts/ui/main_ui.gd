@@ -2,10 +2,9 @@ extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
-const GodStateScript = preload("res://scripts/god/god_state.gd")
-const HeroReferenceTexture = preload("res://assets/hero/hero_reference.png")
-const ItemQualityOutlineShader = preload("res://assets/shaders/item_quality_outline.gdshader")
-const HERO_OVERLAY_DRAW_ORDER: Array[String] = ["pants", "boots", "chest", "gloves", "helmet"]
+const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.tscn")
+const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
+const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation = SimulationScript.new(simulation_seed, null)
 var time_progress_bar: ProgressBar
@@ -13,35 +12,17 @@ var tick_counter_label: Label
 var hero_details_label: Label
 var opponent_details_label: Label
 var combat_statistics_label: Label
-var log_text_edit: TextEdit
 var speed_buttons: Dictionary = {}
 var god_panel: PanelContainer
-var god_energy_bar: ProgressBar
-var god_energy_label: Label
-var god_status_label: Label
-var divine_healing_button: Button
-var combat_buff_button: Button
-var instant_resurrection_button: Button
+var narrative_panel: TabContainer
 var main_screen: Control
 var inventory_screen: Control
 var inventory_button: Button
 var inventory_close_button: Button
-var hero_chest_overlay: TextureRect
-var hero_equipment_overlays: Dictionary = {}
-var chest_equipment_slot: PanelContainer
-var chest_equipment_icon: TextureRect
-var item_tooltip_panel: PanelContainer
-var item_tooltip_label: Label
-var inventory_slot_controls: Array[PanelContainer] = []
-var inventory_item_icons: Array[TextureRect] = []
-var equipment_slot_controls: Dictionary = {}
-var equipment_item_icons: Dictionary = {}
-var quality_outline_materials: Dictionary = {}
 
 func _ready() -> void:
 	create_background()
 	create_screen_layers()
-	create_inventory_equipment_layout()
 	create_top_menu()
 	create_inventory_close_button()
 	create_speed_controls()
@@ -51,13 +32,11 @@ func _ready() -> void:
 	create_god_panel()
 	create_tick_indicator()
 	create_narrative_panel()
-	simulation.world_clock.tick_completed.connect(on_world_tick_completed)
-	simulation.debug_log.text_changed.connect(on_debug_log_text_changed)
 	update_hero_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
-	update_god_panel()
-	update_inventory_equipment_display()
+	god_panel.refresh()
+	inventory_screen.refresh()
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
@@ -66,28 +45,8 @@ func _process(delta: float) -> void:
 	update_hero_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
-	update_god_panel()
-	update_inventory_equipment_display()
-
-func on_world_tick_completed(_completed_tick: int) -> void:
-	update_debug_log(simulation.debug_log.get_text())
-
-func on_debug_log_text_changed(log_text: String) -> void:
-	update_debug_log(log_text)
-
-func update_debug_log(log_text: String) -> void:
-	log_text_edit.text = log_text
-	call_deferred("scroll_debug_log_to_bottom")
-
-func scroll_debug_log_to_bottom() -> void:
-	if log_text_edit == null or not is_inside_tree():
-		return
-	await get_tree().process_frame
-	if not is_instance_valid(log_text_edit):
-		return
-	var scroll_bar: VScrollBar = log_text_edit.get_v_scroll_bar()
-	scroll_bar.value = scroll_bar.max_value
-
+	god_panel.refresh()
+	inventory_screen.refresh()
 func create_background() -> void:
 	var background := ColorRect.new()
 	background.color = Color("d9dde2")
@@ -100,9 +59,8 @@ func create_screen_layers() -> void:
 	main_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(main_screen)
 
-	inventory_screen = Control.new()
-	inventory_screen.name = "InventoryScreen"
-	inventory_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	inventory_screen = InventoryScreenScene.instantiate()
+	inventory_screen.setup(simulation)
 	inventory_screen.visible = false
 	add_child(inventory_screen)
 
@@ -111,322 +69,6 @@ func add_to_main_screen(control: Control) -> void:
 		main_screen.add_child(control)
 	else:
 		add_child(control)
-
-func create_inventory_equipment_layout() -> void:
-	var armor_slots := create_equipment_slot_column("ArmorSlots", [
-		"HelmetSlot",
-		"ChestSlot",
-		"GlovesSlot",
-		"PantsSlot",
-		"BootsSlot",
-	])
-	armor_slots.position = Vector2(32.0, 148.0)
-	inventory_screen.add_child(armor_slots)
-
-	var portrait_panel := PanelContainer.new()
-	portrait_panel.name = "HeroPortraitPanel"
-	portrait_panel.position = Vector2(134.4, 148.0)
-	portrait_panel.size = Vector2(256.0, 464.0)
-	var portrait_panel_style := StyleBoxFlat.new()
-	portrait_panel_style.bg_color = Color("171b21")
-	portrait_panel_style.border_color = Color("7b8694")
-	portrait_panel_style.set_border_width_all(2)
-	portrait_panel_style.set_corner_radius_all(12)
-	portrait_panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.30)
-	portrait_panel_style.shadow_size = 6
-	portrait_panel_style.shadow_offset = Vector2(0.0, 3.0)
-	portrait_panel.add_theme_stylebox_override("panel", portrait_panel_style)
-	inventory_screen.add_child(portrait_panel)
-
-	var portrait := TextureRect.new()
-	portrait.name = "HeroPortrait"
-	portrait.texture = HeroReferenceTexture
-	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait_panel.add_child(portrait)
-
-	for equipment_slot_id in HERO_OVERLAY_DRAW_ORDER:
-		var hero_overlay := TextureRect.new()
-		hero_overlay.name = get_hero_overlay_node_name(equipment_slot_id)
-		hero_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		hero_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		hero_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		hero_overlay.visible = false
-		portrait_panel.add_child(hero_overlay)
-		hero_equipment_overlays[equipment_slot_id] = hero_overlay
-	hero_chest_overlay = hero_equipment_overlays["chest"]
-
-	var weapon_slots := create_equipment_slot_row("WeaponSlots", [
-		"WeaponSlot1",
-		"WeaponSlot2",
-	])
-	weapon_slots.position = Vector2(172.4, 620.0)
-	inventory_screen.add_child(weapon_slots)
-
-	var jewelry_slots := create_equipment_slot_column("JewelrySlots", [
-		"NecklaceSlot",
-		"EarringsSlot",
-		"RingSlot1",
-		"RingSlot2",
-		"BeltSlot",
-	])
-	jewelry_slots.position = Vector2(406.4, 148.0)
-	inventory_screen.add_child(jewelry_slots)
-
-	var inventory_title := Label.new()
-	inventory_title.name = "InventoryTitle"
-	inventory_title.text = "Инвентарь"
-	inventory_title.position = Vector2(680.0, 88.0)
-	inventory_title.size = Vector2(532.0, 36.0)
-	inventory_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	inventory_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	inventory_title.add_theme_font_size_override("font_size", 24)
-	inventory_title.add_theme_color_override("font_color", Color("242a31"))
-	inventory_screen.add_child(inventory_title)
-
-	var inventory_slots := GridContainer.new()
-	inventory_slots.name = "InventorySlots"
-	inventory_slots.columns = 6
-	inventory_slots.position = Vector2(680.0, 138.0)
-	inventory_slots.size = Vector2(532.0, 532.0)
-	inventory_slots.add_theme_constant_override("h_separation", 8)
-	inventory_slots.add_theme_constant_override("v_separation", 8)
-	for slot_index in 36:
-		var slot := PanelContainer.new()
-		slot.name = "InventorySlot%02d" % (slot_index + 1)
-		slot.custom_minimum_size = Vector2(82.0, 82.0)
-		var slot_style := StyleBoxFlat.new()
-		slot_style.bg_color = Color("252b34")
-		slot_style.border_color = Color("8994a2")
-		slot_style.set_border_width_all(2)
-		slot_style.set_corner_radius_all(9)
-		slot_style.shadow_color = Color(0.0, 0.0, 0.0, 0.22)
-		slot_style.shadow_size = 3
-		slot_style.shadow_offset = Vector2(0.0, 2.0)
-		slot.add_theme_stylebox_override("panel", slot_style)
-		slot.mouse_entered.connect(show_inventory_item_tooltip.bind(slot_index))
-		slot.mouse_exited.connect(hide_item_tooltip)
-		var item_icon := TextureRect.new()
-		item_icon.name = "InventoryItemIcon%02d" % (slot_index + 1)
-		item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		item_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		item_icon.visible = false
-		slot.add_child(item_icon)
-		inventory_slots.add_child(slot)
-		inventory_slot_controls.append(slot)
-		inventory_item_icons.append(item_icon)
-	inventory_screen.add_child(inventory_slots)
-	create_inventory_item_tooltip()
-
-func create_inventory_item_tooltip() -> void:
-	item_tooltip_panel = PanelContainer.new()
-	item_tooltip_panel.name = "ItemTooltipPanel"
-	item_tooltip_panel.custom_minimum_size = Vector2(300.0, 180.0)
-	item_tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	item_tooltip_panel.z_index = 100
-	var tooltip_style := StyleBoxFlat.new()
-	tooltip_style.bg_color = Color("171b21")
-	tooltip_style.border_color = Color("aeb8c7")
-	tooltip_style.set_border_width_all(2)
-	tooltip_style.set_corner_radius_all(9)
-	tooltip_style.shadow_color = Color(0.0, 0.0, 0.0, 0.4)
-	tooltip_style.shadow_size = 5
-	tooltip_style.shadow_offset = Vector2(0.0, 3.0)
-	tooltip_style.content_margin_left = 14.0
-	tooltip_style.content_margin_right = 14.0
-	tooltip_style.content_margin_top = 12.0
-	tooltip_style.content_margin_bottom = 12.0
-	item_tooltip_panel.add_theme_stylebox_override("panel", tooltip_style)
-	inventory_screen.add_child(item_tooltip_panel)
-
-	item_tooltip_label = Label.new()
-	item_tooltip_label.name = "ItemTooltipLabel"
-	item_tooltip_label.custom_minimum_size = Vector2(272.0, 0.0)
-	item_tooltip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	item_tooltip_label.add_theme_font_size_override("font_size", 16)
-	item_tooltip_label.add_theme_color_override("font_color", Color("edf0f4"))
-	item_tooltip_panel.add_child(item_tooltip_label)
-	item_tooltip_panel.visible = false
-
-func create_equipment_slot_column(column_name: String, slot_names: Array[String]) -> VBoxContainer:
-	var column := VBoxContainer.new()
-	column.name = column_name
-	column.size = Vector2(86.0, 464.0)
-	column.add_theme_constant_override("separation", 8)
-	for slot_name in slot_names:
-		column.add_child(create_equipment_slot(slot_name))
-	return column
-
-func create_equipment_slot_row(row_name: String, slot_names: Array[String]) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.name = row_name
-	row.size = Vector2(180.0, 86.0)
-	row.add_theme_constant_override("separation", 8)
-	for slot_name in slot_names:
-		row.add_child(create_equipment_slot(slot_name))
-	return row
-
-func create_equipment_slot(slot_name: String) -> PanelContainer:
-	var slot := PanelContainer.new()
-	slot.name = slot_name
-	slot.custom_minimum_size = Vector2(86.0, 86.0)
-	var slot_style := StyleBoxFlat.new()
-	slot_style.bg_color = Color("252b34")
-	slot_style.border_color = Color("8994a2")
-	slot_style.set_border_width_all(2)
-	slot_style.set_corner_radius_all(10)
-	slot_style.shadow_color = Color(0.0, 0.0, 0.0, 0.25)
-	slot_style.shadow_size = 3
-	slot_style.shadow_offset = Vector2(0.0, 2.0)
-	slot.add_theme_stylebox_override("panel", slot_style)
-	var equipment_slot_id: String = get_equipment_slot_id(slot_name)
-	if not equipment_slot_id.is_empty():
-		var item_icon := TextureRect.new()
-		item_icon.name = get_equipment_icon_node_name(equipment_slot_id)
-		item_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		item_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		item_icon.visible = false
-		slot.mouse_entered.connect(show_equipped_item_tooltip.bind(equipment_slot_id))
-		slot.mouse_exited.connect(hide_item_tooltip)
-		slot.add_child(item_icon)
-		equipment_slot_controls[equipment_slot_id] = slot
-		equipment_item_icons[equipment_slot_id] = item_icon
-		if equipment_slot_id == "chest":
-			chest_equipment_slot = slot
-			chest_equipment_icon = item_icon
-	return slot
-
-func get_equipment_slot_id(slot_node_name: String) -> String:
-	match slot_node_name:
-		"HelmetSlot": return "helmet"
-		"ChestSlot": return "chest"
-		"GlovesSlot": return "gloves"
-		"PantsSlot": return "pants"
-		"BootsSlot": return "boots"
-		"WeaponSlot1": return "weapon"
-		"WeaponSlot2": return "shield"
-		"NecklaceSlot": return "necklace"
-		"EarringsSlot": return "earrings"
-		"RingSlot1": return "ring_1"
-		"RingSlot2": return "ring_2"
-		"BeltSlot": return "belt"
-	return ""
-
-func get_equipment_icon_node_name(slot_id: String) -> String:
-	match slot_id:
-		"helmet": return "HelmetEquipmentIcon"
-		"chest": return "ChestEquipmentIcon"
-		"gloves": return "GlovesEquipmentIcon"
-		"pants": return "PantsEquipmentIcon"
-		"boots": return "BootsEquipmentIcon"
-		"weapon": return "WeaponEquipmentIcon"
-		"shield": return "ShieldEquipmentIcon"
-		"necklace": return "NecklaceEquipmentIcon"
-		"earrings": return "EarringsEquipmentIcon"
-		"ring_1": return "Ring1EquipmentIcon"
-		"ring_2": return "Ring2EquipmentIcon"
-		"belt": return "BeltEquipmentIcon"
-	return "EquipmentIcon"
-
-func get_hero_overlay_node_name(slot_id: String) -> String:
-	match slot_id:
-		"helmet": return "HeroHelmetOverlay"
-		"chest": return "HeroChestOverlay"
-		"gloves": return "HeroGlovesOverlay"
-		"pants": return "HeroPantsOverlay"
-		"boots": return "HeroBootsOverlay"
-	return "HeroEquipmentOverlay"
-
-func update_inventory_equipment_display() -> void:
-	if equipment_item_icons.is_empty() or hero_equipment_overlays.is_empty():
-		return
-	for equipment_slot_id in equipment_item_icons:
-		var equipment_icon: TextureRect = equipment_item_icons[equipment_slot_id]
-		var equipped_item = simulation.hero_state.equipment.get_item(equipment_slot_id)
-		if equipped_item == null:
-			equipment_icon.texture = null
-			equipment_icon.material = null
-			equipment_icon.visible = false
-			continue
-		var equipment_definition = equipped_item.definition
-		equipment_icon.texture = equipment_definition.icon_texture
-		equipment_icon.material = get_quality_outline_material(equipment_definition.quality)
-		equipment_icon.visible = true
-
-	for equipment_slot_id in hero_equipment_overlays:
-		var hero_overlay: TextureRect = hero_equipment_overlays[equipment_slot_id]
-		var equipped_item = simulation.hero_state.equipment.get_item(equipment_slot_id)
-		if equipped_item == null or equipped_item.definition.hero_overlay_texture == null:
-			hero_overlay.texture = null
-			hero_overlay.visible = false
-			continue
-		hero_overlay.texture = equipped_item.definition.hero_overlay_texture
-		hero_overlay.visible = true
-
-	var inventory_items: Array = simulation.hero_state.inventory.get_items()
-	for slot_index in inventory_item_icons.size():
-		var item_icon: TextureRect = inventory_item_icons[slot_index]
-		if slot_index >= inventory_items.size():
-			item_icon.texture = null
-			item_icon.material = null
-			item_icon.visible = false
-			continue
-		var inventory_definition = inventory_items[slot_index].definition
-		item_icon.texture = inventory_definition.icon_texture
-		item_icon.material = get_quality_outline_material(inventory_definition.quality)
-		item_icon.visible = true
-
-func get_quality_outline_material(quality: int):
-	if quality <= 0:
-		return null
-	if quality_outline_materials.has(quality):
-		return quality_outline_materials[quality]
-	var material := ShaderMaterial.new()
-	material.shader = ItemQualityOutlineShader
-	material.set_shader_parameter("outline_color", Color("55c96f") if quality == 1 else Color("4f8dff"))
-	material.set_shader_parameter("source_pixels_per_screen_pixel", 3.6)
-	material.set_shader_parameter("middle_alpha", 0.55)
-	material.set_shader_parameter("outer_alpha", 0.25)
-	quality_outline_materials[quality] = material
-	return material
-
-func show_equipped_item_tooltip(slot_id: String) -> void:
-	show_item_tooltip(simulation.hero_state.equipment.get_item(slot_id))
-
-func show_chest_item_tooltip() -> void:
-	show_equipped_item_tooltip("chest")
-
-func show_inventory_item_tooltip(slot_index: int) -> void:
-	var inventory_items: Array = simulation.hero_state.inventory.get_items()
-	if slot_index < 0 or slot_index >= inventory_items.size():
-		hide_item_tooltip()
-		return
-	show_item_tooltip(inventory_items[slot_index])
-
-func show_item_tooltip(item_instance) -> void:
-	if item_instance == null or item_tooltip_panel == null:
-		return
-	item_tooltip_label.text = item_instance.definition.get_tooltip_text()
-	var tooltip_size: Vector2 = item_tooltip_panel.get_combined_minimum_size()
-	item_tooltip_panel.size = tooltip_size
-	var screen_size: Vector2 = get_viewport_rect().size
-	var mouse_position: Vector2 = inventory_screen.get_local_mouse_position()
-	var desired_position: Vector2 = mouse_position + Vector2(16.0, 16.0)
-	if desired_position.x + tooltip_size.x > screen_size.x - 12.0:
-		desired_position.x = mouse_position.x - tooltip_size.x - 16.0
-	if desired_position.y + tooltip_size.y > screen_size.y - 12.0:
-		desired_position.y = mouse_position.y - tooltip_size.y - 16.0
-	desired_position.x = clampf(desired_position.x, 12.0, screen_size.x - tooltip_size.x - 12.0)
-	desired_position.y = clampf(desired_position.y, 76.0, screen_size.y - tooltip_size.y - 12.0)
-	item_tooltip_panel.position = desired_position
-	item_tooltip_panel.visible = true
-
-func hide_item_tooltip() -> void:
-	if item_tooltip_panel != null:
-		item_tooltip_panel.visible = false
 
 func apply_panel_style(panel: PanelContainer) -> void:
 	var panel_style := StyleBoxFlat.new()
@@ -672,109 +314,12 @@ func get_state_display_name(loop_state: String) -> String:
 	return loop_state
 
 func create_god_panel() -> void:
-	god_panel = PanelContainer.new()
-	apply_panel_style(god_panel)
-	god_panel.name = "GodPanel"
-	god_panel.position = Vector2(380.0, 80.0)
-	god_panel.size = Vector2(520.0, 235.0)
-	add_to_main_screen(god_panel)
-
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 7)
-	god_panel.add_child(content)
-
-	var title := Label.new()
-	title.text = "Влияние божества"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 20)
-	content.add_child(title)
-
-	god_energy_label = Label.new()
-	god_energy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content.add_child(god_energy_label)
-
-	god_energy_bar = ProgressBar.new()
-	god_energy_bar.name = "GodEnergyBar"
-	god_energy_bar.max_value = GodStateScript.MAX_ENERGY
-	god_energy_bar.show_percentage = false
-	god_energy_bar.custom_minimum_size = Vector2(480.0, 28.0)
-	apply_progress_bar_style(god_energy_bar, Color("8fa8c1"))
-	content.add_child(god_energy_bar)
-
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 6)
-	content.add_child(buttons)
-
-	divine_healing_button = Button.new()
-	divine_healing_button.name = "DivineHealingButton"
-	divine_healing_button.custom_minimum_size = Vector2(156.0, 58.0)
-	apply_secondary_button_style(divine_healing_button)
-	divine_healing_button.pressed.connect(on_divine_healing_pressed)
-	buttons.add_child(divine_healing_button)
-
-	combat_buff_button = Button.new()
-	combat_buff_button.name = "CombatBuffButton"
-	combat_buff_button.custom_minimum_size = Vector2(156.0, 58.0)
-	apply_secondary_button_style(combat_buff_button)
-	combat_buff_button.pressed.connect(on_combat_buff_pressed)
-	buttons.add_child(combat_buff_button)
-
-	instant_resurrection_button = Button.new()
-	instant_resurrection_button.name = "InstantResurrectionButton"
-	instant_resurrection_button.custom_minimum_size = Vector2(156.0, 58.0)
-	apply_secondary_button_style(instant_resurrection_button)
-	instant_resurrection_button.pressed.connect(on_instant_resurrection_pressed)
-	buttons.add_child(instant_resurrection_button)
-
-	god_status_label = Label.new()
-	god_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	god_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(god_status_label)
-
-func update_god_panel() -> void:
-	if god_panel == null:
+	if god_panel != null:
 		return
-	var god = simulation.god_state
-	god_energy_bar.value = god.energy
-	god_energy_label.text = "Энергия: %.1f / %.0f" % [god.energy, GodStateScript.MAX_ENERGY]
-
-	var hero_is_dead: bool = simulation.hero_state.loop_state == HeroState.DEAD_RESPAWNING
-	var hero_is_full_hp: bool = simulation.get_current_hero_hp() >= simulation.combat_stats.max_hp
-	divine_healing_button.disabled = hero_is_dead or hero_is_full_hp or god.healing_cooldown_ticks > 0 or god.energy < GodStateScript.HEALING_COST
-	divine_healing_button.text = "Лечение\n10 энергии"
-	if god.healing_cooldown_ticks > 0:
-		divine_healing_button.text = "Лечение\nКД: %d" % god.healing_cooldown_ticks
-
-	var combat_buff_fights_remaining: int = simulation.get_combat_buff_fights_remaining()
-	combat_buff_button.disabled = combat_buff_fights_remaining > 0 or god.combat_buff_cooldown_ticks > 0 or god.energy < GodStateScript.COMBAT_BUFF_COST
-	combat_buff_button.text = "Благословение\n10 энергии"
-	if combat_buff_fights_remaining > 0:
-		combat_buff_button.text = "Благословение\nБоёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
-	elif god.combat_buff_cooldown_ticks > 0:
-		combat_buff_button.text = "Благословение\nКД: %d" % god.combat_buff_cooldown_ticks
-
-	var resurrection_cost: float = god.get_resurrection_cost(simulation.quest_runner.respawn_ticks_remaining)
-	instant_resurrection_button.disabled = not hero_is_dead or simulation.quest_runner.respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
-	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
-
-	if combat_buff_fights_remaining > 0:
-		god_status_label.text = "Активно: +3 атаки | Боёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
-	else:
-		god_status_label.text = "Лечение разрешено и во время боя."
-
-func on_divine_healing_pressed() -> void:
-	simulation.use_divine_healing()
-	update_hero_panel()
-	update_god_panel()
-
-func on_combat_buff_pressed() -> void:
-	simulation.use_combat_buff()
-	update_god_panel()
-
-func on_instant_resurrection_pressed() -> void:
-	simulation.use_instant_resurrection()
-	update_hero_panel()
-	update_god_panel()
+	god_panel = GodPanelScene.instantiate()
+	god_panel.setup(simulation)
+	god_panel.hero_state_changed.connect(update_hero_panel)
+	add_to_main_screen(god_panel)
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
@@ -799,48 +344,8 @@ func create_tick_indicator() -> void:
 	indicator.add_child(tick_counter_label)
 
 func create_narrative_panel() -> void:
-	var tabs := TabContainer.new()
-	tabs.position = Vector2(380.0, 400.0)
-	tabs.size = Vector2(520.0, 250.0)
-	var tabs_panel_style := StyleBoxFlat.new()
-	tabs_panel_style.bg_color = Color("232830")
-	tabs_panel_style.border_color = Color("7b8694")
-	tabs_panel_style.set_border_width_all(2)
-	tabs_panel_style.set_corner_radius_all(10)
-	tabs.add_theme_stylebox_override("panel", tabs_panel_style)
-	var tab_bar := tabs.get_tab_bar()
-	tab_bar.add_theme_font_size_override("font_size", 16)
-	tab_bar.add_theme_color_override("font_selected_color", Color.WHITE)
-	tab_bar.add_theme_color_override("font_unselected_color", Color("aeb5bf"))
-	tab_bar.add_theme_stylebox_override("tab_selected", create_menu_button_style(Color("3d4653"), Color("bdc6d1"), 1))
-	tab_bar.add_theme_stylebox_override("tab_unselected", create_menu_button_style(Color("272d35"), Color("626d7b"), 0))
-	tab_bar.add_theme_stylebox_override("tab_hovered", create_menu_button_style(Color("343d49"), Color("929dab"), 1))
-	add_to_main_screen(tabs)
-
-	log_text_edit = create_read_only_text_edit()
-	log_text_edit.name = "Лог"
-	tabs.add_child(log_text_edit)
-
-	var diary_text_edit := create_read_only_text_edit()
-	diary_text_edit.name = "Дневник"
-	diary_text_edit.placeholder_text = "Пока записей нет."
-	diary_text_edit.text = simulation.diary.get_text()
-	tabs.add_child(diary_text_edit)
-
-func create_read_only_text_edit() -> TextEdit:
-	var text_edit := TextEdit.new()
-	text_edit.editable = false
-	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	text_edit.add_theme_font_size_override("font_size", 16)
-	text_edit.add_theme_color_override("font_readonly_color", Color("e1e5ea"))
-	var text_style := StyleBoxFlat.new()
-	text_style.bg_color = Color("171b21")
-	text_style.border_color = Color("586371")
-	text_style.set_border_width_all(1)
-	text_style.set_corner_radius_all(8)
-	text_style.content_margin_left = 10.0
-	text_style.content_margin_right = 10.0
-	text_style.content_margin_top = 8.0
-	text_style.content_margin_bottom = 8.0
-	text_edit.add_theme_stylebox_override("read_only", text_style)
-	return text_edit
+	if narrative_panel != null:
+		return
+	narrative_panel = NarrativePanelScene.instantiate()
+	narrative_panel.setup(simulation)
+	add_to_main_screen(narrative_panel)
