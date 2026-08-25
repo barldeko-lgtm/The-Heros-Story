@@ -1538,6 +1538,495 @@ Current experimental code may be refactored or replaced where necessary to satis
 
 ---
 
+### 36.1. Prototype 0.2 Project Structure and System Ownership
+
+Prototype 0.2 should preserve the architectural foundation established for Prototype 0.1:
+
+> **data separate, runtime state separate, final-stat calculation separate, simulation separate, UI separate**
+
+The current repository remains an implementation reference, but the temporary equipment experiments and the current monolithic UI implementation are **not authoritative architectural examples** for Prototype 0.2. Their useful underlying boundaries may be preserved, but their current file placement or internal structure must not be copied blindly when it conflicts with the structure below.
+
+The target Prototype 0.2 structure is:
+
+```text
+res://
+├── project.godot
+│
+├── scenes/
+│   ├── main/
+│   │   └── main.tscn
+│   │
+│   └── ui/
+│       ├── main_ui.tscn
+│       │
+│       ├── screens/
+│       │   ├── main_screen.tscn
+│       │   ├── hero_screen.tscn
+│       │   ├── inventory_screen.tscn
+│       │   ├── map_screen.tscn
+│       │   └── menu_screen.tscn
+│       │
+│       └── components/
+│           ├── hero_paper_doll.tscn
+│           ├── activity_panel.tscn
+│           ├── opponent_panel.tscn
+│           ├── quest_offers_panel.tscn
+│           ├── god_panel.tscn
+│           ├── diary_panel.tscn
+│           ├── explanatory_log_panel.tscn
+│           ├── debug_panel.tscn
+│           └── shop_panel.tscn
+│
+├── scripts/
+│   ├── core/
+│   │   ├── simulation.gd
+│   │   ├── world_clock.gd
+│   │   ├── seeded_rng.gd
+│   │   └── hero_name_repository.gd
+│   │
+│   ├── model/
+│   │   ├── definitions/
+│   │   │   ├── mob_definition.gd
+│   │   │   ├── quest_definition.gd
+│   │   │   ├── city_definition.gd
+│   │   │   ├── hex_definition.gd
+│   │   │   ├── event_definition.gd
+│   │   │   ├── dungeon_definition.gd
+│   │   │   ├── item_definition.gd
+│   │   │   ├── loot_table_definition.gd
+│   │   │   ├── shop_definition.gd
+│   │   │   ├── ability_definition.gd
+│   │   │   └── specialization_definition.gd
+│   │   │
+│   │   └── runtime/
+│   │       ├── combat_stats.gd
+│   │       ├── quest_offer.gd
+│   │       ├── quest_loot.gd
+│   │       ├── item_instance.gd
+│   │       ├── active_event.gd
+│   │       ├── dungeon_run_state.gd
+│   │       └── game_event.gd
+│   │
+│   ├── hero/
+│   │   ├── hero_state.gd
+│   │   ├── hero_progression.gd
+│   │   ├── hero_traits.gd
+│   │   ├── trait_development.gd
+│   │   ├── attribute_growth.gd
+│   │   ├── hero_abilities.gd
+│   │   ├── hero_specialization.gd
+│   │   ├── stat_resolver.gd
+│   │   ├── inventory.gd
+│   │   ├── equipment.gd
+│   │   └── equipment_evaluator.gd
+│   │
+│   ├── combat/
+│   │   ├── combat_simulator.gd
+│   │   ├── combat_session.gd
+│   │   ├── combat_action.gd
+│   │   ├── combat_result.gd
+│   │   ├── damage_resolver.gd
+│   │   ├── combat_decision.gd
+│   │   ├── ability_system.gd
+│   │   └── power_calculator.gd
+│   │
+│   ├── decision/
+│   │   └── activity_selector.gd
+│   │
+│   ├── quests/
+│   │   ├── quest_pool.gd
+│   │   ├── quest_evaluator.gd
+│   │   ├── quest_runner.gd
+│   │   └── quest_event.gd
+│   │
+│   ├── world/
+│   │   ├── world_state.gd
+│   │   ├── hex_map.gd
+│   │   ├── city_system.gd
+│   │   ├── travel_system.gd
+│   │   └── event_system.gd
+│   │
+│   ├── dungeons/
+│   │   ├── dungeon_evaluator.gd
+│   │   └── dungeon_runner.gd
+│   │
+│   ├── items/
+│   │   ├── item_generator.gd
+│   │   └── item_power_calculator.gd
+│   │
+│   ├── loot/
+│   │   └── loot_generator.gd
+│   │
+│   ├── economy/
+│   │   ├── shop_system.gd
+│   │   ├── spending_evaluator.gd
+│   │   └── skill_training_system.gd
+│   │
+│   ├── god/
+│   │   ├── god_state.gd
+│   │   └── god_system.gd
+│   │
+│   ├── narrative/
+│   │   ├── diary.gd
+│   │   ├── diary_narrator.gd
+│   │   ├── explanatory_log.gd
+│   │   └── debug_log.gd
+│   │
+│   ├── persistence/
+│   │   ├── save_manager.gd
+│   │   └── save_data.gd
+│   │
+│   └── ui/
+│       ├── main_ui.gd
+│       ├── screens/
+│       │   ├── main_screen.gd
+│       │   ├── hero_screen.gd
+│       │   ├── inventory_screen.gd
+│       │   ├── map_screen.gd
+│       │   └── menu_screen.gd
+│       │
+│       └── components/
+│           ├── hero_paper_doll.gd
+│           ├── activity_panel.gd
+│           ├── opponent_panel.gd
+│           ├── quest_offers_panel.gd
+│           ├── god_panel.gd
+│           ├── diary_panel.gd
+│           ├── explanatory_log_panel.gd
+│           ├── debug_panel.gd
+│           └── shop_panel.gd
+│
+├── data/
+│   ├── hero_names_ru.txt
+│   ├── mobs/
+│   │   ├── starting_region/
+│   │   └── mid_region/
+│   ├── quests/
+│   │   ├── starting_city/
+│   │   ├── mid_city/
+│   │   └── specialization/
+│   ├── cities/
+│   │   ├── starting_city.tres
+│   │   └── mid_city.tres
+│   ├── map/
+│   │   └── prototype_02_map.tres
+│   ├── events/
+│   │   └── ...
+│   ├── dungeons/
+│   │   ├── starting_region/
+│   │   ├── mid_region/
+│   │   └── specialization/
+│   ├── abilities/
+│   │   └── warrior/
+│   ├── specializations/
+│   │   ├── protector.tres
+│   │   └── slayer.tres
+│   ├── items/
+│   │   ├── bases/
+│   │   ├── modifiers/
+│   │   ├── consumables/
+│   │   └── visual_families/
+│   ├── loot_tables/
+│   │   └── ...
+│   ├── shops/
+│   │   └── ...
+│   └── narrative/
+│       └── ...
+│
+├── assets/
+│   ├── hero/
+│   ├── items/
+│   │   ├── icons/
+│   │   └── overlays/
+│   └── ui/
+│
+├── tests/
+│   ├── core/
+│   ├── hero/
+│   ├── combat/
+│   ├── quests/
+│   ├── world/
+│   ├── dungeons/
+│   ├── items/
+│   ├── economy/
+│   ├── god/
+│   ├── narrative/
+│   ├── persistence/
+│   └── integration/
+│
+└── docs/
+```
+
+This tree is a **target ownership structure**, not a requirement that every empty folder or placeholder file must be created before the corresponding system is implemented. New files should be added only when their system is actually introduced.
+
+### 36.2. Ownership Rules
+
+The following ownership rules are mandatory for Prototype 0.2.
+
+#### Core
+
+- `simulation.gd` coordinates systems but must not become the permanent owner of their internal rules.
+- `world_clock.gd` remains the single authority for shared world time.
+- `seeded_rng.gd` remains the shared reproducible RNG source.
+
+#### Definitions and Runtime Instances
+
+Immutable authored data belongs in `scripts/model/definitions/` and concrete `.tres` content belongs under `data/`.
+
+Mutable simulation objects belong in `scripts/model/runtime/` or in the system that clearly owns their runtime lifecycle.
+
+The Definition / Instance boundary from Prototype 0.1 remains mandatory.
+
+Examples:
+
+- `MobDefinition` describes a mob type.
+- `QuestDefinition` describes a quest template.
+- `QuestOffer` is one current offer.
+- `ItemDefinition` describes the item/base rules that do not change for one generated item type.
+- `ItemInstance` is one concrete generated item with its own ilvl, rarity and rolled modifiers.
+- `DungeonDefinition` describes authored dungeon content.
+- `DungeonRunState` stores one active expedition.
+
+#### Hero
+
+`hero_state.gd` owns the hero's current mutable state, but must not calculate final combat stats, item generation, quest scores, dungeon logic, or UI presentation.
+
+`hero_progression.gd` owns XP and level progression.
+
+`attribute_growth.gd` owns autonomous allocation of level-up primary-attribute points, including the class-fixed, trait-directed, deity-guided and specialization-directed channels defined by this Scope.
+
+`hero_traits.gd` stores the hero's current personality/combat traits and their state.
+
+`trait_development.gd` owns how meaningful outcomes move hidden trait values and how visible traits appear, strengthen, weaken or disappear.
+
+`hero_specialization.gd` owns specialization state and specialization milestones.
+
+`hero_abilities.gd` owns learned abilities and Skill Levels.
+
+`inventory.gd` owns permanent carried items.
+
+`equipment.gd` owns the currently equipped legal item configuration.
+
+`equipment_evaluator.gd` performs virtual-equip comparisons and autonomous equipment decisions. It must use resolved real Hero Power rather than displayed Item Power as the final ordinary equipment-comparison rule.
+
+#### Stat Resolution
+
+`stat_resolver.gd` is the only normal path that converts hero sources into final `CombatStats`.
+
+The intended chain is:
+
+```text
+Hero base/profile
++ level and primary attributes
++ specialization
++ equipment
++ persistent effects
++ temporary effects when appropriate
+        ↓
+    StatResolver
+        ↓
+    CombatStats
+        ↓
+Combat / Power
+```
+
+Combat, UI, quest evaluation and equipment evaluation must not independently recreate stat formulas.
+
+#### Combat
+
+`damage_resolver.gd` owns shared hit/mitigation rules such as Accuracy/Dodge, Block, Armor and elemental Resistances.
+
+`combat_session.gd` owns only one active fight.
+
+`combat_decision.gd` owns the hero's autonomous combat-action choice inside a fight.
+
+`ability_system.gd` resolves ability costs and effects from already-defined ability data and current combat state.
+
+`power_calculator.gd` owns the one shared Hero/Mob Power formula and must use resolved combat stats.
+
+There must not be separate hero and mob combat-strength formulas.
+
+#### General Autonomous Decisions
+
+Prototype 0.2 introduces choices broader than quest selection.
+
+`activity_selector.gd` owns the hero's top-level autonomous choice between currently valid activities such as:
+
+- taking an ordinary quest;
+- attempting a known dungeon;
+- interacting with a relevant temporary event;
+- travelling to another city/region;
+- performing a supported city activity.
+
+It performs general hard filtering and comparison between different activity categories.
+
+It does **not** replace specialized evaluators. For example:
+
+- `quest_evaluator.gd` determines the attractiveness of specific quest offers;
+- `dungeon_evaluator.gd` determines whether and how attractive a known dungeon is;
+- economy evaluators determine purchase value.
+
+`activity_selector.gd` compares the resulting viable activities at the higher decision level.
+
+#### Quests
+
+`quest_pool.gd` owns the current rotating offers for each city.
+
+`quest_evaluator.gd` owns ordinary quest suitability and QuestScore.
+
+`quest_runner.gd` executes one already-selected ordinary quest.
+
+Quest files/data do not own global decision logic.
+
+#### World, Cities and Travel
+
+`world_state.gd` owns mutable Prototype 0.2 world state: current temporary events, discovered/known locations, and other world-level runtime information explicitly required by this Scope.
+
+`hex_map.gd` owns authored map topology and path/distance queries.
+
+`city_system.gd` owns city-local context and access to local activities.
+
+`travel_system.gd` owns multi-tick movement between map locations and interruption/resumption of travel.
+
+`event_system.gd` owns spawning, lifetime and resolution of the limited Prototype 0.2 temporary-event set.
+
+The map does not directly choose hero destinations. The hero's autonomous decision layer chooses an activity/destination; the map and travel systems execute spatial consequences.
+
+#### Dungeons
+
+`dungeon_evaluator.gd` decides whether a known dungeon attempt is currently reasonable and attractive.
+
+`dungeon_runner.gd` owns one dungeon expedition:
+
+```text
+enter
+→ fight
+→ optional between-fight potion use
+→ next fight
+→ boss
+→ success or death/failure
+```
+
+Ordinary `quest_runner.gd` must not be expanded into a giant generic script containing dungeon-only rules.
+
+The same combat system remains shared between quest fights and dungeon fights.
+
+#### Items, Loot and Equipment
+
+The intended mandatory chain is:
+
+```text
+loot source
+→ LootGenerator
+→ QuestLoot / dungeon reward
+→ ItemGenerator
+→ ItemInstance
+→ Inventory
+→ EquipmentEvaluator
+→ Equipment
+→ StatResolver
+→ CombatStats
+→ Combat / Power
+```
+
+`loot_generator.gd` decides **what kind of reward/drop opportunity exists** from the source.
+
+`item_generator.gd` creates the concrete `ItemInstance`: item level, rarity, base properties and valid random modifiers.
+
+`item_power_calculator.gd` calculates the stable player-facing reference Item Power using the shared Power model.
+
+Displayed Item Power must not replace virtual-equip evaluation for the autonomous hero.
+
+The temporary Prototype 0 equipment-quality logic in the current repository is not a design authority for Prototype 0.2.
+
+#### Economy
+
+`shop_system.gd` owns shop stock, refresh and buy/sell transactions.
+
+`spending_evaluator.gd` compares meaningful uses of Gold such as equipment purchases and expedition preparation.
+
+`skill_training_system.gd` owns paid Skill Level upgrade availability and purchase execution.
+
+Economy logic must not be placed inside UI controls.
+
+#### God Influence
+
+`god_state.gd` owns deity resource/cooldown state.
+
+`god_system.gd` validates and applies divine interventions through the systems that actually own the affected state.
+
+Divine influence may modify decisions or combat, but must not bypass the hero's autonomy unless the ability is explicitly defined as a direct intervention.
+
+#### Narrative
+
+Simulation produces structured facts/events first.
+
+`diary_narrator.gd` converts important structured facts into player-facing diary prose.
+
+`diary.gd` stores diary episodes/entries.
+
+`explanatory_log.gd` stores concise player-facing explanations for important autonomous decisions.
+
+`debug_log.gd` stores detailed technical information for development.
+
+Narrative code must not decide gameplay outcomes.
+
+#### Persistence
+
+`save_manager.gd` owns save/load operations.
+
+`save_data.gd` defines the serialized persistent state boundary.
+
+Gameplay systems should expose serializable state rather than writing files themselves.
+
+#### UI
+
+Prototype 0.2 must not continue growing a single monolithic `main_ui.gd`.
+
+`main_ui.gd` should be limited primarily to:
+
+- screen navigation;
+- top-level UI coordination;
+- connection of UI screens to the existing Simulation instance.
+
+Individual screens and reusable components own their own presentation code.
+
+UI may:
+
+- read simulation state;
+- display it;
+- send explicit player/deity requests.
+
+UI must not:
+
+- calculate Hero Power;
+- resolve stats;
+- evaluate quests;
+- generate loot;
+- choose equipment;
+- advance progression;
+- decide hero activities;
+- apply combat rules.
+
+### 36.3. Systems Deliberately Not Pre-Created
+
+Prototype 0.2 architecture should not pre-create empty production systems for content outside this Scope.
+
+Do not add dedicated runtime layers for:
+
+- factions;
+- faction wars;
+- political borders;
+- crafting;
+- world economy simulation;
+- NPC heroes;
+- parties;
+- raids;
+- multiple-continent simulation;
+- deity progression.
+
+The current architecture should avoid blocking such systems later, but Prototype 0.2 must not implement their foundations merely because they may exist in the future.
+
 ## 37. Success Criteria
 
 Prototype 0.2 succeeds if testing creates all of the following feelings.

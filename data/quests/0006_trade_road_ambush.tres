@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
 [ext_resource type="Resource" path="res://data/mobs/0006_bandit.tres" id="2_mob"]
-[ext_resource type="Resource" path="res://data/items/boar_boots.tres" id="3_common"]
-[ext_resource type="Resource" path="res://data/items/boar_boots_uncommon.tres" id="4_uncommon"]
-[ext_resource type="Resource" path="res://data/items/boar_boots_rare.tres" id="5_rare"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots.tres" id="3_common"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_uncommon.tres" id="4_uncommon"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_rare.tres" id="5_rare"]
 
 [resource]
 script = ExtResource("1_quest_definition")

@@ -3,8 +3,9 @@ extends Control
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
-const HeroReferenceTexture = preload("res://assets/ui/hero/hero_reference.png")
+const HeroReferenceTexture = preload("res://assets/hero/hero_reference.png")
 const ItemQualityOutlineShader = preload("res://assets/shaders/item_quality_outline.gdshader")
+const HERO_OVERLAY_DRAW_ORDER: Array[String] = ["pants", "boots", "chest", "gloves", "helmet"]
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation = SimulationScript.new(simulation_seed, null)
 var time_progress_bar: ProgressBar
@@ -26,6 +27,7 @@ var inventory_screen: Control
 var inventory_button: Button
 var inventory_close_button: Button
 var hero_chest_overlay: TextureRect
+var hero_equipment_overlays: Dictionary = {}
 var chest_equipment_slot: PanelContainer
 var chest_equipment_icon: TextureRect
 var item_tooltip_panel: PanelContainer
@@ -144,13 +146,16 @@ func create_inventory_equipment_layout() -> void:
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_panel.add_child(portrait)
 
-	hero_chest_overlay = TextureRect.new()
-	hero_chest_overlay.name = "HeroChestOverlay"
-	hero_chest_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	hero_chest_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	hero_chest_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hero_chest_overlay.visible = false
-	portrait_panel.add_child(hero_chest_overlay)
+	for equipment_slot_id in HERO_OVERLAY_DRAW_ORDER:
+		var hero_overlay := TextureRect.new()
+		hero_overlay.name = get_hero_overlay_node_name(equipment_slot_id)
+		hero_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		hero_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		hero_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hero_overlay.visible = false
+		portrait_panel.add_child(hero_overlay)
+		hero_equipment_overlays[equipment_slot_id] = hero_overlay
+	hero_chest_overlay = hero_equipment_overlays["chest"]
 
 	var weapon_slots := create_equipment_slot_row("WeaponSlots", [
 		"WeaponSlot1",
@@ -326,8 +331,17 @@ func get_equipment_icon_node_name(slot_id: String) -> String:
 		"belt": return "BeltEquipmentIcon"
 	return "EquipmentIcon"
 
+func get_hero_overlay_node_name(slot_id: String) -> String:
+	match slot_id:
+		"helmet": return "HeroHelmetOverlay"
+		"chest": return "HeroChestOverlay"
+		"gloves": return "HeroGlovesOverlay"
+		"pants": return "HeroPantsOverlay"
+		"boots": return "HeroBootsOverlay"
+	return "HeroEquipmentOverlay"
+
 func update_inventory_equipment_display() -> void:
-	if equipment_item_icons.is_empty() or hero_chest_overlay == null:
+	if equipment_item_icons.is_empty() or hero_equipment_overlays.is_empty():
 		return
 	for equipment_slot_id in equipment_item_icons:
 		var equipment_icon: TextureRect = equipment_item_icons[equipment_slot_id]
@@ -342,13 +356,15 @@ func update_inventory_equipment_display() -> void:
 		equipment_icon.material = get_quality_outline_material(equipment_definition.quality)
 		equipment_icon.visible = true
 
-	var equipped_chest = simulation.hero_state.equipment.get_item("chest")
-	if equipped_chest == null or equipped_chest.definition.hero_overlay_texture == null:
-		hero_chest_overlay.texture = null
-		hero_chest_overlay.visible = false
-	else:
-		hero_chest_overlay.texture = equipped_chest.definition.hero_overlay_texture
-		hero_chest_overlay.visible = true
+	for equipment_slot_id in hero_equipment_overlays:
+		var hero_overlay: TextureRect = hero_equipment_overlays[equipment_slot_id]
+		var equipped_item = simulation.hero_state.equipment.get_item(equipment_slot_id)
+		if equipped_item == null or equipped_item.definition.hero_overlay_texture == null:
+			hero_overlay.texture = null
+			hero_overlay.visible = false
+			continue
+		hero_overlay.texture = equipped_item.definition.hero_overlay_texture
+		hero_overlay.visible = true
 
 	var inventory_items: Array = simulation.hero_state.inventory.get_items()
 	for slot_index in inventory_item_icons.size():

@@ -29,7 +29,7 @@ func run_test() -> void:
 		var family_name: String = family_data[1]
 		var display_name: String = family_data[2]
 		for quality in 3:
-			var item_path := "res://data/items/%s%s.tres" % [family_name, QUALITY_SUFFIXES[quality]]
+			var item_path := "res://data/items/visual_families/ironward_vanguard/%s%s.tres" % [family_name, QUALITY_SUFFIXES[quality]]
 			assert(ResourceLoader.exists(item_path), "Every sword/shield quality definition must exist: %s" % item_path)
 			var definition: Resource = load(item_path)
 			assert(definition != null, "Every sword/shield quality definition must load.")

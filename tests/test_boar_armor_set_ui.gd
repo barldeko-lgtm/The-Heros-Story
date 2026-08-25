@@ -1,11 +1,11 @@
 extends SceneTree
 
 const EQUIPPED_ITEMS := {
-	"chest": "res://data/items/boar_chestplate_rare.tres",
-	"helmet": "res://data/items/boar_helmet.tres",
-	"gloves": "res://data/items/boar_gauntlets_uncommon.tres",
-	"pants": "res://data/items/boar_leggings_rare.tres",
-	"boots": "res://data/items/boar_boots_uncommon.tres",
+	"chest": "res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres",
+	"helmet": "res://data/items/visual_families/ironward_vanguard/boar_helmet.tres",
+	"gloves": "res://data/items/visual_families/ironward_vanguard/boar_gauntlets_uncommon.tres",
+	"pants": "res://data/items/visual_families/ironward_vanguard/boar_leggings_rare.tres",
+	"boots": "res://data/items/visual_families/ironward_vanguard/boar_boots_uncommon.tres",
 }
 const ICON_NODES := {
 	"chest": "ChestEquipmentIcon",
@@ -13,6 +13,13 @@ const ICON_NODES := {
 	"gloves": "GlovesEquipmentIcon",
 	"pants": "PantsEquipmentIcon",
 	"boots": "BootsEquipmentIcon",
+}
+const OVERLAY_NODES := {
+	"chest": "HeroChestOverlay",
+	"helmet": "HeroHelmetOverlay",
+	"gloves": "HeroGlovesOverlay",
+	"pants": "HeroPantsOverlay",
+	"boots": "HeroBootsOverlay",
 }
 
 func _init() -> void:
@@ -53,9 +60,11 @@ func run_test() -> void:
 	assert(tooltip_label.text.contains("Качество: Редкое"), "Tooltip must show item quality.")
 	assert(tooltip_label.text.contains("Сила предмета: 10.18"), "Tooltip must show universal ItemPower.")
 
-	var hero_overlay := main_ui.find_child("HeroChestOverlay", true, false) as TextureRect
-	assert(hero_overlay.visible, "Existing chestplate overlay must remain visible.")
-	assert(simulation.hero_state.equipment.get_item("helmet").definition.hero_overlay_texture == null, "New armor pieces must remain icon-only.")
+	for slot_id in OVERLAY_NODES:
+		var hero_overlay := main_ui.find_child(OVERLAY_NODES[slot_id], true, false) as TextureRect
+		var equipped_definition = simulation.hero_state.equipment.get_item(slot_id).definition
+		assert(hero_overlay != null and hero_overlay.visible, "Every equipped armor piece must be visible on the hero paper doll.")
+		assert(hero_overlay.texture == equipped_definition.hero_overlay_texture, "Every paper-doll layer must use the equipped item's overlay.")
 
 	main_ui.free()
 	print("PASS: All five Boar armor slots display icons, quality outlines, and shared tooltips.")

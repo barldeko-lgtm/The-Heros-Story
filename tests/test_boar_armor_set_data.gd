@@ -24,7 +24,7 @@ func _init() -> void:
 	for slot_id in ITEM_FAMILIES:
 		var family_name: String = ITEM_FAMILIES[slot_id]
 		for quality in 3:
-			var item_path := "res://data/items/%s%s.tres" % [family_name, QUALITY_SUFFIXES[quality]]
+			var item_path := "res://data/items/visual_families/ironward_vanguard/%s%s.tres" % [family_name, QUALITY_SUFFIXES[quality]]
 			var definition: Resource = load(item_path)
 			assert(definition != null, "Every Boar set quality definition must load: %s" % item_path)
 			assert(definition.equipment_slot == slot_id, "Item definition must target its own armor slot.")
@@ -34,7 +34,8 @@ func _init() -> void:
 			assert(definition.strength_bonus == EXPECTED_STATS[quality][2], "Quality Strength must match the Boar chestplate progression.")
 			assert(is_equal_approx(definition.get_item_power(), EXPECTED_STATS[quality][3]), "Every armor piece must use universal ItemPower.")
 			assert(definition.icon_texture != null, "Every temporary armor item must have an icon.")
-			assert(definition.hero_overlay_texture == null, "New temporary armor pieces must not draw over the hero yet.")
+			assert(definition.hero_overlay_texture != null, "Every visible armor piece must provide a paper-doll overlay.")
+			assert(definition.hero_overlay_texture.get_width() == 441 and definition.hero_overlay_texture.get_height() == 800, "Every armor overlay must preserve the hero portrait canvas.")
 			if quality == 2:
 				rare_definitions[slot_id] = definition
 
@@ -47,7 +48,7 @@ func _init() -> void:
 
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var simulation = simulation_script.new(1)
-	var rare_chest: Resource = load("res://data/items/boar_chestplate_rare.tres")
+	var rare_chest: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres")
 	simulation.receive_item_reward(rare_chest, 1)
 	for slot_id in rare_definitions:
 		simulation.receive_item_reward(rare_definitions[slot_id], 2)

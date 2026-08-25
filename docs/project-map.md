@@ -4,11 +4,13 @@
 
 - `project.godot` — Godot project configuration and main scene.
 - `.github/workflows/tests.yml` — GitHub Actions regression-test workflow.
-- `assets/` — supplied visual assets used by the current UI.
-- `data/` — concrete game data.
+- `assets/` — supplied visual assets used by the current UI. Hero art lives under `assets/hero/`; item icons and overlays are separated under `assets/items/icons/` and `assets/items/overlays/`.
+- `data/` — concrete game data. The current Ironward Vanguard definitions live under `data/items/visual_families/ironward_vanguard/`.
 - `scenes/` — Godot scenes.
 - `scripts/` — runtime/gameplay/UI code.
 - `tests/` — regression tests.
+
+The target Prototype 0.2 directory scaffold from the Scope is tracked with `.gitkeep` placeholders. Empty folders do not mean that their future systems are implemented. Existing scripts, scenes, tests, mobs, and quests remain in their current working locations until an approved system-specific change requires moving them.
 
 ## Core
 
@@ -166,7 +168,7 @@ Displays:
 
 The main developer controls and the Inventory shell are separate UI layers under the same `MainUI`. Switching between them changes visibility only; the existing `Simulation` instance continues advancing.
 
-`assets/ui/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. All five armor slots plus the main-hand and off-hand slots display equipped state. The right jewelry column exposes stable empty slots for necklace, earrings, two separate rings, and belt. Helmet, gloves, pants, and boots use supplied `300 × 300` RGBA PNG icons under `assets/items/boar_set/`; chest, sword, and shield retain their current icon assets. Only the chest keeps its existing portrait overlay; no additional worn-art overlays are currently planned. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
+`assets/hero/hero_reference.png` is the unchanged supplied `441 × 800` RGBA reference image currently displayed at `256 × 464` over an explicit dark backing panel. All five armor slots plus the main-hand and off-hand slots display equipped state. The right jewelry column exposes stable empty slots for necklace, earrings, two separate rings, and belt. Helmet, gloves, pants, and boots use supplied `300 × 300` RGBA PNG icons under `assets/items/icons/ironward_vanguard/`; chest, sword, and shield retain their current icon assets. Helmet, chest, gloves, pants, and boots each provide a dedicated `441 × 800` paper-doll overlay under `assets/items/overlays/ironward_vanguard/`; the UI layers equipped armor over the base hero in stable back-to-front order. The 36 inventory cells display retained item instances. Equipped and inventory icons share a custom hover tooltip; `assets/shaders/item_quality_outline.gdshader` provides the three-band green/blue quality outline.
 
 ## Item data
 
@@ -179,12 +181,12 @@ One concrete acquired item referencing its immutable definition.
 ### `scripts/items/item_power_calculator.gd`
 Calculates static ItemPower through the shared `PowerCalculator`. It applies item bonuses to the approved minimal reference combat profile and subtracts that profile's baseline Power, avoiding arbitrary item-score coefficients.
 
-### `data/items/boar_chestplate.tres`
+### `data/items/visual_families/ironward_vanguard/boar_chestplate.tres`
 Defines Common `Кираса Авангарда Железного Оплота`: +20 direct MaxHP, +10 Armor, +1 Strength.
 
-`data/items/boar_chestplate_uncommon.tres` defines Uncommon `Кираса Авангарда Железного Оплота`: +25 direct MaxHP, +15 Armor, +2 Strength. `data/items/boar_chestplate_rare.tres` defines Rare: +35 direct MaxHP, +20 Armor, +3 Strength. All three reuse the supplied icon and portrait overlay.
+`data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres` defines Uncommon `Кираса Авангарда Железного Оплота`: +25 direct MaxHP, +15 Armor, +2 Strength. `data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres` defines Rare: +35 direct MaxHP, +20 Armor, +3 Strength. All three reuse the supplied icon and portrait overlay.
 
-The same three-quality armor progression is defined for `boar_helmet*`, `boar_gauntlets*`, `boar_leggings*`, and `boar_boots*`. Their localized names are `Шлем Авангарда Железного Оплота`, `Рукавицы Авангарда Железного Оплота`, `Поножи Авангарда Железного Оплота`, and `Сапоги Авангарда Железного Оплота`; their overlay field remains empty. `boar_sword*` defines `Меч Авангарда Железного Оплота` with Common/Uncommon/Rare Attack/CritChance/CritDamage bonuses of `3/5%/10%`, `4/7%/15%`, and `5/10%/20%`. `boar_shield*` defines `Щит Авангарда Железного Оплота` with MaxHP/Armor bonuses of `10/20`, `15/25`, and `20/30`. Internal `boar_*` ids and paths remain unchanged technical keys.
+The same three-quality armor progression is defined for `boar_helmet*`, `boar_gauntlets*`, `boar_leggings*`, and `boar_boots*`. Their localized names are `Шлем Авангарда Железного Оплота`, `Рукавицы Авангарда Железного Оплота`, `Поножи Авангарда Железного Оплота`, and `Сапоги Авангарда Железного Оплота`; every quality of each family reuses its supplied paper-doll overlay. `boar_sword*` defines `Меч Авангарда Железного Оплота` with Common/Uncommon/Rare Attack/CritChance/CritDamage bonuses of `3/5%/10%`, `4/7%/15%`, and `5/10%/20%`. `boar_shield*` defines `Щит Авангарда Железного Оплота` with MaxHP/Armor bonuses of `10/20`, `15/25`, and `20/30`. Internal `boar_*` ids and filenames remain unchanged technical keys.
 
 Seven quests reference equal-third quality pools: `boars_in_fields` → chest, `wolf_hunt` → helmet, `bear_hunt` → gloves, `granary_rat_problem` → pants, `trade_road_ambush` → boots, `old_mill_webs` → sword, and `fearless_elk` → shield. Every successful turn-in rolls one reward through the shared seeded RNG. `Simulation` equips the first item per slot, upgrades only to a higher quality in that slot, and routes non-equipped/replaced items through FIFO Inventory.
 

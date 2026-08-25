@@ -1,8 +1,8 @@
 extends SceneTree
 
-const COMMON_PATH := "res://data/items/boar_chestplate.tres"
-const UNCOMMON_PATH := "res://data/items/boar_chestplate_uncommon.tres"
-const RARE_PATH := "res://data/items/boar_chestplate_rare.tres"
+const COMMON_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres"
+const UNCOMMON_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres"
+const RARE_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres"
 const BOAR_QUEST_PATH := "res://data/quests/0005_boars_in_fields.tres"
 
 func _init() -> void:

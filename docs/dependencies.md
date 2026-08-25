@@ -211,7 +211,7 @@ Contracts:
 - static ItemPower must use `PowerCalculator`, not a parallel scoring formula: calculate the fixed `1 HP / 1 Attack / 1.0 AttackSpeed / 10% CritChance / 150% CritDamage / 0 Armor` reference with and without the item's derived secondary stats, then subtract the exact reference Power `0.724568837`;
 - Strength on an item contributes its normal +5 MaxHP and +1 Attack per point before ItemPower is calculated;
 - ItemPower is a stable item-comparison rating and is not directly added to the hero's runtime Power.
-- helmet, gloves, pants, boots, sword, and shield deliberately have no hero portrait overlay; UI must not synthesize worn art from their equipment icons;
+- helmet, chest, gloves, pants, and boots each use a dedicated aligned paper-doll overlay from their `ItemDefinition`; sword and shield still have no hero portrait overlay, and UI must not synthesize worn art from equipment icons;
 - no set-completion bonus exists in the current slice.
 
 General item interactions and QuestLoot are still not implemented. When QuestLoot exists, death must clear only current-quest loot before entering the existing respawn path. Permanent equipment and retained Inventory must remain separate.

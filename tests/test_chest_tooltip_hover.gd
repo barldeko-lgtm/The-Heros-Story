@@ -1,6 +1,6 @@
 extends SceneTree
 
-const ITEM_PATH := "res://data/items/boar_chestplate.tres"
+const ITEM_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres"
 
 func _init() -> void:
 	call_deferred("run_test")

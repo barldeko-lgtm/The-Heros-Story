@@ -8,9 +8,9 @@ func _init() -> void:
 		quit(1)
 		return
 	var calculator_script: Script = load(CALCULATOR_PATH)
-	var common: Resource = load("res://data/items/boar_chestplate.tres")
-	var uncommon: Resource = load("res://data/items/boar_chestplate_uncommon.tres")
-	var rare: Resource = load("res://data/items/boar_chestplate_rare.tres")
+	var common: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres")
+	var uncommon: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres")
+	var rare: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres")
 	assert(calculator_script != null and common != null and uncommon != null and rare != null, "Item power dependencies must load.")
 
 	assert(is_equal_approx(calculator_script.get_reference_power(), 0.724568837), "Reference combat profile must retain its approved Power.")
