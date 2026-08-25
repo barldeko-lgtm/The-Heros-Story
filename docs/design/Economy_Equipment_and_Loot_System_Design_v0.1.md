@@ -142,19 +142,18 @@ Weapon access is tied to combat identity rather than being universally available
 
 The current principle is:
 
-> **The base class defines which weapon families the hero can use. A later specialization primarily strengthens or favors particular weapon styles and may unlock additional options, but should not normally remove weapon families the hero already knew how to use.**
+> **The base class defines which weapon families the hero can use. A later specialization may require a particular compatible setup for its own abilities without necessarily erasing the base class’s underlying weapon knowledge.**
 
-This allows a class to support meaningfully different equipment styles without turning most weapon drops into unusable items after specialization.
+This allows a class to support meaningfully different equipment styles without turning every previously known weapon family into an impossible item after specialization, while still making the chosen specialization mechanically recognizable.
 
-For example, a Warrior may eventually support several broad styles such as:
+For the current Warrior design, the working specialization combat setups are:
 
-- one-handed weapon + shield;
-- two-handed weapon;
-- dual wielding, if that style is approved for an appropriate specialization.
+- **Protector → Paladin / Guardian:** one-handed weapon + shield;
+- **Slayer → Berserker / Champion:** two-handed weapon or dual wielding two one-handed weapons; no shield for specialization abilities.
 
-These are examples of the structural rule, not a finalized Warrior weapon list.
+Protector-specific abilities require the one-handed + shield setup. Slayer-specific abilities require a compatible two-handed or dual-wield setup. A Warrior may still technically understand another Warrior weapon family, but choosing an incompatible configuration disables the specialization-specific tools that define the hero’s current path and should therefore normally be unattractive to autonomous equipment selection.
 
-Exact allowed weapon families, specialization bonuses, dual-wield rules, and caster/ranged Off Hand behaviour will be defined together with the detailed class designs.
+Exact weapon families, dual-wield rules, and caster/ranged Off Hand behaviour will be defined together with the detailed class designs.
 
 ## Item Level and Rarity
 
@@ -453,17 +452,17 @@ The hero evaluates standard equipment through a **virtual equip** operation:
 2. resolve the hero’s complete resulting `CombatStats` through the normal `StatResolver` pipeline;
 3. recalculate the hero’s real Hero Power using the shared Power formula;
 4. compare that result with the Power of the current equipment configuration;
-5. prefer the legal configuration with the higher resulting Hero Power, subject to any later approved non-Power decision rules.
+5. prefer the legal configuration with the higher resulting Hero Power, subject to specialization ability-compatibility and any later approved non-Power decision rules.
 
 The virtual equip does not physically change the hero’s equipment until the comparison has been completed and the hero has decided to use the item.
 
 This method also handles interactions that a simple per-item score cannot represent exactly. A lower-Item-Power object may sometimes be the better upgrade for a particular hero because of the hero’s current stats, while a nominally stronger item may add less real Power to that specific build.
 
-At the current design stage, the ordinary equipment decision can remain simple: **if the candidate legal configuration produces more Hero Power, it is the stronger standard equipment choice**. More situational equipment logic may be considered later only if it creates useful decisions.
+At the current design stage, the ordinary equipment decision can remain simple: among **legal and specialization-compatible** configurations, the hero normally prefers the one that produces more Hero Power. More situational equipment logic may be considered later only if it creates useful decisions.
 
 The Belt is a special case because the hero must consider both the base-Health change from virtual equip and the practical change in potion capacity for dungeon preparation.
 
-> **Item Power helps the player understand standard items; virtual equip determines what is actually stronger for this hero; Belt utility additionally depends on expedition capacity.**
+> **Item Power helps the player understand standard items; virtual equip determines what is actually stronger for this hero; specialization compatibility keeps equipment aligned with the hero’s chosen combat path; Belt utility additionally depends on expedition capacity.**
 
 ## Belt and Healing Potions
 
@@ -602,13 +601,15 @@ Special-purpose item types such as the Belt instead apply their own rarity-speci
 
 ## Initial Gold Economy
 
-The first economy should connect adventuring, loot, gold, shops, equipment progression, and dungeon preparation without turning the game into a trading or maintenance simulator.
+The first economy should connect adventuring, loot, gold, shops, equipment progression, skill development, and dungeon preparation without turning the game into a trading or maintenance simulator.
 
 The basic economic loop is:
 
-> **quest / combat → collect loot in backpack → complete the objective → review loot and equip worthwhile upgrades → return to town → turn in the quest and receive gold → go to the market → sell all trophies and all unequipped equipment → inspect shop stock → buy a worthwhile available upgrade when appropriate → refill or improve dungeon healing potions when relevant → recalculate the hero’s resulting strength and readiness → choose the next activity**
+> **quest / combat → collect loot in backpack → complete the objective → review loot and equip worthwhile upgrades → return to town → turn in the quest and receive gold → go to the market → sell all trophies and all unequipped equipment → inspect shop stock → buy a worthwhile available upgrade when appropriate → pay for available skill upgrades when worthwhile and affordable → refill or improve dungeon healing potions when relevant → recalculate the hero’s resulting strength and readiness → choose the next activity**
 
 The hero should be able to perform this loop autonomously. At the current design stage, equipment that is not chosen during the post-quest review is not kept as a spare or situational set; it is sold when the hero reaches the market.
+
+The exact location or presentation used for purchasing a Skill Level — trainer, service, menu, or another world-facing interaction — is not defined by the current concept. The economic rule only requires that upgrading a skill consumes gold once the progression system has made that rank available.
 
 ### Gold Sources
 
@@ -626,16 +627,19 @@ Beasts and ordinary monsters do **not** drop gold merely because they were defea
 
 ### Current Gold Uses
 
-At the current design stage, the hero spends gold on two meaningful progression uses:
+At the current design stage, the hero spends gold on three meaningful progression uses:
 
 - **equipment purchases**;
-- **healing potions**, especially when preparing or refilling the Belt for dungeon expeditions.
+- **healing potions**, especially when preparing or refilling the Belt for dungeon expeditions;
+- **Skill Level upgrades** when hero progression has made a higher rank available.
+
+Skill upgrades are not automatic when the hero reaches the relevant progression milestone. The hero must pay gold to raise the skill, and the price increases as the Skill Level rises. The exact cost curve belongs to balance work; the progression rules and maximum Skill Level are defined in `Combat_and_Progression_System_Design_v0.1.md`.
 
 There are currently no regular gold costs for repair, taverns, travel, taxes, or other maintenance systems. Additional gold sinks may be introduced later only if they create useful decisions rather than existing merely to remove currency from the economy.
 
 Higher-ilvl healing potions cost more than weaker potions, so improved expedition capacity also increases the potential price of fully preparing for a dungeon attempt.
 
-The hero does not need to preserve a mandatory abstract gold reserve. They may spend on worthwhile upgrades and preparation according to current goals, while still rejecting negligible improvements or unnecessarily expensive preparation.
+The hero does not need to preserve a mandatory abstract gold reserve. They may spend on worthwhile equipment, skill mastery, and preparation according to current goals, while still rejecting negligible improvements or unnecessarily expensive preparation.
 
 > **Gold should support meaningful progression and risky expeditions, not routine chores.**
 
@@ -685,6 +689,8 @@ At the current control points this means, for example:
 This large buy/sell spread prevents found equipment from becoming almost equivalent to liquid gold and makes buying an item a meaningful expenditure rather than a nearly reversible exchange.
 
 Healing-potion pricing uses its own progression curve rather than the equipment resale formula. The only current fixed principle is that **higher-ilvl potions heal more and cost more**.
+
+Skill-upgrade pricing also uses its own progression curve rather than the equipment or potion formulas. The only current fixed economic principle is that **higher Skill Levels cost progressively more gold**.
 
 ### Ordinary Shops Are Not the Main Source of High-Rarity Gear
 
@@ -760,7 +766,7 @@ The exact stock size and refresh interval are balance parameters to be defined l
 
 ### Hero Purchase Evaluation
 
-The hero evaluates shop equipment autonomously by comparing the offered item with their current equipment, the practical improvement it provides, and the gold cost.
+The hero evaluates shop equipment autonomously by comparing the offered item with their current equipment, the practical improvement it provides, specialization compatibility, and the gold cost.
 
 For the equipment-strength part of this decision, a standard offered item is tested through the same **virtual equip** process used for found loot: the candidate is temporarily substituted into the legal equipment configuration, complete `CombatStats` are resolved, and the hero’s resulting real Hero Power is recalculated before any purchase is made.
 
@@ -770,9 +776,11 @@ Belt purchases additionally consider the change in base Health and potion-healin
 
 Potion purchases are evaluated as preparation resources. The hero considers how many Belt slots need filling, the strongest potion level the Belt allows, potion availability, current gold, and whether a dungeon expedition or another supported activity makes the expenditure worthwhile.
 
-There is currently no mandatory gold-reserve rule. If other strategically important gold sinks are introduced later, purchase behaviour can be revised to account for competing uses of currency.
+Available Skill Level upgrades create another legitimate competing use for gold. Exact autonomous priority between a skill upgrade, an equipment purchase, and expedition preparation is not fixed at the concept stage and should be tuned when the real prices and progression pace exist.
 
-> **The hero should value a real upgrade or useful preparation, but should not waste accumulated resources on changes that barely matter.**
+There is currently no mandatory gold-reserve rule. The hero may make meaningful expenditures according to current goals rather than maintaining an arbitrary permanent reserve.
+
+> **The hero should value real upgrades and useful preparation, but should not waste accumulated resources on changes that barely matter.**
 
 ## Equipment Does Not Modify Personality
 
