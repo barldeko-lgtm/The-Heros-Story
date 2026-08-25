@@ -42,19 +42,19 @@ The goal is for the hero’s behaviour to become recognizable and internally con
 
 Personality traits describe the hero’s tendencies and should primarily shape behaviour rather than act as a list of bonuses and penalties.
 
-The preferred model uses several opposing scales, for example:
+The current core personality model uses five opposing trait scales:
 
-- caution ↔ risk-taking;
-- mercy ↔ cruelty;
-- honesty ↔ cunning;
-- altruism ↔ selfishness;
-- curiosity ↔ conservatism.
+- **Brave / Храбрый ↔ Cowardly / Трусливый**;
+- **Noble / Благородный ↔ Devious / Коварный**;
+- **Observant / Наблюдательный ↔ Inattentive / Невнимательный**;
+- **Greedy / Жадный ↔ Generous / Щедрый**;
+- **Curious / Любопытный ↔ Conservative / Консервативный**.
 
-Both ends of a scale should have advantages and drawbacks.
+These five pairs are the current agreed core personality set. Their exact gameplay modifiers, bonuses, penalties, and numerical effects are intentionally **not defined yet**.
+
+Both ends of a scale should be treated as valid personality directions rather than automatically good or bad outcomes.
 
 > **A personality trait should create a style of life, not simply provide a green bonus or a red penalty.**
-
-The exact set of personality scales will be defined separately.
 
 ## Personality Changes Through Meaningful Outcomes
 
@@ -68,7 +68,7 @@ The hero’s existing personality may influence which option they choose, but **
 
 Instead, personality-changing experience comes from the **result of the decision**. A specific outcome may move one or more hidden personality scales in directions appropriate to what actually happened. Different outcomes from the same decision may therefore produce different personality effects.
 
-The exact mapping from event outcomes to personality changes is authored by the content or system that owns that event. There is currently no universal rule such as “success always increases risk-taking” or “failure always increases caution.” The appropriate axes, direction, and magnitude depend on the meaning of the concrete outcome.
+The exact mapping from event outcomes to personality changes is authored by the content or system that owns that event. There is currently no universal rule such as “success always increases bravery” or “failure always increases cowardice.” The appropriate axes, direction, and magnitude depend on the meaning of the concrete outcome.
 
 Most outcomes do not have to modify personality at all. Personality-changing effects should be reserved for experiences meaningful enough to plausibly leave a mark on the hero.
 
@@ -102,7 +102,7 @@ Combat traits such as fear or confidence toward a specific enemy category may st
 
 Personality and preferences are related, but they are not the same thing.
 
-**Personality** describes how the hero tends to act: cautiously, boldly, honestly, selfishly, and so on.
+**Personality** describes how the hero tends to act: cautiously, boldly, nobly, greedily, curiously, and so on.
 
 **Preferences** describe what the hero likes or dislikes: types of activities, combat styles, equipment, places, factions, or individual characters.
 
@@ -110,16 +110,13 @@ Preferences should influence autonomous choices and may form or change through t
 
 A separate complex subsystem is not required at this stage. Preferences may use the same underlying decision-weight mechanisms as personality while remaining conceptually distinct.
 
-## Discovery-Related Personality Traits
+## Observant and Inattentive
 
-Two provisional personality traits are reserved for later development because they may affect how easily the hero notices hidden locations, unusual signs, and nearby opportunities while travelling:
+**Observant / Наблюдательный ↔ Inattentive / Невнимательный** is one of the five core personality scales.
 
-- **Observant / Наблюдательный** — expected to improve the hero’s ability to notice hidden locations, unusual signs, or nearby opportunities;
-- **Inattentive / Невнимательный** — expected to reduce that ability.
+This scale is expected to be especially relevant to how easily the hero notices hidden locations, unusual signs, and nearby opportunities while travelling, but its exact mechanical effects are not yet defined.
 
-Their exact numerical effects, acquisition rules, interaction with other traits, and whether they form a strict opposing pair are **not yet defined**.
-
-The map and discovery systems may use these traits as modifiers to their own base discovery chances, but the definition, ownership, and future development of the traits belong to the personality system.
+The map and discovery systems may later use this personality scale as a modifier to their own base discovery chances, while the definition, ownership, and future development of the trait remain part of the personality system.
 
 > **The world defines what can be noticed; the hero’s personality may affect how likely they are to notice it.**
 
