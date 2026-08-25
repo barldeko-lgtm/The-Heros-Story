@@ -35,11 +35,15 @@ This Scope must therefore become increasingly self-contained as its systems are 
 
 Prototype 0.2 asks:
 
-> **Is it interesting to follow one autonomous hero through the first meaningful stage of their development, as personality, combat style, equipment, appearance, available opportunities, and the first specialization gradually turn them into a distinct individual?**
+> **Is it interesting to follow one autonomous hero through the first meaningful stage of their life, as lived experience gradually shapes their personality, combat style, development, equipment, and first specialization, creating a hero with recognizable behavior, history, and gameplay profile?**
 
 A second important question is:
 
 > **Can a small world of two connected cities, changing quests, travel events, dungeons, loot, and economy create enough changing circumstances for the hero’s autonomous life to remain interesting without requiring the full future world simulation?**
+
+A third important test is:
+
+> **Can the player return after being away from the game for a long period, look at the hero and the diary, and feel that a meaningful part of the hero’s life happened while they were away rather than merely seeing larger numbers?**
 
 Prototype 0.2 remains focused on the project’s core fantasy:
 
@@ -74,7 +78,7 @@ Prototype 0.2 must include, at minimum:
 - approximately **15–20 handcrafted temporary events total** across the two-city world;
 - a working personality system with several opposing trait axes and real trait development;
 - two ordinary dungeons associated with each city / local region;
-- a dedicated specialization dungeon generated for the chosen first specialization;
+- dedicated authored Specialization Dungeon content for both **Protector** and **Slayer**, activated as part of the corresponding Specialization Quest and sharing one technical dungeon system;
 - item level, item rarity, random modifiers, loot sources, and autonomous equipment evaluation;
 - rarity through **Epic / Purple**;
 - a complete early equipment loop including weapons, armor, jewelry/utility, Belt, and Off Hand;
@@ -185,6 +189,22 @@ Travel duration is derived from traversed hex steps. The exact number of world t
 
 The map is an observation and simulation system. The player does **not** click a destination to directly command the hero to walk there.
 
+### Leaving the Current City
+
+The hero normally treats the current city as their local base and chooses ordinary quests, shops, rumours, and other routine activities primarily from that city.
+
+The hero does not constantly compare ordinary quest offers from every city in the world. Travelling to another city / region is a separate autonomous activity.
+
+For Prototype 0.2, the main progression trigger for leaving the current city is:
+
+> **when the current city no longer provides ordinary quests that are meaningfully appropriate for the hero’s current strength and progression, the hero begins looking for new opportunities in another known city / region.**
+
+The exact lower suitability threshold — the point at which a quest becomes too weak or unrewarding for the hero — is not yet fixed and will be defined separately.
+
+Reaching this condition does not instantly teleport the hero or force a move during another activity. The hero finishes the current activity, reaches a normal decision point, then evaluates travelling to another known city.
+
+After arriving, the destination becomes the hero’s new current city context.
+
 ---
 
 ## 6. Hero and Primary Attributes
@@ -207,7 +227,13 @@ The current provisional contribution of one attribute point is:
 | CON | +20 maximum Health; +2 Armor |
 | WIS | improves learned abilities through ability-specific scaling |
 
-These values are balance values, not architectural rules, and may be tuned through simulation testing.
+**These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full level-1-to-60 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
+
+The architectural relationship is fixed even when the numerical coefficients change:
+
+> **Primary Attributes → StatResolver → resolved Secondary Combat Stats → Combat / Power**
+
+Primary attributes themselves are not read directly by combat or added directly to Power when their effect is already represented through resolved secondary stats. The conversion from STR / DEX / INT / CON / WIS into combat-facing values must remain centralized so balancing a coefficient does not require rewriting combat, Power, equipment evaluation, or UI logic.
 
 Prototype 0.2 contains only the Warrior, so magical Damage and Mana are not required to drive the Warrior’s ordinary attacks. INT may still be used by authored event requirements and should remain a real primary attribute rather than being removed from the model.
 
@@ -223,29 +249,65 @@ Prototype 0.2 should support meaningful progression through approximately level 
 
 The player does not manually distribute every attribute point.
 
-Before the first specialization is obtained, the current progression structure is:
+Before the first specialization is obtained, the Warrior gains:
 
-> **5 attribute points per level = 1 class-directed + 1 deity-guided + 3 hero-directed**
+> **5 primary-attribute points per level = 1 fixed Warrior point + 3 adaptive hero-development points + 1 deity-guided point**
 
-For the Warrior, the class-directed point primarily supports the Warrior’s core physical development. The exact class distribution profile is tuning data and should remain centralized rather than hard-coded across unrelated systems.
+### Fixed Warrior Growth
 
-The deity may maintain one soft development direction. This influences one point of level growth but does not turn level-up into manual stat allocation.
+One point per level is the permanent class-directed Warrior contribution:
 
-The hero autonomously distributes the remaining three points according to their own development logic. The decision should be deterministic and explainable from relevant hero state such as current personality, existing attribute profile, specialization direction when known, and meaningful experience. It should not be a blind random roll.
+> **+1 STR per level**
 
-After the first specialization is actually obtained, that specialization adds:
+This point remains fixed throughout the Prototype 0.2 progression and guarantees that the hero continues to develop the basic physical foundation of the Warrior class.
 
-> **+1 specialization-directed attribute point per later hero level**
+### Adaptive Hero-Development Growth
 
-so normal growth becomes approximately six points per level during the first-specialization stage.
+Three additional points per level belong to the hero's autonomous development.
 
-The specialization also grants its currently planned immediate profile reward when completed:
+While the hero's personality is still weakly formed, these three points use the default Warrior profile:
+
+> **+1 STR +1 DEX +1 CON**
+
+Therefore, early Warrior growth normally totals:
+
+> **+2 STR +1 DEX +1 CON +1 deity-guided point per level**
+
+As meaningful personality traits appear and become established, the three adaptive points gradually stop following the default `STR / DEX / CON` distribution and are redistributed according to the hero's developed traits.
+
+There is no fixed level at which this system suddenly switches modes. The same adaptive-growth system is used from the beginning:
+
+- if the hero has no sufficiently established trait influence, the default Warrior profile fills the adaptive points;
+- established traits may redirect one or more adaptive points toward primary attributes that fit the hero's developed character;
+- if trait influences do not clearly determine all three points, any unresolved adaptive points fall back to the default Warrior profile.
+
+The exact mapping from individual personality traits to primary-attribute growth is not yet fixed. It must be defined together with the final Prototype 0.2 trait set. Personality-driven growth must not become a disguised manual talent tree, and one trait should not automatically map to one stat merely for symmetry.
+
+### Deity-Guided Growth
+
+One point per level is influenced by the player's current divine development direction.
+
+This remains a distinct player-guidance channel rather than being folded into personality. The deity can softly encourage one primary-attribute direction without turning level-up into ordinary manual stat allocation.
+
+### First-Specialization Growth
+
+After the first specialization is actually obtained, it adds:
+
+> **+1 specialization-directed primary-attribute point per later hero level**
+
+Normal post-specialization growth therefore becomes:
+
+> **1 fixed Warrior point + 3 adaptive hero points + 1 deity-guided point + 1 specialization-directed point = 6 points per level**
+
+The specialization also grants its current working immediate profile reward when completed:
 
 > **+5 specialization-profile attribute points**
 
+The exact size of this immediate reward remains a provisional balance value.
+
 If the hero completes the first specialization later than the normal level-40 milestone, delayed specialization-directed growth is not permanently lost. The missing post-40 specialization points are granted when the specialization becomes active.
 
-Exact XP requirements and level pace are tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the level-50–60 range.
+Exact XP requirements, attribute coefficients, trait-to-stat mappings, and level pace are tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the level-50–60 range.
 
 ---
 
@@ -315,9 +377,33 @@ The same rule applies to hero and enemies.
 
 ### Block
 
-Block belongs primarily to shield-based combat and must be implemented before Protector can be considered complete.
+Block is a shield-based defensive stat and must be implemented before Protector can be considered complete.
 
-Its exact chance / mitigation formula and eligible attack rules are one of the few combat details still requiring a dedicated final balance decision. Block logic must live in the combat-stat / combat-resolution layer, not inside UI or individual shield items.
+A successful Block reduces the incoming eligible hit by:
+
+> **75%**
+
+Therefore, before ordinary mitigation:
+
+`DamageAfterBlock = RawDamage × 0.25`
+
+Block applies to both physical and magical / elemental direct damage.
+
+The mitigation order is:
+
+> **incoming hit → Block check → if successful, reduce the hit to 25% → apply Armor or the matching elemental Resistance to the remaining damage**
+
+For physical damage:
+
+`FinalPhysicalDamageAfterBlock = (RawPhysicalDamage × 0.25) × 100 / (100 + Armor)`
+
+For elemental damage:
+
+`FinalElementalDamageAfterBlock = (RawElementalDamage × 0.25) × 100 / (100 + MatchingResistance)`
+
+The exact conversion from the numeric **Block** stat into Block Chance is deliberately not fixed yet. That formula must be centralized and shared by hero and enemies once defined.
+
+Block must ultimately contribute to the shared Power calculation and therefore to equipment evaluation and Item Power. Until the Block-Chance formula is defined, the current Power and Item Power formulas below are explicitly incomplete for Block-capable shield configurations.
 
 ---
 
@@ -335,23 +421,90 @@ The hero and enemies use one shared Power concept:
 
 Primary attributes are never added directly to Power if their effect is already represented through resolved stats.
 
-The current provisional expanded Warrior model is:
+Prototype 0.2 uses the current shared Warrior Power model from the approved combat design as the working formula for both the hero and enemies.
+
+### Offensive Power Term
+
+Critical contribution is:
+
+`CritModifier = 1 + CritChance × (CritDamage - 1)`
+
+Base expected physical DPS is:
+
+`RawDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier`
+
+Accuracy is valued against a fixed reference target with **50 Dodge**:
+
+`ReferenceHitChance = 1 - 50 / (50 + Accuracy + 100)`
+
+At `Accuracy = 0`, this reference hit chance is approximately `0.6667`. Accuracy is normalized against that baseline:
+
+`AccuracyFactor = ReferenceHitChance / 0.6667`
+
+Equivalent form:
+
+`AccuracyFactor = 1.5 × (Accuracy + 100) / (Accuracy + 150)`
+
+The resulting offensive term is:
+
+`EffectiveDPS = RawDPS × AccuracyFactor`
+
+or in one line:
+
+`EffectiveDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier × AccuracyFactor`
+
+### Defensive Power Term
+
+Dodge is valued against a fixed reference attacker with **100 Accuracy**:
+
+`ReferenceDodgeChance = Dodge / (Dodge + 100 + 100)`
+
+The normal **50% Dodge Chance cap** applies.
+
+For each incoming damage type, calculate the fraction of damage remaining after mitigation:
+
+`PhysicalTaken = 100 / (100 + Armor)`
+
+`FireTaken = 100 / (100 + FireResistance)`
+
+`ColdTaken = 100 / (100 + ColdResistance)`
+
+`LightningTaken = 100 / (100 + LightningResistance)`
+
+The current reference incoming-damage mix is:
+
+- 70% physical;
+- 10% fire;
+- 10% cold;
+- 10% lightning.
+
+Therefore:
+
+`AverageDamageTaken = 0.70 × PhysicalTaken + 0.10 × FireTaken + 0.10 × ColdTaken + 0.10 × LightningTaken`
+
+Effective survivability is:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+
+### Final Shared Power
+
+The final current working formula is:
 
 `Power = sqrt(EffectiveHP × EffectiveDPS)`
 
-with Crit, Accuracy, Dodge, Armor, and the three elemental resistances represented through reference conditions rather than arbitrary flat Power points.
+The exact same calculation must be used for hero and enemies. There must be one shared `PowerCalculator`; hero and enemy Power must not drift into separate formulas.
 
-The current design reference environment uses:
+The reference values — target Dodge `50`, attacker Accuracy `100`, and the `70/10/10/10` incoming-damage mix — are working tuning parameters for the universal Power estimate. They do not describe every actual opponent and may be rebalanced after automated combat testing, but they must remain centralized.
 
-- reference target Dodge = 50 for valuing Accuracy;
-- reference attacker Accuracy = 100 for valuing Dodge;
-- reference incoming damage mix = 70% physical / 10% fire / 10% cold / 10% lightning.
+Power is a universal estimate of general combat strength, not a guaranteed prediction of one specific matchup. Damage type, resistances, abilities, equipment requirements, and other matchup-specific mechanics can make two combatants with similar Power perform differently against one another.
 
-These are **tuning parameters**, not rules describing every real enemy. They must be validated against large automated fight batches.
+### Block Extension Required
 
-Power is general combat strength, not a guaranteed prediction against one specific opponent. Matchup-specific resistances, damage types, abilities, and Block may make one combatant perform better or worse than universal Power suggests.
+The formulas above currently represent the already-designed Power model **before Block is included**.
 
-There must still be one shared PowerCalculator for hero and enemies.
+Block is mandatory for the completed Prototype 0.2 Power model because it is a real defensive stat and a core Protector / shield mechanic. Once the conversion from numeric Block to Block Chance is defined, expected Block mitigation must be incorporated into the defensive Power term using the approved rule that a successful Block removes 75% of the incoming direct hit before Armor or elemental Resistance.
+
+Do not assign an arbitrary flat Power value to Block as a shortcut.
 
 ---
 
@@ -842,7 +995,51 @@ The player does not manually drag items onto the hero as normal gameplay. Equipm
 
 The player may inspect items, but the hero decides what to equip.
 
-Displayed Item Power may be used as a stable reference estimate for the player, but the hero’s actual equipment decision uses **virtual equip**.
+### Displayed Item Power
+
+Standard equipment exposes a visible **Item Power / Item Strength** estimate in addition to its actual stats.
+
+Item Power uses the same shared Hero / Enemy Power formula, but evaluates the item against one fixed reference combat-stat profile so the value printed on the item does not change depending on who currently holds it.
+
+The current reference profile is:
+
+- 1000 Health;
+- 100 Armor;
+- 50 Dodge;
+- 100 Accuracy;
+- 100 physical Damage;
+- 1.0 Attack Speed;
+- 25% Critical Chance;
+- 200% Critical Damage;
+- 100 Fire Resistance;
+- 100 Cold Resistance;
+- 100 Lightning Resistance.
+
+Under the current Power formula, before Block is added, this reference profile has approximately:
+
+`ReferencePower ≈ 433.0`
+
+The item's complete resolved combat contribution — inherent base stats plus all rolled modifiers — is applied to that fixed reference profile and Power is recalculated.
+
+The working formula is:
+
+`ItemPower = Power(ReferenceStats + ItemStats) - Power(ReferenceStats)`
+
+or with the current pre-Block reference baseline:
+
+`ItemPower = Power(ReferenceStats + ItemStats) - 433.0`
+
+No arbitrary cosmetic multiplier is added to this result. Item Power stays on the same conceptual scale as Hero Power.
+
+Displayed Item Power is only a stable reference estimate. It is **not** the hero's personal upgrade decision and does not promise that the item adds the same amount of Power to the current hero.
+
+Once Block Chance is formally defined and Block is added to the shared Power formula, Block-bearing items must be evaluated through that same Power model. Do not assign Block a separate arbitrary Item Power conversion.
+
+The Belt remains a special case because potion capacity is expedition utility rather than ordinary single-fight combat Power. Its permanent Health still enters resolved CombatStats, but Belt utility must additionally be evaluated through potion capacity rather than pretending potion slots are ordinary Item Power.
+
+### Hero Equipment Decision Uses Virtual Equip
+
+The hero's actual equipment decision uses **virtual equip**, not displayed Item Power.
 
 Working process:
 
