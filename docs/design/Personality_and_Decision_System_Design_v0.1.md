@@ -56,17 +56,47 @@ Both ends of a scale should have advantages and drawbacks.
 
 The exact set of personality scales will be defined separately.
 
-## Personality Changes Through Accumulated Experience
+## Personality Changes Through Meaningful Outcomes
 
-A single random action should not sharply rewrite the hero’s personality.
+Personality should not be rewritten by ordinary routine activity.
 
-If the hero repeatedly acts in a certain direction, the corresponding tendency can gradually strengthen. If they consistently act against an existing tendency, personality can slowly shift in the opposite direction.
+At the current concept stage, ordinary quests, ordinary fights, routine shopping, and other repeated low-significance actions do **not normally change personality traits by themselves**.
 
-Strong or especially meaningful events may have a greater impact than ordinary experiences.
+Personality change is primarily associated with **meaningful situations that contain a real decision and a consequential outcome**. Likely sources include authored events, major quest branches, some dungeon situations, and other activities that explicitly support personality-changing outcomes.
 
-Personality should be stable enough for the hero to remain recognizable, but flexible enough for a long personal history to genuinely change them.
+The hero’s existing personality may influence which option they choose, but **the choice itself does not automatically reinforce the personality trait that helped produce that choice**. A risk-seeking hero choosing the risky option does not gain additional risk-taking merely because they behaved according to their current character.
 
-The exact experiences, events, and conditions that change personality will be defined separately.
+Instead, personality-changing experience comes from the **result of the decision**. A specific outcome may move one or more hidden personality scales in directions appropriate to what actually happened. Different outcomes from the same decision may therefore produce different personality effects.
+
+The exact mapping from event outcomes to personality changes is authored by the content or system that owns that event. There is currently no universal rule such as “success always increases risk-taking” or “failure always increases caution.” The appropriate axes, direction, and magnitude depend on the meaning of the concrete outcome.
+
+Most outcomes do not have to modify personality at all. Personality-changing effects should be reserved for experiences meaningful enough to plausibly leave a mark on the hero.
+
+### Hidden Personality Values and Visible Trait Thresholds
+
+The opposing personality dimensions are treated as underlying continuous values that may move gradually as meaningful experience accumulates.
+
+The visible personality trait does **not** have to change every time the hidden value moves. Instead, visible states are defined by thresholds on the underlying scale.
+
+Conceptually:
+
+> **meaningful outcome → hidden personality movement → threshold crossing → visible trait change**
+
+This allows the hero to accumulate small changes without appearing to become a different person every few minutes.
+
+The first movement away from a broadly neutral starting state may be allowed to establish a recognizable initial trait comparatively quickly so that two young heroes can begin differentiating during the early game. After a trait has become established, strengthening it further, losing it, or crossing into the opposite trait should happen much more rarely and require substantially more accumulated contrary experience.
+
+Appearance and disappearance thresholds should not be identical. A trait that has just crossed its appearance threshold should not vanish again after one small opposite movement. This hysteresis keeps visible personality stable even while the hidden scale continues to move in both directions.
+
+Exact numerical ranges, thresholds, rates of change, and whether visible traits have named strength tiers remain balance questions.
+
+### Personality Traits and Combat Traits Remain Separate
+
+The personality model above does not replace combat traits.
+
+Combat traits such as fear or confidence toward a specific enemy category may still emerge from repeated or especially significant combat experience even when no explicit event choice occurred. Their detailed acquisition, strengthening, weakening, and disappearance rules belong to `Combat_and_Progression_System_Design_v0.1.md`.
+
+> **Personality changes because meaningful life outcomes leave a mark on the hero; ordinary behaviour that merely expresses the current personality should not automatically strengthen itself.**
 
 ## Personal Preferences
 
