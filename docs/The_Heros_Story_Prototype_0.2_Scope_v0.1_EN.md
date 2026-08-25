@@ -27,6 +27,8 @@ For Prototype 0.2 the priority order is:
 
 This Scope must therefore become increasingly self-contained as its systems are finalized.
 
+**Before implementation of any concrete Prototype 0.2 system begins, that system’s behavior must be described in this Scope clearly enough that normal implementation should not require reading the modular design documents or older discussions.**
+
 ---
 
 ## 1. Main Question of Prototype 0.2
