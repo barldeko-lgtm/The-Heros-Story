@@ -462,6 +462,8 @@ They still award their normal **combat experience**.
 
 The material reward belongs to the dungeon as a whole and is received only after the hero defeats the final boss and completes the dungeon.
 
+At the current concept level, a successful ordinary dungeon should provide a **meaningful material reward built around gold plus Blue/Purple-quality equipment**. Exact gold amounts, item counts, item levels, rarity probabilities, and reward-generation formulas are deliberately left for prototype implementation and balance testing.
+
 If the hero dies or otherwise fails before completion, the hero keeps the experience already earned from completed fights but receives **no dungeon completion loot**.
 
 This makes the dungeon an expedition with a real finish line rather than a place where the hero can collect most of the material value from a partial clear and leave.
@@ -569,6 +571,40 @@ Low Health or having no healing potions remaining does not create a retreat deci
 This is intentionally simple for the first implementation. Retreat logic may be reconsidered later only if testing shows that it adds useful behaviour rather than unnecessary complexity.
 
 > **For now, entering a dungeon means committing to the attempt: victory or death.**
+
+## Specialization Quests as Long-Term Goals
+
+Gaining a new class specialization is not an automatic reward for reaching the relevant level. The level milestone unlocks a **Specialization Quest** tied to the development path chosen autonomously by the hero, as defined in `Combat_and_Progression_System_Design_v0.1.md`.
+
+A Specialization Quest is a **long-term goal layered on top of the hero’s ordinary life** rather than a replacement for the normal quest/activity loop. The hero may continue completing ordinary quests, earning gold, improving equipment, visiting shops, and otherwise developing while the specialization goal remains active.
+
+The core objective is:
+
+> **obtain Specialization Quest → dedicated dungeon appears → prepare and attempt dungeon → defeat boss → obtain quest relic → complete the quest → receive the new specialization**
+
+### Dedicated Specialization Dungeon
+
+The quest requires a specific **quest item / relic** located inside a dedicated specialization dungeon.
+
+That dungeon does **not exist on the map before the Specialization Quest is created**. It is generated when the hero receives the quest, specifically so the hero cannot discover, clear, or loot the required dungeon before the specialization goal exists.
+
+When generated, the dungeon appears on the map as part of the active quest and its location is known to the hero.
+
+The specialization dungeon exists **in addition to the region’s ordinary dungeon population**. Under the current working density of roughly two ordinary dungeons around a major city/region, the active specialization dungeon is effectively an additional **third dungeon** rather than replacing one of the normal two.
+
+It is a quest-specific dungeon, not an ordinary renewable regional dungeon. Its purpose is to gate the specialization milestone through a concrete adventure and relic rather than through a menu choice.
+
+Where applicable, the specialization dungeon should reuse the ordinary dungeon rules for preparation, potion use, death, learned retry thresholds, and encounter progression instead of creating a second unrelated dungeon system. Exact combat strength, room count, boss design, and other balance values belong to implementation/testing.
+
+### Completing the Specialization Goal
+
+Defeating the dedicated dungeon’s boss allows the hero to obtain the required relic. The relic is a **quest objective**, not an ordinary random equipment drop.
+
+The hero receives the new specialization only after the relic objective is resolved and the Specialization Quest itself is completed.
+
+This means reaching level 40 or 80 represents **readiness to pursue the next development path**, while actually becoming that specialization requires the hero to accomplish something meaningful in the world.
+
+> **A specialization is not selected in a menu and granted instantly; the hero earns it by completing a long-term adventure tied to the path they have chosen.**
 
 ## Migration note
 

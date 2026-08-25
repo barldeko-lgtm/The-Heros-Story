@@ -42,37 +42,67 @@ The goal is for the hero’s behaviour to become recognizable and internally con
 
 Personality traits describe the hero’s tendencies and should primarily shape behaviour rather than act as a list of bonuses and penalties.
 
-The preferred model uses several opposing scales, for example:
+The current core personality model uses five opposing trait scales:
 
-- caution ↔ risk-taking;
-- mercy ↔ cruelty;
-- honesty ↔ cunning;
-- altruism ↔ selfishness;
-- curiosity ↔ conservatism.
+- **Brave / Храбрый ↔ Cowardly / Трусливый**;
+- **Noble / Благородный ↔ Devious / Коварный**;
+- **Observant / Наблюдательный ↔ Inattentive / Невнимательный**;
+- **Greedy / Жадный ↔ Generous / Щедрый**;
+- **Curious / Любопытный ↔ Conservative / Консервативный**.
 
-Both ends of a scale should have advantages and drawbacks.
+These five pairs are the current agreed core personality set. Their exact gameplay modifiers, bonuses, penalties, and numerical effects are intentionally **not defined yet**.
+
+Both ends of a scale should be treated as valid personality directions rather than automatically good or bad outcomes.
 
 > **A personality trait should create a style of life, not simply provide a green bonus or a red penalty.**
 
-The exact set of personality scales will be defined separately.
+## Personality Changes Through Meaningful Outcomes
 
-## Personality Changes Through Accumulated Experience
+Personality should not be rewritten by ordinary routine activity.
 
-A single random action should not sharply rewrite the hero’s personality.
+At the current concept stage, ordinary quests, ordinary fights, routine shopping, and other repeated low-significance actions do **not normally change personality traits by themselves**.
 
-If the hero repeatedly acts in a certain direction, the corresponding tendency can gradually strengthen. If they consistently act against an existing tendency, personality can slowly shift in the opposite direction.
+Personality change is primarily associated with **meaningful situations that contain a real decision and a consequential outcome**. Likely sources include authored events, major quest branches, some dungeon situations, and other activities that explicitly support personality-changing outcomes.
 
-Strong or especially meaningful events may have a greater impact than ordinary experiences.
+The hero’s existing personality may influence which option they choose, but **the choice itself does not automatically reinforce the personality trait that helped produce that choice**. A risk-seeking hero choosing the risky option does not gain additional risk-taking merely because they behaved according to their current character.
 
-Personality should be stable enough for the hero to remain recognizable, but flexible enough for a long personal history to genuinely change them.
+Instead, personality-changing experience comes from the **result of the decision**. A specific outcome may move one or more hidden personality scales in directions appropriate to what actually happened. Different outcomes from the same decision may therefore produce different personality effects.
 
-The exact experiences, events, and conditions that change personality will be defined separately.
+The exact mapping from event outcomes to personality changes is authored by the content or system that owns that event. There is currently no universal rule such as “success always increases bravery” or “failure always increases cowardice.” The appropriate axes, direction, and magnitude depend on the meaning of the concrete outcome.
+
+Most outcomes do not have to modify personality at all. Personality-changing effects should be reserved for experiences meaningful enough to plausibly leave a mark on the hero.
+
+### Hidden Personality Values and Visible Trait Thresholds
+
+The opposing personality dimensions are treated as underlying continuous values that may move gradually as meaningful experience accumulates.
+
+The visible personality trait does **not** have to change every time the hidden value moves. Instead, visible states are defined by thresholds on the underlying scale.
+
+Conceptually:
+
+> **meaningful outcome → hidden personality movement → threshold crossing → visible trait change**
+
+This allows the hero to accumulate small changes without appearing to become a different person every few minutes.
+
+The first movement away from a broadly neutral starting state may be allowed to establish a recognizable initial trait comparatively quickly so that two young heroes can begin differentiating during the early game. After a trait has become established, strengthening it further, losing it, or crossing into the opposite trait should happen much more rarely and require substantially more accumulated contrary experience.
+
+Appearance and disappearance thresholds should not be identical. A trait that has just crossed its appearance threshold should not vanish again after one small opposite movement. This hysteresis keeps visible personality stable even while the hidden scale continues to move in both directions.
+
+Exact numerical ranges, thresholds, rates of change, and whether visible traits have named strength tiers remain balance questions.
+
+### Personality Traits and Combat Traits Remain Separate
+
+The personality model above does not replace combat traits.
+
+Combat traits such as fear or confidence toward a specific enemy category may still emerge from repeated or especially significant combat experience even when no explicit event choice occurred. Their detailed acquisition, strengthening, weakening, and disappearance rules belong to `Combat_and_Progression_System_Design_v0.1.md`.
+
+> **Personality changes because meaningful life outcomes leave a mark on the hero; ordinary behaviour that merely expresses the current personality should not automatically strengthen itself.**
 
 ## Personal Preferences
 
 Personality and preferences are related, but they are not the same thing.
 
-**Personality** describes how the hero tends to act: cautiously, boldly, honestly, selfishly, and so on.
+**Personality** describes how the hero tends to act: cautiously, boldly, nobly, greedily, curiously, and so on.
 
 **Preferences** describe what the hero likes or dislikes: types of activities, combat styles, equipment, places, factions, or individual characters.
 
@@ -80,16 +110,13 @@ Preferences should influence autonomous choices and may form or change through t
 
 A separate complex subsystem is not required at this stage. Preferences may use the same underlying decision-weight mechanisms as personality while remaining conceptually distinct.
 
-## Discovery-Related Personality Traits
+## Observant and Inattentive
 
-Two provisional personality traits are reserved for later development because they may affect how easily the hero notices hidden locations, unusual signs, and nearby opportunities while travelling:
+**Observant / Наблюдательный ↔ Inattentive / Невнимательный** is one of the five core personality scales.
 
-- **Observant / Наблюдательный** — expected to improve the hero’s ability to notice hidden locations, unusual signs, or nearby opportunities;
-- **Inattentive / Невнимательный** — expected to reduce that ability.
+This scale is expected to be especially relevant to how easily the hero notices hidden locations, unusual signs, and nearby opportunities while travelling, but its exact mechanical effects are not yet defined.
 
-Their exact numerical effects, acquisition rules, interaction with other traits, and whether they form a strict opposing pair are **not yet defined**.
-
-The map and discovery systems may use these traits as modifiers to their own base discovery chances, but the definition, ownership, and future development of the traits belong to the personality system.
+The map and discovery systems may later use this personality scale as a modifier to their own base discovery chances, while the definition, ownership, and future development of the trait remain part of the personality system.
 
 > **The world defines what can be noticed; the hero’s personality may affect how likely they are to notice it.**
 

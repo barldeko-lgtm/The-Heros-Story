@@ -73,3 +73,24 @@ In the future, this separation should make it possible to:
 The exact classes, data structures, and technical implementation may change as development continues.
 
 > **UI shows the game. It should not be where the game itself lives.**
+
+## Save and Load Philosophy
+
+The normal player-facing game should treat the hero’s life as **one continuous history**, rather than a sequence of states that the player is expected to retry until they get the preferred result.
+
+The current direction is therefore:
+
+- a normal game uses **one rolling save slot**;
+- the player does not maintain several parallel manual save slots for the same playthrough;
+- loading returns to that same current save rather than offering a list of earlier checkpoints;
+- the save is overwritten by regular autosaving;
+- the current working autosave interval is approximately **every 10 minutes of real play time**;
+- the exact interval and any additional safe autosave moments may be adjusted later through testing.
+
+The purpose of this restriction is to preserve the consequences of the hero’s life. The player should not be encouraged to save immediately before a dungeon, event branch, risky decision, or other uncertain outcome and repeatedly reload until a preferred result occurs.
+
+This rule is part of the intended release experience, not merely a limitation of the interface.
+
+During development, debug or test builds may temporarily expose **multiple save slots, checkpoints, or other developer-only save tools** when they make testing specific systems and situations easier. These tools do not define the final player-facing save model.
+
+> **The hero lives through consequences; the player observes and guides that history rather than repeatedly rewriting it through save slots.**
