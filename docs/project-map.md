@@ -210,6 +210,15 @@ Creates one generated `ItemInstance` from a visual rarity definition, source Ite
 ### `scripts/hero/equipment_evaluator.gd`
 Performs virtual equip for one candidate against the hero's complete current equipment dictionary. It resolves base persistent CombatStats for current and copied candidate configurations, compares both through the shared `PowerCalculator`, and recommends replacement only for a strict HeroPower increase. It never mutates live equipment and excludes temporary effects.
 
+### `scripts/model/definitions/item_price_table_definition.gd` / `data/items/balance/item_price_table.tres`
+Central current equipment reference values for ilvl 1/10/20. White control points are 100/500/1000 Gold, Green uses ×3, Rare uses the approved current ×9 extension, and resale uses 10% of reference value. Undefined Item Levels/rarities remain unpriced instead of silently extrapolating.
+
+### `scripts/economy/item_price_calculator.gd`
+Reads the central price table and returns reference shop value or resale value for an Item Level/rarity pair or a concrete generated `ItemInstance`.
+
+### `scripts/economy/equipment_sale_system.gd`
+Owns automatic ordinary-equipment liquidation from Inventory. It removes only priced unequipped instances, totals their resale values, adds Gold to `HeroState`, and returns a structured sold-items/count/Gold result. Quest turn-in schedules `VISITING_MARKET`; `Simulation` invokes the sale system on the following dedicated world tick, then returns the hero to quest choice.
+
 ### `scripts/loot/loot_generator.gd`
 Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `Simulation` then passes that definition and the drop table's current ilvl 10 to `ItemGenerator`.
 
@@ -221,7 +230,7 @@ Contains the seven current visual item families in Common, Uncommon, and Rare va
 
 Every current resource under `data/mobs/` references the same initial ilvl 10 equipment drop table. After each defeated mob, `Simulation` asks `LootGenerator` for a seeded slot/rarity roll and `ItemGenerator` for a seeded generated instance. `EquipmentEvaluator` then compares the candidate's real virtual HeroPower against the current loadout; strict improvements equip and replaced/rejected instances enter FIFO Inventory. Current quest definitions contain Gold rewards only.
 
-Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, and dynamic ItemPower.
+Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, dynamic ItemPower, reference shop value, and sell price.
 
 The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately.
 

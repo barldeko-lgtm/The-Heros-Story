@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemPriceTableDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/item_price_table_definition.gd" id="1_price_table"]
+
+[resource]
+script = ExtResource("1_price_table")
+item_levels = Array[int]([1, 10, 20])
+white_reference_values = Array[int]([100, 500, 1000])
+uncommon_multiplier = 3.0
+rare_multiplier = 9.0
+sell_fraction = 0.10

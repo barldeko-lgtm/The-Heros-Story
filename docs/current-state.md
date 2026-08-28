@@ -20,7 +20,7 @@ Implemented:
 - thirteen matching initial-city quest templates;
 - the seven-piece `Авангард Железного Оплота` (`Ironward Vanguard`) equipment set: five armor pieces plus sword and shield, each with Common, Uncommon, and Rare definitions;
 - one shared equipment-drop table used by all thirteen current mobs: 5% chance after each defeated mob, then an equal roll among the five current armor slots plus sword and shield, then Common/Uncommon/Rare at 70%/25%/5%;
-- virtual-equip comparison by real base HeroPower plus a 36-slot FIFO inventory for retained drops;
+- virtual-equip comparison by real base HeroPower plus a 36-slot FIFO inventory for unequipped drops before city sale;
 - all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
@@ -79,6 +79,7 @@ Current loop states include:
 - `RECOVERING_AFTER_FIGHT`;
 - `RETURNING_TO_CITY`;
 - `TURNING_IN_QUEST`;
+- `VISITING_MARKET`;
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
@@ -127,6 +128,8 @@ Common items have no random affix, Uncommon items have one, and Rare items have 
 `ItemInstance` now owns Item Level, rarity, inherent stats, rolled total budget, affixes, resolved item stats, tooltip text, and dynamic ItemPower. ItemPower applies the complete generated contribution to the approved fixed reference profile and uses the shared `PowerCalculator`. `Equipment` and `StatResolver` consume the generated instance values for Health, Armor, Dodge, Accuracy, Damage, Attack Speed, Critical stats, Resistances, and Block.
 
 Every generated candidate is now evaluated through virtual equip before routing. `EquipmentEvaluator` compares the hero's full base persistent HeroPower with the current loadout against a copied loadout containing the candidate. Any rarity, including the same rarity as the equipped item, replaces it only when candidate HeroPower is strictly higher. Equal or weaker candidates enter Inventory. Temporary divine effects are excluded, displayed ItemPower is not used as the decision rule, and evaluation does not mutate live equipment.
+
+Current equipment reference prices are centralized for ilvl 1/10/20. White uses 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 10 White/Green/Rare items therefore sell for 50/150/450 Gold. Successful quest turn-in now enters `VISITING_MARKET` instead of returning directly to quest choice. On the following dedicated world tick, every unequipped ordinary item in Inventory is sold, removed, and converted into Gold; only then does the hero return to `CHOOSING_QUEST`. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
 
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
@@ -220,6 +223,7 @@ choose quest
 → next mob or return
 → turn in
 → Gold
+→ one market/sale tick
 → repeat
 ```
 

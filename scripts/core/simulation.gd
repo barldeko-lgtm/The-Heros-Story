@@ -20,6 +20,7 @@ const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
+const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const TIME_EPSILON: float = 0.000001
@@ -48,6 +49,7 @@ var quest_pool
 var quest_evaluator = QuestEvaluatorScript.new()
 var loot_generator = LootGeneratorScript.new()
 var item_generator = ItemGeneratorScript.new()
+var equipment_sale_system = EquipmentSaleSystemScript.new()
 var god_state
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
@@ -215,6 +217,9 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if skip_quest_advance_on_completed_combat_tick:
 		skip_quest_advance_on_completed_combat_tick = false
 		return
+	if hero_state.loop_state == HeroState.VISITING_MARKET:
+		advance_market_sale_tick(completed_tick)
+		return
 	if hero_state.loop_state == HeroState.DOING_QUEST:
 		return
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
@@ -226,6 +231,22 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		return
 	refresh_finished_quest_offer_if_needed(event)
 	debug_log.record_event(completed_tick, quest_narrator.describe(event))
+
+func advance_market_sale_tick(completed_tick: int) -> Dictionary:
+	var empty_result: Dictionary = {
+		"sold_items": [],
+		"sold_count": 0,
+		"gold_gained": 0,
+	}
+	if hero_state.loop_state != HeroState.VISITING_MARKET:
+		return empty_result
+	var result: Dictionary = equipment_sale_system.sell_ordinary_inventory(hero_state)
+	hero_state.loop_state = HeroState.CHOOSING_QUEST
+	if result["sold_count"] > 0:
+		debug_log.record_event(completed_tick, "Рынок: продано предметов: %d, получено +%d золота." % [result["sold_count"], result["gold_gained"]])
+	else:
+		debug_log.record_event(completed_tick, "%s посетил рынок, но продавать было нечего." % hero_state.hero_name)
+	return result
 
 func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, rng_override = null) -> Dictionary:
 	var result: Dictionary = {

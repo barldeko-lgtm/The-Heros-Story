@@ -216,6 +216,21 @@ defeated current mob
 → UI displays equipment/inventory icons, quality outlines, tooltip, and hero overlay
 ```
 
+Safe-city resale:
+
+```text
+successful HERO_TURNED_IN_QUEST
+→ HeroState.VISITING_MARKET
+→ wait for the next normal world tick
+→ EquipmentSaleSystem reads unequipped Inventory instances
+→ ItemPriceCalculator: reference value by ilvl/rarity
+→ SellPrice = 10% reference value
+→ remove sold instances from Inventory
+→ add total Gold to HeroState
+→ one debug-log summary
+→ HeroState.CHOOSING_QUEST
+```
+
 Contracts:
 - `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
 - all thirteen current mobs reference one shared equipment drop table;
@@ -230,6 +245,13 @@ Contracts:
 - a candidate of any rarity, including the same rarity, equips only when candidate HeroPower is strictly greater; equal or weaker candidates enter Inventory;
 - replaced equipment enters Inventory before the new item becomes the active stat source;
 - Inventory keeps at most 36 item instances in FIFO order; adding item 37 drops the oldest regardless of quality;
+- current ilvl 1/10/20 White reference values are 100/500/1000 Gold; Green uses ×3 and Rare uses ×9;
+- sale value is 10% of reference value; current ilvl 10 White/Green/Rare resale is 50/150/450 Gold;
+- successful turn-in does not sell immediately; it schedules exactly one `VISITING_MARKET` world tick;
+- the market tick performs sale and returns the hero to `CHOOSING_QUEST`; quest selection cannot occur during that same tick;
+- automatic sale never runs on death or other runtime events;
+- automatic sale affects Inventory only and cannot sell equipped items;
+- unpriced future Item Levels/rarities remain in Inventory instead of receiving an invented price;
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
 - every current drop is ilvl 10: armor has 7 inherent Armor, sword has 13 inherent Damage and +0.10 Attack Speed, and shield has 13 inherent Block;

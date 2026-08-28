@@ -48,7 +48,7 @@ func advance(hero_state, combat_stats: CombatStats = null):
 		HeroState.TURNING_IN_QUEST:
 			hero_state.gold += quest_definition.gold_reward
 			hero_state.active_quest = null
-			hero_state.loop_state = HeroState.CHOOSING_QUEST
+			hero_state.loop_state = HeroState.VISITING_MARKET
 			return QuestEventScript.new(QuestEventScript.HERO_TURNED_IN_QUEST, hero_state.hero_name, quest_definition, 0, quest_definition.gold_reward)
 		HeroState.DEAD_RESPAWNING:
 			respawn_ticks_remaining -= 1

@@ -14,3 +14,10 @@ func add_item(item_instance):
 
 func get_items() -> Array:
 	return items.duplicate()
+
+func remove_item(item_instance) -> bool:
+	var item_index: int = items.find(item_instance)
+	if item_index < 0:
+		return false
+	items.remove_at(item_index)
+	return true

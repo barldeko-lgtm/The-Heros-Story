@@ -2,6 +2,7 @@ class_name ItemInstance
 extends RefCounted
 
 const ItemPowerCalculatorScript = preload("res://scripts/items/item_power_calculator.gd")
+const ItemPriceCalculatorScript = preload("res://scripts/economy/item_price_calculator.gd")
 
 var definition: Resource
 var item_level: int
@@ -49,6 +50,13 @@ func get_tooltip_text() -> String:
 		"Уровень предмета: %d" % item_level,
 		"Сила предмета: %.2f" % get_item_power(),
 	]
+	var price_calculator = ItemPriceCalculatorScript.new()
+	var shop_value: int = price_calculator.get_reference_shop_value_for_item(self)
+	var sell_price: int = price_calculator.get_sell_price_for_item(self)
+	if shop_value >= 0:
+		lines.append("Магазинная стоимость: %d" % shop_value)
+	if sell_price >= 0:
+		lines.append("Цена продажи: %d" % sell_price)
 	if not is_zero_approx(rolled_total_modifier_budget):
 		lines.append("Бюджет модификаторов: %.2f" % rolled_total_modifier_budget)
 	lines.append("")

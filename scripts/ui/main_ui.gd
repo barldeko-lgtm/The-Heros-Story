@@ -311,6 +311,7 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.RECOVERING_AFTER_FIGHT: return "Восстанавливается после боя"
 		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
 		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
+		HeroState.VISITING_MARKET: return "На рынке — продаёт ненужный шмот"
 		HeroState.DEAD_RESPAWNING: return "Мёртв — тиков до возрождения: %d" % simulation.quest_runner.respawn_ticks_remaining
 		HeroState.RECOVERING_IN_CITY: return "Восстанавливается в городе"
 	return loop_state
