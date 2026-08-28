@@ -1,10 +1,7 @@
-[gd_resource type="Resource" script_class="QuestDefinition" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
 [ext_resource type="Resource" path="res://data/mobs/0002_wolf.tres" id="2_wolf"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet.tres" id="3_common"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres" id="4_uncommon"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_rare.tres" id="5_rare"]
 
 [resource]
 script = ExtResource("1_quest_definition")
@@ -17,4 +14,3 @@ distance_km_min = 3
 distance_km_max = 5
 gold_per_mob_min = 12
 gold_per_mob_max = 14
-item_reward_pool = Array[Resource]([ExtResource("3_common"), ExtResource("4_uncommon"), ExtResource("5_rare")])

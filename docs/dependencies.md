@@ -196,16 +196,21 @@ resurrection
 - the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
 - UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
 
-## Current equipment reward slice and future loot hook
+## Current equipment drop slice and future loot hook
 
 Current seven-piece Ironward Vanguard equipment flow:
 
 ```text
-one of seven reward-bearing QuestDefinitions
-→ slot-specific equal-third Common / Uncommon / Rare ItemDefinition pool
-→ every successful turn-in event
-→ Simulation rolls through shared seeded RNG and creates ItemInstance
-→ quality comparison against the matching HeroState.Equipment slot
+defeated current mob
+→ 5% equipment-drop check
+→ equal roll among five armor slots + sword + shield
+→ Common / Uncommon / Rare roll at 70% / 25% / 5%
+→ shared drop source supplies ilvl 10
+→ ItemGenerator resolves inherent stats / budget / unique affixes
+→ generated ItemInstance
+→ EquipmentEvaluator copies current Equipment and virtually inserts candidate
+→ StatResolver base persistent CombatStats for both configurations
+→ shared PowerCalculator comparison
 → equip/replace or HeroState.Inventory
 → StatResolver refreshes BaseCombatStats / CombatStats
 → UI displays equipment/inventory icons, quality outlines, tooltip, and hero overlay
@@ -213,23 +218,32 @@ one of seven reward-bearing QuestDefinitions
 
 Contracts:
 - `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
-- one reward is granted after every successful turn-in of the seven configured quests, never on defeat;
-- the three definitions are selected with exact equal thirds (`randi_range(0, 2)`), not rounded independent 33% checks;
+- all thirteen current mobs reference one shared equipment drop table;
+- a drop roll happens only after a combat victory, never after defeat or quest turn-in;
+- the seeded roll order is drop chance, equal slot selection, then rarity selection;
+- current ordinary quests contain Gold rewards only and no equipment reward pools;
 - `QuestRunner` does not equip the item or calculate its stats;
-- `Simulation` coordinates reward rolling, quality comparison, automatic equip/replacement, inventory routing, stat refresh, HP adjustment, and logging;
-- the first item in each configured equipment slot equips automatically; only strictly higher quality replaces it; equal or worse quality enters Inventory;
+- `Simulation` coordinates reward rolling, virtual-equip evaluation, replacement/inventory routing, stat refresh, HP adjustment, and logging;
+- `EquipmentEvaluator` must compare full base persistent HeroPower, not rarity and not displayed reference ItemPower;
+- the evaluator resolves a copied candidate equipment configuration and must not mutate live Equipment during comparison;
+- temporary finite effects are excluded from both sides of equipment evaluation;
+- a candidate of any rarity, including the same rarity, equips only when candidate HeroPower is strictly greater; equal or weaker candidates enter Inventory;
 - replaced equipment enters Inventory before the new item becomes the active stat source;
 - Inventory keeps at most 36 item instances in FIFO order; adding item 37 drops the oldest regardless of quality;
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
-- Common/Uncommon/Rare armor bonuses are `20/10/1`, `25/15/2`, and `35/20/3` MaxHP/Armor/Strength;
-- Common/Uncommon/Rare sword bonuses are `3/5%/10%`, `4/7%/15%`, and `5/10%/20%` Attack/CritChance/CritDamage;
-- Common/Uncommon/Rare shield bonuses are `10/20`, `15/25`, and `20/30` MaxHP/Armor;
+- every current drop is ilvl 10: armor has 7 inherent Armor, sword has 13 inherent Damage and +0.10 Attack Speed, and shield has 13 inherent Block;
+- Common/Uncommon/Rare create 0/1/2 unique random affixes; current ordinary drops do not generate Epic;
+- ilvl 10 Green affix budget is 78; each Rare affix uses 85% of that value;
+- one seeded 0.95–1.05 roll applies to total modifier budget, then budget splits equally among all affixes;
+- generated affixes use only the slot-legal secondary-stat pools and Scope 19.5 costs;
 - increasing MaxHP at turn-in increases current HP by the same delta, preserving full-health state;
 - Common has no outline; Uncommon uses a soft green 1.0/0.55/0.25 three-band outline; Rare uses the same blue outline;
-- static ItemPower must use `PowerCalculator`, not a parallel scoring formula: calculate the approved fixed `1000 HP / 100 Armor / 50 Dodge / 100 Accuracy / 100 Damage / 1.0 AttackSpeed / 25% CritChance / 200% CritDamage / 100 each elemental Resistance / 0 Block` profile with and without the item's resolved stats, then subtract its reference Power of approximately `433.013`;
-- temporary Strength on the current experimental items contributes +2 physical Damage and +5 percentage points Critical Damage per point before ItemPower is calculated, with no Strength-derived MaxHP;
+- generated ItemPower must use `PowerCalculator`, not a parallel scoring formula: calculate the approved fixed reference profile with and without the complete ItemInstance contribution, then subtract its reference Power of approximately `433.013`;
 - ItemPower is a stable item-comparison rating and is not directly added to the hero's runtime Power.
+- inherent-stat, Green-budget, rarity-rule, and stat-cost data live in central resources under `data/items/balance/`, not in individual generated instances;
+- `ItemInstance` owns its concrete ilvl, rarity, rolled total budget, affixes, and resolved stats;
+- the old serialized fixed stats on current visual rarity definitions are compatibility data only and do not affect generated runtime equipment;
 - helmet, chest, gloves, pants, and boots each use a dedicated aligned paper-doll overlay from their `ItemDefinition`; sword and shield still have no hero portrait overlay, and UI must not synthesize worn art from equipment icons;
 - no set-completion bonus exists in the current slice.
 

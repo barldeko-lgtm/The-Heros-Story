@@ -19,8 +19,8 @@ Implemented:
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
 - thirteen matching initial-city quest templates;
 - the seven-piece `Авангард Железного Оплота` (`Ironward Vanguard`) equipment set: five armor pieces plus sword and shield, each with Common, Uncommon, and Rare definitions;
-- seven quest reward pools: boars/chest, wolves/helmet, bears/gloves, granary rats/pants, trade-road bandits/boots, old-mill spiders/sword, and fearless elk/shield;
-- automatic per-slot quality replacement plus a 36-slot FIFO inventory for retained rewards;
+- one shared equipment-drop table used by all thirteen current mobs: 5% chance after each defeated mob, then an equal roll among the five current armor slots plus sword and shield, then Common/Uncommon/Rare at 70%/25%/5%;
+- virtual-equip comparison by real base HeroPower plus a 36-slot FIFO inventory for retained drops;
 - all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
@@ -120,9 +120,13 @@ HeroState + HeroProgression + Equipment
 - stable `BaseCombatStats` for primary UI values, HeroPower, and Hard Filter;
 - effective `CombatStats` including active temporary effects for actual combat.
 
-Persistent equipment contributes to both views. Armor now uses the Prototype 0.2 diminishing-return rule `PhysicalTaken = 100 / (100 + Armor)`; `CombatStats` no longer stores a separate precomputed `damage_reduction`. Common, Uncommon, and Rare Ironward Vanguard armor pieces still temporarily provide `20/10/1`, `25/15/2`, and `35/20/3` direct MaxHP/Armor/Strength respectively. Their temporary Strength uses the centralized Prototype 0.2 conversion: +2 physical Damage and +5 percentage points Critical Damage per point, with no Strength-derived HP. Standard Prototype 0.2 item generation will later stop rolling primary attributes. The set sword provides `3/5%/10%`, `4/7%/15%`, or `5/10%/20%` Damage/CritChance/CritDamage; the set shield provides `10/20`, `15/25`, or `20/30` MaxHP/Armor.
+Persistent equipment contributes to both views. Every current Ironward Vanguard drop is now generated as an ilvl 10 `ItemInstance`. The five armor slots receive 7 inherent Armor; the sword receives 13 inherent Damage and +0.10 Attack Speed; the shield receives 13 inherent Block. These base stats remain the same across Common, Uncommon, and Rare. The old fixed stat fields still present on the visual rarity definitions are no longer runtime stat sources.
 
-Every `ItemDefinition` also exposes static ItemPower for tooltips. It now uses the approved fixed reference profile of 1000 HP, 100 Armor, 50 Dodge, 100 Accuracy, 100 physical Damage, 1.0 AttackSpeed, 25% CritChance, 200% CritDamage, and 100 of each elemental Resistance. The reference Power is approximately `433.013`. Current Common/Uncommon/Rare armor ItemPower results are `18.45`, `29.96`, and `42.67`; sword results are `20.29`, `28.95`, and `39.90`; shield results are `16.70`, `21.26`, and `25.75`.
+Common items have no random affix, Uncommon items have one, and Rare items have two unique affixes. The ilvl 10 Green affix budget is 78. Rare affixes each use 85% of that Green budget. One seeded item-wide roll varies total modifier budget from 95% to 105%, after which the result is split equally between all affixes. Affix values use the current centralized stat-cost table from Scope 19.5, including Block at 13 budget per point. Generated equipment uses secondary stats only.
+
+`ItemInstance` now owns Item Level, rarity, inherent stats, rolled total budget, affixes, resolved item stats, tooltip text, and dynamic ItemPower. ItemPower applies the complete generated contribution to the approved fixed reference profile and uses the shared `PowerCalculator`. `Equipment` and `StatResolver` consume the generated instance values for Health, Armor, Dodge, Accuracy, Damage, Attack Speed, Critical stats, Resistances, and Block.
+
+Every generated candidate is now evaluated through virtual equip before routing. `EquipmentEvaluator` compares the hero's full base persistent HeroPower with the current loadout against a copied loadout containing the candidate. Any rarity, including the same rarity as the equipped item, replaces it only when candidate HeroPower is strictly higher. Equal or weaker candidates enter Inventory. Temporary divine effects are excluded, displayed ItemPower is not used as the decision rule, and evaluation does not mutate live equipment.
 
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
@@ -171,11 +175,11 @@ After the 100th respawn tick:
 - recovers 20% MaxHP per world tick;
 - only after reaching full HP returns to `CHOOSING_QUEST`.
 
-Full loot loss is still only a future hook because QuestLoot/inventory do not exist yet.
+Full unsafe-loot loss is still only a future hook because QuestLoot does not exist yet; current generated equipment drops become permanent immediately.
 
 ## Current quest content and selection
 
-Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values or a total Gold reward. Seven current templates additionally reference three ordered Common/Uncommon/Rare item definitions as equal-chance reward pools.
+Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive integer ranges for mob count, distance, and gold per mob; it does not store rolled values, a total Gold reward, or equipment rewards. Current ordinary quests reward Gold only.
 
 The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. With the current single-city content set this means all thirteen templates are present simultaneously. Using the shared seeded RNG, the pool creates one `QuestOffer` runtime object per template: it owns the rolled count, distance, and gold per mob, and derives `GoldReward = MobCount × GoldPerMob` whenever quest selection, turn-in, or narration needs it.
 

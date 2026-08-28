@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/equipment_drop_table_definition.gd" id="1_drop_table"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet.tres" id="2_common_helmet"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres" id="3_common_chest"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets.tres" id="4_common_gloves"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings.tres" id="5_common_pants"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots.tres" id="6_common_boots"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword.tres" id="7_common_weapon"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield.tres" id="8_common_shield"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres" id="9_uncommon_helmet"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres" id="10_uncommon_chest"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets_uncommon.tres" id="11_uncommon_gloves"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings_uncommon.tres" id="12_uncommon_pants"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_uncommon.tres" id="13_uncommon_boots"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword_uncommon.tres" id="14_uncommon_weapon"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield_uncommon.tres" id="15_uncommon_shield"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_rare.tres" id="16_rare_helmet"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres" id="17_rare_chest"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets_rare.tres" id="18_rare_gloves"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings_rare.tres" id="19_rare_pants"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_rare.tres" id="20_rare_boots"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword_rare.tres" id="21_rare_weapon"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield_rare.tres" id="22_rare_shield"]
+
+[resource]
+script = ExtResource("1_drop_table")
+drop_chance = 0.05
+item_level = 10
+common_items = Array[Resource]([ExtResource("2_common_helmet"), ExtResource("3_common_chest"), ExtResource("4_common_gloves"), ExtResource("5_common_pants"), ExtResource("6_common_boots"), ExtResource("7_common_weapon"), ExtResource("8_common_shield")])
+uncommon_items = Array[Resource]([ExtResource("9_uncommon_helmet"), ExtResource("10_uncommon_chest"), ExtResource("11_uncommon_gloves"), ExtResource("12_uncommon_pants"), ExtResource("13_uncommon_boots"), ExtResource("14_uncommon_weapon"), ExtResource("15_uncommon_shield")])
+rare_items = Array[Resource]([ExtResource("16_rare_helmet"), ExtResource("17_rare_chest"), ExtResource("18_rare_gloves"), ExtResource("19_rare_pants"), ExtResource("20_rare_boots"), ExtResource("21_rare_weapon"), ExtResource("22_rare_shield")])

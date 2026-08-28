@@ -329,7 +329,7 @@ func show_inventory_item_tooltip(slot_index: int) -> void:
 func show_item_tooltip(item_instance) -> void:
 	if item_instance == null or item_tooltip_panel == null:
 		return
-	item_tooltip_label.text = item_instance.definition.get_tooltip_text()
+	item_tooltip_label.text = item_instance.get_tooltip_text()
 	var tooltip_size: Vector2 = item_tooltip_panel.get_combined_minimum_size()
 	item_tooltip_panel.size = tooltip_size
 	var screen_size: Vector2 = get_viewport_rect().size

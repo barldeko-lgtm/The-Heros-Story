@@ -193,18 +193,35 @@ Immutable item card: id, display name, equipment slot, icon, hero overlay, and c
 One concrete acquired item referencing its immutable definition.
 
 ### `scripts/items/item_power_calculator.gd`
-Calculates static ItemPower through the shared `PowerCalculator`. It applies item bonuses to the approved minimal reference combat profile and subtracts that profile's baseline Power, avoiding arbitrary item-score coefficients.
+Calculates generated ItemInstance ItemPower through the shared `PowerCalculator`. It applies all inherent and affix stats to the approved fixed reference profile and subtracts that profile's baseline Power, avoiding arbitrary item-score coefficients. A compatibility path remains for old definition-level test data, but live equipment uses instance stats.
 
-### `data/items/visual_families/ironward_vanguard/boar_chestplate.tres`
-Defines Common `Кираса Авангарда Железного Оплота`: +20 direct MaxHP, +10 Armor, +1 Strength.
+### `scripts/model/definitions/item_modifier_budget_table_definition.gd` / `data/items/balance/item_modifier_budget_table.tres`
+Central Scope 19 budget data: Green affix budgets for ilvl 1/10/20/30/40/50/60, 0/1/2/3 affix counts, 1.0/0.85/0.7225 per-affix rarity multipliers, the 30% adjacent-tier growth target, and the one-time 0.95–1.05 total-budget roll.
 
-`data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres` defines Uncommon `Кираса Авангарда Железного Оплота`: +25 direct MaxHP, +15 Armor, +2 Strength. `data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres` defines Rare: +35 direct MaxHP, +20 Armor, +3 Strength. All three reuse the supplied icon and portrait overlay.
+### `scripts/model/definitions/item_modifier_stat_cost_table_definition.gd` / `data/items/balance/item_modifier_stat_costs.tres`
+Central Scope 19.5 conversion costs from modifier budget into Health, Armor, Dodge, Accuracy, Damage, critical stats, speed stats, elemental Resistance, and Block. Primary attributes are absent from the table.
 
-The same three-quality armor progression is defined for `boar_helmet*`, `boar_gauntlets*`, `boar_leggings*`, and `boar_boots*`. Their localized names are `Шлем Авангарда Железного Оплота`, `Рукавицы Авангарда Железного Оплота`, `Поножи Авангарда Железного Оплота`, and `Сапоги Авангарда Железного Оплота`; every quality of each family reuses its supplied paper-doll overlay. `boar_sword*` defines `Меч Авангарда Железного Оплота` with Common/Uncommon/Rare Attack/CritChance/CritDamage bonuses of `3/5%/10%`, `4/7%/15%`, and `5/10%/20%`. `boar_shield*` defines `Щит Авангарда Железного Оплота` with MaxHP/Armor bonuses of `10/20`, `15/25`, and `20/30`. Internal `boar_*` ids and filenames remain unchanged technical keys.
+### `scripts/model/definitions/item_base_stat_table_definition.gd` / `data/items/balance/item_base_stat_table.tres`
+Central inherent base-stat control points for ilvl 1/10/20/30/40/50/60. The current seven-slot set uses armor Armor, sword Damage/+0.10 Attack Speed, and shield Block from this table.
 
-Seven quests reference equal-third quality pools: `boars_in_fields` → chest, `wolf_hunt` → helmet, `bear_hunt` → gloves, `granary_rat_problem` → pants, `trade_road_ambush` → boots, `old_mill_webs` → sword, and `fearless_elk` → shield. Every successful turn-in rolls one reward through the shared seeded RNG. `Simulation` equips the first item per slot, upgrades only to a higher quality in that slot, and routes non-equipped/replaced items through FIFO Inventory.
+### `scripts/items/item_generator.gd`
+Creates one generated `ItemInstance` from a visual rarity definition, source Item Level, and the shared seeded RNG. It resolves inherent stats, rolls the item-wide modifier budget, selects unique slot-legal affixes, splits budget equally, converts budget through stat costs, and stores both readable affixes and combat-ready resolved values.
 
-Item tooltips call their definition's ItemPower calculation and display the stable result alongside quality and raw bonuses.
+### `scripts/hero/equipment_evaluator.gd`
+Performs virtual equip for one candidate against the hero's complete current equipment dictionary. It resolves base persistent CombatStats for current and copied candidate configurations, compares both through the shared `PowerCalculator`, and recommends replacement only for a strict HeroPower increase. It never mutates live equipment and excludes temporary effects.
+
+### `scripts/loot/loot_generator.gd`
+Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `Simulation` then passes that definition and the drop table's current ilvl 10 to `ItemGenerator`.
+
+### `scripts/model/definitions/equipment_drop_table_definition.gd` / `data/loot/initial_equipment_drop_table.tres`
+The immutable shared table used by all thirteen current mob definitions. It stores the drop chance and three aligned seven-slot rarity pools, avoiding duplicated 21-item lists in every mob resource.
+
+### `data/items/visual_families/ironward_vanguard/`
+Contains the seven current visual item families in Common, Uncommon, and Rare variants. Their ids, slots, names, icons, and armor overlays select presentation and rarity. Live inherent and random combat stats are generated on `ItemInstance`; the old serialized experimental stat fields are ignored by current runtime generation.
+
+Every current resource under `data/mobs/` references the same initial ilvl 10 equipment drop table. After each defeated mob, `Simulation` asks `LootGenerator` for a seeded slot/rarity roll and `ItemGenerator` for a seeded generated instance. `EquipmentEvaluator` then compares the candidate's real virtual HeroPower against the current loadout; strict improvements equip and replaced/rejected instances enter FIFO Inventory. Current quest definitions contain Gold rewards only.
+
+Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, and dynamic ItemPower.
 
 The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately.
 

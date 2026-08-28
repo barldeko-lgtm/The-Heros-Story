@@ -1,20 +1,6 @@
 extends SceneTree
 
 const QUALITY_SUFFIXES := ["", "_uncommon", "_rare"]
-const SWORD_STATS := [
-	[3.0, 0.05, 0.10],
-	[4.0, 0.07, 0.15],
-	[5.0, 0.10, 0.20],
-]
-const SHIELD_STATS := [
-	[10.0, 20],
-	[15.0, 25],
-	[20.0, 30],
-]
-const EXPECTED_ITEM_POWER := {
-	"weapon": [20.291831507, 28.948335426, 39.903781221],
-	"shield": [16.704037435, 21.259190048, 25.753586295],
-}
 
 func _init() -> void:
 	call_deferred("run_test")
@@ -37,40 +23,26 @@ func run_test() -> void:
 			assert(definition.equipment_slot == slot_id, "Every definition must use its dedicated equipment slot.")
 			assert(definition.quality == quality, "Every definition must match its resource quality.")
 			assert(definition.icon_texture != null, "Every sword/shield definition must have an icon.")
-			assert(is_equal_approx(definition.get_item_power(), EXPECTED_ITEM_POWER[slot_id][quality]), "Sword and shield ItemPower must use the shared Power formula.")
-			if slot_id == "weapon":
-				assert(is_equal_approx(definition.attack_bonus, SWORD_STATS[quality][0]), "Sword Attack must match the approved quality stats.")
-				assert(is_equal_approx(definition.crit_chance_bonus, SWORD_STATS[quality][1]), "Sword CritChance must match the approved quality stats.")
-				assert(is_equal_approx(definition.crit_damage_bonus, SWORD_STATS[quality][2]), "Sword CritDamage must match the approved quality stats.")
-				assert(definition.get_tooltip_text().contains("Атака: +%d" % int(SWORD_STATS[quality][0])), "Sword tooltip must show Attack.")
-				assert(definition.get_tooltip_text().contains("Шанс крита: +%d%%" % int(SWORD_STATS[quality][1] * 100.0)), "Sword tooltip must show CritChance.")
-				assert(definition.get_tooltip_text().contains("Сила крита: +%d%%" % int(SWORD_STATS[quality][2] * 100.0)), "Sword tooltip must show CritDamage.")
-			else:
-				assert(is_equal_approx(definition.max_hp_bonus, SHIELD_STATS[quality][0]), "Shield MaxHP must match the approved quality stats.")
-				assert(definition.armor_bonus == SHIELD_STATS[quality][1], "Shield Armor must match the approved quality stats.")
 			if quality == 2:
 				rare_items[slot_id] = definition
 
-	var quest_rewards := {
-		"res://data/quests/0007_old_mill_webs.tres": "weapon",
-		"res://data/quests/0008_fearless_elk.tres": "shield",
-	}
-	for quest_path in quest_rewards:
-		var quest: Resource = load(quest_path)
-		assert(quest.item_reward_pool.size() == 3, "Each assigned quest must expose three equal-quality rewards.")
-		for quality in 3:
-			assert(quest.item_reward_pool[quality].equipment_slot == quest_rewards[quest_path], "Quest pool must contain its assigned item family.")
-			assert(quest.item_reward_pool[quality].quality == quality, "Quest pool must be ordered Common/Uncommon/Rare.")
 
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var simulation = simulation_script.new(1)
+	var starting_hp: float = simulation.base_combat_stats.max_hp
+	var starting_attack: float = simulation.base_combat_stats.attack
+	var starting_block: float = simulation.base_combat_stats.block
 	simulation.receive_item_reward(rare_items["weapon"], 1)
 	simulation.receive_item_reward(rare_items["shield"], 2)
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 220.0), "Rare shield must add 20 MaxHP to the starting hero.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, 20.0), "Rare sword must add 5 physical Damage to the starting hero.")
-	assert(is_equal_approx(simulation.base_combat_stats.crit_chance, 0.35), "Rare sword must add 10 percentage points of CritChance.")
-	assert(is_equal_approx(simulation.base_combat_stats.crit_damage, 1.95), "Rare sword must add 20 percentage points of CritDamage.")
-	assert(is_equal_approx(simulation.base_combat_stats.armor, 35.0), "Rare shield plus starting Constitution must resolve to 35 Armor.")
+	var sword_instance = simulation.hero_state.equipment.get_item("weapon")
+	var shield_instance = simulation.hero_state.equipment.get_item("shield")
+	assert(sword_instance.item_level == 10 and sword_instance.affixes.size() == 2, "Rare sword must be generated at ilvl 10 with two affixes.")
+	assert(shield_instance.item_level == 10 and shield_instance.affixes.size() == 2, "Rare shield must be generated at ilvl 10 with two affixes.")
+	assert(sword_instance.get_base_stat("attack") == 13.0 and sword_instance.get_base_stat("attack_speed") == 0.10, "ilvl 10 sword must use its current inherent stats.")
+	assert(shield_instance.get_base_stat("block") == 13.0, "ilvl 10 shield must use its current inherent Block.")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_hp + sword_instance.get_stat_bonus("max_hp") + shield_instance.get_stat_bonus("max_hp")), "Generated Health must resolve from both items.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + sword_instance.get_stat_bonus("attack") + shield_instance.get_stat_bonus("attack")), "Generated sword Damage must resolve through Equipment.")
+	assert(is_equal_approx(simulation.base_combat_stats.block, starting_block + sword_instance.get_stat_bonus("block") + shield_instance.get_stat_bonus("block")), "Generated shield Block must resolve through Equipment.")
 
 	var main_ui_script: Script = load("res://scripts/ui/main_ui.gd")
 	var main_ui = main_ui_script.new()
@@ -90,5 +62,5 @@ func run_test() -> void:
 		assert(simulation.hero_state.equipment.get_item(slot_data[2]) != null, "Each new equipment slot must contain its item.")
 
 	main_ui.free()
-	print("PASS: Boar sword and shield qualities, stats, rewards, equipment, and UI work end-to-end.")
+	print("PASS: Boar sword and shield generate ilvl 10 instance stats and remain visible in UI.")
 	quit()

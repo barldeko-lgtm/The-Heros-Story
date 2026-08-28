@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemBaseStatTableDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/item_base_stat_table_definition.gd" id="1_base_stats"]
+
+[resource]
+script = ExtResource("1_base_stats")
+item_levels = Array[int]([1, 10, 20, 30, 40, 50, 60])
+armor_values = Array[float]([5.0, 7.0, 10.0, 12.0, 15.0, 20.0, 25.0])
+sword_damage_values = Array[float]([10.0, 13.0, 17.0, 22.0, 30.0, 40.0, 50.0])
+sword_attack_speed_bonus = 0.10
+shield_block_values = Array[float]([10.0, 13.0, 17.0, 22.0, 30.0, 40.0, 50.0])
+belt_health_values = Array[float]([30.0, 40.0, 50.0, 65.0, 85.0, 110.0, 145.0])
+jewelry_resistance_values = Array[float]([15.0, 20.0, 25.0, 35.0, 45.0, 60.0, 80.0])

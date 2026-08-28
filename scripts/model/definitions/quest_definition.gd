@@ -12,4 +12,3 @@ extends Resource
 @export var distance_km_max: int = 1
 @export var gold_per_mob_min: int = 0
 @export var gold_per_mob_max: int = 0
-@export var item_reward_pool: Array[Resource] = []

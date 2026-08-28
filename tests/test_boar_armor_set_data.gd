@@ -1,23 +1,13 @@
 extends SceneTree
 
 const QUALITY_SUFFIXES := ["", "_uncommon", "_rare"]
-const EXPECTED_STATS := [
-	[20.0, 10, 1, 18.451295985],
-	[25.0, 15, 2, 29.956283218],
-	[35.0, 20, 3, 42.672987403],
-]
 const ITEM_FAMILIES := {
 	"helmet": "boar_helmet",
 	"gloves": "boar_gauntlets",
 	"pants": "boar_leggings",
 	"boots": "boar_boots",
 }
-const QUEST_REWARDS := {
-	"res://data/quests/0002_wolf_hunt.tres": "helmet",
-	"res://data/quests/0003_bear_hunt.tres": "gloves",
-	"res://data/quests/0004_granary_rat_problem.tres": "pants",
-	"res://data/quests/0006_trade_road_ambush.tres": "boots",
-}
+
 
 func _init() -> void:
 	var rare_definitions: Dictionary = {}
@@ -29,34 +19,35 @@ func _init() -> void:
 			assert(definition != null, "Every Boar set quality definition must load: %s" % item_path)
 			assert(definition.equipment_slot == slot_id, "Item definition must target its own armor slot.")
 			assert(definition.quality == quality, "Item definition quality must match its resource variant.")
-			assert(is_equal_approx(definition.max_hp_bonus, EXPECTED_STATS[quality][0]), "Quality MaxHP must match the Boar chestplate progression.")
-			assert(definition.armor_bonus == EXPECTED_STATS[quality][1], "Quality Armor must match the Boar chestplate progression.")
-			assert(definition.strength_bonus == EXPECTED_STATS[quality][2], "Quality Strength must match the Boar chestplate progression.")
-			assert(is_equal_approx(definition.get_item_power(), EXPECTED_STATS[quality][3]), "Every armor piece must use universal ItemPower.")
 			assert(definition.icon_texture != null, "Every temporary armor item must have an icon.")
 			assert(definition.hero_overlay_texture != null, "Every visible armor piece must provide a paper-doll overlay.")
 			assert(definition.hero_overlay_texture.get_width() == 441 and definition.hero_overlay_texture.get_height() == 800, "Every armor overlay must preserve the hero portrait canvas.")
 			if quality == 2:
 				rare_definitions[slot_id] = definition
 
-	for quest_path in QUEST_REWARDS:
-		var quest: Resource = load(quest_path)
-		assert(quest != null and quest.item_reward_pool.size() == 3, "Each selected quest must expose three equal-quality rewards.")
-		for quality in 3:
-			assert(quest.item_reward_pool[quality].equipment_slot == QUEST_REWARDS[quest_path], "Quest reward pool must contain the assigned armor slot.")
-			assert(quest.item_reward_pool[quality].quality == quality, "Quest reward pool must be ordered Common/Uncommon/Rare.")
 
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var simulation = simulation_script.new(1)
+	var starting_hp: float = simulation.base_combat_stats.max_hp
+	var starting_attack: float = simulation.base_combat_stats.attack
+	var starting_armor: float = simulation.base_combat_stats.armor
 	var rare_chest: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres")
 	simulation.receive_item_reward(rare_chest, 1)
 	for slot_id in rare_definitions:
 		simulation.receive_item_reward(rare_definitions[slot_id], 2)
 	for slot_id in ["chest", "helmet", "gloves", "pants", "boots"]:
 		assert(simulation.hero_state.equipment.get_item(slot_id) != null, "Full Boar armor set must occupy all five armor slots.")
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 375.0), "Five rare pieces must add their direct HP to Constitution-derived HP.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, 45.0), "Five rare pieces must use the Prototype 0.2 Strength-to-Damage coefficient.")
-	assert(is_equal_approx(simulation.base_combat_stats.armor, 105.0), "Five rare pieces plus starting Constitution must resolve to 105 Armor.")
+	var expected_hp: float = starting_hp
+	var expected_attack: float = starting_attack
+	var expected_armor: float = starting_armor
+	for item_instance in simulation.hero_state.equipment.get_all_items():
+		assert(item_instance.item_level == 10 and item_instance.affixes.size() == 2, "Every current Rare armor piece must be a generated ilvl 10 item.")
+		expected_hp += item_instance.get_stat_bonus("max_hp")
+		expected_attack += item_instance.get_stat_bonus("attack")
+		expected_armor += item_instance.get_stat_bonus("armor")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, expected_hp), "Generated armor Health must resolve through Equipment.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, expected_attack), "Generated armor Damage must resolve through Equipment.")
+	assert(is_equal_approx(simulation.base_combat_stats.armor, expected_armor), "Generated inherent and affix Armor must resolve through Equipment.")
 
-	print("PASS: Four new Boar armor families have three qualities, quest rewards, and combined stats.")
+	print("PASS: Four Boar armor families keep their visuals and generate ilvl 10 instance stats.")
 	quit()

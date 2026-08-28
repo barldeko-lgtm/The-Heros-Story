@@ -28,38 +28,55 @@ func get_item(slot: String):
 func get_all_items() -> Array:
 	return equipped_items.values()
 
-func get_strength_bonus() -> int:
-	var total: int = 0
+func duplicate_with_replacement(item_instance):
+	var equipment_copy = get_script().new()
+	equipment_copy.equipped_items = equipped_items.duplicate()
+	if item_instance != null and item_instance.definition != null:
+		equipment_copy.equipped_items[item_instance.definition.equipment_slot] = item_instance
+	return equipment_copy
+
+func get_stat_bonus(stat_id: String) -> float:
+	var total: float = 0.0
 	for item_instance in equipped_items.values():
-		total += item_instance.definition.strength_bonus
+		if item_instance != null and item_instance.has_method("get_stat_bonus"):
+			total += item_instance.get_stat_bonus(stat_id)
 	return total
+
+func get_strength_bonus() -> int:
+	return int(get_stat_bonus("strength"))
 
 func get_max_hp_bonus() -> float:
-	var total: float = 0.0
-	for item_instance in equipped_items.values():
-		total += item_instance.definition.max_hp_bonus
-	return total
+	return get_stat_bonus("max_hp")
 
-func get_armor_bonus() -> int:
-	var total: int = 0
-	for item_instance in equipped_items.values():
-		total += item_instance.definition.armor_bonus
-	return total
+func get_armor_bonus() -> float:
+	return get_stat_bonus("armor")
 
 func get_attack_bonus() -> float:
-	var total: float = 0.0
-	for item_instance in equipped_items.values():
-		total += item_instance.definition.attack_bonus
-	return total
+	return get_stat_bonus("attack")
+
+func get_attack_speed_bonus() -> float:
+	return get_stat_bonus("attack_speed")
+
+func get_accuracy_bonus() -> float:
+	return get_stat_bonus("accuracy")
+
+func get_dodge_bonus() -> float:
+	return get_stat_bonus("dodge")
+
+func get_fire_resistance_bonus() -> float:
+	return get_stat_bonus("fire_resistance")
+
+func get_cold_resistance_bonus() -> float:
+	return get_stat_bonus("cold_resistance")
+
+func get_lightning_resistance_bonus() -> float:
+	return get_stat_bonus("lightning_resistance")
+
+func get_block_bonus() -> float:
+	return get_stat_bonus("block")
 
 func get_crit_chance_bonus() -> float:
-	var total: float = 0.0
-	for item_instance in equipped_items.values():
-		total += item_instance.definition.crit_chance_bonus
-	return total
+	return get_stat_bonus("crit_chance")
 
 func get_crit_damage_bonus() -> float:
-	var total: float = 0.0
-	for item_instance in equipped_items.values():
-		total += item_instance.definition.crit_damage_bonus
-	return total
+	return get_stat_bonus("crit_damage")

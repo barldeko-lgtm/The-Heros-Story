@@ -424,9 +424,13 @@ For elemental damage:
 
 `FinalElementalDamageAfterBlock = (RawElementalDamage × 0.25) × 100 / (100 + MatchingResistance)`
 
-The exact conversion from the numeric **Block** stat into Block Chance is deliberately not fixed yet. That formula must be centralized and shared by hero and enemies once defined.
+Prototype 0.2 uses the following shared Block conversion:
 
-Block must ultimately contribute to the shared Power calculation and therefore to equipment evaluation and Item Power. Until the Block-Chance formula is defined, the current Power and Item Power formulas below are explicitly incomplete for Block-capable shield configurations.
+> **`BlockChance = min(Block / (Block + 200), 0.50)`**
+
+This formula is centralized and shared by hero and enemies.
+
+Block contributes to the shared Power calculation through expected mitigation and therefore also contributes to equipment evaluation and Item Power through the same Power model.
 
 ---
 
@@ -525,13 +529,24 @@ The reference values — target Dodge `50`, attacker Accuracy `100`, and the `70
 
 Power is a universal estimate of general combat strength, not a guaranteed prediction of one specific matchup. Damage type, resistances, abilities, equipment requirements, and other matchup-specific mechanics can make two combatants with similar Power perform differently against one another.
 
-### Block Extension Required
+### Block in Shared Power
 
-The formulas above currently represent the already-designed Power model **before Block is included**.
+Block is already part of the completed Prototype 0.2 shared Power model.
 
-Block is mandatory for the completed Prototype 0.2 Power model because it is a real defensive stat and a core Protector / shield mechanic. Once the conversion from numeric Block to Block Chance is defined, expected Block mitigation must be incorporated into the defensive Power term using the approved rule that a successful Block removes 75% of the incoming direct hit before Armor or elemental Resistance.
+For the reference defensive calculation:
 
-Do not assign an arbitrary flat Power value to Block as a shortcut.
+`BlockChance = min(Block / (Block + 200), 0.50)`
+
+`BlockMultiplier = 1 - 0.75 × BlockChance`
+
+The defensive term therefore uses:
+
+`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance) × BlockMultiplier)`
+
+The same Block conversion and expected-mitigation model must be used for hero Power, mob Power, ItemPower reference calculations, and EquipmentEvaluator virtual-equip comparisons.
+
+Do not assign an arbitrary flat Power value to Block.
+
 
 ---
 
@@ -625,9 +640,13 @@ Raw Elemental Damage
 → final HP damage
 ```
 
-Therefore Battle Guard multiplies the already-mitigated remaining damage by:
+Battle Guard then multiplies the already-mitigated remaining damage by the multiplier corresponding to its current Skill Level.
 
-> **0.67**
+Working endpoints are defined in Section 27:
+
+- Skill Level 1 → remaining damage × **0.75**;
+- Skill Level 10 → remaining damage × **0.65**;
+- intermediate Skill Levels scale evenly between those endpoints.
 
 It does not replace, bypass, or weaken Block, Armor, or elemental Resistances.
 
@@ -1565,26 +1584,243 @@ Prototype 0.2 rarity ends at:
 | Rare | Blue | 2 |
 | Epic | Purple | 3 |
 
-Legendary / Orange is outside Prototype 0.2.
+Legendary / Orange remains outside Prototype 0.2, but it is retained below as a future balancing reference because the rarity-growth rule is easier to validate when the next rarity is visible.
 
-Item level determines the strength scale of inherent base stats and modifier budget.
+### 19.1. Base Stats Are Separate From Modifier Budget
 
-Rarity determines the modifier structure and increases the available modifier budget.
+An item's inherent base stats are **not paid from its random-modifier budget**.
+
+Base stats are determined by:
+
+- item type / equipment group;
+- item level / progression tier.
+
+For the same base item type and item level, the inherent base stat remains the same across all rarities.
+
+Example:
+
+If one armor item at a given tier has:
+
+> **5 base Armor**
+
+then the White, Green, Blue, Purple, and future Legendary versions of that same base item all retain:
+
+> **5 base Armor**
+
+Higher rarity adds random modifiers. It does not consume, replace, or multiply the inherent base stat merely because the item's color changed.
+
+Therefore:
+
+- **White** standard equipment = inherent base stats only;
+- **Green and above** = the same inherent base stats + rarity-appropriate random modifiers.
+
+For Prototype 0.2, the five normal armor slots currently use the same base-Armor progression rule. There are **no slot-specific Armor budget multipliers** yet. Slot weighting may be reconsidered later if testing shows that it adds useful equipment identity.
+
+The current working inherent base-stat control points are:
+
+| Item level / tier | Armor base Armor | Sword base Damage | Sword Attack Speed bonus | Shield base Block | Belt base Health | Jewelry base Resistance |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 5 | 10 | +0.10 | 10 | 30 | 15 |
+| 10 | 7 | 13 | +0.10 | 13 | 40 | 20 |
+| 20 | 10 | 17 | +0.10 | 17 | 50 | 25 |
+| 30 | 12 | 22 | +0.10 | 22 | 65 | 35 |
+| 40 | 15 | 30 | +0.10 | 30 | 85 | 45 |
+| 50 | 20 | 40 | +0.10 | 40 | 110 | 60 |
+| 60 | 25 | 50 | +0.10 | 50 | 145 | 80 |
+
+These are inherent base properties and therefore remain the same across all rarities of the same item type and item level.
+
+Prototype 0.2 currently uses only one ordinary Warrior weapon profile for this table:
+
+> **Sword**
+
+The Sword's Attack Speed bonus remains fixed at:
+
+> **+0.10**
+
+across all item tiers. Its base progression therefore comes from Damage rather than increasing Attack Speed with item level.
+
+Jewelry uses one inherent elemental Resistance chosen when the item is generated:
+
+- Fire Resistance;
+- Cold Resistance;
+- Lightning Resistance.
+
+The resistance type may vary randomly between otherwise comparable jewelry items. The **amount** is determined only by item level / tier and does not increase merely because the item has higher rarity.
+
+The Belt remains a special item type whose potion rules are defined separately in Section 26.
+
+### 19.2. Rarity Defines Affix Count and Per-Affix Strength
+
+Standard equipment uses the following random-modifier counts:
+
+- **Green / Uncommon → 1 affix**
+- **Blue / Rare → 2 affixes**
+- **Purple / Epic → 3 affixes**
+- **Legendary / Orange → 4 affixes** as a future balancing reference only
+
+The system uses **Green as the reference strength of one affix**.
+
+Each step upward in rarity reduces the strength budget of each individual affix by:
+
+> **15% relative to the previous rarity**
+
+Therefore the current working per-affix multipliers are:
+
+| Rarity | Affix count | Budget of each affix vs Green | Total modifier strength vs one Green affix |
+| --- | ---: | ---: | ---: |
+| Green | 1 | 100% | 100% |
+| Blue | 2 | 85% | 170% |
+| Purple | 3 | 72.25% | 216.75% |
+| Legendary* | 4 | 61.4125% | 245.65% |
+
+\* Legendary is not generated in Prototype 0.2. It is shown only to preserve the future rarity progression rule.
+
+This structure deliberately prevents a higher-rarity item from becoming a simple multiple of the Green item's power.
+
+A Green item has the strongest individual affix at its tier but only one modifier. Higher rarities gain broader combined strength through more affixes, while each individual affix becomes somewhat weaker.
+
+### 19.3. Green Affix Budget by Item Tier
+
+Only the **Green affix budget** needs to be defined directly.
+
+Every next equipment tier increases the Green affix budget by:
+
+> **30% relative to the previous tier**
+
+Working Prototype 0.2 control points:
+
+| Item level / tier | Green affix budget |
+| ---: | ---: |
+| 1 | 60 |
+| 10 | 78 |
+| 20 | 101 |
+| 30 | 132 |
+| 40 | 171 |
+| 50 | 223 |
+| 60 | 290 |
+
+Intermediate or future item levels may derive their values from the same progression rule if needed.
+
+Blue, Purple, and future Legendary affix budgets are derived from the Green budget of the same tier through the rarity multipliers in Section 19.2.
+
+Example for a tier with Green affix budget `100`:
+
+- Green → `1 × 100`
+- Blue → `2 × 85`
+- Purple → `3 × 72.25`
+- Legendary → `4 × 61.4125`
+
+### 19.4. Random Total Modifier-Budget Variation
+
+After the normal **total modifier budget of the item** has been calculated from its item tier and rarity, the generated item receives one small random variation:
+
+> **`RolledTotalModifierBudget = BaseTotalModifierBudget × random(0.95, 1.05)`**
+
+Therefore an otherwise identical item may roll between:
+
+> **−5% and +5%**
+
+of the normal **total modifier budget** for its level and rarity.
+
+The random roll applies **once to the whole item**, not separately to every affix.
+
+Example for a tier where the nominal total modifier budgets are:
+
+- Green → `100`
+- Blue → `170`
+- Purple → `216.75`
+- future Legendary → `245.65`
+
+the possible rolled totals are approximately:
+
+| Rarity | Nominal total budget | Rolled total budget |
+| --- | ---: | ---: |
+| Green | 100 | 95–105 |
+| Blue | 170 | 161.5–178.5 |
+| Purple | 216.75 | 205.9–227.6 |
+| Legendary* | 245.65 | 233.4–257.9 |
+
+\* Legendary remains a future balancing reference and is not generated in Prototype 0.2.
+
+After this single item-level roll, the resulting total modifier budget is distributed **equally** among all mandatory affixes of that item.
+
+Therefore:
+
+- Green → the single affix receives 100% of the rolled total modifier budget;
+- Blue → each of the two affixes receives 50%;
+- Purple → each of the three affixes receives one third;
+- future Legendary → each of the four affixes receives 25%.
+
+There is no additional independent ±5% roll for individual affixes.
+
+This keeps generation simple and readable: rarity determines how many affixes exist, the rarity model determines the nominal total modifier budget, one small roll changes the overall item strength, and the final rolled total is split evenly between its affixes.
+
+### 19.5. Modifier Stat Costs
+
+Modifier Budget is an abstract generation currency.
+
+Different secondary combat stats therefore use different approximate budget costs.
+
+The current working costs are:
+
+| Modifier gain | Working budget cost |
+| --- | ---: |
+| +1 Health | 4 |
+| +1 Armor | 12 |
+| +1 Dodge | 12 |
+| +1 Accuracy | 1 |
+| +1 physical Damage | 18 |
+| +1 percentage point Critical Chance | 40 |
+| +1 percentage point Critical Damage | 7 |
+| +1% Attack Speed | 30 |
+| +1% Cast Speed | 30, provisional |
+| +1 elemental Resistance | 5 |
+| +1 Block | 13 |
+
+These are **approximate generation weights**, not universal claims that one point of each stat always has the same combat value in every build or encounter.
+
+The current weights were adjusted primarily against the mid/late Prototype 0.2 Warrior range rather than the first few hero levels.
+
+Very early level imbalance should not be solved by distorting the entire item-cost table. If needed, the hero's low-level base combat stats can be tuned separately.
+
+Accuracy and elemental Resistance remain strongly context-sensitive:
+
+- Accuracy becomes more valuable against enemies with meaningful Dodge;
+- one elemental Resistance becomes much more valuable in encounters dominated by its matching damage type.
+
+Therefore these stats should not be forced into exact universal Power equality merely to make the generation table numerically symmetrical.
+
+`Block` uses the shared combat formula:
+
+> **`BlockChance = min(Block / (Block + 200), 0.50)`**
+
+and is currently priced at approximately:
+
+> **13 Modifier Budget per +1 Block**
+
+This slightly weakens Block generation relative to the first mathematical estimate and keeps it closer to the desired late-Prototype equipment contribution.
+
+### 19.6. Modifier Pools
 
 Standard equipment modifiers use secondary combat stats only.
 
-The same random modifier may not appear twice on one item. An inherent base property may still also appear once as a random modifier when that item group allows it.
+Primary hero attributes such as Strength, Dexterity, Intelligence, Constitution, and Wisdom are not ordinary random equipment modifiers.
+
+The same random modifier may not appear twice on one item.
+
+An inherent base property may still also appear once as a random modifier when that item group allows it.
 
 Working modifier pools:
 
-### Armor
+#### Armor
 
 - Health;
 - Armor;
 - Dodge;
 - at Epic, optionally one elemental resistance.
 
-### Warrior Weapons
+#### Warrior Weapons
 
 - Damage;
 - Accuracy;
@@ -1592,7 +1828,7 @@ Working modifier pools:
 - Critical Damage;
 - Attack Speed.
 
-### Jewelry
+#### Jewelry
 
 - Fire Resistance;
 - Cold Resistance;
@@ -1603,11 +1839,17 @@ Working modifier pools:
 - Critical Chance;
 - Critical Damage.
 
-### Belt
+#### Belt
 
-No ordinary random modifier pool in Prototype 0.2. Its identity is base Health + potion capacity + potion ilvl limit.
+No ordinary random modifier pool in Prototype 0.2.
 
-### Shield / Dedicated Off Hand
+Its identity is:
+
+- base Health from item level;
+- potion capacity from rarity;
+- maximum supported potion level from item level.
+
+#### Shield / Dedicated Off Hand
 
 - Accuracy;
 - Critical Chance;
@@ -1615,7 +1857,14 @@ No ordinary random modifier pool in Prototype 0.2. Its identity is base Health +
 - Block;
 - Health.
 
-Exact modifier-budget ranges and stat costs are balance data and should be stored centrally.
+### 19.7. Balance Status
+
+The values in this section are the **current working Prototype 0.2 itemization rules**.
+
+They are concrete enough to implement and test.
+
+They are not permanently locked balance constants. Real equipment generation, full 12-slot builds, enemies, specialization profiles, and long-run simulation may justify later numerical tuning without changing the ownership or structure of the system.
+
 
 ---
 
@@ -1626,6 +1875,23 @@ Loot is source-driven, not hero-scaled.
 A weak early enemy does not start dropping mid-game equipment because the hero became stronger.
 
 Ordinary mob equipment drops use the source’s defined item-level range and rarity rules.
+
+For Prototype 0.2 ordinary quest content, the three relative-strength quest bands in each city map directly to equipment item levels dropped by their ordinary quest mobs:
+
+| City | Quest band | Ordinary mob equipment ilvl |
+| --- | --- | ---: |
+| Starting City | Lower | 1 |
+| Starting City | Middle | 10 |
+| Starting City | Higher | 20 |
+| Mid-Level City | Lower | 30 |
+| Mid-Level City | Middle | 40 |
+| Mid-Level City | Higher | 50 |
+
+This mapping is source-driven, not hero-scaled.
+
+A hero returning to weaker content does not cause those mobs to begin dropping higher-ilvl equipment.
+
+The level-60 equipment control point remains available for later Prototype 0.2 rewards / content where explicitly appropriate; ordinary quest mobs in the two current cities do not use ilvl 60 by default.
 
 Working ordinary equipment-drop rarity ceiling:
 
@@ -1695,7 +1961,7 @@ The current reference profile is:
 - 100 Cold Resistance;
 - 100 Lightning Resistance.
 
-Under the current Power formula, before Block is added, this reference profile has approximately:
+With the reference profile using `Block = 0`, the current shared Power formula gives approximately:
 
 `ReferencePower ≈ 433.0`
 
@@ -1705,7 +1971,7 @@ The working formula is:
 
 `ItemPower = Power(ReferenceStats + ItemStats) - Power(ReferenceStats)`
 
-or with the current pre-Block reference baseline:
+or with the current reference baseline:
 
 `ItemPower = Power(ReferenceStats + ItemStats) - 433.0`
 
@@ -1713,7 +1979,7 @@ No arbitrary cosmetic multiplier is added to this result. Item Power stays on th
 
 Displayed Item Power is only a stable reference estimate. It is **not** the hero's personal upgrade decision and does not promise that the item adds the same amount of Power to the current hero.
 
-Once Block Chance is formally defined and Block is added to the shared Power formula, Block-bearing items must be evaluated through that same Power model. Do not assign Block a separate arbitrary Item Power conversion.
+Block-bearing items are evaluated through that same shared Power model. Do not assign Block a separate arbitrary Item Power conversion.
 
 The Belt remains a special case because potion capacity is expedition utility rather than ordinary single-fight combat Power. Its permanent Health still enters resolved CombatStats, but Belt utility must additionally be evaluated through potion capacity rather than pretending potion slots are ordinary Item Power.
 
@@ -2689,70 +2955,471 @@ The governing principle remains:
 
 ---
 
-## 30. Working Hero Diary / Chronicle
+## 30. Hero Diary / Chronicle
 
-A functional player-facing diary is **mandatory** in Prototype 0.2.
+A functional player-facing **Hero Diary / Chronicle is mandatory** in Prototype 0.2.
 
-The diary is not the developer debug log.
+The diary is one of the main ways the player understands what the autonomous hero has been doing while the player was not watching every moment.
 
-Narrative pipeline:
+Its purpose is simple:
 
-> **simulation creates facts → narrative system selects / groups significant facts → diary presents a readable episode**
+> **the player should be able to read the diary and understand the hero's recent path through the game.**
 
-The diary uses:
+The diary is not a debug log and does not record every individual action.
 
-- third-person narration;
-- adventure-chronicle tone;
-- light dry irony where appropriate;
-- personality-aware phrasing only when supported by real hero state;
-- restrained tone for death, major failure, specialization, and other serious events.
+It should describe the hero's life in a readable, lightly literary form.
 
-It must not become constant comedy, internet slang, or a raw line-by-line combat dump.
+Core rule:
 
-Prototype 0.2 should record meaningful episodes including at least:
+> **The simulation creates facts. The diary turns those facts into a readable account of the hero's journey.**
 
-- important quest selection and completion/failure;
-- travel to a new city;
-- significant temporary events and their consequences;
+### 30.1. What the Diary Should Tell the Player
+
+The diary should let the player understand the sequence of meaningful activities and consequences.
+
+For example, a connected stretch of the hero's life may include:
+
+- the hero chose a quest;
+- travelled to the quest location;
+- defeated the required enemies;
+- found a new chest piece;
+- reviewed the obtained items and found nothing else useful;
+- returned to the city;
+- turned in the quest;
+- gained Gold / XP / a level;
+- visited the market;
+- bought something useful;
+- chose the next activity.
+
+The diary does not need to describe every attack, every recovery tick, every travelled hex, or every minor inventory operation.
+
+Instead, it should preserve the **meaningful chain of actions and results**.
+
+A player returning later should be able to answer questions such as:
+
+- What has the hero been doing?
+- Which quests did they complete or fail?
+- Where did the new sword or armor come from?
+- Why is the hero now level 8 instead of level 6?
+- Did the hero buy or replace equipment?
+- Did they discover or attempt a dungeon?
+- Did they move to another city?
+- Did something important happen to their personality or specialization?
+- Did divine intervention noticeably affect their path?
+
+### 30.2. Connected Events Should Be Grouped Naturally
+
+The diary should not create one separate entry for every engine event.
+
+Connected actions should be described together as one readable piece of the hero's story.
+
+For example:
+
+> the hero chooses a quest → travels there → completes it → receives loot → checks the loot → returns to the city → turns the quest in
+
+may be presented as one connected diary passage.
+
+The exact technical grouping method is an implementation detail.
+
+The important rule is:
+
+> **the diary follows the hero's meaningful activities, not the engine's individual events.**
+
+If a new level, useful item, important event, death, dungeon failure, or other meaningful consequence happens during that activity, it should be included naturally in the same account when appropriate.
+
+### 30.3. Required Sources of Diary Events
+
+Prototype 0.2 diary coverage should include the hero's meaningful activity across the implemented systems, including:
+
+- ordinary quest selection;
+- quest travel;
+- quest completion or failure;
+- meaningful loot and equipment changes;
+- return to the city and quest turn-in;
 - level-ups;
-- important equipment upgrades;
-- visible personality-trait changes;
+- Skill Level purchases;
+- important market / shop purchases;
+- important item sales or replacement decisions where useful for understanding the hero's development;
+- temporary events and their consequences;
+- relocation between cities;
 - dungeon discovery;
-- dungeon attempts, failures, and clears;
+- dungeon preparation;
+- dungeon attempts, failures, retries, and successful clears;
+- visible personality changes;
 - specialization direction;
-- Specialization Quest progression;
+- Specialization Quest progress;
+- specialization dungeon;
 - specialization gained;
 - death and resurrection;
-- major divine intervention when narratively meaningful.
+- meaningful divine intervention.
 
-Routine details such as every normal attack, every recovery tick, every kilometre, every shop sell line, and every ordinary mob kill should normally be omitted or summarized.
+Routine actions should be omitted unless they are needed to make the surrounding story understandable.
 
-The diary should group connected facts into readable episodes rather than simply presenting one sentence per engine event.
+### 30.4. Narrative Voice
 
-The player should be able to return after leaving the game running and understand within a few minutes:
+The diary is written by a **third-person external narrator**.
 
-- what the hero did;
-- what changed;
-- what important choices were made;
-- what new equipment, trait, dungeon, city, or specialization development mattered.
+It should read like a light adventure chronicle rather than a system report.
+
+Desired qualities:
+
+- clear;
+- readable;
+- moderately literary;
+- capable of light dry irony where appropriate;
+- able to reflect the hero's established personality and history;
+- restrained during serious events such as death, major failure, or specialization.
+
+Avoid:
+
+- raw stat dumps;
+- one-line engine-event spam;
+- constant jokes;
+- memes / internet slang;
+- exaggerated epic language for routine actions;
+- invented thoughts, motives, or events that the simulation did not establish.
+
+The diary may phrase the same kind of event differently depending on the hero's real personality and past behaviour, but it must never invent personality or history.
+
+### 30.5. Causes and Consequences
+
+The diary should make the hero's development understandable through visible cause and effect.
+
+Examples:
+
+- the hero completed several quests and gained enough XP to reach a new level;
+- a quest reward provided a better weapon, explaining the new sword shown on the hero;
+- a dungeon failure caused the hero to return to normal work until stronger;
+- the hero bought stronger equipment before trying the dungeon again;
+- accumulated development gradually pushed the hero toward Protector or Slayer;
+- a divine intervention helped the hero survive or changed an important decision.
+
+The diary does not need to expose exact formulas or hidden values.
+
+Its job is to make the **story of progression** understandable.
+
+### 30.6. Narrative Phrase Storage and Dynamic Values
+
+Diary wording should be stored close to the content that owns it when the wording is specific to that content.
+
+Examples:
+
+- quest-specific diary variants belong with the corresponding `QuestDefinition`;
+- event-specific diary variants belong with the corresponding event definition;
+- dungeon-specific diary variants belong with the corresponding dungeon definition;
+- city-specific diary variants belong with the corresponding city definition.
+
+Reusable wording that is not tied to one specific piece of content should live in shared narrative data, for example under `data/narrative/`.
+
+This may include generic wording for:
+
+- level-ups;
+- equipment comparison and replacement;
+- returning to a city;
+- market / shop activity;
+- generic travel;
+- death and resurrection;
+- generic divine intervention;
+- other reusable progression or activity transitions.
+
+Diary text should use dynamic values from the actual game state and definitions rather than duplicating names inside narrative templates.
+
+Examples include:
+
+- hero name;
+- quest name;
+- mob / enemy name;
+- item name;
+- city name;
+- dungeon name;
+- level;
+- reward amounts;
+- other context-dependent values.
+
+The exact storage format is an implementation detail.
+
+Core rule:
+
+> **Unique narrative wording stays with the content it belongs to; reusable wording stays in shared narrative data; dynamic names and values come from the real game state.**
+
+### 30.7. Narrative Ownership
+
+Gameplay systems remain the source of truth for what happened.
+
+The narrative layer receives real simulation facts and turns them into diary text.
+
+Required direction:
+
+> `gameplay systems → structured facts → narrative wording → diary`
+
+The narrative system:
+
+- does not choose quests;
+- does not decide purchases;
+- does not resolve combat;
+- does not equip items;
+- does not change personality;
+- does not change specialization;
+- does not invent rewards or outcomes.
+
+UI only displays the resulting diary.
+
+### 30.8. Diary History
+
+The player-facing diary is a persistent rolling history, but Prototype 0.2 does not require infinite retention of every entry.
+
+Older diary text may be removed when the configured diary-history limit is reached.
+
+The exact retention limit and deletion rule are intentionally **TBD during implementation/testing**, because the correct size depends on:
+
+- the real average length of diary passages;
+- how frequently meaningful activities produce text;
+- how much history remains comfortable to read and store.
+
+The limit should be large enough that the player can return after a meaningful period of unattended simulation and still understand the hero's recent path.
+
+The Developer Debug Log remains a separate, much shorter rolling technical history.
+
+There is no offline simulation.
+
+Therefore the diary records only events that actually occurred while the simulation was running.
+
+### 30.9. Prototype 0.2 Diary Success Test
+
+The diary succeeds if a player can leave the game running, return later, read the recent diary, and quickly understand:
+
+> **what the hero did, what happened to them, what they gained or lost, how they developed, and why the hero now looks and plays differently than before.**
+
+The player should not need the developer log to understand where the hero's new equipment, levels, important traits, dungeon progress, or specialization came from.
 
 ---
 
 ## 31. Explanatory Log and Developer Debug Log
 
-Prototype 0.2 should distinguish three text layers:
+Prototype 0.2 distinguishes three textual layers with different jobs:
 
-1. **Hero Diary / Chronicle** — readable story;
-2. **Player-facing explanatory log** — optional detail about what happened and why;
-3. **Developer debug log** — raw simulation diagnostics, scores, rolls, state changes, and formulas.
+1. **Hero Diary / Chronicle** — turns meaningful life events into a readable story;
+2. **Player-facing Explanatory Log** — explains what happened and why when the player wants mechanical clarity;
+3. **Developer Debug Log** — exposes raw internal state needed to test and reproduce the simulation.
 
-The explanatory log should use player language such as:
+These layers may reference the same real event, but they must not be merged into one stream.
 
-> “The hero rejected the dungeon because the previous attempt ended before the boss and they have not yet become strong enough to justify another attempt.”
+### 31.1. Player-Facing Explanatory Log
 
-It should not normally display raw evaluator traces.
+The Explanatory Log exists because an autonomous hero must be understandable without becoming directly controllable.
 
-The developer log may display all internal values necessary to reproduce and debug autonomous decisions.
+Its job is to answer questions such as:
+
+- Why did the hero choose this quest?
+- Why was another quest ignored?
+- Why did the hero decide the dungeon was not worth attempting yet?
+- Why did the hero try the dungeon again?
+- Why did the hero buy this item or Skill Level?
+- Why did the hero leave the city?
+- Why is the hero leaning toward Protector or Slayer?
+- Did divine guidance affect the decision?
+
+The log should use **player-facing causal language**, not implementation language.
+
+Good:
+
+> “The hero chose the better-paying dangerous contract because it was still within their capabilities and their Brave nature made the risk more attractive.”
+
+Good:
+
+> “The hero postponed another dungeon attempt. The previous run reached the boss, but their current Power has not yet reached the retry threshold.”
+
+Bad:
+
+> `QuestScore = 1.3812 because CourageModifier = +0.30 and DivineModifier = +0.20`
+
+The explanatory layer should normally present only the few factors that materially changed the result.
+
+### 31.2. Reasons Must Come From the Owning System
+
+The Explanatory Log must not inspect the final state and invent a plausible reason after the fact.
+
+The owning gameplay system should provide structured reason data together with the decision or outcome.
+
+Examples:
+
+- `QuestEvaluator` provides eligibility / rejection reasons and dominant score factors;
+- dungeon logic provides readiness / retry reasons;
+- relocation logic provides the progression condition that triggered leaving;
+- economy logic provides the reason for a purchase or for saving Gold;
+- specialization logic provides the major factors currently favoring Protector or Slayer;
+- God systems report whether a divine modifier was active.
+
+Required direction:
+
+> `owning gameplay system → decision + structured reason data → explanatory presentation`
+
+The explanatory system does not own decision formulas.
+
+### 31.3. Hard Constraints Versus Preferences
+
+The player-facing explanation should distinguish:
+
+**The hero could not / would not consider an option because it failed a hard rule**
+
+from:
+
+**The option was valid, but another valid option was preferred.**
+
+For example:
+
+> “The troll contract was too dangerous to consider.”
+
+is different from:
+
+> “Both contracts were possible, but the hero preferred the wolf hunt because its reward was better for the expected time.”
+
+This distinction is important because it lets the player understand autonomy without seeing raw formulas.
+
+### 31.4. Hidden Information
+
+The Explanatory Log must not leak information the player is not supposed to know.
+
+In particular, it should not expose:
+
+- exact hidden personality-axis values;
+- hidden trait thresholds / hysteresis values;
+- unknown dungeon contents;
+- unrevealed rewards;
+- future quest templates that are currently unavailable;
+- raw random rolls;
+- information the hero has not discovered.
+
+Visible traits may be named when they materially affect a decision.
+
+Hidden continuous values should be translated into player language only through already-visible behavior / traits.
+
+### 31.5. What Belongs in the Explanatory Log
+
+Useful player-facing entries include:
+
+- major autonomous decisions;
+- hard-filter rejections when relevant;
+- dungeon readiness and retry decisions;
+- important economy decisions;
+- major equipment replacement reasoning;
+- relocation decisions;
+- specialization-direction changes / final lock;
+- meaningful divine influence;
+- major failure consequences.
+
+Routine combat actions, every shop comparison, every score candidate, and every state transition do not need to appear by default.
+
+The Explanatory Log is optional detail, not required reading for following the hero's life.
+
+### 31.6. Relationship to the Hero Diary
+
+The Diary and Explanatory Log answer different questions.
+
+**Diary:**
+
+> “What piece of the hero's life happened?”
+
+**Explanatory Log:**
+
+> “Why did the simulation produce that decision or consequence?”
+
+The same decision may appear in both.
+
+Example:
+
+**Diary**
+
+> “After another failed descent into the old crypt, Merek left it alone for a time and returned to easier work around the city.”
+
+**Explanatory Log**
+
+> “The previous attempt reached the boss. A new attempt requires at least +10% Power from the failed-attempt baseline; the hero has not reached that threshold yet.”
+
+The Diary remains readable without the explanatory layer.
+
+### 31.7. Developer Debug Log
+
+The Developer Debug Log may expose the full technical detail required for testing.
+
+It should cover not only execution, but also the important autonomous decisions that lead to execution.
+
+For major decisions, the preferred debug sequence is:
+
+> `decision context → available candidates → rejected candidates / reasons → selected option → execution → result`
+
+For example, quest selection should be able to show:
+
+- which active offers were considered;
+- which offers failed a Hard Filter and why;
+- exact evaluator scores / relevant modifiers for valid candidates;
+- which quest was selected;
+- what the hero did after the selection.
+
+The same principle should later apply to other important autonomous systems, including:
+
+- purchases;
+- equipment replacement;
+- dungeon readiness / retry;
+- relocation;
+- specialization direction;
+- important God Influence decisions where applicable.
+
+The Developer Debug Log may include:
+
+- world tick and internal combat time;
+- state transitions;
+- candidate sets;
+- Hard Filter results;
+- exact evaluator scores and modifiers;
+- Power calculations;
+- item comparisons;
+- dungeon readiness thresholds;
+- hidden personality values;
+- RNG / seed information where useful;
+- combat rolls and results;
+- cooldowns;
+- inventory / equipment routing;
+- narrative fact ids / grouping diagnostics where useful;
+- save/load diagnostics.
+
+The current rolling recent-history model of approximately 100 world ticks is acceptable as the Prototype 0.2 starting point.
+
+The developer log is allowed to be ugly, verbose, and implementation-oriented.
+
+Its purpose is reproducibility and debugging, not storytelling.
+
+### 31.8. Debug Retention and Persistence
+
+The Developer Debug Log is not part of the hero's biography.
+
+It may use a bounded recent-history window in normal development play; the current tick-based recent-log model is acceptable unless testing later requires a different retention policy.
+
+Long diagnostic runs may additionally write larger test outputs when explicitly needed.
+
+The player-facing Hero Diary is persistent.
+
+The Developer Debug Log does not need to be included in normal player save data except for narrowly required diagnostic state.
+
+### 31.9. UI and Simulation Boundary
+
+Neither the Diary, Explanatory Log, nor Developer Debug Log may become a source of gameplay truth.
+
+Required direction:
+
+> `simulation systems → facts / reasons / diagnostics → narrative and log stores → UI`
+
+Not:
+
+> `UI text → parsed back into simulation`
+
+The UI may filter, sort, collapse, highlight, or display these layers, but it does not calculate the reasons itself.
+
+### 31.10. Prototype 0.2 Clarity Test
+
+The explanatory layer succeeds if a player can inspect an important autonomous decision and understand its main cause **without needing to read source code, raw formulas, or hidden values**.
+
+The debug layer succeeds if a developer can reproduce and diagnose the same decision when the player-facing explanation is not enough.
 
 ---
 
@@ -2845,13 +3512,25 @@ Prototype 0.2 requires persistent progress.
 
 The normal player-facing model is one continuing hero history rather than save-scumming through multiple manual branches.
 
-Working direction:
+Working save model:
 
 - one rolling main save;
-- regular autosave while the game is running;
-- approximately 10 real minutes as a starting autosave interval;
-- additional safe autosave moments may be used where appropriate;
-- debug/test builds may expose extra save tools if needed for development.
+- automatic save approximately every **10 real minutes** while the game is running;
+- automatic save when the player normally exits / closes the game;
+- additional milestone autosaves only for a small number of major progression events.
+
+Current major milestone autosaves:
+
+- successful dungeon completion;
+- specialization gained.
+
+Additional milestone autosaves should be added only when testing shows a clear need. Prototype 0.2 should not save after every minor action, combat, purchase, or ordinary quest event.
+
+Debug / test builds may expose additional manual save, load, checkpoint, or state-inspection tools when useful for development and reproduction of problems. These tools do not change the normal player-facing one-rolling-save model.
+
+Prototype 0.2 has no offline simulation.
+
+When the game is not running, world simulation time does not advance. Loading resumes from the saved simulation state rather than advancing systems according to elapsed real-world time.
 
 The save must preserve enough state to continue the same life, including at least:
 
@@ -2905,15 +3584,15 @@ Current Prototype 0.2 content target:
 | Content | Minimum working target |
 | --- | ---: |
 | Normal cities | 2 |
-| Ordinary quest templates | 10–15 per city |
-| Simultaneous ordinary quest offers | 5–6 per city |
+| Ordinary quest templates | 15 per city |
+| Simultaneous ordinary quest offers | up to 6 per city: maximum 2 from each of the 3 relative-strength bands |
 | Handcrafted temporary events | 15–20 total |
 | Ordinary dungeon content | 2 per city / region |
 | First specialization paths | 2 |
 | Specialization dungeon variants | 1 per first specialization path, sharing one system |
 | Base Warrior abilities | 2 |
 | First-specialization abilities | 1 Protector + 1 Slayer |
-| Personality axes | approximately 3–4 meaningful pairs |
+| Personality axes | exactly 4 meaningful pairs |
 | Visual armor families | at least 5–6 |
 | Item rarity | White, Green, Blue, Purple |
 | Main playable progression | approximately level 1–60 |
@@ -3500,157 +4179,237 @@ When this happens, improve the core interactions before expanding scope.
 
 ## 39. Recommended Implementation Stages
 
-A safe implementation order is:
+Prototype 0.2 should be implemented in controlled stages rather than as one large rewrite.
 
-### Stage 1 — Stabilize the Existing Prototype Foundation
+### Stage 1 — Stabilize and Prepare the Prototype 0 Foundation
 
-- keep current autonomous loop, combat, Power, death, God system, seeded simulation, and tests working;
-- identify experimental item/inventory code that must be replaced rather than preserved.
+Preserve the currently working autonomous loop and regression coverage while preparing the architecture for Prototype 0.2.
 
-### Stage 2 — Expanded Stats and Warrior Combat
+Required work includes:
+
+- keep the working world clock, seeded RNG, autonomous quest loop, combat, shared Power calculation, death / resurrection, God system, and regression tests functional;
+- treat `Simulation` as an orchestration layer rather than the owner of individual system rules;
+- refactor existing item-reward / inventory-routing / equipment-upgrade logic out of `Simulation` before expanding the item, loot, dungeon, and economy systems;
+- preserve `StatResolver` as the central stat path and one shared `PowerCalculator` for both hero and mobs;
+- keep unrelated working behaviour intact while system ownership is clarified;
+- avoid a broad rewrite: move responsibilities only when an approved Prototype 0.2 system requires it.
+
+### Stage 2 — Warrior Stats and Combat Foundation
+
+Implement the approved Prototype 0.2 hero-combat foundation:
 
 - five primary attributes;
-- secondary stats;
-- updated StatResolver / Power;
-- Damage types, Accuracy/Dodge, Armor/resistances;
+- approved secondary combat stats;
+- updated `StatResolver`;
+- updated shared `PowerCalculator`;
+- Accuracy / Dodge;
+- Armor;
+- Fire / Cold / Lightning resistance;
+- Block;
 - Rage;
 - Power Strike;
 - Battle Guard.
 
-- The attack **cannot miss** once Power Strike is successfully used.
-- Power Strike still uses the normal critical-hit roll; both normal and critical results are multiplied by the Skill Level damage coefficient.
-- **Skill Level 1 damage coefficient: ×1.50**
-- **Skill Level 10 damage coefficient: ×2.00**
-- intermediate Skill Levels scale evenly between those endpoints.
+Validate the new formulas through automated combat and Power tests before building later systems on top of them.
 
-- **Skill Level 1 damage reduction: 25%**
-- **Skill Level 10 damage reduction: 35%**
-- intermediate Skill Levels scale evenly between those endpoints.
-- cooldown remains **60 sec** at all Skill Levels.
-- duration remains **10 sec** at all Skill Levels.
-- activation threshold remains **75% MaxHP or lower** at all Skill Levels.
+### Stage 3 — Full Item Foundation
 
-### Stage 3 — Real Itemization
+Implement the Prototype 0.2 item path:
 
-- 12 slots;
-- ilvl;
-- White/Green/Blue/Purple;
-- modifier generation;
+- 12 equipment slots;
+- item level / strength budget;
+- White / Green / Blue / Purple rarity;
+- approved modifier pools;
 - source-driven loot;
-- QuestLoot;
-- autonomous virtual-equip logic;
-- Belt/potions;
-- initial armor visual families.
+- `QuestLoot`;
+- inventory;
+- autonomous equipment evaluation;
+- whole-build / legal hand-configuration comparison;
+- Belt and potion capacity;
+- first usable visual armor families.
+
+The intended ownership chain is:
+
+> `loot source → QuestLoot → inventory → EquipmentEvaluator → equipment → StatResolver`
 
 ### Stage 4 — Economy
 
-- city shop tiers;
-- changing stock;
-- selling;
-- buying;
-- potion purchase;
-- Skill Level purchase.
+Implement:
 
-### Stage 5 — Map and Two Cities
+- Gold sources and sinks;
+- city shops;
+- three shop progression bands per city;
+- shop refresh;
+- autonomous buying;
+- automatic selling of unwanted ordinary gear / trophies;
+- potion purchasing and dungeon preparation;
+- Skill Level purchasing.
 
-- authored hex map;
-- two city locations;
-- road travel;
-- local quest placement;
-- map knowledge.
+Economy decisions must remain autonomous and context-specific rather than becoming player shop micromanagement.
 
-### Stage 6 — Rotating Quest Pools
+### Stage 5 — Map and Two-City World
 
-- city-specific templates;
-- 5–6 active offers;
-- offer lifetime;
-- replacement;
-- autonomous evaluation across current opportunities.
+Implement the small Prototype 0.2 world:
+
+- exactly two normal cities;
+- real hero position;
+- local city context;
+- roads / travel;
+- known and unknown world locations;
+- current route;
+- relocation between the two cities.
+
+Do not expand into factions, multiple regions beyond the required prototype structure, or a full continent simulation.
+
+### Stage 6 — Quest Pools and City Progression
+
+Replace the Prototype 0 single-city quest board with the approved Prototype 0.2 model:
+
+- exactly 15 ordinary quest templates per city;
+- three relative mob-strength bands: 5 lower, 5 middle, 5 higher;
+- up to 6 simultaneously active ordinary offers;
+- maximum 2 active offers from each strength band;
+- offer lifetime / depletion behaviour;
+- temporary template unavailability after use;
+- hero evaluation of active offers only;
+- city relocation when the hero has exhausted worthwhile currently available ordinary work under the approved progression rules.
+
+Keep ordinary quest selection owned by `QuestEvaluator`; do not introduce a universal global activity score.
 
 ### Stage 7 — Events and Personality Development
 
-- final 3–4 personality axes;
-- hidden values / thresholds / hysteresis;
-- 15–20 temporary events;
-- meaningful outcome-driven personality changes;
-- event detours and travel interruption.
+Implement:
+
+- exactly four approved personality axes;
+- hidden continuous personality values;
+- visible traits with thresholds / hysteresis;
+- authored meaningful event outcomes that can change personality;
+- personality-driven adaptive attribute growth;
+- context-specific behavioural effects;
+- temporary world events and hero reactions when those events become relevant.
+
+Routine repetition must not farm personality changes.
 
 ### Stage 8 — Dungeons
 
-- ordinary dungeon runner;
-- discovery;
-- preparation;
-- potion use;
-- retry readiness;
-- four ordinary dungeon content sets.
+Implement the approved normal dungeon loop:
 
-### Stage 9 — First Specialization
+- two normal dungeons for the starting region / city progression and two for the mid progression area as required by Prototype 0.2 content;
+- dungeon discovery;
+- readiness checks;
+- potion-belt preparation;
+- ordinary dungeon encounters;
+- potion-only between-room recovery;
+- boss encounter;
+- completion rewards;
+- failed-attempt history;
+- retry thresholds;
+- no voluntary retreat in the initial implementation.
 
-- Protector / Slayer autonomous direction;
+A successful dungeon completion is also a major autosave milestone.
+
+### Stage 9 — First Warrior Specialization
+
+Implement:
+
+- autonomous Protector / Slayer direction;
+- specialization decision window;
+- optional one-time divine specialization guidance;
 - Specialization Quest;
-- specialization dungeon variants;
-- Shield Bash / Onslaught;
-- specialization-directed growth.
+- authored specialization dungeon;
+- specialization unlock after successful completion;
+- immediate specialization profile points;
+- first specialization-specific ability / gameplay identity;
+- post-specialization progression.
 
-### Stage 10 — Working Diary
+Receiving the specialization is also a major autosave milestone.
 
-- structured narrative events;
-- episode aggregation;
-- personality-aware third-person templates;
-- meaningful equipment / trait / dungeon / specialization entries;
-- player explanatory log.
+### Stage 10 — Hero Diary / Chronicle
 
-Narrative event structures should be introduced earlier where needed, but the complete player-facing diary may be assembled once the major event-producing systems exist.
+Implement the full player-facing diary / chronicle system according to Sections 30 and 31.
 
-### Stage 11 — UI and Visual Integration
+This stage assembles the already-defined diary, explanatory-log, and debug-log behavior into the complete Prototype 0.2 player-facing narrative flow.
 
-- Main;
-- Hero;
-- Inventory;
-- Map;
-- Menu;
-- paper doll overlays;
-- current activity and opponent presentation;
-- final first-pass navigation.
+### Stage 11 — Player-Facing UI Integration
 
-### Stage 12 — Save / Load and Long-Run Testing
+Build the coherent Prototype 0.2 player-facing interface from the already functioning systems.
 
-- rolling save;
-- autosave;
-- restoration of full simulation state;
-- long autonomous runs to level 50–60;
-- economy and progression balance;
-- Power validation;
-- regression tests;
-- diary readability testing.
+This stage does **not** mean UI work is postponed until Stage 11.
 
-The order may shift when dependencies demand it, but systems should be added in complete vertical chains rather than as disconnected placeholders.
+A functional developer UI should remain available throughout development for testing every earlier stage. Stage 11 is the pass where the separate working screens and components are assembled, cleaned up, and presented as the intended player-facing Prototype 0.2 interface.
 
----
+### Stage 12 — Persistence and Long-Run Validation
 
-## 40. Remaining Design Decisions Before Individual Systems Are Finalized
+Implement and validate:
 
-This Scope deliberately leaves only a small set of mechanics as explicit design/tuning decisions rather than silently inventing them during coding.
+- one rolling main save;
+- autosave approximately every 10 real minutes while the game is running;
+- save on normal exit / game close;
+- milestone autosave after successful dungeon completion;
+- milestone autosave when specialization is gained;
+- no offline simulation;
+- restoration of the full required simulation state;
+- long autonomous runs through approximately levels 50–60;
+- seeded reproducibility checks;
+- economy / progression / equipment / dungeon balance observation;
+- regression testing for previously completed stages.
 
-Current important remaining decisions include:
+Prototype 0.2 should be considered ready for broader Proof-of-Fun evaluation only after the long-run simulation remains stable and the hero can progress without constant player intervention.
 
-- exact starting values and Warrior growth profile for the five primary attributes;
-- exact final set of 3–4 personality axes used in Prototype 0.2;
-- Block formula and eligible attack types;
-- exact Rage generation / costs / decay;
-- numerical formulas for the four Warrior abilities and their Skill Levels / WIS scaling;
-- exact ordinary quest scoring coefficients once the broader 0.2 opportunity set exists;
-- exact world ticks per travelled hex;
-- quest-offer lifetime and refresh cadence;
-- event frequency and lifetime ranges;
-- final item-budget / stat-cost tables;
-- city shop ilvl ranges and stock refresh cadence;
-- potion healing / pricing curves;
-- dungeon encounter counts and combat tuning;
-- specialization-dungeon tuning;
-- final autosave timing and safe save points.
+The implementation order may shift when real dependencies require it, but systems should be added as coherent vertical chains rather than as disconnected placeholders.
 
-These questions are primarily **numbers, tuning, and content detail**. They should not require redesigning who owns each system or how the major systems connect.
+## 40. Remaining Design Decisions
+
+Most of the earlier open Prototype 0.2 questions have now been resolved elsewhere in this Scope.
+
+This section should contain only decisions that are still genuinely open.
+
+### 40.1. Design Decisions to Resolve Before Their Systems Are Finalized
+
+The following still require explicit design decisions:
+
+- whether **Power Strike** uses WIS scaling and, if so, the exact rule;
+- whether **Battle Guard** uses WIS scaling and, if so, the exact rule;
+- final mechanics, numbers, Skill Level progression, and any WIS scaling for **Shield Bash**;
+- final mechanics, numbers, Skill Level progression, and any WIS scaling for **Onslaught**;
+- exact travel cost in world ticks per map hex;
+- exact temporary-unavailability / restoration delay for a used ordinary quest template;
+- temporary-event appearance frequency and event lifetime rules;
+- any remaining Prototype 0.2 `QuestScore` tuning required by the two-city / rotating-offer model;
+- normal-dungeon encounter count / room structure where not already defined;
+- specialization-dungeon numerical difficulty and encounter tuning.
+
+### 40.2. Balance Values That Should Be Finalized Through Implementation and Testing
+
+The following should **not** be treated as missing architecture simply because their final numbers are not fixed yet.
+
+They should be tuned after the relevant systems exist and can be tested together:
+
+- final tuning of the working item-level affix budgets and secondary-stat cost table defined in Section 19;
+- exact strength / item-level ranges of the three shop progression bands;
+- potion prices;
+- Gold income and spending balance;
+- XP / level pacing where tuning remains necessary;
+- normal-dungeon numerical balance;
+- final specialization-dungeon numerical balance;
+- final relative value of primary and secondary stats;
+- final shared Power calibration after real equipment, Block, Dodge, resistances, abilities, and dungeon encounters are present.
+
+The goal is to specify system ownership and gameplay rules before implementation while avoiding false precision in numbers that require real simulation data.
+
+### 40.3. Diary Tuning Remaining
+
+The core Hero Diary / Chronicle design is now defined in Sections 30 and 31.
+
+The following diary details remain implementation / testing decisions rather than unresolved system design:
+
+- exact maximum retained diary length;
+- exact deletion / trimming rule when the limit is reached;
+- exact authored phrase volume and variation required for acceptable repetition;
+- exact storage format for narrative phrase data where not already determined by the owning content definition.
+
+These values should be decided from real text volume and prototype behavior rather than guessed in advance.
+
 
 ---
 

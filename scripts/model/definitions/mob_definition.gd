@@ -26,6 +26,7 @@ const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd"
 @export var crit_damage: float = 1.50
 @export var experience_reward: int = 0
 @export var gold_reward: int = 0
+@export var equipment_drop_table: Resource
 
 func get_combat_stats() -> RefCounted:
 	var combat_stats = CombatStatsScript.new()

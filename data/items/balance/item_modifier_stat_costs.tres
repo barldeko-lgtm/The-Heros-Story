@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ItemModifierStatCostTableDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/item_modifier_stat_cost_table_definition.gd" id="1_stat_costs"]
+
+[resource]
+script = ExtResource("1_stat_costs")
+stat_ids = Array[String](["health", "armor", "dodge", "accuracy", "damage", "crit_chance_percentage_point", "crit_damage_percentage_point", "attack_speed_percent", "cast_speed_percent", "elemental_resistance", "block"])
+budget_costs = Array[float]([4.0, 12.0, 12.0, 1.0, 18.0, 40.0, 7.0, 30.0, 30.0, 5.0, 13.0])
+unpriced_stat_ids = Array[String]([])
