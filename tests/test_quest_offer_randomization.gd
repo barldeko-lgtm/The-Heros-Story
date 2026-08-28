@@ -43,7 +43,7 @@ func make_template(quest_id: String) -> Resource:
 	mob.attack_speed = 1.0
 	mob.crit_chance = 0.0
 	mob.crit_damage = 1.5
-	mob.damage_reduction = 0.0
+
 
 	var template = QuestDefinitionScript.new()
 	template.id = quest_id

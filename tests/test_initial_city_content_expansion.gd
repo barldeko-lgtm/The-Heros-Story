@@ -1,16 +1,16 @@
 extends SceneTree
 
 const NEW_CONTENT := [
-	{"mob_file": "0004_giant_rat.tres", "mob_id": "giant_rat", "quest_file": "0004_granary_rat_problem.tres", "quest_id": "granary_rat_problem", "power_min": 14.0, "power_max": 15.0},
-	{"mob_file": "0005_wild_boar.tres", "mob_id": "wild_boar", "quest_file": "0005_boars_in_fields.tres", "quest_id": "boars_in_fields", "power_min": 19.0, "power_max": 20.0},
-	{"mob_file": "0006_bandit.tres", "mob_id": "bandit", "quest_file": "0006_trade_road_ambush.tres", "quest_id": "trade_road_ambush", "power_min": 23.0, "power_max": 25.0},
-	{"mob_file": "0007_giant_spider.tres", "mob_id": "giant_spider", "quest_file": "0007_old_mill_webs.tres", "quest_id": "old_mill_webs", "power_min": 30.0, "power_max": 32.0},
-	{"mob_file": "0008_rabid_elk.tres", "mob_id": "rabid_elk", "quest_file": "0008_fearless_elk.tres", "quest_id": "fearless_elk", "power_min": 39.0, "power_max": 41.0},
-	{"mob_file": "0009_bandit_veteran.tres", "mob_id": "bandit_veteran", "quest_file": "0009_stone_bridge_band.tres", "quest_id": "stone_bridge_band", "power_min": 47.0, "power_max": 49.0},
-	{"mob_file": "0010_swamp_crocodile.tres", "mob_id": "swamp_crocodile", "quest_file": "0010_swamp_path_predator.tres", "quest_id": "swamp_path_predator", "power_min": 58.0, "power_max": 61.0},
-	{"mob_file": "0011_young_ogre.tres", "mob_id": "young_ogre", "quest_file": "0011_hill_ogre.tres", "quest_id": "hill_ogre", "power_min": 69.0, "power_max": 73.0},
-	{"mob_file": "0012_forest_troll.tres", "mob_id": "forest_troll", "quest_file": "0012_forest_crossing_troll.tres", "quest_id": "forest_crossing_troll", "power_min": 94.0, "power_max": 98.0},
-	{"mob_file": "0013_cave_lizard.tres", "mob_id": "cave_lizard", "quest_file": "0013_limestone_cave_tracks.tres", "quest_id": "limestone_cave_tracks", "power_min": 80.0, "power_max": 84.0},
+	{"mob_file": "0004_giant_rat.tres", "mob_id": "giant_rat", "quest_file": "0004_granary_rat_problem.tres", "quest_id": "granary_rat_problem", "power_min": 16.0, "power_max": 17.0},
+	{"mob_file": "0005_wild_boar.tres", "mob_id": "wild_boar", "quest_file": "0005_boars_in_fields.tres", "quest_id": "boars_in_fields", "power_min": 21.0, "power_max": 22.0},
+	{"mob_file": "0006_bandit.tres", "mob_id": "bandit", "quest_file": "0006_trade_road_ambush.tres", "quest_id": "trade_road_ambush", "power_min": 26.0, "power_max": 27.0},
+	{"mob_file": "0007_giant_spider.tres", "mob_id": "giant_spider", "quest_file": "0007_old_mill_webs.tres", "quest_id": "old_mill_webs", "power_min": 34.0, "power_max": 35.0},
+	{"mob_file": "0008_rabid_elk.tres", "mob_id": "rabid_elk", "quest_file": "0008_fearless_elk.tres", "quest_id": "fearless_elk", "power_min": 43.0, "power_max": 44.0},
+	{"mob_file": "0009_bandit_veteran.tres", "mob_id": "bandit_veteran", "quest_file": "0009_stone_bridge_band.tres", "quest_id": "stone_bridge_band", "power_min": 55.0, "power_max": 56.0},
+	{"mob_file": "0010_swamp_crocodile.tres", "mob_id": "swamp_crocodile", "quest_file": "0010_swamp_path_predator.tres", "quest_id": "swamp_path_predator", "power_min": 65.0, "power_max": 66.0},
+	{"mob_file": "0011_young_ogre.tres", "mob_id": "young_ogre", "quest_file": "0011_hill_ogre.tres", "quest_id": "hill_ogre", "power_min": 77.0, "power_max": 79.0},
+	{"mob_file": "0012_forest_troll.tres", "mob_id": "forest_troll", "quest_file": "0012_forest_crossing_troll.tres", "quest_id": "forest_crossing_troll", "power_min": 104.0, "power_max": 106.0},
+	{"mob_file": "0013_cave_lizard.tres", "mob_id": "cave_lizard", "quest_file": "0013_limestone_cave_tracks.tres", "quest_id": "limestone_cave_tracks", "power_min": 89.0, "power_max": 91.0},
 ]
 
 func _init() -> void:

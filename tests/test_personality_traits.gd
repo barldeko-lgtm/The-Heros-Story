@@ -61,7 +61,7 @@ func make_quest(quest_id: String, target_power: float, reward: int, category: in
 	mob.attack_speed = 2.0
 	mob.crit_chance = 0.0
 	mob.crit_damage = 1.5
-	mob.damage_reduction = 0.0
+
 
 	var template = QuestDefinitionScript.new()
 	template.id = quest_id

@@ -21,4 +21,6 @@ func assert_valid_mob_stats(mob) -> void:
 	assert(mob.attack_speed > 0.0, "Mob AttackSpeed must be positive.")
 	assert(mob.crit_chance >= 0.0 and mob.crit_chance <= 1.0, "Mob CritChance must stay between 0 and 1.")
 	assert(mob.crit_damage >= 1.0, "Mob CritDamage must be at least 1.0.")
-	assert(mob.damage_reduction >= 0.0 and mob.damage_reduction < 1.0, "Mob DamageReduction must stay in [0, 1).")
+	assert(mob.accuracy >= 0.0 and mob.dodge >= 0.0 and mob.armor >= 0.0, "Mob Accuracy, Dodge, and Armor must not be negative.")
+	assert(mob.fire_resistance >= 0.0 and mob.cold_resistance >= 0.0 and mob.lightning_resistance >= 0.0, "Mob Resistances must not be negative.")
+	assert(mob.block >= 0.0, "Mob Block must not be negative.")

@@ -12,8 +12,8 @@ const SHIELD_STATS := [
 	[20.0, 30],
 ]
 const EXPECTED_ITEM_POWER := {
-	"weapon": [0.751913469, 0.941639433, 1.124755364],
-	"shield": [1.808545188, 2.373817840, 2.876901451],
+	"weapon": [20.291831507, 28.948335426, 39.903781221],
+	"shield": [16.704037435, 21.259190048, 25.753586295],
 }
 
 func _init() -> void:
@@ -66,11 +66,11 @@ func run_test() -> void:
 	var simulation = simulation_script.new(1)
 	simulation.receive_item_reward(rare_items["weapon"], 1)
 	simulation.receive_item_reward(rare_items["shield"], 2)
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 130.0), "Rare shield must add 20 MaxHP to the starting hero.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, 12.0), "Rare sword must add 5 Attack to the starting hero.")
-	assert(is_equal_approx(simulation.base_combat_stats.crit_chance, 0.22), "Rare sword must add 10 percentage points of CritChance.")
-	assert(is_equal_approx(simulation.base_combat_stats.crit_damage, 1.76), "Rare sword must add 20 percentage points of CritDamage.")
-	assert(is_equal_approx(simulation.base_combat_stats.damage_reduction, 0.15), "Rare shield must add 30 Armor.")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 220.0), "Rare shield must add 20 MaxHP to the starting hero.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, 20.0), "Rare sword must add 5 physical Damage to the starting hero.")
+	assert(is_equal_approx(simulation.base_combat_stats.crit_chance, 0.35), "Rare sword must add 10 percentage points of CritChance.")
+	assert(is_equal_approx(simulation.base_combat_stats.crit_damage, 1.95), "Rare sword must add 20 percentage points of CritDamage.")
+	assert(is_equal_approx(simulation.base_combat_stats.armor, 35.0), "Rare shield plus starting Constitution must resolve to 35 Armor.")
 
 	var main_ui_script: Script = load("res://scripts/ui/main_ui.gd")
 	var main_ui = main_ui_script.new()

@@ -57,10 +57,10 @@ Stores up to 36 retained item instances in acquisition order. Adding item 37 rem
 Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible starting traits, Russian display names, QuestScore personality constants, and the Noble/Dishonorable category-damage multiplier.
 
 ### `scripts/hero/hero_progression.gd`
-Owns XP and Warrior level growth.
+Owns XP and the current pre-specialization Warrior level growth of +2 STR / +1 DEX / +1 CON. The future deity-guided point is not yet assigned or stored.
 
 ### `scripts/hero/stat_resolver.gd`
-Builds stable base stats and effective combat stats from the same sources. Persistent equipment contributes to both; effective stats additionally include generic bonuses from `HeroState.active_effects`. Ten Armor currently resolves to 5% damage reduction.
+Builds stable base stats and effective combat stats from the same sources. It is the centralized conversion path from STR / DEX / CON to current combat-facing values; INT and WIS are stored but currently have no Warrior combat contribution. Persistent equipment contributes to both views; effective stats additionally include generic bonuses from `HeroState.active_effects`. It resolves raw Armor, Accuracy, Dodge, Resistances, and Block values but does not calculate hit or mitigation outcomes.
 
 ## Combat
 
@@ -68,18 +68,21 @@ Builds stable base stats and effective combat stats from the same sources. Persi
 Creates one live duel from already resolved hero and mob `CombatStats`.
 
 ### `scripts/combat/combat_session.gd`
-Owns only one fight: internal combat time, HP, attacks, crits, target damage reduction, conditional hero damage multiplier, and victory/defeat.
+Owns only one fight: internal combat time, HP, attack opportunities, crits, calls to the shared hit/mitigation rules, conditional hero damage multiplier, and victory/defeat.
 
 It does not own resurrection, quest cancellation, god ability state, or flat stat-bonus injection.
 
 ### `scripts/combat/combat_action.gd`
-One resolved attack.
+One resolved attack, including hit/miss, critical, Block, damage type, and final damage facts.
+
+### `scripts/combat/damage_resolver.gd`
+Shared Prototype 0.2 formulas for Accuracy/Dodge, Armor, elemental Resistances, Block chance, expected Block mitigation, and direct-hit mitigation. Both hero and mob combat use the same implementation.
 
 ### `scripts/combat/combat_result.gd`
 One duel result.
 
 ### `scripts/combat/power_calculator.gd`
-Shared hero/mob Power calculation. Quest Hard Filter uses the hero's base persistent `CombatStats` view; temporary finite effects are intentionally excluded.
+Shared complete Prototype 0.2 hero/mob Power calculation. It includes expected physical DPS, the reference Accuracy factor, the 70/10/10/10 incoming-damage mix, reference Dodge, Armor, all three elemental Resistances, and expected Block mitigation. Quest Hard Filter uses the hero's base persistent `CombatStats` view; temporary finite effects are intentionally excluded.
 
 ## Quests
 

@@ -4,11 +4,11 @@ This document describes what is **actually implemented now**.
 
 ## Current development focus
 
-The project is at the early Prototype 0 foundation stage.
+The project is aligning the stabilized Prototype 0 foundation with the Prototype 0.2 Scope before new content is added.
 
 Implemented:
 - one autonomous hero;
-- Warrior starting stats and level-up progression;
+- Prototype 0.2 Warrior primary attributes and current pre-specialization level-up growth;
 - world tick;
 - pause and developer speed controls (×0, ×1, ×2, ×5, ×10, ×20, ×100);
 - one shared seeded RNG for current simulation randomness;
@@ -35,7 +35,7 @@ Implemented:
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- decide and implement the separate quest-guidance selection UI, or continue to diary episodes.
+- continue aligning the existing combat-stat and combat foundation with Prototype 0.2 before adding new content.
 
 Still missing from the current build:
 - diary episodes;
@@ -84,12 +84,29 @@ Current loop states include:
 
 `scripts/hero/hero_progression.gd` owns XP application and Warrior level growth.
 
-Each level:
+The Warrior now starts with five symmetrical primary attributes:
+- STR = 5;
+- DEX = 5;
+- INT = 5;
+- CON = 5;
+- WIS = 5.
+
+Current primary-attribute contributions are centralized in `StatResolver`:
+- 1 STR = +2 physical Damage and +5 percentage points Critical Damage;
+- 1 DEX = +10 Accuracy, +2 Dodge, and +3 percentage points Critical Chance;
+- 1 CON = +20 MaxHP and +1 Armor;
+- INT and WIS are stored as real primary attributes but currently provide no resolved Warrior combat bonus.
+
+Until deity-guided attribute direction and personality-directed adaptive growth are implemented, each level currently grants only the agreed non-divine default growth:
+- +2 STR;
+- +1 DEX;
+- +1 CON.
+
+The not-yet-implemented fifth deity-guided point is neither assigned nor stored.
+
+The unchanged XP rules remain:
 - the next-level requirement starts at 1000 XP and increases by 500 per current level (`1000, 1500, 2000, ...`);
 - carries excess XP forward;
-- adds +20 direct MaxHP through the level bonus;
-- adds +4 STR;
-- adds +1 AGI.
 
 Final combat stats remain:
 
@@ -103,9 +120,9 @@ HeroState + HeroProgression + Equipment
 - stable `BaseCombatStats` for primary UI values, HeroPower, and Hard Filter;
 - effective `CombatStats` including active temporary effects for actual combat.
 
-Persistent equipment contributes to both views. Current Armor conversion is `1 Armor = 0.5% damage reduction`, capped below 100%. Common, Uncommon, and Rare Ironward Vanguard armor pieces provide `20/10/1`, `25/15/2`, and `35/20/3` direct MaxHP/Armor/Strength respectively; Strength additionally contributes its normal +5 MaxHP and +1 Attack per point. The set sword provides `3/5%/10%`, `4/7%/15%`, or `5/10%/20%` Attack/CritChance/CritDamage; the set shield provides `10/20`, `15/25`, or `20/30` MaxHP/Armor.
+Persistent equipment contributes to both views. Armor now uses the Prototype 0.2 diminishing-return rule `PhysicalTaken = 100 / (100 + Armor)`; `CombatStats` no longer stores a separate precomputed `damage_reduction`. Common, Uncommon, and Rare Ironward Vanguard armor pieces still temporarily provide `20/10/1`, `25/15/2`, and `35/20/3` direct MaxHP/Armor/Strength respectively. Their temporary Strength uses the centralized Prototype 0.2 conversion: +2 physical Damage and +5 percentage points Critical Damage per point, with no Strength-derived HP. Standard Prototype 0.2 item generation will later stop rolling primary attributes. The set sword provides `3/5%/10%`, `4/7%/15%`, or `5/10%/20%` Damage/CritChance/CritDamage; the set shield provides `10/20`, `15/25`, or `20/30` MaxHP/Armor.
 
-Every `ItemDefinition` also exposes static ItemPower for tooltips. It applies the item's secondary effects to the fixed reference profile `1 HP, 1 Attack, 1.0 AttackSpeed, 10% CritChance, 150% CritDamage, 0 Armor`, calculates both results through the shared `PowerCalculator`, then subtracts the reference Power (`0.724568837`). Current Common/Uncommon/Rare armor results are `4.64`, `7.10`, and `10.18`; sword results are `0.75`, `0.94`, and `1.12`; shield results are `1.81`, `2.37`, and `2.88`.
+Every `ItemDefinition` also exposes static ItemPower for tooltips. It now uses the approved fixed reference profile of 1000 HP, 100 Armor, 50 Dodge, 100 Accuracy, 100 physical Damage, 1.0 AttackSpeed, 25% CritChance, 200% CritDamage, and 100 of each elemental Resistance. The reference Power is approximately `433.013`. Current Common/Uncommon/Rare armor ItemPower results are `18.45`, `29.96`, and `42.67`; sword results are `20.29`, `28.95`, and `39.90`; shield results are `16.70`, `21.26`, and `25.75`.
 
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
@@ -121,8 +138,16 @@ Current behaviour:
 - same-timestamp attacks resolve together;
 - a simultaneous death counts as hero defeat;
 - critical hits retain fractional damage internally;
-- target damage reduction is applied to the final resolved hit damage;
+- Accuracy and Dodge use `Dodge / (Dodge + Accuracy + 100)` with a 50% DodgeChance cap;
+- a missed attack deals no damage and cannot crit or trigger Block;
+- BlockChance uses `min(Block / (Block + 200), 0.50)` and a successful Block leaves 25% of the hit before mitigation;
+- physical damage uses `100 / (100 + Armor)`;
+- Fire, Cold, and Lightning use the same resistance curve with non-negative Resistance and a 75% reduction cap;
+- current normal attacks are physical; elemental formulas are implemented but no current content deals elemental damage yet;
+- all 13 current mob definitions temporarily use Accuracy = 100 and Dodge = 0 until individual combat-stat tuning is approved;
 - each resolved strike enters the debug log immediately while the world clock is frozen.
+
+`PowerCalculator` now uses the one complete Prototype 0.2 formula for both hero and mobs: expected physical DPS with the reference Accuracy factor, effective survivability from the 70/10/10/10 physical/fire/cold/lightning mix, reference Dodge, expected Block mitigation, and `Power = sqrt(EffectiveHP × EffectiveDPS)`.
 
 Victory grants the defeated mob's XP through `HeroProgression`, then starts normal post-fight recovery.
 

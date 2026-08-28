@@ -2,6 +2,7 @@ extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
@@ -284,7 +285,8 @@ func update_hero_panel() -> void:
 	var hero = simulation.hero_state
 	var stats = simulation.base_combat_stats
 	var effective_strength: int = hero.strength + hero.equipment.get_strength_bonus()
-	var armor: int = hero.equipment.get_armor_bonus()
+	var armor: int = int(round(stats.armor))
+	var physical_reduction_percent := (1.0 - DamageResolverScript.calculate_physical_taken(stats.armor)) * 100.0
 	var active_quest_name: String = "—"
 	if hero.active_quest != null:
 		active_quest_name = hero.active_quest.display_name
@@ -299,7 +301,7 @@ func update_hero_panel() -> void:
 	var bonuses_text: String = ""
 	if not bonus_lines.is_empty():
 		bonuses_text = "\n" + "\n".join(bonus_lines)
-	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\n\nАтака: %.0f\nБроня: %d (снижение %.0f%%)\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, effective_strength, hero.agility, hero.intelligence, stats.attack, armor, stats.damage_reduction * 100.0, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\nТелосложение: %d\nМудрость: %d\n\nФиз. урон: %.0f\nТочность: %.0f\nУклонение: %.0f\nБроня: %d (снижение %.1f%%)\nОгонь / Холод / Молния: %.0f / %.0f / %.0f\nБлок: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, effective_strength, hero.dexterity, hero.intelligence, hero.constitution, hero.wisdom, stats.attack, stats.accuracy, stats.dodge, armor, physical_reduction_percent, stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance, stats.block, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:

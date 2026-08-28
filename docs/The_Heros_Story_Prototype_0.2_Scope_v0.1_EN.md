@@ -222,9 +222,9 @@ The current provisional contribution of one attribute point is:
 | Attribute | Working contribution |
 | --- | --- |
 | STR | +2 physical Damage; +5 percentage points Critical Damage |
-| DEX | +10 Accuracy; +5 Dodge; +3 percentage points Critical Chance |
+| DEX | +10 Accuracy; +2 Dodge; +3 percentage points Critical Chance |
 | INT | +2 magical Damage; +20 Mana |
-| CON | +20 maximum Health; +2 Armor |
+| CON | +20 maximum Health; +1 Armor |
 | WIS | improves learned abilities through ability-specific scaling |
 
 **These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full level-1-to-60 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
@@ -242,6 +242,29 @@ WIS must have real meaning once Warrior abilities exist. Each ability owns its o
 Primary attributes belong to long-term hero development. Standard random equipment modifiers do **not** roll primary attributes; equipment primarily changes secondary combat stats.
 
 ---
+
+
+### Base Critical Damage
+
+Before STR and equipment modifiers are applied, the hero's base Critical Damage is:
+
+> **150%**
+
+STR adds its Critical Damage bonus on top of this base value.
+
+### Starting Primary Attributes
+
+At the beginning of a new Prototype 0.2 game, the Warrior starts with:
+
+- **STR = 5**
+- **DEX = 5**
+- **INT = 5**
+- **CON = 5**
+- **WIS = 5**
+
+These values are the hero's base starting primary attributes before later level-up growth, deity-guided points, personality-directed adaptive growth, specialization growth, or other permanent progression is applied.
+
+The starting values are intentionally symmetrical for Prototype 0.2 so that later differences in the hero's profile come from actual development rather than a hidden starting bias.
 
 ## 7. Level Progression and Autonomous Attribute Growth
 
@@ -484,7 +507,11 @@ Therefore:
 
 Effective survivability is:
 
-`EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance))`
+`BlockChance = min(Block / (Block + 200), 0.50)
+
+BlockMultiplier = 1 - 0.75 × BlockChance
+
+EffectiveHP = MaxHealth / (AverageDamageTaken × (1 - ReferenceDodgeChance) × BlockMultiplier)`
 
 ### Final Shared Power
 
@@ -512,101 +539,328 @@ Do not assign an arbitrary flat Power value to Block as a shortcut.
 
 Warrior is the only playable base class in Prototype 0.2.
 
-Its working class resource is:
+Its class resource is:
 
 > **Rage**
 
-Rage builds during combat through offensive action and taking damage. Exact maximum Rage, generation values, decay rules, and costs are tuning values to be finalized during implementation.
+### Rage
+
+The working Rage scale is:
+
+> **0–100 Rage**
+
+Every separate combat encounter begins with:
+
+> **Rage = 0**
+
+Rage is fully reset when that fight ends. It is not carried from one ordinary fight into the next and therefore cannot be deliberately banked on weak enemies before a later boss.
+
+The current working Rage generation values are:
+
+- successful normal Warrior hit: **+5 Rage**;
+- successful critical Warrior hit: **+7 Rage instead of +5**;
+- receiving an enemy hit: **+3 Rage**.
+
+An avoided attack that deals no hit to the Warrior does not generate Rage from taking damage.
+
+A successfully blocked incoming hit still counts as receiving a hit for Rage generation and grants **+3 Rage**, even though Block substantially reduces its damage.
+
+Rage cannot exceed 100.
+
+These generation values are working balance values and may be tuned after automated combat testing without changing the structural resource rules above.
 
 The Warrior receives two base abilities:
 
 ### Level 10 — Power Strike
 
-A strong weapon attack that spends Rage to deal meaningfully more damage than a normal attack.
+Power Strike is a strong weapon attack that deals meaningfully more damage than a normal attack.
 
-It must work with the ordinary Warrior weapon setups and is not tied to one first specialization.
+Current working rules:
 
-Exact damage multiplier, Rage cost, cooldown, and WIS scaling are balance data.
+- Rage cost: **30**;
+- cooldown: **10 seconds**;
+- requires a living valid target;
+- must work with ordinary Warrior weapon setups;
+- is not tied to either first specialization.
+
+
+Autonomous baseline:
+
+> **when Power Strike is off cooldown and the Warrior has at least 30 Rage, the hero may use it at the next valid combat opportunity.**
+
+Power Strike is therefore primarily gated by Rage generation rather than by a complex situational decision rule in the first Prototype 0.2 implementation.
 
 ### Level 20 — Battle Guard
 
-A defensive Rage-spending ability that temporarily reduces incoming danger / damage.
+Battle Guard is the Warrior's base defensive cooldown.
 
-It must not require a shield so the ability remains useful to both future Warrior branches.
+It does **not** spend Rage and does **not** require a shield, so it remains useful to both Protector and Slayer paths.
 
-Exact mitigation, duration, Rage cost, cooldown, and WIS scaling are balance data.
+Current working rules:
+
+- cooldown: **60 seconds**;
+- duration: **10 seconds**;
+- may be activated only while the Warrior is at **75% MaxHP or lower**;
+- while active, reduces the remaining incoming damage according to Skill Level.
+
+Battle Guard mitigation is applied **after** the normal defensive resolution of the incoming hit.
+
+For physical damage:
+
+```text
+Raw Physical Damage
+→ Block, if triggered
+→ Armor
+→ Battle Guard
+→ final HP damage
+```
+
+For elemental / magical damage:
+
+```text
+Raw Elemental Damage
+→ Block, if triggered
+→ matching elemental Resistance
+→ Battle Guard
+→ final HP damage
+```
+
+Therefore Battle Guard multiplies the already-mitigated remaining damage by:
+
+> **0.67**
+
+It does not replace, bypass, or weaken Block, Armor, or elemental Resistances.
+
+The exact WIS scaling, if any, remains to be defined separately.
+
+Autonomous baseline:
+
+> **if Battle Guard is off cooldown, its effect is not already active, and current HP is 75% MaxHP or lower, the hero uses it at the next valid combat opportunity.**
+
+This deliberately keeps the first Warrior defensive behavior deterministic and understandable instead of attempting to predict future burst damage.
 
 ### Autonomous Ability Use
 
-The hero decides when to use an ability.
+For Prototype 0.2, base Warrior ability use begins with simple deterministic rules:
 
-Ability choice may consider:
+- **Power Strike:** use when at least 30 Rage is available and the 10-second cooldown is ready;
+- **Battle Guard:** use when HP is 75% MaxHP or lower and the 60-second cooldown is ready.
 
-- current HP;
-- Rage;
-- current enemy strength;
-- expected remaining fight duration;
-- available defensive resources;
-- personality / risk tendency where relevant;
-- conservation of resources when the current activity contains multiple encounters.
-
-The hero should not simply fire every ability on cooldown with no situational logic.
+Later abilities or specialization abilities may require more situational combat evaluation, but these two base abilities do not need unnecessary decision complexity merely to appear autonomous.
 
 ---
 
 ## 11. First Warrior Specialization
 
-At approximately level 40, the Warrior becomes eligible to move toward one of two first-tier specializations:
+The first Warrior specialization becomes available around:
 
-- **Protector**;
-- **Slayer**.
+> **Level 40**
 
-The player does not directly select the specialization.
+Prototype 0.2 includes two first-specialization directions:
 
-The hero evaluates which direction fits who they have become. The current conceptual inputs are:
+- **Protector**
+- **Slayer**
 
-- personality / character tendencies;
-- actual primary-attribute profile;
-- one optional soft divine direction.
+The player does not directly select the specialization from a menu.
 
-The implementation must avoid blindly counting the same tendency twice merely because personality already influenced attribute growth.
+The hero forms a specialization preference from their actual development, then may receive one limited divine nudge before the decision becomes final.
 
-After the hero settles on a direction, a dedicated **Specialization Quest** becomes a long-term active goal.
+The specialization is not granted immediately when the direction is chosen. Choosing the direction activates the corresponding **Specialization Quest**, and the specialization becomes owned only after that quest is completed.
 
-Reaching level 40 does not grant the specialization immediately.
+### 11.1. Attribute-Based Specialization Preference
 
-### Protector
+The hero's developed primary-attribute profile is the main influence on the first specialization decision.
 
-Working identity:
+Because Warrior receives one permanent class-directed Strength point per level, that mandatory class growth must not by itself bias every Warrior toward Slayer.
 
-- defensive / protective path;
-- primarily CON-oriented;
-- one-handed weapon + shield;
-- durability, protection, control, and active shield use.
+At the first-specialization milestone, subtract the Warrior's expected mandatory class Strength contribution from current Strength:
 
-At approximately level 50, after Protector is actually owned, the hero gains:
+> **`PersonalSTR = max(0, STR - 40)`**
 
-**Shield Bash** — a shield-based attack with a control / disruption component.
+The current Prototype 0.2 first-specialization raw profiles are:
 
-Exact damage, control behavior, cooldown, WIS scaling, and Block interaction are tuning / implementation details to finalize before coding the ability.
+> **`SlayerRaw = PersonalSTR + DEX`**
 
-### Slayer
+> **`ProtectorRaw = CON + WIS`**
 
-Working identity:
+The two raw values are converted into normalized base shares:
 
-- offensive Warrior path;
-- primarily STR-oriented;
-- no shield for specialization abilities;
-- compatible with a heavy two-handed weapon or dual wielding two one-handed weapons;
-- sustained pressure and offensive momentum.
+> **`SlayerBase = SlayerRaw / (SlayerRaw + ProtectorRaw)`**
 
-At approximately level 50, after Slayer is actually owned, the hero gains:
+> **`ProtectorBase = ProtectorRaw / (SlayerRaw + ProtectorRaw)`**
 
-**Onslaught** — a strong weapon attack followed by a temporary increase in attack tempo / Attack Speed.
+Example:
 
-Exact damage, speed increase, duration, Rage interaction, cooldown, and WIS scaling are tuning values.
+```text
+SlayerRaw = 70
+ProtectorRaw = 37
 
-If the hero reaches level 50 without yet completing the Specialization Quest, the specialization ability remains locked until the specialization is actually obtained.
+SlayerBase ≈ 0.65
+ProtectorBase ≈ 0.35
+```
+
+The purpose of normalization is to compare the hero's actual developed profile rather than rely on arbitrary absolute stat thresholds.
+
+If future balance changes alter the exact mandatory Warrior Strength gained before the specialization milestone, the subtraction value must follow the real class-directed growth rather than remain hard-coded to an obsolete number.
+
+### 11.2. Personality Influence
+
+Personality does **not** add a separate direct specialization-score modifier in Prototype 0.2.
+
+This is intentional because the three personality axes that influence adaptive attribute growth already shape the hero's STR / DEX / CON / WIS profile over time.
+
+Therefore personality affects the first specialization **indirectly through the hero's developed attributes**, avoiding double-counting the same developmental cause twice.
+
+Other personality traits also do not receive separate specialization-score bonuses merely because they exist.
+
+### 11.3. One-Time Divine Direction
+
+When the hero reaches level 40, the player gains one temporary divine opportunity to influence the first specialization direction.
+
+The player may choose:
+
+- **Guide toward Protector**
+- **Guide toward Slayer**
+
+Current working cost:
+
+> **80 Divine Energy**
+
+Effect:
+
+> **+0.15 to the selected specialization score**
+
+This intervention may be used **only once for the entire first-specialization decision**.
+
+The player cannot pay separately to influence both directions.
+
+Divine guidance does not directly choose the specialization. It only modifies the hero's current preference.
+
+A hero who has developed very strongly toward one path may therefore ignore the practical effect of the divine nudge, while a hero who is genuinely near the middle may be pushed toward the other path.
+
+This preserves the core principle:
+
+> **the hero develops and chooses; the deity may influence but does not directly assign the specialization.**
+
+### 11.4. Final Specialization Scores
+
+The current first-specialization score is:
+
+> **`SlayerScore = SlayerBase + SlayerDivineModifier`**
+
+> **`ProtectorScore = ProtectorBase + ProtectorDivineModifier`**
+
+The divine modifier is zero when no divine guidance has been used.
+
+The scores do not need to sum to exactly `1.0` after modifiers are applied. They are comparison scores, not displayed probabilities.
+
+### 11.5. Specialization Decision Window
+
+Reaching level 40 begins a specialization-decision window of:
+
+> **180 world ticks**
+
+During this window, the specialization scores may be reevaluated at valid decision points if relevant hero state changes.
+
+The player may use the one-time divine direction only while the specialization direction remains undecided.
+
+The hero may decide before the full 180 ticks have elapsed if one specialization becomes clearly dominant.
+
+Current working early-decision threshold:
+
+> **one specialization leads the other by at least `0.20`**
+
+Example:
+
+```text
+SlayerScore = 0.72
+ProtectorScore = 0.35
+
+Difference = 0.37
+→ Slayer direction may be chosen immediately.
+```
+
+A close result does not force an immediate decision:
+
+```text
+SlayerScore = 0.58
+ProtectorScore = 0.52
+
+Difference = 0.06
+→ the hero remains undecided while the decision window is still active.
+```
+
+When the 180-tick window expires, the hero chooses the specialization with the higher current final score even if the difference is smaller than `0.20`.
+
+If both final scores are exactly equal when the window expires, the tie must be resolved deterministically through the shared seeded RNG or another single centralized deterministic tie-break rule. The decision must not depend on UI order or arbitrary dictionary iteration.
+
+### 11.6. Specialization Quest Activation
+
+Once the direction is chosen:
+
+- that direction becomes the hero's fixed first-specialization target;
+- the one-time divine direction opportunity closes;
+- the corresponding authored **Specialization Quest** becomes available to the hero through the normal quest/progression flow;
+- completing that quest activates the specialization.
+
+The specialization direction itself does not grant specialization stats, abilities, or equipment rules before the Specialization Quest is completed.
+
+The current specialization direction is permanent for Prototype 0.2 once chosen. Prototype 0.2 does not include respecialization.
+
+### 11.7. Protector
+
+Protector is the defensive first-specialization path.
+
+Its current identity is:
+
+- primary development emphasis: **Constitution**;
+- secondary thematic support from **Wisdom**;
+- intended combat setup: **one-handed weapon + shield**;
+- defensive identity built around survivability, mitigation, Block, and shield-based tools.
+
+The first Protector specialization ability is planned around level 50:
+
+> **Shield Bash**
+
+Detailed ability numbers are defined separately.
+
+### 11.8. Slayer
+
+Slayer is the offensive first-specialization path.
+
+Its current identity is:
+
+- primary development emphasis: **Strength**;
+- secondary support from **Dexterity**;
+- intended combat setup: **two-handed weapon or dual wielding**;
+- no shield for Slayer-specific combat tools;
+- offensive identity built around pressure and higher damage output.
+
+The first Slayer specialization ability is planned around level 50:
+
+> **Onslaught**
+
+Detailed ability numbers are defined separately.
+
+### 11.9. Tuning Status
+
+The following are current working balance values and may be tuned through testing:
+
+- `40` mandatory class Strength removed from the specialization comparison;
+- divine modifier `+0.15`;
+- divine cost `80 Energy`;
+- decision window `180 ticks`;
+- early-decision lead threshold `0.20`.
+
+The structural rules are fixed unless explicitly redesigned:
+
+- stats are the primary specialization influence;
+- mandatory Warrior Strength must not create false Slayer bias;
+- personality influences specialization indirectly through the developed attribute profile and is not counted again as a direct score bonus;
+- divine guidance is one-time and secondary;
+- the hero may decide before the deadline if the direction is clear;
+- the hero chooses autonomously when the window closes;
+- the specialization becomes active only through its Specialization Quest.
 
 ---
 
@@ -622,94 +876,443 @@ General structure:
 
 The visible trait should not flip back and forth after small opposite changes. Appearance and disappearance thresholds should therefore use hysteresis.
 
-Prototype 0.2 should implement approximately **3–4 opposing personality axes** selected from the current core set:
+Prototype 0.2 uses exactly four opposing personality axes:
 
-- Brave ↔ Cowardly;
-- Noble ↔ Devious;
-- Observant ↔ Inattentive;
-- Greedy ↔ Generous;
-- Curious ↔ Conservative.
+- **Brave ↔ Cautious**
+- **Noble ↔ Devious**
+- **Greedy ↔ Generous**
+- **Curious ↔ Conservative**
 
-The final subset should be chosen based on whether each axis has enough real Prototype 0.2 decisions and events to matter. A trait must not be added only as descriptive text.
+These four axes are part of the Prototype 0.2 personality target because each can affect real decisions present in this Scope.
 
-Routine repetition does not normally change general personality by itself. Ordinary quest completion, routine combat, shopping, and repeatedly acting according to an existing trait should not automatically reinforce that trait forever.
+### Brave ↔ Cautious
 
-Personality changes primarily through **meaningful authored outcomes**, especially temporary events, dungeon situations, specialization-related decisions, and other consequences explicitly designed to leave a mark.
+Represents the hero's willingness to accept danger and uncertainty.
 
-The event/content definition owns the direction and magnitude of personality movement caused by its outcomes. There is no universal rule such as “success always increases bravery.”
+It may influence:
 
-Personality affects autonomous choices through decision modifiers but must not override obvious common sense.
+- risky quest and dungeon evaluation;
+- reactions to dangerous temporary events;
+- first-specialization preference;
+- other decisions where danger is a meaningful tradeoff.
+
+`Cautious` replaces the older Prototype 0 label `Cowardly`.
+
+This is intentional: preferring safer choices or developing toward Protector does not automatically mean the hero is a coward.
+
+### Noble ↔ Devious
+
+Represents the hero's tendency toward honorable, straightforward behavior versus opportunistic, deceptive, or underhanded behavior.
+
+It may influence:
+
+- authored quest/event options;
+- treatment of other people;
+- acceptance of morally different opportunities;
+- narrative interpretation of meaningful choices.
+
+It must not become a generic good-versus-evil meter.
+
+### Greedy ↔ Generous
+
+Represents how strongly the hero prioritizes personal material benefit versus giving up value for other people or broader outcomes.
+
+It may influence:
+
+- quest/reward evaluation;
+- authored event choices;
+- spending decisions where personal gain competes with another meaningful outcome.
+
+Routine buying, selling, or earning Gold does not by itself move this axis.
+
+### Curious ↔ Conservative
+
+Represents the hero's tendency to seek unfamiliar experiences, investigate rumours, and explore uncertain opportunities versus preferring known and proven options.
+
+It may influence:
+
+- temporary-event investigation;
+- hidden-location and rumour interest;
+- dungeon interest;
+- exploration-related activity choice.
+
+It does not grant hidden information directly. Curiosity affects the desire to investigate, not the hero's ability to magically know undiscovered facts.
+
+### Excluded Axis
+
+`Observant ↔ Inattentive` is not implemented as a Prototype 0.2 personality axis.
+
+The current Prototype 0.2 content does not provide enough meaningful perception-specific decisions to justify a dedicated personality axis. It may be reconsidered later if perception and discovery systems become deep enough to support it.
+
+### Trait Development Rules
+
+Routine repetition does not normally change general personality by itself.
+
+Ordinary quest completion, routine combat, shopping, and repeatedly acting according to an existing trait should not automatically reinforce that trait forever.
+
+Personality changes primarily through **meaningful authored outcomes**, especially:
+
+- temporary events;
+- dungeon situations;
+- specialization-related decisions;
+- unusual quest outcomes;
+- other authored consequences explicitly designed to leave a mark.
+
+The event/content definition owns the direction and magnitude of personality movement caused by its outcomes.
+
+There is no universal rule such as:
+
+> **success always increases bravery**
+
+A successful reckless action may reinforce Bravery, while a traumatic success could instead make the hero more Cautious if that authored outcome explicitly says so.
+
+### Hidden Values and Visible Traits
+
+Each personality axis is stored as a continuous hidden value.
+
+The exact numeric range, movement sizes, visible-trait thresholds, and hysteresis thresholds remain tuning values to be defined during implementation/testing.
+
+The architecture must nevertheless support:
+
+- neutral hidden states with no visible trait;
+- gradual movement toward either side;
+- visible trait appearance after a threshold;
+- trait strengthening through further meaningful movement;
+- trait weakening through opposing meaningful outcomes;
+- removal of the visible trait before the opposite trait can appear.
+
+The player should see the hero's established personality, not the exact hidden numerical meter unless a later UI decision explicitly changes this.
+
+### Personality and Autonomous Decisions
+
+Personality affects autonomous choices through decision modifiers but must not override obvious common sense or hard eligibility rules.
+
+The normal order remains:
+
+```text
+Hard eligibility / feasibility
+→ objective evaluation
+→ personality and other soft modifiers
+→ final autonomous choice
+```
+
+A personality trait therefore changes preference among viable options. It does not normally make an impossible activity possible.
+
+### Personality and Attribute Growth
+
+Established personality traits influence the three adaptive hero-development attribute points defined in Section 7.
+
+The current Prototype 0.2 trait-to-attribute mapping is:
+
+- **Brave → STR**
+- **Cautious → CON**
+- **Curious → DEX**
+- **Conservative → WIS**
+- **Devious → DEX**
+- **Noble → CON**
+
+`Greedy` and `Generous` do **not** directly redirect adaptive attribute growth in Prototype 0.2.
+
+Their gameplay role remains primarily behavioral and economic rather than combat-stat driven.
+
+The three adaptive hero-development points correspond directly to the three personality axes that influence attributes:
+
+1. **Brave ↔ Cautious**
+   - Brave → **+1 STR**
+   - Cautious → **+1 CON**
+
+2. **Noble ↔ Devious**
+   - Noble → **+1 CON**
+   - Devious → **+1 DEX**
+
+3. **Curious ↔ Conservative**
+   - Curious → **+1 DEX**
+   - Conservative → **+1 WIS**
+
+Therefore each of these three personality axes controls exactly one of the three adaptive attribute points per level.
+
+If an axis has not yet developed a sufficiently established visible direction, that axis's adaptive point falls back to the corresponding default Warrior-profile point defined in Section 7.
+
+`Greedy ↔ Generous` does not control an adaptive attribute point in Prototype 0.2.
+
+This mapping must remain secondary to the personality system's actual behavioral meaning. Traits must not be designed merely as disguised stat talents.
 
 Combat-specific fears/confidences remain a separate possible future layer and are not required merely to satisfy the Prototype 0.2 personality goal.
 
 ---
 
-## 13. General Autonomous Decision Model
+## 13. Context-Specific Autonomous Decisions
 
-Recurring autonomous decisions should follow one understandable pattern:
+Prototype 0.2 does **not** use one universal score or one global activity-selection formula for every autonomous action.
 
-> **hard filtering → objective/base evaluation → hero/world modifiers → highest final score**
+Different activities become relevant for different reasons and are therefore owned by the system that understands that activity.
 
-Hard filtering removes only options that are impossible, incompatible, or clearly unreasonable.
+The hero remains autonomous, but autonomy does not require every decision to be reduced to the same mathematical pattern.
 
-Soft factors should normally change attractiveness rather than remove the option entirely.
+### 13.1. Ordinary Quest Selection
 
-Possible modifiers include:
+Ordinary quest choice keeps its dedicated two-stage model:
 
-- personality;
-- current condition;
-- current equipment and resources;
-- expected risk;
-- current goal;
-- known opportunity value;
-- travel time;
-- current city / region;
-- divine influence.
+> **Hard Filter → QuestScore → highest valid quest**
 
-The hero normally chooses the highest final evaluation. Do not use broad roulette that lets obviously inferior options win merely for variety.
+`QuestEvaluator` owns this logic.
 
-If later testing needs variation between genuinely near-equivalent choices, small seeded tie variation may be introduced separately.
+Personality, reward, travel time, risk, current city context, and divine guidance may modify ordinary quest attractiveness only where explicitly defined by the quest-selection rules.
 
-The player-facing explanatory log should be able to state the important reasons for major decisions without dumping raw internal coefficients.
+This quest-selection model must **not** automatically be reused for dungeons, events, relocation, shopping, or other activity types.
+
+### 13.2. Dungeon Attempts
+
+A known dungeon is not treated as another ordinary quest competing through QuestScore.
+
+For Prototype 0.2, dungeon attempts are primarily **readiness-triggered**.
+
+The hero may attempt a known dungeon when the dungeon's required preparation conditions are satisfied, including the relevant potion preparation defined by the dungeon rules.
+
+After a failed dungeon attempt, the hero does not repeatedly retry it merely because it remains available.
+
+Instead, the hero waits until the approved post-failure strength / Power retry condition is reached before another attempt becomes valid.
+
+The exact potion requirements and retry thresholds are defined in the dungeon section of this Scope.
+
+### 13.3. Temporary Events
+
+Temporary events are primarily circumstances created by the world.
+
+The hero does not normally browse a pool of unrelated events and choose the one with the highest generic score.
+
+When an event becomes relevant to the hero because of location, timing, travel interruption, or another authored trigger, the hero reacts to that event according to its available options and the personality/decision rules defined for that event.
+
+An event may allow multiple reactions, including ignoring it when the authored event explicitly permits that outcome.
+
+Event resolution remains deterministic and explainable, but it does not need to share the ordinary QuestScore formula.
+
+### 13.4. Leaving a City / Region
+
+Relocation follows the progression trigger defined in Section 5.
+
+The hero begins looking for a new city / region when the current city no longer provides ordinary quests meaningfully appropriate for the hero's current strength and progression.
+
+This is a progression condition, not a global score comparison between:
+
+- staying in the city;
+- taking a dungeon;
+- investigating an event;
+- travelling elsewhere.
+
+Travel begins at an appropriate normal decision point after the relocation condition has been met.
+
+### 13.5. Economy and City Activities
+
+Shopping, Skill Level purchases, potion preparation, and other city activities are evaluated only when their own context makes them relevant.
+
+Their owning systems may use their own deterministic value comparisons where needed.
+
+They are not required to output a universal activity score comparable to QuestScore.
+
+### 13.6. Decision Ownership Principle
+
+Prototype 0.2 therefore uses:
+
+> **context-specific triggers and evaluators rather than one universal activity selector**
+
+Examples:
+
+```text
+ordinary quests
+→ QuestEvaluator
+
+known dungeon
+→ dungeon readiness / retry rules
+
+temporary event
+→ EventSystem + authored event options
+
+city relocation
+→ city progression condition
+
+shopping / training
+→ economy-specific rules
+```
+
+This avoids forcing mechanically different activities into an artificial common scoring scale.
+
+The player-facing explanatory log should still be able to state the important reason for a major autonomous action, for example:
+
+- why one ordinary quest beat another;
+- why the hero decided they were ready for a dungeon;
+- why the hero reacted to an event in a particular way;
+- why the hero decided it was time to leave the current city.
 
 ---
 
 ## 14. Quest System and Rotating Offers
 
-Each city owns a local ordinary quest template pool.
+Prototype 0.2 uses local city-based quest pools.
 
-Content target:
+Each normal city has:
 
-> **10–15 ordinary quest templates per city**
+- **15 ordinary quest templates** in its local pool;
+- up to **6 active quest offers** at the same time;
+- rotating offers that expire and are replaced over time.
 
-Only approximately:
+Quest templates are authored content definitions. Active offers are runtime instances generated from those templates.
 
-> **5–6 ordinary offers per city**
+The system must keep:
 
-are simultaneously active.
+> **QuestDefinition ≠ QuestOffer**
 
-An offer is a runtime object distinct from its immutable template.
+A `QuestDefinition` defines reusable authored content and constraints.
 
-A runtime offer may contain:
+A `QuestOffer` is one concrete currently available opportunity and may contain:
 
-- quest template id;
-- actual target location / hex;
-- enemy / objective configuration;
-- reward;
-- lifetime / expiration;
-- other rolled instance values required by that quest type.
+- selected quest definition;
+- concrete location / hex;
+- concrete enemies or encounter parameters;
+- concrete reward values;
+- offer creation time;
+- expiry time;
+- other runtime parameters required by that quest type.
 
-Unaccepted offers do not remain forever. When an offer expires, it disappears and a replacement is generated from the city’s valid local templates.
+### 14.1. Three Strength Bands
 
-Accepted quests use their normal completion/failure logic and are replaced after resolution according to the city’s offer-refresh rules.
+Each city's 15 ordinary quest templates are divided into three **approximate strength bands**:
 
-Quest availability belongs to the place, not to the hero’s level. The Mid-Level City should naturally contain stronger ordinary opportunities, but those opportunities do not secretly scale to the current hero.
+- **5 lower-strength quests**
+- **5 middle-strength quests**
+- **5 higher-strength quests**
 
-Quest targets are placed on the real hex map using authored or rule-based placement criteria. Templates may specify suitable distance bands and required / forbidden / preferred map tags rather than hard-coding one exact coordinate for every instance.
+These labels are organizational and relative to that city's content.
 
-The hero evaluates only currently known and available offers.
+They are not permanent player-facing difficulty tiers and do not imply level scaling.
 
-Ordinary quests should be systemically reusable. Prototype 0.2 does not require 20–30 completely unique quest scripts; several reusable quest structures may support many authored templates, enemy sets, locations, and narrative variants.
+A quest's band is primarily determined by the strength of the mobs and encounters used by that quest.
+
+The purpose of the three bands is to make the active board naturally contain opportunities at different strength levels rather than allowing random rotation to fill the entire board with nearly identical weak or strong quests.
+
+### 14.2. Active Quest Board Composition
+
+The active quest board contains up to six ordinary quest offers:
+
+- up to **2 lower-strength offers**;
+- up to **2 middle-strength offers**;
+- up to **2 higher-strength offers**.
+
+Each band draws only from the five quest templates assigned to that band.
+
+If a band temporarily cannot provide two valid offers, the board may contain fewer than six total offers.
+
+The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain six offers.
+
+This preserves the intended 2 / 2 / 2 composition and makes temporary exhaustion of appropriate content meaningful.
+
+### 14.3. Offer Lifetime and Rotation
+
+A normal active quest offer remains available for:
+
+> **100 world ticks**
+
+If the hero does not take the offer before its lifetime expires, the offer disappears.
+
+The corresponding slot then becomes eligible to receive another offer from the same strength band according to the quest rotation rules.
+
+A quest currently being performed by the hero is no longer an active board offer and is not removed merely because its original offer lifetime would have expired.
+
+The 100-tick value is a working Prototype 0.2 tuning value.
+
+### 14.4. Temporary Template Availability
+
+When a quest template has recently been used and is not yet eligible to generate another offer, that template is temporarily unavailable to its band.
+
+Prototype 0.2 must support this temporary unavailability so the board does not instantly regenerate the exact same completed quest.
+
+Therefore the number of currently available offers in a strength band can temporarily fall below two.
+
+The exact restoration / reuse delay for completed quest templates may be tuned separately, but it must be long enough for temporary depletion of a band's suitable quests to be meaningful.
+
+### 14.5. Hero Outgrowing a City's Current Opportunities
+
+The hero evaluates the **currently active offers**, not hypothetical future rolls from the entire city pool.
+
+This is intentional.
+
+If the hero has become strong enough that lower and middle offers are no longer meaningfully appropriate, the hero may depend primarily on the city's higher-strength offers.
+
+If those suitable higher-strength offers are completed and no other currently active suitable quest remains, the hero may conclude that the current city no longer offers worthwhile ordinary work and begin the relocation behavior defined in Section 5.
+
+Example:
+
+```text
+The hero has outgrown lower and middle quest bands.
+
+Two higher-strength offers are currently suitable.
+→ Hero completes them.
+
+Their quest templates are temporarily unavailable.
+No other active offer is meaningfully appropriate.
+→ Hero may decide that the city currently has no suitable ordinary work.
+→ At the next valid decision point, relocation may begin.
+```
+
+The hero does **not** inspect unavailable or future quest templates and wait merely because the city might eventually regenerate a suitable quest.
+
+This creates a natural reason for an autonomous hero to move onward after exhausting the best opportunities currently available to them.
+
+### 14.6. No Hero-Level Scaling
+
+Ordinary quests do not scale their enemies to the hero.
+
+Quest difficulty comes from authored / source-driven content:
+
+- city;
+- region;
+- quest template;
+- mob definitions;
+- encounter composition.
+
+A stronger hero may therefore find older city quests trivial, while a weaker hero may find higher-strength offers unattractive or dangerous.
+
+The second normal city contains stronger ordinary quest content than the starting city.
+
+### 14.7. Locality and Map Placement
+
+Ordinary quest offers are primarily local to the hero's current city.
+
+The hero does not globally compare routine quest offers from every city in the world.
+
+A quest offer may place its objective on one or more real hexes associated with that city's local region.
+
+Quest travel therefore uses the actual map and travel system rather than abstract instant mission entry.
+
+### 14.8. Quest Selection
+
+Only currently active, known, and valid offers participate in ordinary quest selection.
+
+Quest selection follows the dedicated quest-decision model defined in Section 13:
+
+> **Hard Filter → QuestScore → highest valid quest**
+
+The quest board and rotation system determine **what opportunities exist**.
+
+`QuestEvaluator` determines **which of those current opportunities the hero prefers**.
+
+These responsibilities must remain separate.
+
+### 14.9. Reusable Quest Structure
+
+Prototype 0.2 should not require a unique script for every individual quest.
+
+Quest templates should reuse common quest-system behavior where practical, while authored data defines:
+
+- objective structure;
+- location constraints;
+- enemy source;
+- reward ranges;
+- narrative text hooks;
+- event/outcome data;
+- other quest-specific parameters.
+
+Unique authored behavior is allowed where a quest genuinely requires it, but the ordinary city quest pool should primarily remain data-driven.
 
 ---
 
@@ -770,27 +1373,103 @@ A dungeon is a higher-risk expedition made from a sequence of encounters followe
 
 Working structure:
 
-> **ordinary encounter → between-fight healing decision → ordinary encounter → ... → unique boss → completion reward**
+> **ordinary encounter → potion-based between-fight recovery → ordinary encounter → ... → boss preparation → unique boss → completion reward**
 
 Dungeon ordinary enemies and boss continue granting normal combat XP.
 
-Material reward is primarily tied to completing the dungeon. Ordinary dungeon enemies do not need to drop normal equipment/trophy loot during the run.
+Material reward is primarily tied to completing the dungeon. Ordinary dungeon enemies do not drop normal equipment/trophy loot during the run.
 
-If the hero dies before the final boss is defeated, the hero keeps XP already earned from completed fights but receives no dungeon completion loot.
+If the hero dies before the final boss is defeated:
 
-The first attempt should contain uncertainty. The hero does not receive a perfect numerical Dungeon Power value before experiencing it.
+- XP already earned from completed fights is kept;
+- no dungeon completion Gold is awarded;
+- no dungeon completion item is awarded.
 
-After failure, the hero remembers how far they progressed. The current working retry-readiness gates remain:
+### 16.1. Dungeon Preparation
 
-- died before killing one ordinary dungeon enemy → retry after approximately +20% Hero Power from the start of that attempt;
-- killed at least one ordinary enemy but did not reach boss → approximately +15%;
-- reached boss and died → approximately +10%.
+A known ordinary dungeon is attempted through **readiness rules**, not through ordinary QuestScore competition.
+
+Before leaving for a dungeon, the hero tries to fill all available Belt potion slots according to the potion and Belt rules in Section 26.
+
+If the hero cannot prepare an adequate potion loadout, the dungeon attempt does not begin.
+
+The hero instead continues normal progression and may reconsider the dungeon after returning to town later.
+
+Potion preparation is therefore part of dungeon readiness, not merely an optional optimization.
+
+### 16.2. Healing Between Encounters
+
+There is no automatic free full heal between ordinary dungeon encounters.
+
+Healing between ordinary fights is performed through carried healing potions.
+
+For ordinary rooms:
+
+- potions are used only between fights;
+- the hero prefers a potion whose healing can be applied fully without wasting part of its effect through overheal;
+- if no suitable potion should be used, the hero may continue below full HP.
+
+Before the final boss:
+
+- survival takes priority;
+- the hero attempts to enter the boss fight at **full HP**;
+- potion use may accept some overheal waste when necessary to reach that state as closely as possible.
+
+This uses the same Belt/potion system defined in Section 26 and must not be implemented as a separate dungeon-only inventory.
+
+### 16.3. Completion Reward
+
+Full dungeon completion grants:
+
+- normal XP from enemies and boss fights;
+- a Gold completion reward;
+- one dungeon equipment reward.
+
+The dungeon equipment reward is drawn from the Prototype 0.2 high-quality rarity range:
+
+- **Blue / Rare** as the normal dungeon reward;
+- **Purple / Epic** as the rarer exceptional result.
+
+Purple must remain meaningfully less common than Blue.
+
+Exact Gold values, item-level ranges, and Blue/Purple probabilities are balance data owned by dungeon/loot definitions.
+
+The reward still follows the normal item pipeline:
+
+> **dungeon completion → LootGenerator → ItemGenerator → ItemInstance → Inventory → equipment evaluation**
+
+### 16.4. First Attempt and Retry Readiness
+
+The first attempt should contain uncertainty.
+
+The hero does not receive a perfect numerical Dungeon Power value before experiencing the dungeon.
+
+After failure, the hero remembers how far they progressed.
+
+The current working retry-readiness gates are:
+
+- died before killing one ordinary dungeon enemy → retry after approximately **+20% Hero Power** from the start of that attempt;
+- killed at least one ordinary enemy but did not reach boss → retry after approximately **+15% Hero Power**;
+- reached boss and died → retry after approximately **+10% Hero Power**.
+
+The comparison is made against the Hero Power recorded at the start of the failed attempt.
 
 These percentages are balance values and may be tuned.
 
+A dungeon does not become immediately retry-valid merely because the hero can refill potions. After a failed attempt, both conditions must be satisfied:
+
+- required post-failure Power growth;
+- adequate potion preparation.
+
+This prevents repeated autonomous suicide attempts against the same dungeon.
+
+### 16.5. No Voluntary Retreat
+
 A dungeon expedition has no voluntary retreat in the first Prototype 0.2 implementation unless testing proves that retreat adds useful behavior.
 
-### Dungeon Discovery
+Once the hero begins the run, the current implementation resolves the expedition through progression, victory, or defeat.
+
+### 16.6. Dungeon Discovery
 
 Ordinary dungeons may exist while unknown to the hero.
 
@@ -933,7 +1612,8 @@ No ordinary random modifier pool in Prototype 0.2. Its identity is base Health +
 - Accuracy;
 - Critical Chance;
 - Critical Damage;
-- Block.
+- Block;
+- Health.
 
 Exact modifier-budget ranges and stat costs are balance data and should be stored centrally.
 
@@ -1060,6 +1740,99 @@ The Belt is evaluated through both permanent Health and practical potion-healing
 
 ---
 
+### Legal Hand-Configuration Evaluation
+
+Equipment evaluation must compare complete legal hand configurations rather than treating Main Hand and Off Hand as independent slots.
+
+Examples:
+
+```text
+current 1H + Shield
+vs
+new 2H
+```
+
+and:
+
+```text
+current 2H
+vs
+new 1H + available legal Off Hand
+```
+
+A two-handed weapon occupies both hand slots during virtual evaluation.
+
+A shield or other Off Hand may therefore only contribute while paired with a legal Main Hand configuration.
+
+This prevents the evaluator from accidentally counting the stats of a shield together with a two-handed weapon or comparing only half of an actual hand setup.
+
+### Block in ItemPower and HeroPower
+
+`Block` is a real defensive combat stat and must participate in both:
+
+- stable reference-based **ItemPower**;
+- real virtual-equip **HeroPower** evaluation.
+
+A successful Block reduces an eligible direct hit by **75%**, leaving **25%** of that hit before Armor / elemental Resistance are applied.
+
+Therefore Block must be represented in Power through its **expected mitigation**, not as an arbitrary flat score.
+
+Conceptually:
+
+```text
+expected blocked-hit multiplier
+= (1 - BlockChance) × 1.00
+  + BlockChance × 0.25
+```
+
+which is equivalent to:
+
+```text
+1 - (0.75 × BlockChance)
+```
+
+This expected Block mitigation is applied before the Armor / Resistance part of the defensive Power calculation, matching the combat damage order.
+
+Prototype 0.2 uses the following shared Block conversion:
+
+> **`BlockChance = min(Block / (Block + 200), 0.50)`**
+
+A successful Block leaves 25% of the eligible hit, so expected mitigation is:
+
+> **`BlockMultiplier = 1 - 0.75 × BlockChance`**
+
+The same implementation must be used for:
+
+- hero Power;
+- mob Power where Block exists;
+- ItemPower reference calculations;
+- EquipmentEvaluator virtual equip comparisons.
+
+There must not be a separate shield-only or UI-only Block value formula.
+
+
+### Block Contribution to ItemPower
+
+Block contributes to item strength through the same shared Power model used for the hero and mobs.
+
+For an item that grants Block:
+
+```text
+BlockChance = min(Block / (Block + 200), 0.50)
+
+BlockMultiplier = 1 - 0.75 × BlockChance
+```
+
+The resulting expected mitigation increases `EffectiveHP`, which then increases `Power`.
+
+Therefore Block is automatically reflected in:
+
+> **`ItemPower = Power(ReferenceStats + ItemStats) - Power(ReferenceStats)`**
+
+No separate arbitrary "Block ItemPower coefficient" is allowed.
+
+A shield's ItemPower therefore reflects all of its real stats together — including Block, Health, Accuracy, Crit Chance, Crit Damage, or other legal modifiers — through the same reference-Power calculation.
+
 ## 23. Visual Equipment Families
 
 Prototype 0.2 should contain at least:
@@ -1090,112 +1863,462 @@ Random modifier combinations do not require unique art. Visual identity belongs 
 
 ---
 
-## 24. Economy
+## 24. Economy and Autonomous Spending
 
-Prototype 0.2 needs a minimal working economy because Gold, loot, shops, Skill Levels, and dungeon preparation must form one connected loop.
+Prototype 0.2 needs a small but functional economy that supports the hero's autonomous development.
 
-Core economic loop:
+The core economic loop is:
 
-> **adventure → loot → equipment review → return → quest reward → sell unwanted loot → inspect shop → buy worthwhile upgrade / skill rank / potions → continue adventuring**
+> **adventure → loot / quest reward → equipment evaluation → return to city → sell unwanted loot → prepare / train / shop → next activity**
 
-Gold sources:
+The economy exists to create meaningful tradeoffs between immediate equipment improvement, permanent skill development, and required preparation.
 
-- quest completion rewards;
-- direct currency from humanoids when appropriate;
-- sale of unwanted equipment;
-- sale of trophies / creature loot.
+It must not become a separate management game.
 
-Beasts and ordinary monsters should not automatically drop coins without a world reason.
+### 24.1. Gold Sources
 
-Gold uses:
+Prototype 0.2 Gold may come from:
+
+- ordinary quest rewards;
+- dungeon completion rewards;
+- authored event rewards;
+- Gold carried by humanoid enemies where fictionally appropriate;
+- automatic sale of unwanted ordinary equipment;
+- sale of trophies and other explicitly sellable loot.
+
+Creatures should not drop coins merely because they are enemies.
+
+Gold rewards remain source-driven rather than hero-level scaled.
+
+### 24.2. Gold Sinks
+
+Prototype 0.2 uses Gold primarily for:
 
 - equipment purchases;
 - healing potions;
-- available Skill Level upgrades.
+- Skill Level upgrades.
 
-Prototype 0.2 does not require:
+Prototype 0.2 does **not** require:
 
 - repair costs;
 - taxes;
-- tavern fees;
-- routine travel fees;
+- routine inn fees;
+- ordinary travel fees;
 - crafting costs;
-- other artificial sinks added only to remove currency.
+- artificial recurring Gold sinks added only to remove currency.
 
-Working ordinary equipment resale rule:
+These systems may be reconsidered later if the economy actually needs them.
 
-> **Sell Price ≈ 10% of reference shop value**
+### 24.3. Selling Unwanted Loot
 
-Exact shop-price curves remain tuning data.
+Ordinary equipment that the hero does not equip is normally sold automatically after returning safely to the city.
+
+Working sale value:
+
+> **approximately 10% of the corresponding shop value**
+
+This percentage is a tuning value.
+
+Quest items, specialization items, potions, and other explicitly persistent/special items are not automatically sold through this rule.
+
+### 24.4. Spending Order
+
+When the hero is in a city and has Gold available, spending is evaluated in context.
+
+The broad order is:
+
+1. preserve or obtain preparation required for an already relevant dungeon attempt;
+2. evaluate available Skill Level upgrades and meaningful equipment upgrades;
+3. spend remaining Gold only on purchases that satisfy their own value rules.
+
+Required preparation takes priority over personality preference.
+
+For example, if a dungeon retry is already valid except for potion preparation, the hero should not spend the potion budget on an optional equipment purchase and make the prepared activity impossible.
+
+### 24.5. Curious vs Conservative Spending Preference
+
+The **Curious ↔ Conservative** personality axis influences what kind of long-term development the hero prefers to buy first.
+
+#### Curious
+
+A hero with the established **Curious** trait prefers:
+
+> **available Skill Level upgrade → then meaningful equipment upgrades**
+
+If a valid Skill Level upgrade is currently available and affordable after required preparation is protected, the Curious hero buys it before optional equipment.
+
+#### Conservative
+
+A hero with the established **Conservative** trait prefers:
+
+> **meaningful equipment upgrade → then available Skill Level upgrade**
+
+The Conservative hero prefers a clear, concrete equipment improvement before spending the same available development budget on training.
+
+#### Neutral Axis
+
+If neither Curious nor Conservative is currently established, the default Warrior economic preference is:
+
+> **Skill Level upgrade first**
+
+This is a Prototype 0.2 default, not a universal rule for future classes.
+
+The personality rule changes purchase priority. It does not forbid the lower-priority category.
+
+A Curious hero may still buy equipment after training, and a Conservative hero may still buy a Skill Level after evaluating equipment.
+
+### 24.6. Equipment Purchase Threshold
+
+The hero does not buy every shop item that is technically better than the currently equipped item.
+
+For Prototype 0.2, a shop item becomes a meaningful purchase candidate when it is at least:
+
+> **20% stronger by ItemPower than the currently equipped comparison item**
+
+Conceptually:
+
+> **`CandidateItemPower >= CurrentItemPower × 1.20`**
+
+The `20%` threshold is an initial tuning value and may be changed after playtesting.
+
+This comparison deliberately uses the strength of the **item being replaced**, not a percentage of the hero's total HeroPower.
+
+The reason is that different equipment slots may contribute very different fractions of total HeroPower, and Prototype 0.2 does not yet have enough balance data to use one whole-character percentage threshold fairly across all slots.
+
+The shop threshold answers:
+
+> **"Is this item itself a large enough upgrade to justify spending Gold?"**
+
+Actual equipping still uses the real `EquipmentEvaluator` rules from Section 22.
+
+Therefore a purchasable item must also be legal and useful for the hero's current equipment/spec configuration.
+
+### 24.7. Hand-Slot Shop Comparisons
+
+Main Hand and Off Hand purchases must respect complete legal hand configurations.
+
+A two-handed weapon must not be evaluated as a simple 20% upgrade over only the current Main Hand while silently ignoring the equipped Off Hand.
+
+For purchases that change hand layout, the comparison uses the relevant legal hand setup.
+
+Examples:
+
+```text
+new 2H
+vs
+current 1H + Shield
+```
+
+or:
+
+```text
+new 1H + candidate/current legal Off Hand
+vs
+current 2H
+```
+
+The purchase system may use ItemPower for the shop threshold, but the resulting configuration must still pass the full virtual-equip evaluation before the hero actually equips it.
+
+### 24.8. Skill Level Purchases
+
+Skill Levels remain permanent progression purchased with Gold when the next rank has been unlocked by hero level.
+
+A Skill Level purchase is valid when:
+
+- the next rank is unlocked;
+- the hero has enough Gold after required preparation is protected;
+- the hero has not already purchased that rank.
+
+The exact Gold cost progression remains balance data.
+
+Skill Level priority is influenced by Curious / Conservative as defined above.
+
+### 24.9. Greedy and Generous
+
+`Greedy ↔ Generous` does not determine whether the hero prefers Skill Levels or equipment.
+
+That axis instead represents the hero's attitude toward material gain and giving up personal value.
+
+Its economic influence should appear primarily in authored situations such as:
+
+- choosing between personal profit and helping someone;
+- accepting or sacrificing a reward;
+- event outcomes involving money or valuables.
+
+Routine shopping must not turn Greedy into "buys gear" or Generous into "buys skills."
+
+### 24.10. Economy Ownership
+
+Economic decisions belong to economy systems, not UI.
+
+The UI may display:
+
+- current Gold;
+- shop stock;
+- prices;
+- detected upgrade comparisons;
+- recent purchases.
+
+It does not decide what the autonomous hero buys.
+
+Shop stock generation, purchase evaluation, Skill Level spending, potion preparation, and selling rules must remain deterministic and explainable through the simulation/debug logs.
 
 ---
 
 ## 25. City Shops
 
-Each city has its own limited shop strength and stock.
+Prototype 0.2 uses local city shops with fixed progression bands.
 
-Shop item level is determined by the city / shop tier, not by the current hero level.
+Shop stock is source-driven by city progression and does **not** scale to the hero's current level or Power.
 
-The Starting City provides lower-ilvl ordinary equipment and potions.
+Each normal city offers three equipment families / progression bands.
 
-The Mid-Level City provides stronger ordinary stock appropriate to its place in the world.
+### 25.1. Starting City Shop
 
-Ordinary equipment shop rarity in Prototype 0.2 is primarily:
+The Starting City shop contains equipment from three approximate progression bands:
 
-- White;
-- Green.
+- **Level 1**
+- **Level 10**
+- **Level 20**
 
-Blue should remain uncommon and should not become the routine default shop path without a later explicit rule.
+These level labels represent the intended equipment-strength band of the shop family.
 
-Purple is not normal ordinary-shop progression.
+They are not hard minimum hero-level requirements unless a specific item definition explicitly says otherwise.
 
-Stock is limited and periodically refreshes.
+### 25.2. Mid-Level City Shop
 
-The hero evaluates purchases autonomously based on:
+The second normal city shop contains equipment from three stronger progression bands:
 
-- actual upgrade after virtual equip;
-- specialization compatibility;
-- current weak slots;
-- gold cost;
-- competing needs such as potions or skill upgrades.
+- **Level 30**
+- **Level 40**
+- **Level 50**
 
-A tiny positive Power increase should not automatically justify spending a large amount of gold.
+This makes the second city economically stronger without dynamically scaling its inventory to the hero.
+
+A hero who reaches it early may therefore see equipment that is expensive or only marginally useful, while a hero who remains in the Starting City too long may naturally outgrow that city's stock.
+
+### 25.3. Stock Per Equipment Family
+
+For each of the three progression bands in a city, the currently available equipment stock contains:
+
+- **6 White / Normal equipment listings**
+- **2 Green / Uncommon equipment listings**
+
+Therefore a fully stocked city shop contains up to:
+
+> **3 bands × 8 listings = 24 equipment listings**
+
+The six White and two Green listings are individual equipment items drawn from the legal item slots / item definitions available to that progression band.
+
+They do not mean that every equipment slot is guaranteed to be represented in every rotation.
+
+The exact slot mix may change between rotations.
+
+### 25.4. Prototype 0.2 Shop Rarity Limit
+
+Normal city equipment shops in Prototype 0.2 sell:
+
+- **White / Normal**
+- **Green / Uncommon**
+
+Blue / Rare and Purple / Epic equipment are **not part of the normal rotating city-shop stock** in Prototype 0.2.
+
+Higher rarity equipment should primarily come from stronger gameplay sources such as:
+
+- dungeon completion;
+- exceptional quest rewards;
+- important authored events;
+- other explicitly exceptional loot sources.
+
+This gives exploration and dangerous content a meaningful equipment advantage over routine shopping.
+
+### 25.5. Stock Rotation
+
+The full equipment assortment refreshes every:
+
+> **200 world ticks**
+
+At refresh time, each city's three progression bands reroll their current:
+
+- six White listings;
+- two Green listings.
+
+Items purchased before the refresh leave their listing empty until the next normal stock refresh unless later testing shows that immediate replacement is needed.
+
+The `200 ticks` refresh interval is an initial Prototype 0.2 tuning value.
+
+### 25.6. Shop Item Generation
+
+Shop items use the normal item-generation pipeline.
+
+A shop listing must therefore be a real `ItemInstance` with:
+
+- slot / item type;
+- progression-band / Item Level source;
+- rarity;
+- inherent base stats;
+- rarity-appropriate random modifiers;
+- ItemPower;
+- shop price.
+
+The shop does not invent a separate simplified equipment-stat system.
+
+### 25.7. Autonomous Purchase Evaluation
+
+The hero evaluates shop equipment using the economic rules from Section 24.
+
+A listing becomes a meaningful equipment purchase candidate only when it passes the current shop-upgrade threshold:
+
+> **at least 20% stronger by ItemPower than the currently equipped comparison item / legal hand setup**
+
+Purchase priority is then influenced by:
+
+- required preparation;
+- Curious ↔ Conservative;
+- available Skill Level upgrades;
+- available Gold;
+- legal equipment / specialization rules.
+
+The shop UI displays available opportunities.
+
+It does not choose purchases for the hero.
+
+### 25.8. Potions and Training
+
+Equipment stock rotation is separate from potion and Skill Level availability.
+
+Healing potions and unlocked Skill Level purchases follow their own economy rules and should not disappear merely because the equipment assortment refreshes.
 
 ---
 
 ## 26. Belt and Healing Potions
 
-The Belt is the hero’s dungeon-preparation utility slot.
+The Belt is a dedicated utility equipment slot.
 
-Working Belt rarity progression:
+It uses the same progression-level structure as the rest of Prototype 0.2 equipment.
 
-| Belt rarity | Potion slots |
-| --- | ---: |
-| White | 1 |
-| Green | 2 |
-| Blue | 3 |
-| Purple | 4 |
+Belt progression bands therefore follow the same working equipment levels:
 
-The Belt also provides base Health from item level.
+- Level 1
+- Level 10
+- Level 20
+- Level 30
+- Level 40
+- Level 50
 
-Belt item level limits the maximum potion item level that may be placed into its slots.
+A Belt has:
 
-Higher-ilvl potions heal more and cost more.
+- inherent **Health**;
+- rarity;
+- Item Level / progression band;
+- potion-slot capacity;
+- a maximum potion level it can support.
 
-For a dungeon attempt the hero tries to fill all available Belt potion slots before departure. If they cannot afford to prepare adequately, they continue ordinary progression and reconsider the dungeon after returning to town later.
+The Belt does not use the normal random-modifier pool defined for ordinary armor/jewelry.
 
-Potions are used between dungeon fights rather than as a normal free combat action.
+### 26.1. Potion Slot Capacity by Belt Rarity
 
-Working ordinary-room rule:
+Current Prototype 0.2 Belt capacities are:
 
-- use only potions whose healing can be applied fully without wasting part of the effect through overheal.
+- **White / Normal → 1 potion slot**
+- **Green / Uncommon → 2 potion slots**
+- **Blue / Rare → 3 potion slots**
+- **Purple / Epic → 4 potion slots**
 
-Before the boss:
+This makes Belt rarity directly affect dungeon preparation capacity.
 
-- survival takes priority;
-- the hero attempts to enter at full HP and may accept some overheal waste if necessary.
+Potion-slot capacity is utility and is not converted into an arbitrary flat combat-stat value.
 
-Exact potion values and prices are tuning data.
+### 26.2. Belt Level and Potion Eligibility
+
+A Belt may only carry healing potions whose level is no higher than the Belt's own progression level.
+
+Conceptually:
+
+> **`PotionLevel <= BeltLevel`**
+
+Examples:
+
+- Level 1 Belt → Level 1 potion only;
+- Level 10 Belt → Level 1 or Level 10 potion;
+- Level 20 Belt → Level 1 / 10 / 20 potion;
+- and so on.
+
+A higher-level Belt therefore improves both its normal item stats and the strength of healing consumables the hero can prepare.
+
+### 26.3. Healing Potion Progression
+
+Prototype 0.2 uses a simple starting potion progression aligned with the main equipment level bands.
+
+Current working healing values:
+
+| Potion Level | HP Restored |
+|---:|---:|
+| 1 | 50 HP |
+| 10 | 100 HP |
+| 20 | 150 HP |
+| 30 | 200 HP |
+| 40 | 250 HP |
+| 50 | 300 HP |
+
+The initial rule is:
+
+> **each next potion progression tier adds +50 HP restored**
+
+These are intentionally simple Prototype 0.2 tuning values.
+
+They must be reviewed against the hero's actual Max Health progression during playtesting.
+
+If hero HP growth makes potions too weak or too strong at later levels, the healing values may be rebalanced without changing the Belt/potion architecture.
+
+### 26.4. Potion Purchase and Storage
+
+Healing potions are ordinary consumables purchased with Gold.
+
+They physically belong to the hero's inventory.
+
+The Belt determines how many potions are currently prepared and available for dungeon use.
+
+The Belt is therefore not a separate storage inventory.
+
+Before a relevant dungeon attempt, the hero tries to fill all available Belt potion slots with the strongest useful legal healing potions they can reasonably afford, subject to:
+
+- Belt level;
+- available Gold;
+- current shop potion availability;
+- required dungeon preparation rules.
+
+Potion purchasing remains part of the economy system, not UI logic.
+
+### 26.5. Potion Use Between Dungeon Fights
+
+Healing potions are not used during ordinary combat in Prototype 0.2.
+
+Between normal dungeon encounters, the hero may consume a prepared healing potion.
+
+For ordinary between-fight healing:
+
+- prefer a potion whose full healing value can be used without overheal;
+- do not waste a stronger potion if a weaker legal potion restores the required amount cleanly;
+- if no potion can be used efficiently, the hero may continue below full HP.
+
+Before the final boss:
+
+- survival takes priority over efficiency;
+- the hero attempts to reach full HP;
+- some overheal waste is acceptable when needed.
+
+Consumed potions permanently leave inventory/Belt preparation.
+
+### 26.6. ItemPower and Belt Evaluation
+
+The Belt's inherent Health contributes normally to ItemPower and HeroPower.
+
+Potion-slot capacity is evaluated separately as dungeon-preparation utility.
+
+A Belt with more potion slots may therefore be strategically preferable even when its direct combat-stat ItemPower increase is modest.
+
+The equipment/economy systems must not invent a fake flat Power value for potion capacity merely to force it into the shared Power formula.
 
 ---
 
@@ -1209,18 +2332,114 @@ Current working maximum:
 
 > **Skill Level 10**
 
-Hero level periodically raises the maximum rank currently available for purchase, with a working cadence of approximately one additional upgrade opportunity per five relevant hero levels after the ability is learned.
+Hero level periodically raises the maximum Skill Level currently available for purchase.
 
-A Skill Level upgrade is not automatic. It costs Gold.
+The Prototype 0.2 working cadence is approximately one additional purchasable rank per five relevant hero levels after the ability is learned.
 
-The price increases with higher Skill Level.
+A Skill Level upgrade is not automatic.
 
-WIS scaling and Skill Level are separate:
+The hero must buy the newly available rank with Gold according to the autonomous economy rules in Section 24.
 
-- Skill Level is a purchased ability rank;
-- WIS changes how effectively that particular ability scales according to its own rules.
+WIS scaling and Skill Level remain separate systems:
 
-Exact skill-rank costs and exact per-rank improvements are balance data to define per ability.
+- **Skill Level** is a purchased ability rank;
+- **WIS** changes how effectively an ability scales only where that ability explicitly uses WIS.
+
+### 27.1. Power Strike Skill Levels
+
+Power Strike is learned at hero level 10.
+
+Its fixed combat rules remain:
+
+- costs **30 Rage**;
+- cooldown **10 sec**;
+- uses an ordinary legal Warrior weapon attack;
+- is not specialization-specific;
+- once activated, the Power Strike attack **cannot miss**;
+- the attack can still critically hit through the normal Crit Chance rules.
+
+Skill Level changes the damage multiplier applied to the resolved hit.
+
+Working endpoints:
+
+> **Skill Level 1 → ×1.50 damage**
+
+> **Skill Level 10 → ×2.00 damage**
+
+Normal and critical Power Strike hits use the same Skill Level multiplier.
+
+Conceptually:
+
+```text
+normal Power Strike
+= normal resolved weapon hit × SkillMultiplier
+
+critical Power Strike
+= normal critical resolved weapon hit × SkillMultiplier
+```
+
+Intermediate ranks scale evenly between `×1.50` and `×2.00`.
+
+Because ten Skill Levels contain nine upgrade intervals from Level 1 to Level 10, preserving both exact endpoints produces an average increase of approximately:
+
+> **+0.0556 multiplier per purchased rank after Level 1**
+
+This is preferred over forcing `+0.05` and ending at `×1.95`.
+
+The exact intermediate displayed values may be rounded for UI readability while the simulation keeps one deterministic underlying value.
+
+### 27.2. Battle Guard Skill Levels
+
+Battle Guard is learned at hero level 20.
+
+Its fixed combat rules remain:
+
+- no Rage cost;
+- cooldown **60 sec**;
+- duration **10 sec**;
+- may activate only at **75% MaxHP or lower**;
+- no shield requirement;
+- mitigation is applied after Block and Armor / elemental Resistance.
+
+Skill Level changes only the percentage of remaining incoming damage reduced.
+
+Working endpoints:
+
+> **Skill Level 1 → 25% damage reduction**
+
+> **Skill Level 10 → 35% damage reduction**
+
+Intermediate ranks scale evenly between those endpoints.
+
+Conceptually:
+
+```text
+Skill Level 1:
+remaining damage × 0.75
+
+Skill Level 10:
+remaining damage × 0.65
+```
+
+Cooldown, duration, activation threshold, and Rage cost do not improve with Skill Level in Prototype 0.2.
+
+### 27.3. Specialization Abilities
+
+`Shield Bash` and `Onslaught` are not numerically defined in this section yet.
+
+Their base effects and Skill Level scaling remain intentionally open until those two specialization abilities are designed.
+
+The Skill Level framework must support them later without requiring a second rank system.
+
+### 27.4. Skill Rank Costs
+
+Higher Skill Levels cost progressively more Gold.
+
+The exact Gold price curve remains balance data to define after early economy testing.
+
+The rank system itself is fixed:
+
+> **unlock by hero progression → autonomous purchase with Gold → permanent Skill Level increase**
 
 ---
 
@@ -1256,22 +2475,217 @@ The deity may still spend limited divine power for instant resurrection where th
 
 Prototype 0.2 retains the core principle that divine influence sits on top of a functioning autonomous life.
 
-The player must not become the hero’s hidden commander.
+The player must not become the hero's hidden commander.
 
-The existing direct intervention categories remain valid working tools:
+Divine influence may:
 
-- divine healing;
-- temporary combat empowerment;
-- instant resurrection;
-- soft guidance toward a decision.
+- help the hero in exceptional moments;
+- reveal information;
+- softly influence important decisions;
+- reduce the consequences of failure;
+- temporarily strengthen the hero.
 
-Soft guidance changes decision weight but does not bypass impossible / hard-filtered options.
+It must not replace the hero's normal development, equipment, abilities, or autonomous decision-making.
 
-The exact Prototype 0.1 energy costs and cooldowns may be retained as initial tuning values but are not sacred if the larger 0.2 progression makes them clearly inappropriate.
+### 29.1. Divine Energy
 
-Prototype 0.2 may also use an information ability such as **Vision** to reveal one unknown dungeon in the hero’s current region. If included, Vision reveals the location but does not command the hero to enter and does not reveal perfect combat information.
+The God system uses one shared resource:
+
+> **Maximum Divine Energy = 100**
+
+A new game starts with:
+
+> **100 Divine Energy**
+
+Passive recovery:
+
+> **+1 Divine Energy every 6 world ticks**
+
+At the normal Prototype 0.2 world pace this is approximately one Energy per real minute.
+
+Energy regenerates only while simulation time advances.
+
+Pause therefore also pauses Divine Energy regeneration.
+
+The same Energy pool is used by healing, combat empowerment, instant resurrection, Vision, quest guidance, and the one-time specialization guidance defined in Section 11.
 
 Deity progression is outside Prototype 0.2.
+
+### 29.2. Divine Healing
+
+Cost:
+
+> **10 Divine Energy**
+
+Effect:
+
+> **restore 50% of MaxHP**
+
+HP cannot exceed MaxHP.
+
+Cooldown:
+
+> **30 world ticks**
+
+Divine Healing may be used during live combat.
+
+It remains unavailable while the hero is dead or already at full HP.
+
+Divine Healing is an exceptional intervention and does not replace the hero's normal potion/recovery systems.
+
+### 29.3. Temporary Combat Empowerment
+
+Cost:
+
+> **10 Divine Energy**
+
+Cooldown:
+
+> **120 world ticks**
+
+Effect:
+
+> **+15% to the hero's resolved Physical Damage for the next 5 individual fights**
+
+Conceptually:
+
+> **`BlessedPhysicalDamage = NormalResolvedPhysicalDamage × 1.15`**
+
+The bonus is applied to the hero's resolved Physical Damage used by attacks during those fights.
+
+It does **not** create a separate `Attack Power` stat.
+
+It does not permanently modify:
+
+- STR;
+- equipment;
+- ItemPower;
+- base Physical Damage;
+- permanent HeroPower.
+
+The remaining-fight counter decreases after each completed individual fight regardless of victory or defeat.
+
+One fight consumes one charge regardless of how many attacks occur during that fight.
+
+The same Combat Empowerment buff cannot be applied again while it is already active.
+
+After the fifth affected fight, the buff expires automatically.
+
+Because this is a temporary finite divine buff, it does not increase the hero's persistent HeroPower used for normal capability / eligibility checks.
+
+### 29.4. Guide the Hero Toward an Ordinary Quest
+
+Cost:
+
+> **5 Divine Energy**
+
+The player selects one currently available ordinary quest.
+
+Effect:
+
+> **`DivineModifier = +0.20` to that quest's QuestScore**
+
+The modifier applies only to the next ordinary quest-selection action and then disappears regardless of which quest the hero ultimately chooses.
+
+Hard Filter runs first.
+
+Therefore divine guidance cannot make an otherwise ineligible quest available.
+
+Cooldown:
+
+> **360 world ticks**
+
+This remains soft influence, not a direct order.
+
+### 29.5. First-Specialization Divine Guidance
+
+The first-specialization guidance defined in Section 11 uses the same Divine Energy resource.
+
+Current working values:
+
+- cost **80 Divine Energy**;
+- usable only once for the entire first-specialization decision;
+- adds **+0.15** to Protector or Slayer according to the player's chosen direction;
+- available only while the specialization direction remains undecided.
+
+This guidance influences preference but does not directly grant a specialization.
+
+### 29.6. Vision — Reveal an Unknown Dungeon
+
+**Vision** is a direct divine information ability.
+
+Current working values:
+
+- **Cost: 80 Divine Energy**
+- **Cooldown: 1500 world ticks**
+
+When activated, Vision selects:
+
+> **one random existing dungeon that is currently unknown to the hero in the hero's current region**
+
+The selected dungeon's location becomes known to the hero.
+
+Vision does **not** reveal:
+
+- exact dungeon Power / combat strength;
+- ordinary enemy composition;
+- the unique boss;
+- the completion reward.
+
+Vision does not create a dungeon.
+
+It may reveal only an already-existing unknown dungeon in the current region.
+
+If there is no valid unknown dungeon in the current region, Vision has no valid target.
+
+Revealing the dungeon does not force the hero to travel there.
+
+The dungeon simply becomes known and then follows the normal dungeon readiness, preparation, potion, attempt, and retry logic defined elsewhere in this Scope.
+
+> **Vision gives the hero knowledge, not an order.**
+
+### 29.7. Instant Resurrection
+
+The player may skip the remaining natural resurrection delay by spending Divine Energy.
+
+Cost:
+
+> **`ResurrectionCost = RemainingRespawnTicks × 0.5`**
+
+Examples:
+
+- 100 ticks remaining → 50 Energy;
+- 60 ticks remaining → 30 Energy;
+- 20 ticks remaining → 10 Energy.
+
+Instant Resurrection has:
+
+> **no separate cooldown**
+
+After use, the hero immediately resurrects in the safe city with:
+
+> **1 HP**
+
+Normal recovery then applies.
+
+The player may additionally spend Divine Energy on Divine Healing if they want to accelerate that recovery.
+
+### 29.8. Soft-Influence Boundary
+
+Soft divine influence must:
+
+- operate only on valid choices;
+- wait for the appropriate decision point when necessary;
+- never interrupt an activity already being executed merely to replace it with a command;
+- never guarantee obedience unless the mechanic is explicitly a direct intervention rather than guidance.
+
+The player may help, reveal, encourage, or occasionally rescue.
+
+The player does not directly control movement, equipment, combat actions, quest execution, or specialization as ordinary commands.
+
+The governing principle remains:
+
+> **The hero lives. The world creates circumstances. The player guides.**
 
 ---
 
@@ -1630,9 +3044,6 @@ res://
 │   │   ├── ability_system.gd
 │   │   └── power_calculator.gd
 │   │
-│   ├── decision/
-│   │   └── activity_selector.gd
-│   │
 │   ├── quests/
 │   │   ├── quest_pool.gd
 │   │   ├── quest_evaluator.gd
@@ -1846,27 +3257,20 @@ Combat, UI, quest evaluation and equipment evaluation must not independently rec
 
 There must not be separate hero and mob combat-strength formulas.
 
-#### General Autonomous Decisions
+#### Autonomous Decision Ownership
 
-Prototype 0.2 introduces choices broader than quest selection.
+Prototype 0.2 does **not** use a global `activity_selector.gd` or a universal cross-category activity score.
 
-`activity_selector.gd` owns the hero's top-level autonomous choice between currently valid activities such as:
+Different autonomous actions are triggered and evaluated by the system that owns their context:
 
-- taking an ordinary quest;
-- attempting a known dungeon;
-- interacting with a relevant temporary event;
-- travelling to another city/region;
-- performing a supported city activity.
+- `quest_evaluator.gd` compares ordinary quest offers;
+- dungeon logic checks preparation and post-failure retry readiness;
+- `event_system.gd` presents and resolves temporary events when their authored trigger makes them relevant;
+- city / travel logic applies the approved progression trigger for leaving the current city;
+- economy systems evaluate purchases, training and preparation only in their relevant context.
 
-It performs general hard filtering and comparison between different activity categories.
+These systems must not be forced to translate their decisions into one shared score merely so unrelated activities can compete numerically.
 
-It does **not** replace specialized evaluators. For example:
-
-- `quest_evaluator.gd` determines the attractiveness of specific quest offers;
-- `dungeon_evaluator.gd` determines whether and how attractive a known dungeon is;
-- economy evaluators determine purchase value.
-
-`activity_selector.gd` compares the resulting viable activities at the higher decision level.
 
 #### Quests
 
@@ -1890,11 +3294,11 @@ Quest files/data do not own global decision logic.
 
 `event_system.gd` owns spawning, lifetime and resolution of the limited Prototype 0.2 temporary-event set.
 
-The map does not directly choose hero destinations. The hero's autonomous decision layer chooses an activity/destination; the map and travel systems execute spatial consequences.
+The map does not directly choose hero destinations. A destination becomes relevant through the owning gameplay rule — for example the approved city-relocation trigger or an already selected quest/dungeon destination — and the map/travel systems execute the spatial consequences.
 
 #### Dungeons
 
-`dungeon_evaluator.gd` decides whether a known dungeon attempt is currently reasonable and attractive.
+`dungeon_evaluator.gd` owns dungeon readiness checks, including preparation requirements and post-failure retry conditions. It does not produce a universal score intended to compete against ordinary quests or unrelated activities.
 
 `dungeon_runner.gd` owns one dungeon expedition:
 
@@ -2112,6 +3516,19 @@ A safe implementation order is:
 - Rage;
 - Power Strike;
 - Battle Guard.
+
+- The attack **cannot miss** once Power Strike is successfully used.
+- Power Strike still uses the normal critical-hit roll; both normal and critical results are multiplied by the Skill Level damage coefficient.
+- **Skill Level 1 damage coefficient: ×1.50**
+- **Skill Level 10 damage coefficient: ×2.00**
+- intermediate Skill Levels scale evenly between those endpoints.
+
+- **Skill Level 1 damage reduction: 25%**
+- **Skill Level 10 damage reduction: 35%**
+- intermediate Skill Levels scale evenly between those endpoints.
+- cooldown remains **60 sec** at all Skill Levels.
+- duration remains **10 sec** at all Skill Levels.
+- activation threshold remains **75% MaxHP or lower** at all Skill Levels.
 
 ### Stage 3 — Real Itemization
 

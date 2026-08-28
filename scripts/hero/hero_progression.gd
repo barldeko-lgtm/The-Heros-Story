@@ -7,14 +7,11 @@ const BASE_ATTACK_SPEED: float = 1.10
 const BASE_CRIT_CHANCE: float = 0.10
 const BASE_CRIT_DAMAGE: float = 1.50
 
-const DIRECT_MAX_HP_PER_LEVEL: float = 20.0
-const STRENGTH_PER_LEVEL: int = 4
-const AGILITY_PER_LEVEL: int = 1
+const STRENGTH_PER_LEVEL: int = 2
+const DEXTERITY_PER_LEVEL: int = 1
+const CONSTITUTION_PER_LEVEL: int = 1
 const BASE_EXPERIENCE_TO_NEXT_LEVEL: int = 1000
 const EXPERIENCE_INCREASE_PER_LEVEL: int = 500
-
-func get_level_hp_bonus(level: int) -> float:
-	return float(maxi(0, level - 1)) * DIRECT_MAX_HP_PER_LEVEL
 
 func get_experience_required_for_next_level(current_level: int) -> int:
 	return BASE_EXPERIENCE_TO_NEXT_LEVEL + maxi(0, current_level - 1) * EXPERIENCE_INCREASE_PER_LEVEL
@@ -35,4 +32,5 @@ func apply_level_up(hero_state) -> void:
 	hero_state.level += 1
 	hero_state.experience_to_next_level = get_experience_required_for_next_level(hero_state.level)
 	hero_state.strength += STRENGTH_PER_LEVEL
-	hero_state.agility += AGILITY_PER_LEVEL
+	hero_state.dexterity += DEXTERITY_PER_LEVEL
+	hero_state.constitution += CONSTITUTION_PER_LEVEL

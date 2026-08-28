@@ -36,9 +36,9 @@ func _init() -> void:
 	assert(rare_result["equipped"], "Better rare quality must replace uncommon equipment.")
 	assert(simulation.hero_state.equipment.get_item("chest").definition.quality == 2, "Rare chestplate must be equipped.")
 	assert(simulation.hero_state.inventory.get_items().size() == 3, "Replaced uncommon equipment must move to inventory.")
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_max_hp + 50.0), "Rare +35 MaxHP and +3 Strength must add 50 final MaxHP.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + 3.0), "Rare +3 Strength must add 3 Attack.")
-	assert(is_equal_approx(simulation.base_combat_stats.damage_reduction, 0.10), "Rare 20 Armor must provide ten percent damage reduction.")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_max_hp + 35.0), "Rare armor must add its direct 35 MaxHP.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + 6.0), "Rare +3 Strength must add 6 physical Damage.")
+	assert(is_equal_approx(simulation.base_combat_stats.armor, 25.0), "Rare 20 Armor plus starting Constitution must resolve to 25 Armor.")
 
 	var last_result: Dictionary = {}
 	for reward_index in 34:

@@ -3,6 +3,7 @@ extends RefCounted
 
 const CombatActionScript = preload("res://scripts/combat/combat_action.gd")
 const CombatResultScript = preload("res://scripts/combat/combat_result.gd")
+const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const HERO_OPENING_ADVANTAGE_SECONDS: float = 0.5
 const TIME_EPSILON: float = 0.000001
 const FALLBACK_SEED: int = 1
@@ -82,10 +83,21 @@ func get_result():
 	return CombatResultScript.new(hero_remaining_hp > 0.0, hero_remaining_hp, mob_remaining_hp, elapsed_seconds, actions)
 
 func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: CombatStats, damage_multiplier: float = 1.0):
+	var dodge_chance := DamageResolverScript.calculate_dodge_chance(attacker_stats.accuracy, target_stats.dodge)
+	if dodge_chance > 0.0 and random_number_generator.randf() < dodge_chance:
+		return CombatActionScript.new(attacker_id, 0.0, 0.0, false, false, false, DamageResolverScript.DAMAGE_TYPE_PHYSICAL)
 	var is_critical := attacker_stats.crit_chance > 0.0 and random_number_generator.randf() < attacker_stats.crit_chance
 	var damage := attacker_stats.attack
 	if is_critical:
 		damage *= attacker_stats.crit_damage
 	damage *= damage_multiplier
-	damage *= 1.0 - clampf(target_stats.damage_reduction, 0.0, 0.95)
-	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical)
+	var block_chance := DamageResolverScript.calculate_block_chance(target_stats.block)
+	var was_blocked := block_chance > 0.0 and random_number_generator.randf() < block_chance
+	damage = DamageResolverScript.calculate_mitigated_damage(
+		damage,
+		DamageResolverScript.DAMAGE_TYPE_PHYSICAL,
+		target_stats.armor,
+		0.0,
+		was_blocked
+	)
+	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical, true, was_blocked, DamageResolverScript.DAMAGE_TYPE_PHYSICAL)

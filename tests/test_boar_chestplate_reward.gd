@@ -34,10 +34,10 @@ func run_test() -> void:
 		return
 	assert(equipped_item.definition.id == "boar_chestplate", "The equipped reward must be the Boar Chestplate.")
 	assert(simulation.hero_state.claimed_item_reward_ids.has("boar_chestplate"), "The unique reward must be recorded as claimed.")
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_max_hp + 25.0), "+20 MaxHP and +1 Strength must add 25 final MaxHP.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + 1.0), "+1 Strength must add 1 Attack.")
-	assert(is_equal_approx(simulation.base_combat_stats.damage_reduction, 0.05), "10 Armor must provide five percent damage reduction.")
-	assert(is_equal_approx(simulation.hero_state.current_hp, starting_hp + 25.0), "Equipping at full health must increase current HP with the new maximum.")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_max_hp + 20.0), "The chestplate must add 20 direct MaxHP.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + 2.0), "+1 Strength must add 2 physical Damage.")
+	assert(is_equal_approx(simulation.base_combat_stats.armor, 15.0), "10 item Armor plus starting Constitution must resolve to 15 Armor.")
+	assert(is_equal_approx(simulation.hero_state.current_hp, starting_hp + 20.0), "Equipping at full health must increase current HP with the new maximum.")
 	assert(simulation.debug_log.get_text().contains("Кираса Авангарда Железного Оплота"), "The reward and automatic equip must be reported in the debug log.")
 
 	var first_item_instance = equipped_item

@@ -50,6 +50,21 @@ It must not:
 
 Death handling begins only after the completed `CombatResult` reaches the quest/simulation layer.
 
+## Primary attributes
+
+`HeroState` stores the five Prototype 0.2 primary attributes. `StatResolver` is the only normal conversion path from those attributes to current combat-facing values.
+
+Current contracts:
+- a new Warrior starts with STR / DEX / INT / CON / WIS all equal to 5;
+- STR grants +2 physical Damage and +5 percentage points Critical Damage per point;
+- DEX grants +10 Accuracy, +2 Dodge, and +3 percentage points Critical Chance per point;
+- CON grants +20 MaxHP and +1 Armor per point;
+- INT and WIS currently remain stored without a resolved Warrior combat bonus;
+- primary attributes do not change Attack Speed;
+- until the deity-guided and personality-directed growth channels exist, level-up grants +2 STR / +1 DEX / +1 CON only; the missing divine point is neither assigned nor stored;
+- current experimental equipment Strength uses the same centralized STR conversion and no longer grants MaxHP;
+- Armor, Accuracy/Dodge, elemental Resistance, and Block are resolved through the shared `DamageResolver`; `CombatStats` does not store a parallel `damage_reduction` value.
+
 ## Autonomous quest selection
 
 Owners:
@@ -206,14 +221,14 @@ Contracts:
 - replaced equipment enters Inventory before the new item becomes the active stat source;
 - Inventory keeps at most 36 item instances in FIFO order; adding item 37 drops the oldest regardless of quality;
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
-- `1 Armor = 0.5% damage reduction`; 10 Armor therefore means 5%, and `CombatSession` applies the target's resolved reduction to actual hit damage;
+- Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
 - Common/Uncommon/Rare armor bonuses are `20/10/1`, `25/15/2`, and `35/20/3` MaxHP/Armor/Strength;
 - Common/Uncommon/Rare sword bonuses are `3/5%/10%`, `4/7%/15%`, and `5/10%/20%` Attack/CritChance/CritDamage;
 - Common/Uncommon/Rare shield bonuses are `10/20`, `15/25`, and `20/30` MaxHP/Armor;
 - increasing MaxHP at turn-in increases current HP by the same delta, preserving full-health state;
 - Common has no outline; Uncommon uses a soft green 1.0/0.55/0.25 three-band outline; Rare uses the same blue outline;
-- static ItemPower must use `PowerCalculator`, not a parallel scoring formula: calculate the fixed `1 HP / 1 Attack / 1.0 AttackSpeed / 10% CritChance / 150% CritDamage / 0 Armor` reference with and without the item's derived secondary stats, then subtract the exact reference Power `0.724568837`;
-- Strength on an item contributes its normal +5 MaxHP and +1 Attack per point before ItemPower is calculated;
+- static ItemPower must use `PowerCalculator`, not a parallel scoring formula: calculate the approved fixed `1000 HP / 100 Armor / 50 Dodge / 100 Accuracy / 100 Damage / 1.0 AttackSpeed / 25% CritChance / 200% CritDamage / 100 each elemental Resistance / 0 Block` profile with and without the item's resolved stats, then subtract its reference Power of approximately `433.013`;
+- temporary Strength on the current experimental items contributes +2 physical Damage and +5 percentage points Critical Damage per point before ItemPower is calculated, with no Strength-derived MaxHP;
 - ItemPower is a stable item-comparison rating and is not directly added to the hero's runtime Power.
 - helmet, chest, gloves, pants, and boots each use a dedicated aligned paper-doll overlay from their `ItemDefinition`; sword and shield still have no hero portrait overlay, and UI must not synthesize worn art from equipment icons;
 - no set-completion bonus exists in the current slice.

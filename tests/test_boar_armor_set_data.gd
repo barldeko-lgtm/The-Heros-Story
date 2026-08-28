@@ -2,9 +2,9 @@ extends SceneTree
 
 const QUALITY_SUFFIXES := ["", "_uncommon", "_rare"]
 const EXPECTED_STATS := [
-	[20.0, 10, 1, 4.636106690],
-	[25.0, 15, 2, 7.104690214],
-	[35.0, 20, 3, 10.184143277],
+	[20.0, 10, 1, 18.451295985],
+	[25.0, 15, 2, 29.956283218],
+	[35.0, 20, 3, 42.672987403],
 ]
 const ITEM_FAMILIES := {
 	"helmet": "boar_helmet",
@@ -54,9 +54,9 @@ func _init() -> void:
 		simulation.receive_item_reward(rare_definitions[slot_id], 2)
 	for slot_id in ["chest", "helmet", "gloves", "pants", "boots"]:
 		assert(simulation.hero_state.equipment.get_item(slot_id) != null, "Full Boar armor set must occupy all five armor slots.")
-	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 360.0), "Five rare pieces must combine direct HP and Strength-derived HP.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, 22.0), "Five rare pieces must combine Strength-derived Attack.")
-	assert(is_equal_approx(simulation.base_combat_stats.damage_reduction, 0.50), "Five rare pieces must combine to 100 Armor and 50 percent reduction.")
+	assert(is_equal_approx(simulation.base_combat_stats.max_hp, 375.0), "Five rare pieces must add their direct HP to Constitution-derived HP.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, 45.0), "Five rare pieces must use the Prototype 0.2 Strength-to-Damage coefficient.")
+	assert(is_equal_approx(simulation.base_combat_stats.armor, 105.0), "Five rare pieces plus starting Constitution must resolve to 105 Armor.")
 
 	print("PASS: Four new Boar armor families have three qualities, quest rewards, and combined stats.")
 	quit()

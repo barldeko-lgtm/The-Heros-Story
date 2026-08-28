@@ -10,8 +10,9 @@ category = 1
 max_hp = 180.0
 attack = 15.0
 attack_speed = 0.95
+accuracy = 100.0
 crit_chance = 0.1
 crit_damage = 1.9
-damage_reduction = 0.0
+
 experience_reward = 100
 gold_reward = 6
