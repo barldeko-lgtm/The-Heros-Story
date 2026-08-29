@@ -217,7 +217,16 @@ Central current equipment reference values for ilvl 1/10/20. White control point
 Reads the central price table and returns reference shop value or resale value for an Item Level/rarity pair or a concrete generated `ItemInstance`.
 
 ### `scripts/economy/equipment_sale_system.gd`
-Owns automatic ordinary-equipment liquidation from Inventory. It removes only priced unequipped instances, totals their resale values, adds Gold to `HeroState`, and returns a structured sold-items/count/Gold result. Quest turn-in schedules `VISITING_MARKET`; `Simulation` invokes the sale system on the following dedicated world tick, then returns the hero to quest choice.
+Owns automatic ordinary-equipment liquidation from Inventory. It removes only priced unequipped instances, totals their resale values, adds Gold to `HeroState`, and returns a structured sold-items/count/Gold result. Quest turn-in schedules `VISITING_MARKET`; `Simulation` invokes the sale system on the following dedicated world tick, then enters the separate `SHOPPING` phase.
+
+### `scripts/model/definitions/shop_definition.gd` / `data/shops/starting_city_shop.tres`
+Defines the current Starting City equipment shop as immutable authored data: one current ilvl 10 source band, 6 White and 2 Green listings, 200-world-tick refresh interval, and references to the existing Ironward Vanguard White/Green item definitions. It does not duplicate item stats, affix budgets, ItemPower, or price data.
+
+### `scripts/economy/shop_system.gd`
+Owns mutable shop stock, deterministic stock refresh, purchased vacancies, and equipment purchase transactions. It generates real `ItemInstance` listings through the shared `ItemGenerator`, refreshes independently of hero presence on ticks divisible by 200, deducts shop price, equips the purchased instance, and immediately converts replaced ordinary equipment into its normal resale Gold instead of routing it through Inventory.
+
+### `scripts/economy/spending_evaluator.gd`
+Owns the current autonomous equipment-purchase comparison. It filters for affordability and the Scope's +20% ItemPower threshold, validates the candidate through the existing virtual-equip `EquipmentEvaluator`, and chooses the valid listing with the largest real HeroPower increase. It does not mutate equipment or Gold.
 
 ### `scripts/loot/loot_generator.gd`
 Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `Simulation` then passes that definition and the drop table's current ilvl 10 to `ItemGenerator`.
@@ -232,7 +241,7 @@ Every current resource under `data/mobs/` references the same initial ilvl 10 eq
 
 Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, dynamic ItemPower, reference shop value, and sell price.
 
-The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately.
+The hero panel displays stable base Attack/HeroPower and shows temporary blessing and conditional trait combat bonuses separately. During the current economy flow `VISITING_MARKET` means the dedicated sale tick and `SHOPPING` means the separate autonomous-purchase phase.
 
 The god panel updates energy, cooldowns, buff charges, resurrection cost, and button availability every frame. Active combat blessing displays its remaining fights and already-running cooldown together. Quest-guidance controls are intentionally deferred, although the headless Simulation command is implemented.
 

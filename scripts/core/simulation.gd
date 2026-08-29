@@ -21,10 +21,14 @@ const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
 const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
+const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
+const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluator.gd")
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
+const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
+const SHOP_RNG_SEED_OFFSET: int = 100003
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
@@ -50,6 +54,8 @@ var quest_evaluator = QuestEvaluatorScript.new()
 var loot_generator = LootGeneratorScript.new()
 var item_generator = ItemGeneratorScript.new()
 var equipment_sale_system = EquipmentSaleSystemScript.new()
+var spending_evaluator = SpendingEvaluatorScript.new()
+var shop_system
 var god_state
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
@@ -61,6 +67,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	god_state = GodStateScript.new()
+	shop_system = ShopSystemScript.new(DefaultStartingCityShop, item_generator, simulation_seed + SHOP_RNG_SEED_OFFSET)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	hero_state.traits = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
@@ -214,11 +221,16 @@ func advance_active_combat(available_seconds: float) -> float:
 
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
+	if shop_system.advance_world_tick(completed_tick):
+		debug_log.record_event(completed_tick, "Магазин: ассортимент обновлён.")
 	if skip_quest_advance_on_completed_combat_tick:
 		skip_quest_advance_on_completed_combat_tick = false
 		return
 	if hero_state.loop_state == HeroState.VISITING_MARKET:
 		advance_market_sale_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.SHOPPING:
+		advance_shop_purchase_tick(completed_tick)
 		return
 	if hero_state.loop_state == HeroState.DOING_QUEST:
 		return
@@ -241,12 +253,85 @@ func advance_market_sale_tick(completed_tick: int) -> Dictionary:
 	if hero_state.loop_state != HeroState.VISITING_MARKET:
 		return empty_result
 	var result: Dictionary = equipment_sale_system.sell_ordinary_inventory(hero_state)
-	hero_state.loop_state = HeroState.CHOOSING_QUEST
+	hero_state.loop_state = HeroState.SHOPPING
 	if result["sold_count"] > 0:
 		debug_log.record_event(completed_tick, "Рынок: продано предметов: %d, получено +%d золота." % [result["sold_count"], result["gold_gained"]])
 	else:
 		debug_log.record_event(completed_tick, "%s посетил рынок, но продавать было нечего." % hero_state.hero_name)
 	return result
+
+func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
+	var empty_result: Dictionary = {
+		"purchased": false,
+		"item_instance": null,
+		"price_paid": 0,
+		"replaced_item": null,
+		"replaced_item_sale_value": 0,
+		"power_gain": 0.0,
+	}
+	if hero_state.loop_state != HeroState.SHOPPING:
+		return empty_result
+
+	debug_log.record_event(completed_tick, get_shop_stock_debug_text())
+	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings())
+	if best_purchase.is_empty():
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		debug_log.record_event(completed_tick, "%s осмотрел магазин, но достаточно выгодных покупок не нашёл." % hero_state.hero_name)
+		return empty_result
+
+	var previous_max_hp: float = combat_stats.max_hp
+	var result: Dictionary = shop_system.purchase_listing(hero_state, int(best_purchase["listing_index"]))
+	if not bool(result.get("purchased", false)):
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		debug_log.record_event(completed_tick, "%s не смог завершить выбранную покупку." % hero_state.hero_name)
+		return result
+
+	refresh_combat_stats()
+	hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
+	result["power_gain"] = float(best_purchase.get("power_gain", 0.0))
+	var purchased_item = result["item_instance"]
+	var log_text := "%s купил «%s» (%s, ilvl %d) за %d золота; сила героя +%.2f." % [
+		hero_state.hero_name,
+		purchased_item.definition.display_name,
+		purchased_item.get_quality_display_name(),
+		purchased_item.item_level,
+		result["price_paid"],
+		result["power_gain"],
+	]
+	if result["replaced_item"] != null:
+		log_text += " Старый предмет «%s» сразу продан за %d золота." % [result["replaced_item"].definition.display_name, result["replaced_item_sale_value"]]
+	debug_log.record_event(completed_tick, log_text)
+
+	if spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings()).is_empty():
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+	return result
+
+func get_shop_stock_debug_text() -> String:
+	var white_slots: Array[String] = []
+	var green_slots: Array[String] = []
+	for listing in shop_system.get_listings():
+		var item_instance = listing.get("item_instance")
+		if item_instance == null or item_instance.definition == null:
+			continue
+		var slot_name: String = get_shop_slot_debug_name(item_instance.definition.equipment_slot)
+		if item_instance.rarity == 1:
+			green_slots.append(slot_name)
+		else:
+			white_slots.append(slot_name)
+	var white_text: String = ", ".join(white_slots) if not white_slots.is_empty() else "нет"
+	var green_text: String = ", ".join(green_slots) if not green_slots.is_empty() else "нет"
+	return "Магазин: белые — %s; зелёные — %s." % [white_text, green_text]
+
+func get_shop_slot_debug_name(equipment_slot: String) -> String:
+	match equipment_slot:
+		"helmet": return "шлем"
+		"chest": return "нагрудник"
+		"gloves": return "перчатки"
+		"pants": return "штаны"
+		"boots": return "сапоги"
+		"weapon": return "меч"
+		"shield": return "щит"
+	return equipment_slot
 
 func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, rng_override = null) -> Dictionary:
 	var result: Dictionary = {

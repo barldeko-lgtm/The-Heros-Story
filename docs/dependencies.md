@@ -216,19 +216,31 @@ defeated current mob
 → UI displays equipment/inventory icons, quality outlines, tooltip, and hero overlay
 ```
 
-Safe-city resale:
+Safe-city economy flow:
 
 ```text
 successful HERO_TURNED_IN_QUEST
 → HeroState.VISITING_MARKET
-→ wait for the next normal world tick
-→ EquipmentSaleSystem reads unequipped Inventory instances
-→ ItemPriceCalculator: reference value by ilvl/rarity
-→ SellPrice = 10% reference value
-→ remove sold instances from Inventory
-→ add total Gold to HeroState
-→ one debug-log summary
+→ next normal world tick: EquipmentSaleSystem sells unequipped ordinary Inventory items
+→ one debug-log sale summary
+→ HeroState.SHOPPING
+→ each later shopping world tick evaluates current shop stock
+→ SpendingEvaluator: affordability + 20% ItemPower threshold + virtual-equip HeroPower
+→ choose the valid candidate with the largest real HeroPower gain
+→ ShopSystem buys/equips at most one item on that tick
+→ immediately sell replaced equipped item at normal resale value
+→ purchased listing remains empty
+→ repeat on later ticks while another valid purchase exists
 → HeroState.CHOOSING_QUEST
+```
+
+Starting City stock:
+
+```text
+ShopDefinition (ilvl 1 / 10 / 20; Ironward Vanguard)
+→ ShopSystem
+→ per band: 6 unique-slot White + 2 unique-slot Green ItemInstances
+→ deterministic refresh on world ticks 200 / 400 / 600 / ...
 ```
 
 Contracts:
@@ -248,7 +260,16 @@ Contracts:
 - current ilvl 1/10/20 White reference values are 100/500/1000 Gold; Green uses ×3 and Rare uses ×9;
 - sale value is 10% of reference value; current ilvl 10 White/Green/Rare resale is 50/150/450 Gold;
 - successful turn-in does not sell immediately; it schedules exactly one `VISITING_MARKET` world tick;
-- the market tick performs sale and returns the hero to `CHOOSING_QUEST`; quest selection cannot occur during that same tick;
+- the market tick performs sale only and then enters `SHOPPING`; buying cannot occur during the sale tick;
+- each `SHOPPING` world tick may consume at most one listing, so multiple purchases require multiple world ticks;
+- a shop candidate must be affordable, at least 20% stronger by displayed ItemPower than the equipped comparison item when one exists, and a strict real HeroPower improvement through virtual equip;
+- among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
+- replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
+- purchased shop positions remain empty until the next stock refresh;
+- the current Starting City shop intentionally exposes only one ilvl 10 Ironward Vanguard source band, with 6 distinct White slots and 2 distinct Green slots independently selected per rarity from the seven current slots;
+- shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
+- shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
+- shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
 - automatic sale never runs on death or other runtime events;
 - automatic sale affects Inventory only and cannot sell equipped items;
 - unpriced future Item Levels/rarities remain in Inventory instead of receiving an invented price;

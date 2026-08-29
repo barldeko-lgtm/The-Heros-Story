@@ -23,6 +23,7 @@ Read in this order:
 1. `docs/current-state.md`
 2. `docs/project-map.md`
 3. `docs/dependencies.md`
+4. `docs/The_Heros_Story_Prototype_0.2_Scope_v0.1_EN.md`
 
 The latest project documents and current repository are the source of truth.
 

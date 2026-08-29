@@ -21,6 +21,7 @@ Implemented:
 - the seven-piece `Авангард Железного Оплота` (`Ironward Vanguard`) equipment set: five armor pieces plus sword and shield, each with Common, Uncommon, and Rare definitions;
 - one shared equipment-drop table used by all thirteen current mobs: 5% chance after each defeated mob, then an equal roll among the five current armor slots plus sword and shield, then Common/Uncommon/Rare at 70%/25%/5%;
 - virtual-equip comparison by real base HeroPower plus a 36-slot FIFO inventory for unequipped drops before city sale;
+- a Starting City equipment shop using the current Ironward Vanguard family across ilvl 1/10/20 bands, with 6 White unique-slot listings and 2 Green unique-slot listings per band, deterministic 200-world-tick stock refresh, and autonomous one-purchase-per-tick upgrade buying;
 - all thirteen current quest templates exposed simultaneously as offers in the single Prototype 0 city;
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
@@ -80,6 +81,7 @@ Current loop states include:
 - `RETURNING_TO_CITY`;
 - `TURNING_IN_QUEST`;
 - `VISITING_MARKET`;
+- `SHOPPING`;
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
@@ -129,7 +131,9 @@ Common items have no random affix, Uncommon items have one, and Rare items have 
 
 Every generated candidate is now evaluated through virtual equip before routing. `EquipmentEvaluator` compares the hero's full base persistent HeroPower with the current loadout against a copied loadout containing the candidate. Any rarity, including the same rarity as the equipped item, replaces it only when candidate HeroPower is strictly higher. Equal or weaker candidates enter Inventory. Temporary divine effects are excluded, displayed ItemPower is not used as the decision rule, and evaluation does not mutate live equipment.
 
-Current equipment reference prices are centralized for ilvl 1/10/20. White uses 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 10 White/Green/Rare items therefore sell for 50/150/450 Gold. Successful quest turn-in now enters `VISITING_MARKET` instead of returning directly to quest choice. On the following dedicated world tick, every unequipped ordinary item in Inventory is sold, removed, and converted into Gold; only then does the hero return to `CHOOSING_QUEST`. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
+Current equipment reference prices are centralized for ilvl 1/10/20. White uses 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 10 White/Green/Rare items therefore sell for 50/150/450 Gold. Successful quest turn-in enters `VISITING_MARKET`. On the following dedicated world tick, every unequipped ordinary item in Inventory is sold, removed, and converted into Gold, then the hero enters `SHOPPING`. Each later shopping world tick can buy at most one equipment item. A candidate must be affordable, meet the current +20% ItemPower threshold against the equipped comparison item, and improve the hero through the real virtual-equip HeroPower evaluation. Among valid candidates the hero chooses the largest real HeroPower gain. Purchased stock positions remain empty until refresh; replaced equipped gear is sold immediately for its normal resale value instead of entering Inventory. When no further valid purchase exists, the hero returns to `CHOOSING_QUEST`. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
+
+The Starting City shop currently uses only the existing Ironward Vanguard visual family at ilvl 10. Its authored definition lives in `data/shops/starting_city_shop.tres`. Each refresh samples six distinct White slots and two distinct Green slots from the seven current armor/weapon/shield slots. The shop definition references the existing item definitions only; concrete stats, affix budgets, rarity behavior, ItemPower, and prices still come from the shared item-generation and economy data. Green listings use the normal generated-affix pipeline. The shop uses a deterministic RNG stream derived from the simulation seed so shop rotation remains reproducible without perturbing the existing main simulation RNG sequence. Full stock refresh occurs at world ticks 200, 400, 600, and so on regardless of where the hero is. Before each shopping decision tick, the developer debug log prints one compact assortment summary by rarity and readable slot name (for example White pants / Green gloves) without dumping item stats.
 
 The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
@@ -224,6 +228,7 @@ choose quest
 → turn in
 → Gold
 → one market/sale tick
+→ one or more shopping ticks while meaningful affordable upgrades exist
 → repeat
 ```
 
@@ -308,6 +313,7 @@ Current coverage includes:
 - retention of earlier XP/levels and no Gold for a failed quest;
 - generic validity/progression checks for the current Goblin, Wolf, and Bear tuning cards;
 - offer replacement without assuming a fixed tavern pool size;
-- god ability integration, including the `+0.20` one-selection quest guidance modifier.
+- god ability integration, including the `+0.20` one-selection quest guidance modifier;
+- current Starting City ilvl 10 shop composition, unique slots per rarity, reuse of shared item generation data, deterministic 200-tick refresh, persistent purchased vacancies, separate sale/shopping ticks, +20% purchase threshold, maximum real HeroPower-gain selection, and immediate resale of replaced equipment.
 
 UI note: during active combat, the hero panel displays live CombatSession HP rather than only the last committed HeroState HP.
