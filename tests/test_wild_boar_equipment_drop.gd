@@ -38,7 +38,8 @@ func _init() -> void:
 	var wild_boar: Resource = load(WILD_BOAR_PATH)
 	assert(loot_generator_script != null and simulation_script != null and wild_boar != null, "Boar drop scripts and data must load.")
 
-	assert(wild_boar.equipment_drop_table != null, "Wild Boar must reference the shared equipment drop table.")
+	assert(wild_boar.equipment_drop_table != null, "Wild Boar must reference its source-driven equipment drop table.")
+	assert(wild_boar.equipment_drop_table.item_level == 1, "Wild Boar must use the ilvl 1 Ironwake Sentinel source.")
 	assert(is_equal_approx(wild_boar.equipment_drop_table.drop_chance, 0.05), "Wild Boar equipment drop chance must be 5%.")
 	assert(wild_boar.equipment_drop_table.common_items.size() == 7, "Wild Boar must expose all seven current equipment slots.")
 	assert(wild_boar.equipment_drop_table.uncommon_items.size() == 7, "Every current slot must have an Uncommon variant.")
@@ -73,9 +74,10 @@ func _init() -> void:
 		ScriptedRng.new([0.0, 0.95, 0.5], [0, 0, 0])
 	)
 	assert(drop_result["item_definition"] != null, "A successful combat drop roll must return the awarded definition.")
-	assert(drop_result["item_instance"] != null and drop_result["item_instance"].item_level == 10, "A successful current drop must generate an ilvl 10 ItemInstance.")
+	assert(drop_result["item_instance"] != null and drop_result["item_instance"].item_level == 1, "A successful Wild Boar drop must generate an ilvl 1 ItemInstance.")
 	assert(drop_result["item_definition"].equipment_slot == "helmet", "The scripted slot roll must award the helmet.")
 	assert(drop_result["item_definition"].quality == 2, "The scripted rarity roll must award the Rare variant.")
+	assert(drop_result["item_definition"].resource_path.contains("ironwake_sentinel"), "Wild Boar equipment must come from the Ironwake Sentinel visual family.")
 	assert(drop_result["equipped"], "The first dropped item for an empty slot must use the current automatic equip flow.")
 	assert(simulation.hero_state.equipment.get_item("helmet") != null, "The dropped helmet must reach hero equipment.")
 

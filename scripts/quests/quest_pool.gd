@@ -3,10 +3,13 @@ extends RefCounted
 
 const DEFAULT_QUEST_DIRECTORY: String = "res://data/quests"
 const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
+const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
+const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 
 var available_quests: Array = []
 var quest_templates: Array[Resource] = []
 var random_number_generator: RandomNumberGenerator
+var pending_cancelled_offer
 
 func _init(initial_quests: Array = [], initial_rng: RandomNumberGenerator = null) -> void:
 	random_number_generator = initial_rng
@@ -72,6 +75,19 @@ func replace_offer(completed_or_cancelled_offer) -> void:
 	if quest_template == null:
 		return
 	available_quests[offer_index] = create_offer(quest_template)
+
+func handle_quest_event(event, hero_loop_state: String) -> void:
+	if event == null:
+		return
+	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST:
+		replace_offer(event.quest_definition)
+		return
+	if event.event_type == QuestEventScript.HERO_DIED:
+		pending_cancelled_offer = event.quest_definition
+		return
+	if event.event_type == QuestEventScript.HERO_RECOVERING_IN_CITY and hero_loop_state == HeroStateScript.CHOOSING_QUEST and pending_cancelled_offer != null:
+		replace_offer(pending_cancelled_offer)
+		pending_cancelled_offer = null
 
 func get_template_by_id(quest_id: String) -> Resource:
 	for quest_template in quest_templates:

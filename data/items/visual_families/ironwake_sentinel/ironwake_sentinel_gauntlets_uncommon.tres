@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/item_definition.gd" id="1_item_definition"]
+[ext_resource type="Texture2D" path="res://assets/items/icons/ironwake_sentinel/ironwake_sentinel_gauntlets.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/items/overlays/ironwake_sentinel/ironwake_sentinel_gauntlets_overlay.png" id="3_overlay"]
+
+[resource]
+script = ExtResource("1_item_definition")
+id = "ironwake_sentinel_gauntlets_uncommon"
+display_name = "Перчатки Стража Железного Следа"
+equipment_slot = "gloves"
+quality = 1
+icon_texture = ExtResource("2_icon")
+hero_overlay_texture = ExtResource("3_overlay")

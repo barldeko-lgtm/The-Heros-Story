@@ -32,13 +32,15 @@ func refresh_stock(completed_tick: int) -> void:
 	last_refresh_tick = completed_tick
 	if shop_definition == null or item_generator == null or rng == null:
 		return
-	for item_level in shop_definition.item_levels:
-		append_unique_listings(item_level, get_definitions_for_rarity(0), shop_definition.white_listings_per_band)
-		append_unique_listings(item_level, get_definitions_for_rarity(1), shop_definition.uncommon_listings_per_band)
+	for stock_band in shop_definition.stock_bands:
+		if stock_band == null:
+			continue
+		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 0), stock_band.white_listings)
+		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 1), stock_band.uncommon_listings)
 
-func get_definitions_for_rarity(rarity: int) -> Array:
+func get_definitions_for_rarity(stock_band: Resource, rarity: int) -> Array:
 	var result: Array = []
-	for item_definition in shop_definition.item_definitions:
+	for item_definition in stock_band.item_definitions:
 		if item_definition != null and int(item_definition.quality) == rarity:
 			result.append(item_definition)
 	return result
@@ -49,6 +51,9 @@ func append_unique_listings(item_level: int, definitions: Array, count: int) -> 
 	for _pick_index in picks:
 		var definition_index: int = rng.randi_range(0, available.size() - 1)
 		var item_definition = available.pop_at(definition_index)
+		for remaining_index in range(available.size() - 1, -1, -1):
+			if available[remaining_index].equipment_slot == item_definition.equipment_slot:
+				available.remove_at(remaining_index)
 		var item_instance = item_generator.generate(item_definition, item_level, rng)
 		if item_instance == null:
 			continue

@@ -1,27 +1,12 @@
-[gd_resource type="Resource" script_class="ShopDefinition" load_steps=16 format=3]
+[gd_resource type="Resource" script_class="ShopDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/shop_definition.gd" id="1_shop"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet.tres" id="2_w_helmet"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres" id="3_w_chest"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets.tres" id="4_w_gloves"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings.tres" id="5_w_pants"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots.tres" id="6_w_boots"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword.tres" id="7_w_sword"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield.tres" id="8_w_shield"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres" id="9_g_helmet"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres" id="10_g_chest"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets_uncommon.tres" id="11_g_gloves"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings_uncommon.tres" id="12_g_pants"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_uncommon.tres" id="13_g_boots"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword_uncommon.tres" id="14_g_sword"]
-[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield_uncommon.tres" id="15_g_shield"]
+[ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironwake_sentinel_ilvl1.tres" id="2_ilvl1_band"]
+[ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironward_vanguard_ilvl10.tres" id="3_ilvl10_band"]
 
 [resource]
 script = ExtResource("1_shop")
 id = "starting_city_shop"
 city_id = "starting_city"
 refresh_interval_ticks = 200
-item_levels = Array[int]([10])
-white_listings_per_band = 6
-uncommon_listings_per_band = 2
-item_definitions = Array[Resource]([ExtResource("2_w_helmet"), ExtResource("3_w_chest"), ExtResource("4_w_gloves"), ExtResource("5_w_pants"), ExtResource("6_w_boots"), ExtResource("7_w_sword"), ExtResource("8_w_shield"), ExtResource("9_g_helmet"), ExtResource("10_g_chest"), ExtResource("11_g_gloves"), ExtResource("12_g_pants"), ExtResource("13_g_boots"), ExtResource("14_g_sword"), ExtResource("15_g_shield")])
+stock_bands = Array[Resource]([ExtResource("2_ilvl1_band"), ExtResource("3_ilvl10_band")])

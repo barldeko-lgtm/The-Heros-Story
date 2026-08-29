@@ -114,7 +114,7 @@ Contracts:
 
 There is no current 5–7-offer cap. Stronger offers remain in the single-city pool and are excluded from actual consideration by Hard Filter until the hero is strong enough.
 
-After a successful turn-in, only that accepted offer is regenerated from the same immutable template in the same slot. After fatal cancellation, its regeneration waits until city recovery returns the hero to `CHOOSING_QUEST`. Unaccepted offers must retain their exact runtime values and identities.
+`QuestPool` owns offer replacement and its pending cancelled-offer state. After a successful turn-in, only that accepted offer is regenerated from the same immutable template in the same slot. After fatal cancellation, its regeneration waits until city recovery returns the hero to `CHOOSING_QUEST`. `Simulation` forwards the structured quest event and current loop state but does not store offer-lifecycle state. Unaccepted offers must retain their exact runtime values and identities.
 
 ## Quest execution and death
 
@@ -174,7 +174,7 @@ It may read `QuestRunner.respawn_ticks_remaining` for the current developer-stat
 
 ## God-system core
 
-`scripts/god/god_state.gd` owns god energy, cooldowns, and pending quest guidance. `HeroState.active_effects` owns the active blessing and remaining fights. `Simulation` owns command validation and coordination with hero, quest, stats, and combat systems.
+`scripts/god/god_state.gd` owns god energy, cooldowns, and pending quest guidance. `HeroState.active_effects` owns the active blessing and remaining fights. `scripts/god/god_system.gd` owns divine-command validation and applies each command through the existing hero, quest, and combat owners. `Simulation` retains stable public wrappers, performs required stat refreshes, and forwards resulting events to narrative/debug output.
 
 Contracts:
 - energy starts/maxes at 100 and recovers +1 every 6 completed world ticks, including fight and resurrection ticks;
@@ -194,18 +194,19 @@ resurrection
 - Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
 - the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
-- UI must call Simulation commands rather than mutate GodState, HP, quest scores, combat stats, or respawn state directly.
+- UI must call Simulation command wrappers rather than mutate GodState, GodSystem, HP, quest scores, combat stats, or respawn state directly.
 
 ## Current equipment drop slice and future loot hook
 
-Current seven-piece Ironward Vanguard equipment flow:
+Current seven-slot generated-equipment flow for Ironwake Sentinel and Ironward Vanguard:
 
 ```text
 defeated current mob
 → 5% equipment-drop check
 → equal roll among five armor slots + sword + shield
 → Common / Uncommon / Rare roll at 70% / 25% / 5%
-→ shared drop source supplies ilvl 10
+→ mob's drop source supplies Ironwake ilvl 1 or Ironward ilvl 10
+→ EquipmentRewardSystem coordinates generated-equipment routing
 → ItemGenerator resolves inherent stats / budget / unique affixes
 → generated ItemInstance
 → EquipmentEvaluator copies current Equipment and virtually inserts candidate
@@ -237,7 +238,9 @@ successful HERO_TURNED_IN_QUEST
 Starting City stock:
 
 ```text
-ShopDefinition (ilvl 1 / 10 / 20; Ironward Vanguard)
+ShopDefinition
+→ ilvl 1 Ironwake Sentinel stock band
+→ ilvl 10 Ironward Vanguard stock band
 → ShopSystem
 → per band: 6 unique-slot White + 2 unique-slot Green ItemInstances
 → deterministic refresh on world ticks 200 / 400 / 600 / ...
@@ -245,12 +248,13 @@ ShopDefinition (ilvl 1 / 10 / 20; Ironward Vanguard)
 
 Contracts:
 - `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
-- all thirteen current mobs reference one shared equipment drop table;
+- six weakest current mobs reference the ilvl 1 Ironwake Sentinel table and the other seven reference the ilvl 10 Ironward Vanguard table;
 - a drop roll happens only after a combat victory, never after defeat or quest turn-in;
 - the seeded roll order is drop chance, equal slot selection, then rarity selection;
 - current ordinary quests contain Gold rewards only and no equipment reward pools;
 - `QuestRunner` does not equip the item or calculate its stats;
-- `Simulation` coordinates reward rolling, virtual-equip evaluation, replacement/inventory routing, stat refresh, HP adjustment, and logging;
+- `EquipmentRewardSystem` coordinates reward rolling, item generation, virtual-equip evaluation, and replacement/inventory routing, and returns structured result data;
+- `Simulation` keeps the public reward entry points and coordinates stat refresh, HP adjustment, and logging after the reward system returns;
 - `EquipmentEvaluator` must compare full base persistent HeroPower, not rarity and not displayed reference ItemPower;
 - the evaluator resolves a copied candidate equipment configuration and must not mutate live Equipment during comparison;
 - temporary finite effects are excluded from both sides of equipment evaluation;
@@ -266,7 +270,7 @@ Contracts:
 - among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
 - purchased shop positions remain empty until the next stock refresh;
-- the current Starting City shop intentionally exposes only one ilvl 10 Ironward Vanguard source band, with 6 distinct White slots and 2 distinct Green slots independently selected per rarity from the seven current slots;
+- the current Starting City shop exposes separate ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard source bands, each with 6 distinct White slots and 2 distinct Green slots independently selected per rarity from the seven current slots;
 - shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
 - shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
 - shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
@@ -275,7 +279,7 @@ Contracts:
 - unpriced future Item Levels/rarities remain in Inventory instead of receiving an invented price;
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
-- every current drop is ilvl 10: armor has 7 inherent Armor, sword has 13 inherent Damage and +0.10 Attack Speed, and shield has 13 inherent Block;
+- Ironwake Sentinel drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironward Vanguard drops remain ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block);
 - Common/Uncommon/Rare create 0/1/2 unique random affixes; current ordinary drops do not generate Epic;
 - ilvl 10 Green affix budget is 78; each Rare affix uses 85% of that value;
 - one seeded 0.95–1.05 roll applies to total modifier budget, then budget splits equally among all affixes;

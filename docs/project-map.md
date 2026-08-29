@@ -5,7 +5,7 @@
 - `project.godot` — Godot project configuration and main scene.
 - `.github/workflows/tests.yml` — GitHub Actions regression-test workflow.
 - `assets/` — supplied visual assets used by the current UI. Hero art lives under `assets/hero/`; item icons and overlays are separated under `assets/items/icons/` and `assets/items/overlays/`.
-- `data/` — concrete game data. The current Ironward Vanguard definitions live under `data/items/visual_families/ironward_vanguard/`.
+- `data/` — concrete game data. The current visual equipment families live under `data/items/visual_families/ironward_vanguard/` and `data/items/visual_families/ironwake_sentinel/`.
 - `scenes/` — Godot scenes.
 - `scripts/` — runtime/gameplay/UI code.
 - `tests/` — regression tests.
@@ -93,7 +93,7 @@ The developer build loads every `.tres` under `res://data/quests` in stable file
 
 There is intentionally no 5–7-offer cap in the current one-city Prototype 0 build. Stronger offers stay present and are filtered by `QuestEvaluator` until the hero is strong enough.
 
-After a successful turn-in or a fatal cancellation followed by city recovery, only that accepted offer's same pool slot is regenerated from the same immutable template; unaccepted offers persist. Tests may inject an explicit fixed offer list instead.
+`QuestPool` owns this offer lifecycle. After a successful turn-in it immediately regenerates only that accepted offer's same pool slot. After a fatal cancellation it stores the cancelled offer as pending and regenerates that slot only when city recovery returns the hero to quest choice. Unaccepted offers persist. `Simulation` forwards structured quest events but does not store pending offer-replacement state. Tests may inject an explicit fixed offer list instead.
 
 ### `scripts/model/runtime/quest_offer.gd`
 Runtime quest offer. Owns the rolled mob count, distance, and gold per mob for one tavern slot. Its total Gold is derived as `MobCount × GoldPerMob`; it is never serialized into a quest template.
@@ -132,7 +132,10 @@ Structured quest/runtime events, including death, resurrection, and city recover
 ## God system
 
 ### `scripts/god/god_state.gd`
-Owns energy, six-tick recovery progress, ability cooldowns, pending quest guidance, and resurrection energy cost. The active blessing and its remaining fights live in `HeroState.active_effects`; `Simulation` validates commands and coordinates their owning systems.
+Owns energy, six-tick recovery progress, ability cooldowns, pending quest guidance, and resurrection energy cost. The active blessing and its remaining fights live in `HeroState.active_effects`.
+
+### `scripts/god/god_system.gd`
+Owns divine-command rules and applies them through the existing state owners: live/non-combat healing, instant resurrection through `QuestRunner`, five-fight blessing activation/consumption in `HeroState.active_effects`, and validation of quest-guidance targets. It returns structured results where coordination is still required. `Simulation` keeps the stable public command wrappers, refreshes resolved stats after blessing changes, and records resurrection narrative.
 
 ### `tests/test_god_state.gd`
 Protects energy, recovery, cooldown activation rules, guidance consumption, and resurrection cost.
@@ -219,8 +222,8 @@ Reads the central price table and returns reference shop value or resale value f
 ### `scripts/economy/equipment_sale_system.gd`
 Owns automatic ordinary-equipment liquidation from Inventory. It removes only priced unequipped instances, totals their resale values, adds Gold to `HeroState`, and returns a structured sold-items/count/Gold result. Quest turn-in schedules `VISITING_MARKET`; `Simulation` invokes the sale system on the following dedicated world tick, then enters the separate `SHOPPING` phase.
 
-### `scripts/model/definitions/shop_definition.gd` / `data/shops/starting_city_shop.tres`
-Defines the current Starting City equipment shop as immutable authored data: one current ilvl 10 source band, 6 White and 2 Green listings, 200-world-tick refresh interval, and references to the existing Ironward Vanguard White/Green item definitions. It does not duplicate item stats, affix budgets, ItemPower, or price data.
+### `scripts/model/definitions/shop_definition.gd` / `scripts/model/definitions/shop_stock_band_definition.gd` / `data/shops/starting_city_shop.tres`
+Defines the Starting City shop and its immutable authored stock bands. The current shop references one ilvl 1 Ironwake Sentinel band and one ilvl 10 Ironward Vanguard band; each owns its source item definitions plus 6 White/2 Green listing counts. Neither layer duplicates generated stats, affix budgets, ItemPower, or price data.
 
 ### `scripts/economy/shop_system.gd`
 Owns mutable shop stock, deterministic stock refresh, purchased vacancies, and equipment purchase transactions. It generates real `ItemInstance` listings through the shared `ItemGenerator`, refreshes independently of hero presence on ticks divisible by 200, deducts shop price, equips the purchased instance, and immediately converts replaced ordinary equipment into its normal resale Gold instead of routing it through Inventory.
@@ -229,15 +232,21 @@ Owns mutable shop stock, deterministic stock refresh, purchased vacancies, and e
 Owns the current autonomous equipment-purchase comparison. It filters for affordability and the Scope's +20% ItemPower threshold, validates the candidate through the existing virtual-equip `EquipmentEvaluator`, and chooses the valid listing with the largest real HeroPower increase. It does not mutate equipment or Gold.
 
 ### `scripts/loot/loot_generator.gd`
-Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `Simulation` then passes that definition and the drop table's current ilvl 10 to `ItemGenerator`.
+Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `EquipmentRewardSystem` then passes that definition and the selected source table's ilvl 1 or ilvl 10 to `ItemGenerator`.
 
-### `scripts/model/definitions/equipment_drop_table_definition.gd` / `data/loot/initial_equipment_drop_table.tres`
-The immutable shared table used by all thirteen current mob definitions. It stores the drop chance and three aligned seven-slot rarity pools, avoiding duplicated 21-item lists in every mob resource.
+### `scripts/loot/equipment_reward_system.gd`
+Owns generated-equipment reward routing after a source is resolved. It asks `LootGenerator` and `ItemGenerator` for a concrete candidate where applicable, evaluates that candidate through `EquipmentEvaluator`, and mutates only the hero's Equipment/Inventory routing. It returns structured result data; `Simulation` keeps the public reward entry points, refreshes resolved combat stats/HP when equipment changes, and writes the current debug-log text.
+
+### `scripts/model/definitions/equipment_drop_table_definition.gd` / `data/loot/*.tres`
+The current immutable drop tables store source item level, drop chance, and three aligned seven-slot rarity pools. Six weaker mobs reference `ironwake_sentinel_ilvl1_drop_table.tres`; seven stronger mobs retain `initial_equipment_drop_table.tres` for ilvl 10 Ironward Vanguard.
 
 ### `data/items/visual_families/ironward_vanguard/`
 Contains the seven current visual item families in Common, Uncommon, and Rare variants. Their ids, slots, names, icons, and armor overlays select presentation and rarity. Live inherent and random combat stats are generated on `ItemInstance`; the old serialized experimental stat fields are ignored by current runtime generation.
 
-Every current resource under `data/mobs/` references the same initial ilvl 10 equipment drop table. After each defeated mob, `Simulation` asks `LootGenerator` for a seeded slot/rarity roll and `ItemGenerator` for a seeded generated instance. `EquipmentEvaluator` then compares the candidate's real virtual HeroPower against the current loadout; strict improvements equip and replaced/rejected instances enter FIFO Inventory. Current quest definitions contain Gold rewards only.
+### `data/items/visual_families/ironwake_sentinel/`
+Contains the seven `Страж Железного Следа` (`Ironwake Sentinel`) definitions in Common, Uncommon, and Rare variants. The five armor slots use supplied 300 × 300 icons and aligned 441 × 800 hero overlays under `assets/items/icons/ironwake_sentinel/` and `assets/items/overlays/ironwake_sentinel/`. Sword and shield currently reuse the existing neutral placeholder icons and have no hero overlays. The supplied armor artwork is integrated unchanged, including its current green edge remnants.
+
+Every current mob references one of the two source-driven equipment tables. After each defeated mob, `Simulation` delegates the equipment-reward operation to `EquipmentRewardSystem`, which preserves the seeded `LootGenerator → ItemGenerator → EquipmentEvaluator` chain. Strict improvements equip and replaced/rejected instances enter FIFO Inventory; `Simulation` then refreshes resolved stats/HP and records the result. Current quest definitions contain Gold rewards only.
 
 Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, dynamic ItemPower, reference shop value, and sell price.
 

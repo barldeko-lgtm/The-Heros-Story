@@ -7,6 +7,7 @@ const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repositor
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
+const GodSystemScript = preload("res://scripts/god/god_system.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const StatResolverScript = preload("res://scripts/hero/stat_resolver.gd")
 const EquipmentEvaluatorScript = preload("res://scripts/hero/equipment_evaluator.gd")
@@ -19,6 +20,7 @@ const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
+const EquipmentRewardSystemScript = preload("res://scripts/loot/equipment_reward_system.gd")
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
 const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
 const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
@@ -53,20 +55,23 @@ var quest_pool
 var quest_evaluator = QuestEvaluatorScript.new()
 var loot_generator = LootGeneratorScript.new()
 var item_generator = ItemGeneratorScript.new()
+var equipment_reward_system
 var equipment_sale_system = EquipmentSaleSystemScript.new()
 var spending_evaluator = SpendingEvaluatorScript.new()
 var shop_system
 var god_state
+var god_system
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
-var pending_quest_offer_replacement
 
 func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = []) -> void:
 	autonomous_quest_choice = initial_quest_definition == null
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	god_state = GodStateScript.new()
+	god_system = GodSystemScript.new(god_state)
+	equipment_reward_system = EquipmentRewardSystemScript.new(loot_generator, item_generator, equipment_evaluator)
 	shop_system = ShopSystemScript.new(DefaultStartingCityShop, item_generator, simulation_seed + SHOP_RNG_SEED_OFFSET)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
@@ -334,136 +339,62 @@ func get_shop_slot_debug_name(equipment_slot: String) -> String:
 	return equipment_slot
 
 func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, rng_override = null) -> Dictionary:
-	var result: Dictionary = {
-		"item_definition": null,
-		"item_instance": null,
-		"equipped": false,
-		"inventory_item": null,
-		"dropped_item": null,
-	}
 	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
-	var item_definition = loot_generator.roll_mob_equipment(mob_definition, rng)
-	if item_definition == null:
-		return result
-	var item_level: int = int(mob_definition.equipment_drop_table.item_level)
-	result = receive_item_reward(item_definition, completed_tick, item_level, rng)
-	result["item_definition"] = item_definition
-	return result
+	var previous_max_hp: float = combat_stats.max_hp
+	var result: Dictionary = equipment_reward_system.resolve_mob_equipment_drop(hero_state, mob_definition, rng)
+	return finalize_item_reward(result, completed_tick, previous_max_hp)
 
 func receive_item_reward(item_definition: Resource, completed_tick: int = 0, item_level: int = 10, rng_override = null) -> Dictionary:
-	var result: Dictionary = {
-		"item_instance": null,
-		"equipment_evaluation": {},
-		"equipped": false,
-		"inventory_item": null,
-		"dropped_item": null,
-	}
-	if item_definition == null:
-		return result
-
 	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
-	var item_instance = item_generator.generate(item_definition, item_level, rng)
+	var previous_max_hp: float = combat_stats.max_hp
+	var result: Dictionary = equipment_reward_system.receive_item(hero_state, item_definition, item_level, rng)
+	return finalize_item_reward(result, completed_tick, previous_max_hp)
+
+func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_hp: float) -> Dictionary:
+	var item_instance = result.get("item_instance")
 	if item_instance == null:
 		return result
-	result["item_instance"] = item_instance
-	var evaluation: Dictionary = equipment_evaluator.evaluate(hero_state, item_instance)
-	result["equipment_evaluation"] = evaluation
-	var should_equip: bool = bool(evaluation.get("should_equip", false))
-	if should_equip:
-		var previous_max_hp: float = combat_stats.max_hp
-		var replaced_item = hero_state.equipment.replace_item(item_instance)
-		if replaced_item != null:
-			result["inventory_item"] = replaced_item
-			result["dropped_item"] = hero_state.inventory.add_item(replaced_item)
+	if bool(result.get("equipped", false)):
 		refresh_combat_stats()
 		hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
-		result["equipped"] = true
-		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и надел предмет." % [hero_state.hero_name, item_definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
+		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и надел предмет." % [hero_state.hero_name, item_instance.definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
 	else:
-		result["inventory_item"] = item_instance
-		result["dropped_item"] = hero_state.inventory.add_item(item_instance)
-		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и убрал предмет в инвентарь." % [hero_state.hero_name, item_definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
+		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и убрал предмет в инвентарь." % [hero_state.hero_name, item_instance.definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
 
-	if result["dropped_item"] != null:
+	if result.get("dropped_item") != null:
 		var dropped_instance = result["dropped_item"]
 		debug_log.record_event(completed_tick, "Инвентарь переполнен: самый старый предмет «%s» (%s) выпал." % [dropped_instance.definition.display_name, dropped_instance.get_quality_display_name()])
 	return result
 
 func use_instant_resurrection() -> bool:
-	if hero_state.loop_state != HeroState.DEAD_RESPAWNING:
-		return false
-	if not god_state.try_spend_resurrection(quest_runner.respawn_ticks_remaining):
-		return false
-	var event = quest_runner.force_resurrection(hero_state, combat_stats)
+	var result: Dictionary = god_system.use_instant_resurrection(hero_state, quest_runner, combat_stats)
+	var event = result.get("event")
 	if event != null:
 		debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
-	return event != null
+	return bool(result.get("succeeded", false))
 
 func use_divine_healing() -> bool:
-	if hero_state.loop_state == HeroState.DEAD_RESPAWNING:
-		return false
-	var current_hp: float = get_current_hero_hp()
-	if current_hp >= combat_stats.max_hp or not god_state.try_activate_healing():
-		return false
-	var healed_hp: float = minf(combat_stats.max_hp, current_hp + combat_stats.max_hp * 0.50)
-	if active_combat_session != null:
-		active_combat_session.hero_remaining_hp = healed_hp
-	else:
-		hero_state.current_hp = healed_hp
-	return true
+	return god_system.use_divine_healing(hero_state, combat_stats, active_combat_session)
 
 func use_combat_buff() -> bool:
-	if not god_state.try_activate_combat_buff(get_combat_buff_fights_remaining() > 0):
+	if not god_system.use_combat_buff(hero_state):
 		return false
-	hero_state.active_effects.append({
-		"id": GodStateScript.COMBAT_BUFF_EFFECT_ID,
-		"attack_bonus": GodStateScript.COMBAT_BUFF_ATTACK_BONUS,
-		"fights_remaining": GodStateScript.COMBAT_BUFF_FIGHTS,
-	})
 	refresh_combat_stats()
 	return true
 
-func get_combat_buff_effect_index() -> int:
-	for index in hero_state.active_effects.size():
-		if hero_state.active_effects[index].get("id", "") == GodStateScript.COMBAT_BUFF_EFFECT_ID:
-			return index
-	return -1
-
 func get_combat_buff_fights_remaining() -> int:
-	var effect_index := get_combat_buff_effect_index()
-	if effect_index < 0:
-		return 0
-	return int(hero_state.active_effects[effect_index].get("fights_remaining", 0))
+	return god_system.get_combat_buff_fights_remaining(hero_state)
 
 func consume_combat_buff_fight() -> void:
-	var effect_index := get_combat_buff_effect_index()
-	if effect_index < 0:
+	if not god_system.consume_combat_buff_fight(hero_state):
 		return
-	var effect: Dictionary = hero_state.active_effects[effect_index]
-	effect["fights_remaining"] = maxi(0, int(effect.get("fights_remaining", 0)) - 1)
-	if effect["fights_remaining"] <= 0:
-		hero_state.active_effects.remove_at(effect_index)
-	else:
-		hero_state.active_effects[effect_index] = effect
 	refresh_combat_stats()
 
 func guide_hero_to_quest(quest_id: String) -> bool:
-	if not autonomous_quest_choice:
-		return false
-	for quest in quest_pool.get_available_quests():
-		if quest.id == quest_id:
-			return god_state.try_set_quest_guidance(quest_id)
-	return false
+	var available_quests: Array = [] if quest_pool == null else quest_pool.get_available_quests()
+	return god_system.guide_hero_to_quest(quest_id, autonomous_quest_choice, available_quests)
 
 func refresh_finished_quest_offer_if_needed(event) -> void:
 	if not autonomous_quest_choice:
 		return
-	if event.event_type == QuestEvent.HERO_TURNED_IN_QUEST:
-		quest_pool.replace_offer(event.quest_definition)
-		return
-	if event.event_type == QuestEvent.HERO_DIED:
-		pending_quest_offer_replacement = event.quest_definition
-		return
-	if event.event_type == QuestEvent.HERO_RECOVERING_IN_CITY and hero_state.loop_state == HeroState.CHOOSING_QUEST and pending_quest_offer_replacement != null:
-		quest_pool.replace_offer(pending_quest_offer_replacement)
-		pending_quest_offer_replacement = null
+	quest_pool.handle_quest_event(event, hero_state.loop_state)

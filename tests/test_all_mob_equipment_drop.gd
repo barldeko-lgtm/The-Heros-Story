@@ -1,7 +1,9 @@
 extends SceneTree
 
 const MOB_DIRECTORY := "res://data/mobs"
-const SHARED_DROP_TABLE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
+const IRONWAKE_DROP_TABLE_PATH := "res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres"
+const IRONWARD_DROP_TABLE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
+const IRONWAKE_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit", "giant_spider"]
 const EXPECTED_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 
 class ScriptedRng:
@@ -21,9 +23,10 @@ class ScriptedRng:
 		return int(int_values.pop_front())
 
 func _init() -> void:
-	var drop_table: Resource = load(SHARED_DROP_TABLE_PATH)
-	if drop_table == null:
-		fail("The shared initial-city equipment drop table must exist.")
+	var ironwake_drop_table: Resource = load(IRONWAKE_DROP_TABLE_PATH)
+	var ironward_drop_table: Resource = load(IRONWARD_DROP_TABLE_PATH)
+	if ironwake_drop_table == null or ironward_drop_table == null:
+		fail("Both current initial-city equipment drop tables must exist.")
 		return
 
 	var loot_generator_script: Script = load("res://scripts/loot/loot_generator.gd")
@@ -36,12 +39,20 @@ func _init() -> void:
 	resource_files.sort()
 	assert(resource_files.size() == 13, "The current initial-city set must contain 13 mob definitions.")
 
+	var ironwake_count := 0
+	var ironward_count := 0
 	for file_name in resource_files:
 		var mob: Resource = load("%s/%s" % [MOB_DIRECTORY, file_name])
 		assert(mob != null, "Every mob resource must load: %s" % file_name)
-		assert(mob.equipment_drop_table == drop_table, "Every current mob must use the shared equipment drop table: %s" % file_name)
-		assert(is_equal_approx(mob.equipment_drop_table.drop_chance, 0.05), "Every current mob must use the same 5% drop chance.")
-		assert(mob.equipment_drop_table.item_level == 10, "Every current mob must currently drop the shared set at ilvl 10.")
+		var expected_table: Resource = ironwake_drop_table if IRONWAKE_MOB_IDS.has(mob.id) else ironward_drop_table
+		var expected_item_level: int = 1 if IRONWAKE_MOB_IDS.has(mob.id) else 10
+		assert(mob.equipment_drop_table == expected_table, "Each mob must use the equipment source assigned to its strength group: %s" % file_name)
+		if expected_table == ironwake_drop_table:
+			ironwake_count += 1
+		else:
+			ironward_count += 1
+		assert(is_equal_approx(mob.equipment_drop_table.drop_chance, 0.05), "Every current mob must keep the 5% drop chance.")
+		assert(mob.equipment_drop_table.item_level == expected_item_level, "Each current mob must keep its assigned source-driven item level.")
 		assert(mob.equipment_drop_table.common_items.size() == 7, "Every current mob must expose all seven Common slot results.")
 		assert(mob.equipment_drop_table.uncommon_items.size() == 7, "Every current mob must expose all seven Uncommon slot results.")
 		assert(mob.equipment_drop_table.rare_items.size() == 7, "Every current mob must expose all seven Rare slot results.")
@@ -49,9 +60,10 @@ func _init() -> void:
 		var no_drop = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.05]))
 		assert(no_drop == null, "Every mob must reject equipment rolls at or above 5%.")
 		var rare_shield = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.0, 0.95], [6]))
-		assert(rare_shield != null and rare_shield.equipment_slot == EXPECTED_SLOTS[6] and rare_shield.quality == 2, "Every mob must use the shared slot and 70/25/5 rarity rolls.")
+		assert(rare_shield != null and rare_shield.equipment_slot == EXPECTED_SLOTS[6] and rare_shield.quality == 2, "Every mob must keep the shared slot and 70/25/5 rarity rolls.")
 
-	print("PASS: All 13 current mobs share the 5% seven-slot 70/25/5 equipment drop table.")
+	assert(ironwake_count == 6 and ironward_count == 7, "Current mobs must split into six ilvl 1 Ironwake and seven ilvl 10 Ironward sources.")
+	print("PASS: Current mobs use the approved six/seven split across ilvl 1 Ironwake and ilvl 10 Ironward drop tables.")
 	quit()
 
 func fail(message: String) -> void:
