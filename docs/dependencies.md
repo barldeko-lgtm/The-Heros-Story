@@ -168,10 +168,11 @@ Current flow:
 assets/map/prototype_02_hex_layout.png
 → HexMapImageDecoder
 → HexMapDefinition decoded source layout
-→ HexMap builds 300 HexDefinition cells (coordinates + terrain + region)
+→ HexMap builds 300 HexDefinition cells (coordinates + terrain + region + semantic tags)
 → HexMap runtime route/distance queries
 → WorldState mutable hero position
-→ MapScreen drawing / hover inspection
+→ MapTileVisuals loads 3 authored 158 × 140 sprites per normal biome + 418 × 440 town overlay + optional high-resolution hero map sprite
+→ MapScreen sprite drawing / city overlays / live hero sprite / hover inspection / camera transform
 ```
 
 Contracts:
@@ -183,13 +184,14 @@ Contracts:
 - the one ordered road path begins in the Starting City cluster, ends in the Mid-Level City cluster, and has no branches;
 - all non-city/non-road cells are currently plains, forest, or hills; there are no mountains or water;
 - `HexMapDefinition` owns authored source layout and adjacency validation but not mutable world state;
-- each runtime `HexDefinition` currently owns logical coordinates, terrain id, and `region_id`;
+- each runtime `HexDefinition` currently owns logical coordinates, terrain id, `region_id`, and permanent semantic tags queried through `has_tag()`;
 - the PNG's technical `hero_start` marker is used to derive the Starting City center but is normalized to `starting_city` in `HexDefinition.terrain_id`;
-- `HexMap` creates all 300 `HexDefinition` cells, derives city-region ownership, and is the runtime query layer for hex lookup, valid neighbors, deterministic shortest adjacent-hex routes, and distance; the fixed world scale is 3 km per traversed hex;
+- `HexMap` creates all 300 `HexDefinition` cells, derives the current semantic tags (`city` for all 14 city cells, `city_center` for the two authored city centers, and `road` from the authored ordered road path), derives city-region ownership, and is the runtime query layer for hex lookup, valid neighbors, deterministic shortest adjacent-hex routes, and distance; the `road` tag intentionally follows road topology rather than depending on the current temporary road-as-terrain encoding; the fixed world scale is 3 km per traversed hex;
 - `starting_region` and `mid_region` each extend at most seven adjacent-hex steps from their city center; if a cell is inside both radii it belongs to the nearer city, while exact equal-distance cells are split by the X midpoint between city centers; on the current authored map this produces 124 Starting Region cells, 124 Mid Region cells, and 52 cells with no region;
 - `WorldState` owns the mutable hero map position and initializes it at the decoded Starting City center;
 - changing `WorldState.hero_position` must validate the destination through `HexMap`; destination choice and tick-by-tick travel do not belong to `WorldState`;
-- `MapScreen` is inspection-only presentation: it reads runtime hex data and the live hero position from Simulation, exposes current coordinates, terrain, and region through the debug hover tooltip, and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
+- `MapTileVisuals` is presentation-only and loads exactly three `158 × 140` project PNGs each for plains, forest, and hills from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; selection is deterministic by hex coordinates, while road and city cells temporarily reuse plains art as their base terrain visual. It also resolves the hero map texture from `res://assets/map/characters/hero_map.png`; it does not own hero position;
+- `MapScreen` is inspection-only presentation: it reads runtime hex data and the live hero position from Simulation, draws biome textures 1:1 at base zoom, keeps one-pixel black outlines on non-city hexes, omits internal city-hex outlines, and draws `town1.png` as a native-size overlay on both seven-hex city clusters, centered on the city-center hex and aligned by the overlay bottom edge to the cluster bottom; the existing road line is below those town overlays. When a hero map texture exists, it is scaled only at draw time to 120 px tall at base zoom, keeps its source aspect ratio, stays centered horizontally on `WorldState.hero_position` with a 5 px upward presentation offset, and scales with the map camera; if no hero texture exists, the previous red debug marker remains as fallback. It exposes current coordinates, terrain, region, and permanent semantic tags through the debug hover tooltip and owns only presentation camera state for mouse-wheel zoom and right-button drag panning; this camera transform must not mutate map/world gameplay state, choose destinations, move the hero, calculate travel time, or modify Simulation;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
 - quest locations, map-backed quest travel, travel interruption/resumption, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
 

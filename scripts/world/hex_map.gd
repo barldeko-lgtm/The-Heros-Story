@@ -23,13 +23,24 @@ func build_hex_definitions() -> void:
 		for row in range(definition.height):
 			var coordinates := Vector2i(column, row)
 			var terrain_id: String = normalize_source_terrain_id(definition.get_terrain_id(coordinates))
-			hexes_by_coordinate[coordinates] = HexDefinitionScript.new(coordinates, terrain_id)
+			var tags: PackedStringArray = build_tags_for_hex(coordinates, terrain_id)
+			hexes_by_coordinate[coordinates] = HexDefinitionScript.new(coordinates, terrain_id, "", tags)
 	assign_region_ids()
 
 func normalize_source_terrain_id(source_terrain_id: String) -> String:
 	if source_terrain_id == "hero_start":
 		return "starting_city"
 	return source_terrain_id
+
+func build_tags_for_hex(coordinates: Vector2i, terrain_id: String) -> PackedStringArray:
+	var tags := PackedStringArray()
+	if terrain_id == "starting_city" or terrain_id == "mid_city":
+		tags.append(HexDefinitionScript.TAG_CITY)
+	if coordinates == definition.starting_city_center or coordinates == definition.mid_city_center:
+		tags.append(HexDefinitionScript.TAG_CITY_CENTER)
+	if definition.road_path.has(coordinates):
+		tags.append(HexDefinitionScript.TAG_ROAD)
+	return tags
 
 func assign_region_ids() -> void:
 	var starting_distances: Dictionary = build_distance_map(definition.starting_city_center)

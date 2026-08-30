@@ -23,6 +23,53 @@ func run_test() -> void:
 	assert(map_screen.hex_centers.size() == map_definition.width * map_definition.height, "MapScreen must draw every authored hex.")
 	assert(map_screen.get_drawn_terrain_count("forest") == map_definition.forest_cells.size(), "MapScreen must preserve authored forest hexes.")
 	assert(map_screen.get_drawn_terrain_count("hill") == map_definition.hill_cells.size(), "MapScreen must preserve authored hill hexes.")
+	assert(is_equal_approx(map_screen.HEX_OUTLINE_WIDTH, 1.0), "Every hex outline must use a 1-pixel base width before camera zoom is applied.")
+	assert(map_screen.HEX_OUTLINE_COLOR == Color.BLACK, "Every hex outline must be black.")
+	for terrain_id in ["plains", "forest", "hill"]:
+		assert(map_screen.get_terrain_visual_variant_count(terrain_id) == 3, "Each normal biome must expose exactly three visual sprite slots.")
+		for variant_probe in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)]:
+			var terrain_texture: Texture2D = map_screen.get_terrain_visual_texture(terrain_id, variant_probe)
+			assert(terrain_texture != null and terrain_texture.get_size() == Vector2(158.0, 140.0), "Biome sprites must remain exactly 158 by 140 pixels at base zoom.")
+	var expected_visual_paths: Dictionary = {
+		"plains": ["res://assets/map/biomes/plains.png", "res://assets/map/biomes/plains2.png", "res://assets/map/biomes/plains3.png"],
+		"forest": ["res://assets/map/biomes/forest.png", "res://assets/map/biomes/forest2.png", "res://assets/map/biomes/forest3.png"],
+		"hill": ["res://assets/map/biomes/hills.png", "res://assets/map/biomes/hills2.png", "res://assets/map/biomes/hills3.png"],
+	}
+	for terrain_id in expected_visual_paths:
+		for variant_index in range(3):
+			var probe_coordinates := Vector2i(variant_index, 0)
+			var terrain_texture: Texture2D = map_screen.get_terrain_visual_texture(terrain_id, probe_coordinates)
+			assert(terrain_texture.resource_path == expected_visual_paths[terrain_id][variant_index], "Each biome visual slot must use the matching project PNG file.")
+	assert(map_screen.get_terrain_visual_variant_count("road") == 3, "Road cells must temporarily reuse the plains visual slots until road rendering is revisited.")
+	for city_terrain_id in ["starting_city", "mid_city"]:
+		var city_base_texture: Texture2D = map_screen.get_terrain_visual_texture(city_terrain_id, map_definition.starting_city_center)
+		assert(city_base_texture != null and city_base_texture.resource_path.begins_with("res://assets/map/biomes/plains"), "City hexes must use plains sprites beneath the full town overlay.")
+	var town_texture: Texture2D = map_screen.get_city_visual_texture()
+	assert(town_texture != null and town_texture.resource_path == "res://assets/map/biomes/town1.png", "Both city clusters must use the supplied town1 PNG overlay.")
+	assert(town_texture.get_size() == Vector2(418.0, 440.0), "Town overlay must remain exactly 418 by 440 pixels at base zoom.")
+	for city_center in [map_definition.starting_city_center, map_definition.mid_city_center]:
+		var town_rect: Rect2 = map_screen.get_city_overlay_rect(city_center)
+		assert(town_rect.size == Vector2(418.0, 440.0), "Each city overlay must render at the supplied texture size without scaling.")
+		assert(is_equal_approx(town_rect.get_center().x, map_screen.get_hex_center(city_center).x), "Town overlay must be centered horizontally on its city center hex.")
+		var city_cluster_bottom: float = -INF
+		for city_cell in map_definition.get_city_cells(city_center):
+			city_cluster_bottom = maxf(city_cluster_bottom, map_screen.hex_centers[city_cell].y + map_screen.HEX_HALF_HEIGHT)
+		assert(is_equal_approx(town_rect.end.y, city_cluster_bottom), "Town overlay bottom edge must align to the bottom edge of the seven-hex city cluster.")
+	var hero_texture: Texture2D = map_screen.get_hero_visual_texture()
+	assert(hero_texture != null, "MapScreen must use the permanent supplied hero map sprite.")
+	assert(hero_texture.resource_path == map_screen.map_tile_visuals.HERO_MAP_PATH, "Hero map visual must use the permanent character asset path.")
+	assert(hero_texture.get_size().y > map_screen.HERO_MAP_DRAW_HEIGHT, "The hero source sprite must retain more resolution than its normal on-map draw height.")
+	var hero_rect: Rect2 = map_screen.get_hero_visual_rect()
+	assert(is_equal_approx(hero_rect.size.y, 120.0), "Hero must render 120 pixels tall at base map zoom.")
+	assert(hero_rect.size.x < map_screen.HEX_TILE_SIZE.x and hero_rect.size.y < map_screen.HEX_TILE_SIZE.y, "Hero map visual must fit inside one 158 by 140 hex footprint at base zoom.")
+	var expected_hero_center: Vector2 = map_screen.get_hex_center(map_definition.starting_city_center) + Vector2(0.0, -5.0)
+	assert(hero_rect.get_center().distance_to(expected_hero_center) < 0.01, "Hero map visual must remain centered horizontally and sit 5 pixels above the hero hex center.")
+	assert(map_screen.map_tile_visuals.get_variant_index(Vector2i(0, 0)) == 0, "Visual variant selection must be deterministic by hex coordinates.")
+	assert(map_screen.map_tile_visuals.get_variant_index(Vector2i(1, 0)) == 1, "Visual variant selection must expose the second slot deterministically.")
+	assert(map_screen.map_tile_visuals.get_variant_index(Vector2i(2, 0)) == 2, "Visual variant selection must expose the third slot deterministically.")
+	assert(map_screen.get_hex_center(Vector2i(1, 0)) - map_screen.get_hex_center(Vector2i(0, 0)) == Vector2(118.5, 70.0), "Flat-top sprite geometry must use the unscaled 158 by 140 tile footprint.")
+	assert(map_screen.get_hex_center(Vector2i(0, 1)) - map_screen.get_hex_center(Vector2i(0, 0)) == Vector2(0.0, 140.0), "Hex rows must use the full unscaled 140-pixel sprite height.")
+	assert(map_screen.map_bounds.size.x > 2300.0 and map_screen.map_bounds.size.y > 2000.0, "The visual map must grow to the new full-size sprite footprint.")
 	map_screen.free()
 
 	var main_scene: PackedScene = load("res://scenes/main/main.tscn")
@@ -34,17 +81,46 @@ func run_test() -> void:
 	assert(main_ui.map_screen.visible and not main_ui.main_screen.visible, "Map button must open MapScreen and hide main developer content.")
 	assert(main_ui.map_button.text == "НАЗАД", "Map button must become Back while the map is open.")
 	assert(main_ui.inventory_close_button.visible, "Shared red close button must be available on MapScreen.")
+	var start_screen_position: Vector2 = main_ui.map_screen.map_to_screen_position(main_ui.map_screen.get_hex_center(map_definition.starting_city_center))
 	var hover_event := InputEventMouseMotion.new()
-	hover_event.position = main_ui.map_screen.get_hex_center(map_definition.starting_city_center)
+	hover_event.position = start_screen_position
 	get_root().push_input(hover_event, true)
 	await process_frame
 	assert(main_ui.map_screen.hex_tooltip_panel.visible, "Real viewport mouse motion over an open MapScreen hex must show the debug tooltip panel.")
 	assert(main_ui.map_screen.hex_tooltip_label.text.contains("Стартовый город"), "Open MapScreen hover tooltip must display live hex terrain data.")
+
+	var zoom_before: float = main_ui.map_screen.map_zoom
+	var wheel_event := InputEventMouseButton.new()
+	wheel_event.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel_event.pressed = true
+	wheel_event.position = start_screen_position
+	get_root().push_input(wheel_event, true)
+	await process_frame
+	assert(main_ui.map_screen.map_zoom > zoom_before, "Real viewport mouse wheel input over MapScreen must zoom the map.")
+
+	var pan_before: Vector2 = main_ui.map_screen.map_pan_offset
+	var right_down := InputEventMouseButton.new()
+	right_down.button_index = MOUSE_BUTTON_RIGHT
+	right_down.pressed = true
+	right_down.position = start_screen_position
+	get_root().push_input(right_down, true)
+	var drag_event := InputEventMouseMotion.new()
+	drag_event.position = start_screen_position + Vector2(60.0, 40.0)
+	drag_event.relative = Vector2(60.0, 40.0)
+	get_root().push_input(drag_event, true)
+	var right_up := InputEventMouseButton.new()
+	right_up.button_index = MOUSE_BUTTON_RIGHT
+	right_up.pressed = false
+	right_up.position = drag_event.position
+	get_root().push_input(right_up, true)
+	await process_frame
+	assert(main_ui.map_screen.map_pan_offset != pan_before, "Real viewport right-button drag over MapScreen must pan the map.")
+
 	main_ui.inventory_close_button.pressed.emit()
 	assert(main_ui.main_screen.visible and not main_ui.map_screen.visible, "Close button must return from MapScreen to the main screen.")
 
 	await process_frame
 	await process_frame
 	main_ui.free()
-	print("PASS: Authored 20x15 hex map, two seven-hex cities, terrain, road, and Map menu navigation work.")
+	print("PASS: Authored map, navigation, real hover, wheel zoom, and right-button panning work through the live UI.")
 	quit()

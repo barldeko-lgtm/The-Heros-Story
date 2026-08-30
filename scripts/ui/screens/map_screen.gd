@@ -4,9 +4,22 @@ extends Control
 const MapDefinitionResource = preload("res://data/map/prototype_02_map.tres")
 const HexMapScript = preload("res://scripts/world/hex_map.gd")
 const HexMapImageDecoderScript = preload("res://scripts/world/hex_map_image_decoder.gd")
-const HEX_RADIUS: float = 20.5
-const HEX_HEIGHT: float = 35.507
-const MAP_ORIGIN: Vector2 = Vector2(330.0, 120.0)
+const MapTileVisualsScript = preload("res://scripts/ui/map_tile_visuals.gd")
+const HEX_TILE_SIZE: Vector2 = Vector2(158.0, 140.0)
+const HEX_HALF_WIDTH: float = HEX_TILE_SIZE.x * 0.5
+const HEX_HALF_HEIGHT: float = HEX_TILE_SIZE.y * 0.5
+const HEX_COLUMN_STEP: float = HEX_TILE_SIZE.x * 0.75
+const HEX_ROW_STEP: float = HEX_TILE_SIZE.y
+const HEX_OUTLINE_COLOR: Color = Color.BLACK
+const HEX_OUTLINE_WIDTH: float = 1.0
+const HERO_MAP_DRAW_HEIGHT: float = 120.0
+const HERO_MAP_DRAW_OFFSET: Vector2 = Vector2(0.0, -5.0)
+const MAP_ORIGIN: Vector2 = Vector2.ZERO
+const MIN_MAP_ZOOM: float = 0.6
+const MAX_MAP_ZOOM: float = 2.0
+const MAP_ZOOM_STEP: float = 1.15
+const MIN_VISIBLE_MAP_PIXELS: float = 80.0
+const MAP_VIEW_TOP: float = 76.0
 
 const TERRAIN_COLORS: Dictionary = {
 	"plains": HexMapImageDecoderScript.PLAINS_COLOR,
@@ -31,14 +44,25 @@ const REGION_DISPLAY_NAMES: Dictionary = {
 	"mid_region": "Средний регион",
 }
 
+const HEX_TAG_DISPLAY_NAMES: Dictionary = {
+	"city": "Город",
+	"city_center": "Центр города",
+	"road": "Дорога",
+}
+
 var simulation
 var hex_map
 var map_definition = MapDefinitionResource
+var map_tile_visuals
 var hex_centers: Dictionary = {}
 var terrain_counts: Dictionary = {}
 var last_hero_position: Vector2i = Vector2i(-1, -1)
 var hex_tooltip_panel: PanelContainer
 var hex_tooltip_label: Label
+var map_zoom: float = 1.0
+var map_pan_offset: Vector2 = Vector2.ZERO
+var map_bounds: Rect2 = Rect2()
+var right_mouse_dragging: bool = false
 
 func setup(initial_simulation) -> void:
 	simulation = initial_simulation
@@ -51,7 +75,10 @@ func _ready() -> void:
 	if hex_map == null:
 		hex_map = HexMapScript.new(map_definition)
 		map_definition = hex_map.definition
+	map_tile_visuals = MapTileVisualsScript.new()
 	build_draw_cache()
+	calculate_map_bounds()
+	center_map_on_starting_city()
 	create_hex_tooltip()
 	mouse_exited.connect(hide_hex_tooltip)
 	last_hero_position = get_hero_cell()
@@ -84,24 +111,62 @@ func build_draw_cache() -> void:
 
 func get_hex_center(cell: Vector2i) -> Vector2:
 	return MAP_ORIGIN + Vector2(
-		HEX_RADIUS * 1.5 * float(cell.x),
-		HEX_HEIGHT * (float(cell.y) + 0.5 * float(cell.x % 2))
+		HEX_COLUMN_STEP * float(cell.x),
+		HEX_ROW_STEP * (float(cell.y) + 0.5 * float(cell.x % 2))
 	)
 
 func get_hex_polygon(center: Vector2) -> PackedVector2Array:
-	var points := PackedVector2Array()
-	for corner_index in range(6):
-		var angle: float = deg_to_rad(60.0 * float(corner_index))
-		points.append(center + Vector2(cos(angle), sin(angle)) * HEX_RADIUS)
-	return points
+	return PackedVector2Array([
+		center + Vector2(HEX_HALF_WIDTH, 0.0),
+		center + Vector2(HEX_HALF_WIDTH * 0.5, -HEX_HALF_HEIGHT),
+		center + Vector2(-HEX_HALF_WIDTH * 0.5, -HEX_HALF_HEIGHT),
+		center + Vector2(-HEX_HALF_WIDTH, 0.0),
+		center + Vector2(-HEX_HALF_WIDTH * 0.5, HEX_HALF_HEIGHT),
+		center + Vector2(HEX_HALF_WIDTH * 0.5, HEX_HALF_HEIGHT),
+	])
 
 func get_drawn_terrain_count(terrain_id: String) -> int:
 	return int(terrain_counts.get(terrain_id, 0))
 
+func calculate_map_bounds() -> void:
+	if hex_centers.is_empty():
+		map_bounds = Rect2()
+		return
+	var min_point := Vector2(INF, INF)
+	var max_point := Vector2(-INF, -INF)
+	for center_variant in hex_centers.values():
+		var center: Vector2 = center_variant
+		min_point.x = minf(min_point.x, center.x - HEX_HALF_WIDTH)
+		min_point.y = minf(min_point.y, center.y - HEX_HALF_HEIGHT)
+		max_point.x = maxf(max_point.x, center.x + HEX_HALF_WIDTH)
+		max_point.y = maxf(max_point.y, center.y + HEX_HALF_HEIGHT)
+	for city_center in [map_definition.starting_city_center, map_definition.mid_city_center]:
+		var town_rect: Rect2 = get_city_overlay_rect(city_center)
+		min_point.x = minf(min_point.x, town_rect.position.x)
+		min_point.y = minf(min_point.y, town_rect.position.y)
+		max_point.x = maxf(max_point.x, town_rect.end.x)
+		max_point.y = maxf(max_point.y, town_rect.end.y)
+	map_bounds = Rect2(min_point, max_point - min_point)
+
+func center_map_on_starting_city() -> void:
+	if size == Vector2.ZERO:
+		return
+	var city_center: Vector2 = get_hex_center(map_definition.starting_city_center)
+	var view_center := Vector2(size.x * 0.5, (MAP_VIEW_TOP + size.y) * 0.5)
+	map_pan_offset = view_center - city_center * map_zoom
+	clamp_map_pan_offset()
+
+func map_to_screen_position(map_position: Vector2) -> Vector2:
+	return map_pan_offset + map_position * map_zoom
+
+func screen_to_map_position(screen_position: Vector2) -> Vector2:
+	return (screen_position - map_pan_offset) / map_zoom
+
 func get_hex_at_local_position(local_position: Vector2):
+	var map_position: Vector2 = screen_to_map_position(local_position)
 	for cell in hex_centers:
 		var center: Vector2 = hex_centers[cell]
-		if Geometry2D.is_point_in_polygon(local_position, get_hex_polygon(center)):
+		if Geometry2D.is_point_in_polygon(map_position, get_hex_polygon(center)):
 			return hex_map.get_hex(cell)
 	return null
 
@@ -114,14 +179,24 @@ func get_hex_tooltip_text(hex_definition) -> String:
 	if not hex_definition.region_id.is_empty():
 		region_name = str(REGION_DISPLAY_NAMES.get(hex_definition.region_id, hex_definition.region_id))
 		region_raw_id = hex_definition.region_id
-	return "Координаты: (%d, %d)\nМестность: %s [%s]\nРегион: %s [%s]" % [
+	return "Координаты: (%d, %d)\nМестность: %s [%s]\nРегион: %s [%s]\nТеги: %s" % [
 		hex_definition.coordinates.x,
 		hex_definition.coordinates.y,
 		terrain_name,
 		hex_definition.terrain_id,
 		region_name,
 		region_raw_id,
+		get_hex_tags_tooltip_text(hex_definition.tags),
 	]
+
+func get_hex_tags_tooltip_text(tags: PackedStringArray) -> String:
+	if tags.is_empty():
+		return "Нет [none]"
+	var display_tags := PackedStringArray()
+	for tag_id in tags:
+		var display_name: String = str(HEX_TAG_DISPLAY_NAMES.get(tag_id, tag_id))
+		display_tags.append("%s [%s]" % [display_name, tag_id])
+	return ", ".join(display_tags)
 
 func create_hex_tooltip() -> void:
 	hex_tooltip_panel = PanelContainer.new()
@@ -149,8 +224,53 @@ func create_hex_tooltip() -> void:
 	hex_tooltip_panel.visible = false
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			set_map_zoom_at_position(map_zoom * MAP_ZOOM_STEP, event.position)
+			accept_event()
+			return
+		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			set_map_zoom_at_position(map_zoom / MAP_ZOOM_STEP, event.position)
+			accept_event()
+			return
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			right_mouse_dragging = event.pressed
+			if right_mouse_dragging:
+				hide_hex_tooltip()
+			else:
+				update_hex_tooltip(event.position)
+			accept_event()
+			return
 	if event is InputEventMouseMotion:
+		if right_mouse_dragging:
+			map_pan_offset += event.relative
+			clamp_map_pan_offset()
+			hide_hex_tooltip()
+			queue_redraw()
+			accept_event()
+			return
 		update_hex_tooltip(event.position)
+
+func set_map_zoom_at_position(target_zoom: float, cursor_position: Vector2) -> void:
+	var new_zoom: float = clampf(target_zoom, MIN_MAP_ZOOM, MAX_MAP_ZOOM)
+	if is_equal_approx(new_zoom, map_zoom):
+		return
+	var map_position_under_cursor: Vector2 = screen_to_map_position(cursor_position)
+	map_zoom = new_zoom
+	map_pan_offset = cursor_position - map_position_under_cursor * map_zoom
+	clamp_map_pan_offset()
+	queue_redraw()
+	update_hex_tooltip(cursor_position)
+
+func clamp_map_pan_offset() -> void:
+	if map_bounds.size == Vector2.ZERO or size == Vector2.ZERO:
+		return
+	var min_pan_x: float = MIN_VISIBLE_MAP_PIXELS - map_bounds.end.x * map_zoom
+	var max_pan_x: float = size.x - MIN_VISIBLE_MAP_PIXELS - map_bounds.position.x * map_zoom
+	var min_pan_y: float = MAP_VIEW_TOP + MIN_VISIBLE_MAP_PIXELS - map_bounds.end.y * map_zoom
+	var max_pan_y: float = size.y - MIN_VISIBLE_MAP_PIXELS - map_bounds.position.y * map_zoom
+	map_pan_offset.x = clampf(map_pan_offset.x, min_pan_x, max_pan_x)
+	map_pan_offset.y = clampf(map_pan_offset.y, min_pan_y, max_pan_y)
 
 func update_hex_tooltip(local_position: Vector2) -> void:
 	if hex_tooltip_panel == null or hex_tooltip_label == null:
@@ -181,20 +301,57 @@ func _draw() -> void:
 	draw_rect(Rect2(0.0, 0.0, size.x, size.y), Color("d9dde2"))
 	draw_string(ThemeDB.fallback_font, Vector2(32.0, 105.0), "Карта мира", HORIZONTAL_ALIGNMENT_LEFT, 240.0, 25, Color("242a31"))
 
+	draw_set_transform(map_pan_offset, 0.0, Vector2(map_zoom, map_zoom))
 	for column in range(map_definition.width):
 		for row in range(map_definition.height):
 			var cell := Vector2i(column, row)
 			var center: Vector2 = hex_centers[cell]
 			var terrain_id: String = hex_map.get_hex(cell).terrain_id
-			draw_colored_polygon(get_hex_polygon(center), TERRAIN_COLORS[terrain_id])
-			draw_polyline(get_closed_hex_outline(center), Color("39413d"), 1.25, true)
-			draw_terrain_mark(center, terrain_id)
+			draw_hex_visual(cell, center, terrain_id)
 
 	draw_road()
+	draw_city_overlay(map_definition.starting_city_center)
+	draw_city_overlay(map_definition.mid_city_center)
 	draw_hero_marker()
 	draw_city_label(map_definition.starting_city_center, "СТАРТОВЫЙ ГОРОД", Color("3d2e22"), Vector2(-72.0, 68.0))
 	draw_city_label(map_definition.mid_city_center, "СРЕДНИЙ ГОРОД", Color("302a40"), Vector2(-65.0, -58.0))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	draw_legend()
+
+func draw_hex_visual(cell: Vector2i, center: Vector2, terrain_id: String) -> void:
+	var terrain_texture: Texture2D = map_tile_visuals.get_texture(terrain_id, cell)
+	if terrain_texture != null:
+		var tile_rect := Rect2(center - HEX_TILE_SIZE * 0.5, HEX_TILE_SIZE)
+		draw_texture_rect(terrain_texture, tile_rect, false)
+	if terrain_id != "starting_city" and terrain_id != "mid_city":
+		draw_polyline(get_closed_hex_outline(center), HEX_OUTLINE_COLOR, HEX_OUTLINE_WIDTH, true)
+
+func get_terrain_visual_variant_count(terrain_id: String) -> int:
+	return map_tile_visuals.get_variant_count(terrain_id)
+
+func get_terrain_visual_texture(terrain_id: String, cell: Vector2i):
+	return map_tile_visuals.get_texture(terrain_id, cell)
+
+func get_city_visual_texture() -> Texture2D:
+	return map_tile_visuals.get_town_texture()
+
+func get_city_overlay_rect(city_center: Vector2i) -> Rect2:
+	var town_texture: Texture2D = get_city_visual_texture()
+	if town_texture == null or not hex_centers.has(city_center):
+		return Rect2()
+	var cluster_bottom: float = -INF
+	for city_cell in map_definition.get_city_cells(city_center):
+		if hex_centers.has(city_cell):
+			cluster_bottom = maxf(cluster_bottom, hex_centers[city_cell].y + HEX_HALF_HEIGHT)
+	var town_size: Vector2 = town_texture.get_size()
+	var center: Vector2 = hex_centers[city_center]
+	return Rect2(Vector2(center.x - town_size.x * 0.5, cluster_bottom - town_size.y), town_size)
+
+func draw_city_overlay(city_center: Vector2i) -> void:
+	var town_texture: Texture2D = get_city_visual_texture()
+	if town_texture == null:
+		return
+	draw_texture_rect(town_texture, get_city_overlay_rect(city_center), false)
 
 func get_closed_hex_outline(center: Vector2) -> PackedVector2Array:
 	var outline: PackedVector2Array = get_hex_polygon(center)
@@ -208,9 +365,28 @@ func draw_road() -> void:
 	draw_polyline(route_points, Color("5f4b32"), 10.0, true)
 	draw_polyline(route_points, Color("d6bd7a"), 6.0, true)
 
+func get_hero_visual_texture() -> Texture2D:
+	return map_tile_visuals.get_hero_map_texture()
+
+func get_hero_visual_rect() -> Rect2:
+	var hero_texture: Texture2D = get_hero_visual_texture()
+	var hero_cell: Vector2i = get_hero_cell()
+	if hero_texture == null or not hex_centers.has(hero_cell):
+		return Rect2()
+	var source_size: Vector2 = hero_texture.get_size()
+	if source_size.y <= 0.0:
+		return Rect2()
+	var draw_scale: float = HERO_MAP_DRAW_HEIGHT / source_size.y
+	var draw_size: Vector2 = source_size * draw_scale
+	return Rect2(hex_centers[hero_cell] + HERO_MAP_DRAW_OFFSET - draw_size * 0.5, draw_size)
+
 func draw_hero_marker() -> void:
 	var hero_cell: Vector2i = get_hero_cell()
 	if not hex_centers.has(hero_cell):
+		return
+	var hero_texture: Texture2D = get_hero_visual_texture()
+	if hero_texture != null:
+		draw_texture_rect(hero_texture, get_hero_visual_rect(), false)
 		return
 	var center: Vector2 = hex_centers[hero_cell]
 	draw_circle(center, 8.0, Color("f7f3e8"))
@@ -229,8 +405,8 @@ func draw_terrain_mark(center: Vector2, terrain_id: String) -> void:
 			draw_arc(center + Vector2(-4.0, 5.0), 8.0, PI, TAU, 14, Color("66513c"), 2.0)
 			draw_arc(center + Vector2(6.0, 7.0), 6.0, PI, TAU, 12, Color("66513c"), 2.0)
 		"starting_city", "mid_city":
-			draw_rect(Rect2(center + Vector2(-7.0, -3.0), Vector2(14.0, 11.0)), Color("ddd0b7"))
-			draw_colored_polygon(PackedVector2Array([center + Vector2(-9.0, -3.0), center + Vector2(0.0, -10.0), center + Vector2(9.0, -3.0)]), Color("513f35"))
+			draw_rect(Rect2(center + Vector2(-22.0, -10.0), Vector2(44.0, 34.0)), Color("ddd0b7"))
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-29.0, -10.0), center + Vector2(0.0, -32.0), center + Vector2(29.0, -10.0)]), Color("513f35"))
 
 func draw_city_label(city_center: Vector2i, label_text: String, label_color: Color, offset: Vector2) -> void:
 	var position: Vector2 = hex_centers[city_center] + offset
