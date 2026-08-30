@@ -4,6 +4,8 @@ extends RefCounted
 const WorldClockScript = preload("res://scripts/core/world_clock.gd")
 const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
+const HexMapScript = preload("res://scripts/world/hex_map.gd")
+const WorldStateScript = preload("res://scripts/world/world_state.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
@@ -28,6 +30,7 @@ const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluato
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
+const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
@@ -39,6 +42,8 @@ var quest_narrator = QuestNarratorScript.new()
 var time_scale: float = 1.0
 var simulation_seed: int = DEFAULT_SIMULATION_SEED
 var seeded_rng
+var hex_map
+var world_state
 var hero_state
 var base_combat_stats
 var combat_stats
@@ -69,6 +74,8 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	autonomous_quest_choice = initial_quest_definition == null
 	simulation_seed = initial_seed
 	seeded_rng = SeededRngScript.new(simulation_seed)
+	hex_map = HexMapScript.new(DefaultMapDefinition)
+	world_state = WorldStateScript.new(hex_map)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
 	equipment_reward_system = EquipmentRewardSystemScript.new(loot_generator, item_generator, equipment_evaluator)

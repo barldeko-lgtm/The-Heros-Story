@@ -69,6 +69,7 @@ func create_screen_layers() -> void:
 	add_child(inventory_screen)
 
 	map_screen = MapScreenScene.instantiate()
+	map_screen.setup(simulation)
 	map_screen.visible = false
 	add_child(map_screen)
 

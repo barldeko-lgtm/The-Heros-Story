@@ -39,7 +39,7 @@ func run_test() -> void:
 	var map_screen = map_scene.instantiate()
 	get_root().add_child(map_screen)
 	await process_frame
-	assert(map_screen.get_drawn_terrain_count("hero_start") == 1, "MapScreen must render the unique start marker decoded from PNG.")
+	assert(map_screen.get_drawn_terrain_count("starting_city") == 7, "MapScreen must treat the technical hero-start source marker as Starting City terrain.")
 	assert(map_screen.get_drawn_terrain_count("forest") == decoded["counts"].get("forest", 0), "MapScreen terrain counts must come from PNG decoding.")
 	map_screen.free()
 

@@ -160,15 +160,18 @@ Death-related gameplay reports structured facts through `QuestEvent`:
 
 The diary remains separate and is not implemented as part of the death slice.
 
-## Authored map visual slice
+## Authored map / runtime world foundation
 
-Current read-only flow:
+Current flow:
 
 ```text
 assets/map/prototype_02_hex_layout.png
 → HexMapImageDecoder
-→ HexMapDefinition decoded layout
-→ MapScreen drawing
+→ HexMapDefinition decoded source layout
+→ HexMap builds 300 HexDefinition cells (coordinates + terrain)
+→ HexMap runtime route/distance queries
+→ WorldState mutable hero position
+→ MapScreen drawing / hover inspection
 ```
 
 Contracts:
@@ -179,10 +182,15 @@ Contracts:
 - the Mid-Level City occupies one center hex plus its six direct neighbors;
 - the one ordered road path begins in the Starting City cluster, ends in the Mid-Level City cluster, and has no branches;
 - all non-city/non-road cells are currently plains, forest, or hills; there are no mountains or water;
-- `HexMapDefinition` owns authored layout and adjacency validation but not mutable world state;
-- `MapScreen` is read-only presentation and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
+- `HexMapDefinition` owns authored source layout and adjacency validation but not mutable world state;
+- each runtime `HexDefinition` currently owns exactly two gameplay fields: logical coordinates and terrain id;
+- the PNG's technical `hero_start` marker is used to derive the Starting City center but is normalized to `starting_city` in `HexDefinition.terrain_id`;
+- `HexMap` creates all 300 `HexDefinition` cells and is the runtime query layer for hex lookup, valid neighbors, deterministic shortest adjacent-hex routes, and distance; the fixed world scale is 3 km per traversed hex;
+- `WorldState` owns the mutable hero map position and initializes it at the decoded Starting City center;
+- changing `WorldState.hero_position` must validate the destination through `HexMap`; destination choice and tick-by-tick travel do not belong to `WorldState`;
+- `MapScreen` is inspection-only presentation: it reads runtime hex data and the live hero position from Simulation, may expose hovered `HexDefinition` data through UI tooltips, and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- hero position, pathfinding, travel, quest locations, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
+- quest locations, map-backed quest travel, travel interruption/resumption, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
 
 ## UI boundary
 
