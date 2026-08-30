@@ -87,10 +87,10 @@ Shared complete Prototype 0.2 hero/mob Power calculation. It includes expected p
 ## World map foundation
 
 ### `scripts/model/definitions/hex_definition.gd`
-One logical map cell. Each current `HexDefinition` owns only the cell's stable logical coordinates and game-level terrain id. The 300 instances are built from the authored PNG layout by `HexMap`; the technical `hero_start` source marker is normalized to `starting_city` terrain rather than becoming a separate gameplay terrain type.
+One logical map cell. Each current `HexDefinition` owns the cell's stable logical coordinates, game-level terrain id, and city `region_id`. The 300 instances are built from the authored PNG layout by `HexMap`; the technical `hero_start` source marker is normalized to `starting_city` terrain rather than becoming a separate gameplay terrain type. Region ownership is derived from map topology rather than encoded in the PNG.
 
 ### `scripts/world/hex_map.gd`
-Runtime read/query layer over the authored map definition. It validates the decoded map, creates one `HexDefinition` for every logical cell, exposes hex lookup and valid neighboring cells, builds deterministic shortest adjacent-hex routes, and reports route distance in steps and kilometres using the fixed Prototype 0.2 scale of 3 km per hex. It does not choose destinations or advance travel.
+Runtime read/query layer over the authored map definition. It validates the decoded map, creates one `HexDefinition` for every logical cell, derives the two non-overlapping seven-step city regions, exposes hex lookup and valid neighboring cells, builds deterministic shortest adjacent-hex routes, and reports route distance in steps and kilometres using the fixed Prototype 0.2 scale of 3 km per hex. Overlap belongs to the nearer city; equal-distance boundary cells are divided by the midpoint between the two city-center X coordinates. It does not choose destinations or advance travel.
 
 ### `scripts/world/world_state.gd`
 Mutable world-state owner for the current map slice. It owns the hero's current map hex and initializes that position from the authored Starting City center. It validates position changes against `HexMap` but does not decide where the hero should go.
@@ -203,7 +203,7 @@ Dedicated Inventory screen root instantiated by `MainUI`.
 Owns Inventory presentation: the scaled hero portrait and armor overlays, equipment slots, the `6 × 6` retained-item grid, quality outlines, and item tooltips. It reads equipment/inventory state from the supplied `Simulation` but does not grant, equip, replace, or drop items.
 
 ### `scenes/ui/screens/map_screen.tscn` / `scripts/ui/screens/map_screen.gd`
-Dedicated Map screen. It renders every cell from the runtime `HexDefinition` data, including terrain marks, city clusters, the road, labels, legend, and a separate live hero marker sourced from `Simulation.world_state.hero_position`. Hovering a hex resolves the corresponding `HexDefinition` and shows a debug tooltip with its current coordinates and terrain. The screen remains inspection-only and does not move the hero, calculate routes, advance travel, reveal hidden locations, or modify Simulation.
+Dedicated Map screen. It renders every cell from the runtime `HexDefinition` data, including terrain marks, city clusters, the road, labels, legend, and a separate live hero marker sourced from `Simulation.world_state.hero_position`. Hovering a hex resolves the corresponding `HexDefinition` and shows a debug tooltip with its current coordinates, terrain, and region. The screen remains inspection-only and does not move the hero, calculate routes, advance travel, reveal hidden locations, or modify Simulation.
 
 ### `scenes/ui/components/god_panel.tscn` / `scripts/ui/components/god_panel.gd`
 Owns the God panel presentation and button commands: energy, cooldowns, healing, combat blessing, and instant resurrection. It sends approved requests through the supplied `Simulation` and reports hero-display changes back to `MainUI` through a signal.

@@ -13,6 +13,9 @@ func run_test() -> void:
 	var start: Vector2i = map_definition.starting_city_center
 	var destination: Vector2i = map_definition.mid_city_center
 	assert(simulation.hex_map.get_hex_count() == map_definition.width * map_definition.height, "HexMap must create one HexDefinition for every authored map cell.")
+	var starting_region_count: int = 0
+	var mid_region_count: int = 0
+	var no_region_count: int = 0
 	for column in range(map_definition.width):
 		for row in range(map_definition.height):
 			var coordinates := Vector2i(column, row)
@@ -23,6 +26,24 @@ func run_test() -> void:
 			if expected_terrain == "hero_start":
 				expected_terrain = "starting_city"
 			assert(hex_definition.terrain_id == expected_terrain, "HexDefinition terrain must come from the decoded PNG terrain source.")
+			if hex_definition.region_id == simulation.hex_map.STARTING_REGION_ID:
+				starting_region_count += 1
+				assert(simulation.hex_map.get_distance_steps(start, coordinates) <= simulation.hex_map.REGION_RADIUS_STEPS, "Starting Region hexes must remain within seven steps of Starting City center.")
+			elif hex_definition.region_id == simulation.hex_map.MID_REGION_ID:
+				mid_region_count += 1
+				assert(simulation.hex_map.get_distance_steps(destination, coordinates) <= simulation.hex_map.REGION_RADIUS_STEPS, "Mid Region hexes must remain within seven steps of Mid-Level City center.")
+			elif hex_definition.region_id.is_empty():
+				no_region_count += 1
+				assert(simulation.hex_map.get_distance_steps(start, coordinates) > simulation.hex_map.REGION_RADIUS_STEPS and simulation.hex_map.get_distance_steps(destination, coordinates) > simulation.hex_map.REGION_RADIUS_STEPS, "Unassigned hexes must be outside both seven-step city regions.")
+			else:
+				assert(false, "HexDefinition must use only an approved region id or no region.")
+	assert(starting_region_count == 124, "Starting Region must contain exactly 124 hexes on the current authored map.")
+	assert(mid_region_count == 124, "Mid Region must contain exactly 124 hexes on the current authored map.")
+	assert(no_region_count == 52, "Exactly 52 peripheral hexes must remain outside both city regions.")
+	assert(simulation.hex_map.get_hex(Vector2i(8, 4)).region_id == simulation.hex_map.STARTING_REGION_ID, "Left half of the equal-distance boundary must belong to Starting Region.")
+	assert(simulation.hex_map.get_hex(Vector2i(9, 5)).region_id == simulation.hex_map.STARTING_REGION_ID, "Left half of the equal-distance boundary must belong to Starting Region.")
+	assert(simulation.hex_map.get_hex(Vector2i(10, 9)).region_id == simulation.hex_map.MID_REGION_ID, "Right half of the equal-distance boundary must belong to Mid Region.")
+	assert(simulation.hex_map.get_hex(Vector2i(11, 10)).region_id == simulation.hex_map.MID_REGION_ID, "Right half of the equal-distance boundary must belong to Mid Region.")
 	assert(simulation.hex_map.get_hex(start).terrain_id == "starting_city", "The technical hero-start source marker must still describe Starting City terrain.")
 	assert(simulation.world_state.hero_position == start, "Hero must begin at the authored Starting City center.")
 
@@ -54,6 +75,7 @@ func run_test() -> void:
 	var start_tooltip: String = map_screen.get_hex_tooltip_text(hovered_start_hex)
 	assert(start_tooltip.contains("(%d, %d)" % [start.x, start.y]), "Debug tooltip must show hovered hex coordinates.")
 	assert(start_tooltip.contains("Стартовый город") and start_tooltip.contains("starting_city"), "Debug tooltip must show the hovered hex terrain and raw terrain id.")
+	assert(start_tooltip.contains("Стартовый регион") and start_tooltip.contains("starting_region"), "Debug tooltip must show the hovered hex region and raw region id.")
 	var hover_event := InputEventMouseMotion.new()
 	hover_event.position = map_screen.get_hex_center(start)
 	map_screen._gui_input(hover_event)
@@ -70,5 +92,5 @@ func run_test() -> void:
 	assert(map_screen.get_hero_cell() == second_neighbor, "MapScreen must follow later WorldState position changes.")
 	map_screen.free()
 
-	print("PASS: Every map cell is a coordinate+terrain HexDefinition, routes remain valid, and MapScreen exposes interactive debug hex tooltips.")
+	print("PASS: Every map cell has coordinates, terrain, and a non-overlapping seven-step city region; MapScreen exposes all current hex data in its debug tooltip.")
 	quit()

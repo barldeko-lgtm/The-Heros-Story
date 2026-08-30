@@ -168,7 +168,7 @@ Current flow:
 assets/map/prototype_02_hex_layout.png
 → HexMapImageDecoder
 → HexMapDefinition decoded source layout
-→ HexMap builds 300 HexDefinition cells (coordinates + terrain)
+→ HexMap builds 300 HexDefinition cells (coordinates + terrain + region)
 → HexMap runtime route/distance queries
 → WorldState mutable hero position
 → MapScreen drawing / hover inspection
@@ -183,12 +183,13 @@ Contracts:
 - the one ordered road path begins in the Starting City cluster, ends in the Mid-Level City cluster, and has no branches;
 - all non-city/non-road cells are currently plains, forest, or hills; there are no mountains or water;
 - `HexMapDefinition` owns authored source layout and adjacency validation but not mutable world state;
-- each runtime `HexDefinition` currently owns exactly two gameplay fields: logical coordinates and terrain id;
+- each runtime `HexDefinition` currently owns logical coordinates, terrain id, and `region_id`;
 - the PNG's technical `hero_start` marker is used to derive the Starting City center but is normalized to `starting_city` in `HexDefinition.terrain_id`;
-- `HexMap` creates all 300 `HexDefinition` cells and is the runtime query layer for hex lookup, valid neighbors, deterministic shortest adjacent-hex routes, and distance; the fixed world scale is 3 km per traversed hex;
+- `HexMap` creates all 300 `HexDefinition` cells, derives city-region ownership, and is the runtime query layer for hex lookup, valid neighbors, deterministic shortest adjacent-hex routes, and distance; the fixed world scale is 3 km per traversed hex;
+- `starting_region` and `mid_region` each extend at most seven adjacent-hex steps from their city center; if a cell is inside both radii it belongs to the nearer city, while exact equal-distance cells are split by the X midpoint between city centers; on the current authored map this produces 124 Starting Region cells, 124 Mid Region cells, and 52 cells with no region;
 - `WorldState` owns the mutable hero map position and initializes it at the decoded Starting City center;
 - changing `WorldState.hero_position` must validate the destination through `HexMap`; destination choice and tick-by-tick travel do not belong to `WorldState`;
-- `MapScreen` is inspection-only presentation: it reads runtime hex data and the live hero position from Simulation, may expose hovered `HexDefinition` data through UI tooltips, and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
+- `MapScreen` is inspection-only presentation: it reads runtime hex data and the live hero position from Simulation, exposes current coordinates, terrain, and region through the debug hover tooltip, and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
 - quest locations, map-backed quest travel, travel interruption/resumption, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
 

@@ -26,6 +26,11 @@ const TERRAIN_DISPLAY_NAMES: Dictionary = {
 	"mid_city": "Средний город",
 }
 
+const REGION_DISPLAY_NAMES: Dictionary = {
+	"starting_region": "Стартовый регион",
+	"mid_region": "Средний регион",
+}
+
 var simulation
 var hex_map
 var map_definition = MapDefinitionResource
@@ -104,11 +109,18 @@ func get_hex_tooltip_text(hex_definition) -> String:
 	if hex_definition == null:
 		return ""
 	var terrain_name: String = str(TERRAIN_DISPLAY_NAMES.get(hex_definition.terrain_id, hex_definition.terrain_id))
-	return "Координаты: (%d, %d)\nМестность: %s [%s]" % [
+	var region_name: String = "Нет"
+	var region_raw_id: String = "none"
+	if not hex_definition.region_id.is_empty():
+		region_name = str(REGION_DISPLAY_NAMES.get(hex_definition.region_id, hex_definition.region_id))
+		region_raw_id = hex_definition.region_id
+	return "Координаты: (%d, %d)\nМестность: %s [%s]\nРегион: %s [%s]" % [
 		hex_definition.coordinates.x,
 		hex_definition.coordinates.y,
 		terrain_name,
 		hex_definition.terrain_id,
+		region_name,
+		region_raw_id,
 	]
 
 func create_hex_tooltip() -> void:
