@@ -4,8 +4,8 @@
 
 - `project.godot` — Godot project configuration and main scene.
 - `.github/workflows/tests.yml` — GitHub Actions regression-test workflow.
-- `assets/` — supplied visual assets used by the current UI. Hero art lives under `assets/hero/`; item icons and overlays are separated under `assets/items/icons/` and `assets/items/overlays/`.
-- `data/` — concrete game data. The current visual equipment families live under `data/items/visual_families/ironward_vanguard/` and `data/items/visual_families/ironwake_sentinel/`.
+- `assets/` — supplied visual assets used by the current UI. Hero art lives under `assets/hero/`; item icons and overlays are separated under `assets/items/icons/` and `assets/items/overlays/`; the editable exact-color world layout and its Russian palette guide live under `assets/map/`.
+- `data/` — concrete game data. The current visual equipment families live under `data/items/visual_families/ironward_vanguard/` and `data/items/visual_families/ironwake_sentinel/`; the first authored world layout lives at `data/map/prototype_02_map.tres`.
 - `scenes/` — Godot scenes.
 - `scripts/` — runtime/gameplay/UI code.
 - `tests/` — regression tests.
@@ -84,6 +84,20 @@ One duel result.
 ### `scripts/combat/power_calculator.gd`
 Shared complete Prototype 0.2 hero/mob Power calculation. It includes expected physical DPS, the reference Accuracy factor, the 70/10/10/10 incoming-damage mix, reference Dodge, Armor, all three elemental Resistances, and expected Block mitigation. Quest Hard Filter uses the hero's base persistent `CombatStats` view; temporary finite effects are intentionally excluded.
 
+## World map foundation
+
+### `scripts/model/definitions/hex_map_definition.gd`
+Authored map source contract. It owns dimensions, PNG sampling geometry, flat-top odd-column adjacency, decoded terrain lookup, derived city centers/seven-hex clusters, the ordered road path, and structural validation. It references the editable PNG but does not own hero movement, route choice, travel time, events, quests, or world simulation state.
+
+### `scripts/world/hex_map_image_decoder.gd`
+Pure exact-color decoder for the editable hex PNG. It samples one central pixel per logical hex through the imported lossless texture, maps only the approved palette, reports unknown colors with hex coordinates, validates the unique hero-start marker, validates both seven-hex city clusters, and reconstructs one connected non-branching road from Starting City to Mid-Level City.
+
+### `assets/map/prototype_02_hex_layout.png` / `assets/map/README.md`
+Editable 615 × 545 schematic map image and its exact palette/editing contract. Recoloring a hex center with one approved palette color changes the decoded terrain after Godot reimports the PNG. The image must not be resized or blurred.
+
+### `data/map/prototype_02_map.tres`
+References the editable PNG and stores only its 20 × 15 logical dimensions and source sampling geometry. Concrete terrain, city, road, and hero-start markers come from the PNG rather than duplicated coordinate arrays.
+
 ## Quests
 
 ### `scripts/quests/quest_pool.gd`
@@ -141,7 +155,7 @@ Owns divine-command rules and applies them through the existing state owners: li
 Protects energy, recovery, cooldown activation rules, guidance consumption, and resurrection cost.
 
 ### `tests/test_god_abilities_integration.gd`
-Protects Simulation integration for healing, instant resurrection, +3 Attack combat buff through `StatResolver`, unchanged base HeroPower while that temporary effect is active, and one-selection `DivineModifier = +0.20`.
+Protects Simulation integration for healing, instant resurrection, +15% resolved Physical Damage combat buff through `StatResolver`, unchanged base HeroPower while that temporary effect is active, and one-selection `DivineModifier = +0.20`.
 
 ### `tests/test_god_ui.gd`
 Protects god-panel placement, energy display, startup safety, and state-based availability of healing, blessing, and resurrection.
@@ -178,6 +192,9 @@ Dedicated Inventory screen root instantiated by `MainUI`.
 
 ### `scripts/ui/screens/inventory_screen.gd`
 Owns Inventory presentation: the scaled hero portrait and armor overlays, equipment slots, the `6 × 6` retained-item grid, quality outlines, and item tooltips. It reads equipment/inventory state from the supplied `Simulation` but does not grant, equip, replace, or drop items.
+
+### `scenes/ui/screens/map_screen.tscn` / `scripts/ui/screens/map_screen.gd`
+Dedicated read-only Map screen. It renders every cell from the authored map definition, including terrain marks, city clusters, the road, labels, and legend. It owns presentation only and does not move the hero, calculate routes, advance travel, reveal hidden locations, or modify Simulation.
 
 ### `scenes/ui/components/god_panel.tscn` / `scripts/ui/components/god_panel.gd`
 Owns the God panel presentation and button commands: energy, cooldowns, healing, combat blessing, and instant resurrection. It sends approved requests through the supplied `Simulation` and reports hero-display changes back to `MainUI` through a signal.

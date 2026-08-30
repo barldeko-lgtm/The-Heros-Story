@@ -160,6 +160,30 @@ Death-related gameplay reports structured facts through `QuestEvent`:
 
 The diary remains separate and is not implemented as part of the death slice.
 
+## Authored map visual slice
+
+Current read-only flow:
+
+```text
+assets/map/prototype_02_hex_layout.png
+→ HexMapImageDecoder
+→ HexMapDefinition decoded layout
+→ MapScreen drawing
+```
+
+Contracts:
+- the authored map is exactly 20 × 15 flat-top hexes in the current slice;
+- the imported PNG uses lossless compression with no mipmaps, and the decoder samples the exact center pixel of every logical hex;
+- only the approved exact-color palette is accepted; unknown colors report the affected hex coordinate instead of becoming plains;
+- the unique bright-red hero-start marker is the Starting City center and must be surrounded by exactly six Starting City markers;
+- the Mid-Level City occupies one center hex plus its six direct neighbors;
+- the one ordered road path begins in the Starting City cluster, ends in the Mid-Level City cluster, and has no branches;
+- all non-city/non-road cells are currently plains, forest, or hills; there are no mountains or water;
+- `HexMapDefinition` owns authored layout and adjacency validation but not mutable world state;
+- `MapScreen` is read-only presentation and must not choose destinations, move the hero, calculate travel time, or modify Simulation;
+- opening MapScreen changes visibility only; the existing Simulation continues running;
+- hero position, pathfinding, travel, quest locations, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
+
 ## UI boundary
 
 `main_ui.gd` coordinates top-level screens and the remaining main developer panels. It instantiates `InventoryScreen`, `GodPanel`, and `NarrativePanel`, supplies the same live `Simulation` to each, and owns Inventory Back/close navigation.
@@ -188,8 +212,8 @@ resurrection
 ```
 
 - healing cannot be used while dead or at full HP; during active combat it modifies live CombatSession HP rather than stale HeroState HP;
-- combat blessing creates a generic `+3 Attack` active effect; `StatResolver` includes it in effective CombatStats, while base CombatStats/HeroPower remain unchanged;
-- CombatSession receives ready-made effective CombatStats and must not accept a separate flat Attack bonus;
+- combat blessing creates a generic `×1.15 resolved Physical Damage` active effect; `StatResolver` includes it in effective CombatStats, while base CombatStats/HeroPower remain unchanged;
+- CombatSession receives ready-made effective CombatStats and must not accept a separate divine damage bonus;
 - the active blessing consumes one HeroState effect charge after every finished fight and refreshes resolved stats when changed or removed;
 - Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;

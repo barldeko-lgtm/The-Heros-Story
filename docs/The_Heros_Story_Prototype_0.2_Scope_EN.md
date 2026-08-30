@@ -1,7 +1,7 @@
 # The Hero’s Story — Prototype 0.2 Scope
 
-**Status:** working specification for Prototype 0.2  
-**Document version:** 0.1  
+**Status:** final design specification for Prototype 0.2  
+**Document version:** 1.0  
 **Primary goal:** expand the original Proof of Fun into the first small but complete early-game vertical slice of the autonomous hero’s life.
 
 ---
@@ -174,18 +174,23 @@ Working map principles:
 
 - one authored map for Prototype 0.2;
 - no procedural geography generation;
-- each city occupies a known hex;
+- each city occupies one compact seven-hex cluster: one center hex plus its six direct neighbors;
 - ordinary quests, dungeons, and temporary events exist at real map locations / hexes rather than abstract distance-only values;
 - roads connect the two cities and important local routes;
 - all traversable hexes may initially use the same movement cost;
 - terrain-dependent movement speed and complex pathfinding are not required unless they become necessary during implementation;
 - hidden locations may exist without immediately being known to the hero.
 
-Current scale reference:
+Current Prototype 0.2 map scale and ordinary travel cost are:
 
-> **1 hex ≈ 3 km**
+> **1 hex = 3 km**  
+> **1 hex = 1 world tick**
 
-Travel duration is derived from traversed hex steps. The exact number of world ticks per ordinary hex is a balance value to be finalized during implementation; the rule must be shared rather than separately tuned per quest.
+Travel duration is derived from the actual number of traversed hex steps.
+
+Kilometres describe world scale and physical distance. They are **not** used as the time unit for travel calculations.
+
+The same hex/tick rule must be shared by ordinary quest travel, city-to-city travel, event detours, and other normal map movement unless a later explicitly authored mechanic changes movement cost.
 
 The map is an observation and simulation system. The player does **not** click a destination to directly command the hero to walk there.
 
@@ -199,7 +204,7 @@ For Prototype 0.2, the main progression trigger for leaving the current city is:
 
 > **when the current city no longer provides ordinary quests that are meaningfully appropriate for the hero’s current strength and progression, the hero begins looking for new opportunities in another known city / region.**
 
-The exact lower suitability threshold — the point at which a quest becomes too weak or unrewarding for the hero — is not yet fixed and will be defined separately.
+Ordinary quest suitability uses the personality-adjusted MobPower window defined in Section 13.1. When the current city's active offers no longer contain quests inside that window, this contributes directly to the relocation condition described here.
 
 Reaching this condition does not instantly teleport the hero or force a move during another activity. The hero finishes the current activity, reaches a normal decision point, then evaluates travelling to another known city.
 
@@ -304,7 +309,7 @@ There is no fixed level at which this system suddenly switches modes. The same a
 - established traits may redirect one or more adaptive points toward primary attributes that fit the hero's developed character;
 - if trait influences do not clearly determine all three points, any unresolved adaptive points fall back to the default Warrior profile.
 
-The exact mapping from individual personality traits to primary-attribute growth is not yet fixed. It must be defined together with the final Prototype 0.2 trait set. Personality-driven growth must not become a disguised manual talent tree, and one trait should not automatically map to one stat merely for symmetry.
+The Prototype 0.2 trait-to-attribute mapping is fixed in Section 12.2 and is part of this adaptive-growth system. Personality-driven growth must not become a disguised manual talent tree.
 
 ### Deity-Guided Growth
 
@@ -599,6 +604,31 @@ Current working rules:
 - is not tied to either first specialization.
 
 
+
+#### Wisdom Scaling
+
+Power Strike uses the shared working Wisdom scaling model:
+
+> **`EffectiveWIS = max(0, WIS - 5)`**
+
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
+
+The starting 5 WIS therefore provides no free skill-scaling bonus. Only WIS gained above the hero's starting value contributes to Wisdom scaling.
+
+For Power Strike, the current WIS coefficient is:
+
+> **`PowerStrikeWISCoefficient = 2.0`**
+
+The final Power Strike damage multiplier is:
+
+> **`FinalPowerStrikeMultiplier = BaseSkillMultiplier + 2.0 × WisdomFactor`**
+
+`BaseSkillMultiplier` continues to come from Power Strike Skill Level, from **1.50 at Skill Level 1** to **2.00 at Skill Level 10**.
+
+WIS therefore improves Power Strike specifically through the ability multiplier, while STR continues to improve the hero's underlying physical Damage and Critical Damage and consequently strengthens both normal attacks and weapon-based abilities.
+
+The coefficient `2.0` belongs specifically to Power Strike. Other abilities use the same shared `WisdomFactor` but may have different WIS coefficients according to their effect and balance role.
+
 Autonomous baseline:
 
 > **when Power Strike is off cooldown and the Warrior has at least 30 Rage, the hero may use it at the next valid combat opportunity.**
@@ -644,13 +674,31 @@ Battle Guard then multiplies the already-mitigated remaining damage by the multi
 
 Working endpoints are defined in Section 27:
 
-- Skill Level 1 → remaining damage × **0.75**;
-- Skill Level 10 → remaining damage × **0.65**;
+- Skill Level 1 → **25% base damage reduction**;
+- Skill Level 10 → **35% base damage reduction**;
 - intermediate Skill Levels scale evenly between those endpoints.
 
-It does not replace, bypass, or weaken Block, Armor, or elemental Resistances.
+Battle Guard uses the same shared Wisdom model as other Warrior abilities:
 
-The exact WIS scaling, if any, remains to be defined separately.
+> **`EffectiveWIS = max(0, WIS - 5)`**
+
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
+
+Its current WIS coefficient is:
+
+> **`BattleGuardWISCoefficient = 0.15`**
+
+Final damage reduction is:
+
+> **`FinalDamageReduction = BaseDamageReduction + 0.15 × WisdomFactor`**
+
+The resulting remaining-damage multiplier is:
+
+> **`BattleGuardMultiplier = 1 - FinalDamageReduction`**
+
+The starting 5 WIS therefore adds no free bonus. At very high WIS, the Wisdom contribution approaches but does not reach an additional **15 percentage points** of damage reduction.
+
+Battle Guard does not replace, bypass, or weaken Block, Armor, or elemental Resistances. Its reduction is applied after those defenses have resolved.
 
 Autonomous baseline:
 
@@ -841,7 +889,38 @@ The first Protector specialization ability is planned around level 50:
 
 > **Shield Bash**
 
-Detailed ability numbers are defined separately.
+Shield Bash is a shield-based control ability rather than a damage attack.
+
+Current working rules:
+
+- requires the Protector specialization to be active;
+- requires a shield;
+- Rage cost: **25**;
+- cooldown: **60 seconds**;
+- deals **no direct damage**;
+- stuns an eligible ordinary enemy;
+- base stun duration scales with Skill Level from **3.0 seconds at Skill Level 1** to **5.0 seconds at Skill Level 10**;
+- intermediate Skill Levels scale evenly between those endpoints.
+
+Shield Bash uses the shared Wisdom scaling model:
+
+> **`EffectiveWIS = max(0, WIS - 5)`**
+
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
+
+Its current WIS scaling is:
+
+> **`FinalStunDuration = BaseStunDuration + 2.0 × WisdomFactor`**
+
+Therefore WIS can theoretically add up to nearly **+2 seconds** of stun duration at extremely high values, while ordinary investment produces a smaller increase.
+
+Shield Bash is intended to give Protector a clear defensive-control tool and to compete with offensive Rage spending such as Power Strike.
+
+Prototype 0.2 bosses and special enemies do **not** receive automatic stun immunity or reduced stun duration merely because of their enemy category.
+
+Shield Bash therefore applies its normal resolved stun duration to them unless a later explicitly authored encounter mechanic requires otherwise.
+
+Boss difficulty should primarily come from stronger combat stats, dangerous abilities, encounter structure, and their own active tools rather than from silently disabling the hero's control abilities.
 
 ### 11.8. Slayer
 
@@ -857,9 +936,40 @@ Its current identity is:
 
 The first Slayer specialization ability is planned around level 50:
 
-> **Onslaught**
+> **Crippling Blows**
 
-Detailed ability numbers are defined separately.
+Crippling Blows is an offensive control ability built around two fast weapon strikes that weaken the enemy's attack tempo.
+
+Current working rules:
+
+- requires the Slayer specialization to be active;
+- works with legal Slayer weapon setups;
+- Rage cost: **25**;
+- cooldown: **60 seconds**;
+- performs **two weapon strikes**;
+- each strike deals **×0.65** of the resolved ordinary weapon-hit damage;
+- each strike resolves hit / miss and critical chance independently;
+- if at least one of the two strikes hits, the target receives an Attack Speed reduction for **10 seconds**;
+- base Attack Speed reduction scales with Skill Level from **15% at Skill Level 1** to **25% at Skill Level 10**;
+- intermediate Skill Levels scale evenly between those endpoints.
+
+Crippling Blows uses the shared Wisdom scaling model:
+
+> **`EffectiveWIS = max(0, WIS - 5)`**
+
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
+
+Its current WIS scaling is:
+
+> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.10 × WisdomFactor`**
+
+The WIS term is expressed as a fraction, so it can theoretically add up to nearly **10 percentage points** of additional Attack Speed reduction at extremely high WIS values.
+
+Crippling Blows is intended to give Slayer a form of active control without turning the specialization into a defensive tank path: the hero deals modest immediate damage and temporarily reduces the enemy's offensive tempo.
+
+Prototype 0.2 bosses and special enemies do **not** automatically resist or reduce the Attack Speed penalty from Crippling Blows.
+
+The normal resolved Attack Speed reduction and 10-second duration apply to them by default. Boss balance should instead come from stronger stats, dangerous abilities, and encounter design.
 
 ### 11.9. Tuning Status
 
@@ -1076,7 +1186,45 @@ Ordinary quest choice keeps its dedicated two-stage model:
 
 `QuestEvaluator` owns this logic.
 
+#### Hard Filter Power Window
+
+Before `QuestScore` is calculated, an ordinary quest must fall inside the hero's currently acceptable enemy-Power window.
+
+The window compares the quest mob's shared `Power` with the hero's shared `Power`:
+
+| Hero risk profile | Minimum MobPower | Maximum MobPower |
+|---|---:|---:|
+| standard / neither Brave nor Cautious | **55% of HeroPower** | **95% of HeroPower** |
+| **Brave** | **60% of HeroPower** | **100% of HeroPower** |
+| **Cautious** | **50% of HeroPower** | **90% of HeroPower** |
+
+Therefore personality affects quest eligibility **before** normal QuestScore ranking.
+
+A Brave hero stops considering very weak routine quests earlier and is willing to consider an enemy up to equal Power.
+
+A Cautious hero remains willing to perform weaker work for longer but rejects stronger quests earlier.
+
+Quests outside the relevant window are rejected by the Hard Filter and do not participate in `QuestScore`.
+
+#### QuestScore Travel Cost
+
+For valid quests, travel-time estimation must use the **actual number of map hexes on the route**.
+
+With the shared Prototype 0.2 scale:
+
+> **1 hex = 1 world tick = 3 km**
+
+A quest target five hexes away therefore represents:
+
+- **5 hex / 15 km** one-way distance;
+- **5 world ticks** travelling to the target;
+- **5 world ticks** travelling back, before other quest costs are added.
+
+Kilometres are descriptive world distance. They must not be substituted directly into the time-cost calculation.
+
 Personality, reward, travel time, risk, current city context, and divine guidance may modify ordinary quest attractiveness only where explicitly defined by the quest-selection rules.
+
+The exact numerical strength of QuestScore personality modifiers remains a balance/tuning matter to be checked through simulation and developer-log output rather than treated as missing architecture.
 
 This quest-selection model must **not** automatically be reused for dungeons, events, relocation, shopping, or other activity types.
 
@@ -1247,7 +1395,7 @@ Prototype 0.2 must support this temporary unavailability so the board does not i
 
 Therefore the number of currently available offers in a strength band can temporarily fall below two.
 
-The exact restoration / reuse delay for completed quest templates may be tuned separately, but it must be long enough for temporary depletion of a band's suitable quests to be meaningful.
+After an ordinary quest is completed, its template remains unavailable for **150 world ticks counted from quest completion**. When that cooldown expires, the template becomes eligible to return to its normal city / strength-band pool.
 
 ### 14.5. Hero Outgrowing a City's Current Opportunities
 
@@ -1350,10 +1498,24 @@ A temporary event exists in the world before the hero encounters it. It is not c
 Each event has:
 
 - a central hex or placement rule;
-- activation radius, normally 0 or 1 hex;
+- a local activation area;
 - a finite lifetime;
 - importance / urgency where relevant;
 - one or more authored outcomes.
+
+For Prototype 0.2, the normal working target is:
+
+> **2–4 active temporary travel events on the map at the same time**
+
+A typical event should affect approximately:
+
+> **3–5 map hexes**
+
+The exact shape and occupied hex count depend on the authored event and the final map layout. The event area does not need to be a perfect radius around one central hex.
+
+An event exists independently of the hero. The hero may travel through its area and encounter it, may alter route because of world circumstances, or may never enter the affected hexes before the event expires.
+
+Exact event spawn frequency, replacement delay, and lifetime values remain balance/tuning questions to be finalized after the real map and long-run simulation pacing can be observed.
 
 Prototype 0.2 content target:
 
@@ -1392,7 +1554,14 @@ A dungeon is a higher-risk expedition made from a sequence of encounters followe
 
 Working structure:
 
-> **ordinary encounter → potion-based between-fight recovery → ordinary encounter → ... → boss preparation → unique boss → completion reward**
+> **3–5 ordinary combat rooms → potion-based between-fight recovery as needed → boss preparation → boss room → unique boss → completion reward**
+
+For Prototype 0.2:
+
+- each ordinary dungeon contains **3–5 ordinary combat rooms**, followed by a separate **boss room**;
+- each ordinary room represents one main combat encounter, although the authored encounter may contain one enemy or a small group;
+- the room count and encounter sequence belong to the authored dungeon definition and do **not** need to be randomized on every run;
+- exact enemy composition, room-by-room numerical difficulty, and pacing remain dungeon balance/content data.
 
 Dungeon ordinary enemies and boss continue granting normal combat XP.
 
@@ -2691,11 +2860,66 @@ Cooldown, duration, activation threshold, and Rage cost do not improve with Skil
 
 ### 27.3. Specialization Abilities
 
-`Shield Bash` and `Onslaught` are not numerically defined in this section yet.
+#### Shield Bash Skill Levels
 
-Their base effects and Skill Level scaling remain intentionally open until those two specialization abilities are designed.
+Shield Bash is the first Protector specialization ability and is planned around hero level 50 after the specialization is actually obtained.
 
-The Skill Level framework must support them later without requiring a second rank system.
+Its fixed combat rules are:
+
+- requires a shield;
+- costs **25 Rage**;
+- cooldown **60 sec**;
+- deals **no direct damage**;
+- applies a stun to an eligible ordinary enemy.
+
+Skill Level changes the base stun duration.
+
+Working endpoints:
+
+> **Skill Level 1 → 3.0 sec stun**
+
+> **Skill Level 10 → 5.0 sec stun**
+
+Intermediate ranks scale evenly between those endpoints.
+
+Shield Bash then applies the shared Wisdom scaling:
+
+> **`FinalStunDuration = BaseStunDuration + 2.0 × WisdomFactor`**
+
+where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
+
+Prototype 0.2 bosses and special enemies use the same resolved Shield Bash stun duration as ordinary eligible enemies by default. Boss balance is handled through their combat strength, abilities, and encounter design rather than automatic control immunity.
+
+#### Crippling Blows Skill Levels
+
+Crippling Blows is the first Slayer specialization ability and is planned around hero level 50 after the specialization is actually obtained.
+
+Its fixed combat rules are:
+
+- costs **25 Rage**;
+- cooldown **60 sec**;
+- performs **two weapon strikes**;
+- each strike deals **×0.65 ordinary resolved weapon-hit damage**;
+- both strikes resolve hit / miss and critical chance independently;
+- if at least one strike hits, the target receives an Attack Speed reduction for **10 sec**.
+
+Skill Level changes the base Attack Speed reduction.
+
+Working endpoints:
+
+> **Skill Level 1 → 15% Attack Speed reduction**
+
+> **Skill Level 10 → 25% Attack Speed reduction**
+
+Intermediate ranks scale evenly between those endpoints.
+
+Crippling Blows then applies the shared Wisdom scaling:
+
+> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.10 × WisdomFactor`**
+
+where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
+
+Prototype 0.2 bosses and special enemies receive the normal resolved Crippling Blows Attack Speed reduction and duration by default; they do not gain automatic control resistance merely because they are bosses.
 
 ### 27.4. Skill Rank Costs
 
@@ -3351,8 +3575,11 @@ For major decisions, the preferred debug sequence is:
 For example, quest selection should be able to show:
 
 - which active offers were considered;
-- which offers failed a Hard Filter and why;
+- which offers failed a Hard Filter and why, including the active personality-adjusted Power window;
+- quest distance in **hexes and kilometres**;
+- estimated travel / quest time in world ticks;
 - exact evaluator scores / relevant modifiers for valid candidates;
+- a readable score breakdown where useful, such as base attractiveness + personality modifiers + divine modifier;
 - which quest was selected;
 - what the hero did after the selection.
 
@@ -4358,26 +4585,29 @@ Prototype 0.2 should be considered ready for broader Proof-of-Fun evaluation onl
 
 The implementation order may shift when real dependencies require it, but systems should be added as coherent vertical chains rather than as disconnected placeholders.
 
-## 40. Remaining Design Decisions
+After an ordinary quest is completed, its quest template becomes temporarily unavailable for:
 
-Most of the earlier open Prototype 0.2 questions have now been resolved elsewhere in this Scope.
+> **150 world ticks**
 
-This section should contain only decisions that are still genuinely open.
+After those 150 ticks have elapsed, the template becomes eligible to return to its normal city / quest-band pool.
 
-### 40.1. Design Decisions to Resolve Before Their Systems Are Finalized
+This cooldown is counted from quest completion.
 
-The following still require explicit design decisions:
+The purpose is to let a hero meaningfully work through the finite set of ordinary quest templates in a strength band without permanently exhausting that content. A sufficiently fast-progressing hero may naturally move into a higher quest band before older templates return.
 
-- whether **Power Strike** uses WIS scaling and, if so, the exact rule;
-- whether **Battle Guard** uses WIS scaling and, if so, the exact rule;
-- final mechanics, numbers, Skill Level progression, and any WIS scaling for **Shield Bash**;
-- final mechanics, numbers, Skill Level progression, and any WIS scaling for **Onslaught**;
-- exact travel cost in world ticks per map hex;
-- exact temporary-unavailability / restoration delay for a used ordinary quest template;
-- temporary-event appearance frequency and event lifetime rules;
-- any remaining Prototype 0.2 `QuestScore` tuning required by the two-city / rotating-offer model;
-- normal-dungeon encounter count / room structure where not already defined;
-- specialization-dungeon numerical difficulty and encounter tuning.
+---
+
+## 40. Implementation and Balance Tuning
+
+The Prototype 0.2 system architecture and required gameplay behavior are now sufficiently defined for implementation.
+
+### 40.1. Architecture Status
+
+There are currently **no remaining design decisions that should block implementation of Prototype 0.2**.
+
+Questions that emerge while coding should first be treated as implementation or balance problems when they can be resolved without changing system ownership, the autonomous-hero direction, or the gameplay rules defined in this Scope.
+
+If implementation reveals a genuine architectural conflict, this Scope should be updated explicitly rather than silently inventing a competing rule in code.
 
 ### 40.2. Balance Values That Should Be Finalized Through Implementation and Testing
 
@@ -4390,8 +4620,10 @@ They should be tuned after the relevant systems exist and can be tested together
 - potion prices;
 - Gold income and spending balance;
 - XP / level pacing where tuning remains necessary;
+- exact temporary-event spawn frequency, replacement delay, and lifetime after the real map is testable;
+- final numerical tuning of ordinary-quest `QuestScore` personality modifiers after long-run simulation and debug-log inspection;
 - normal-dungeon numerical balance;
-- final specialization-dungeon numerical balance;
+- specialization-dungeon encounter composition and final numerical balance;
 - final relative value of primary and secondary stats;
 - final shared Power calibration after real equipment, Block, Dodge, resistances, abilities, and dungeon encounters are present.
 

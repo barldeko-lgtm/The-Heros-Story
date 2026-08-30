@@ -103,7 +103,7 @@ func refresh() -> void:
 	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
 
 	if combat_buff_fights_remaining > 0:
-		god_status_label.text = "Активно: +3 атаки | Боёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
+		god_status_label.text = "Активно: +15%% физ. урона | Боёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
 	else:
 		god_status_label.text = "Лечение разрешено и во время боя."
 

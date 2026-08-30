@@ -48,7 +48,7 @@ func use_combat_buff(hero_state) -> bool:
 		return false
 	hero_state.active_effects.append({
 		"id": god_state.COMBAT_BUFF_EFFECT_ID,
-		"attack_bonus": god_state.COMBAT_BUFF_ATTACK_BONUS,
+		"physical_damage_multiplier": god_state.COMBAT_BUFF_PHYSICAL_DAMAGE_MULTIPLIER,
 		"fights_remaining": god_state.COMBAT_BUFF_FIGHTS,
 	})
 	return true

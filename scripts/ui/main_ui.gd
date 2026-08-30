@@ -4,6 +4,7 @@ const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.tscn")
+const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
 var simulation_seed: int = int(Time.get_unix_time_from_system())
@@ -18,7 +19,9 @@ var god_panel: PanelContainer
 var narrative_panel: TabContainer
 var main_screen: Control
 var inventory_screen: Control
+var map_screen: Control
 var inventory_button: Button
+var map_button: Button
 var inventory_close_button: Button
 
 func _ready() -> void:
@@ -64,6 +67,10 @@ func create_screen_layers() -> void:
 	inventory_screen.setup(simulation)
 	inventory_screen.visible = false
 	add_child(inventory_screen)
+
+	map_screen = MapScreenScene.instantiate()
+	map_screen.visible = false
+	add_child(map_screen)
 
 func add_to_main_screen(control: Control) -> void:
 	if main_screen != null:
@@ -152,6 +159,10 @@ func create_top_menu() -> void:
 			inventory_button = button
 			inventory_button.tooltip_text = "Открыть инвентарь"
 			inventory_button.pressed.connect(on_inventory_button_pressed)
+		elif button_text == "КАРТА":
+			map_button = button
+			map_button.tooltip_text = "Открыть карту"
+			map_button.pressed.connect(on_map_button_pressed)
 
 func create_inventory_close_button() -> void:
 	inventory_close_button = Button.new()
@@ -168,22 +179,39 @@ func create_inventory_close_button() -> void:
 	inventory_close_button.add_theme_stylebox_override("hover", create_menu_button_style(Color("a83b45"), Color("f0a1a7"), 4))
 	inventory_close_button.add_theme_stylebox_override("pressed", create_menu_button_style(Color("612128"), Color("ffd1d4"), 1))
 	inventory_close_button.add_theme_stylebox_override("focus", create_menu_button_style(Color("a83b45"), Color("ffd1d4"), 3))
-	inventory_close_button.pressed.connect(close_inventory_screen)
+	inventory_close_button.pressed.connect(close_secondary_screen)
 	inventory_close_button.visible = false
 	add_child(inventory_close_button)
 
 func on_inventory_button_pressed() -> void:
 	set_inventory_screen_open(not inventory_screen.visible)
 
+func on_map_button_pressed() -> void:
+	set_map_screen_open(not map_screen.visible)
+
 func close_inventory_screen() -> void:
-	set_inventory_screen_open(false)
+	close_secondary_screen()
+
+func close_secondary_screen() -> void:
+	set_active_screen("main")
 
 func set_inventory_screen_open(is_open: bool) -> void:
-	main_screen.visible = not is_open
-	inventory_screen.visible = is_open
-	inventory_button.text = "НАЗАД" if is_open else "ИНВЕНТАРЬ"
-	inventory_button.tooltip_text = "Вернуться на главный экран" if is_open else "Открыть инвентарь"
-	inventory_close_button.visible = is_open
+	set_active_screen("inventory" if is_open else "main")
+
+func set_map_screen_open(is_open: bool) -> void:
+	set_active_screen("map" if is_open else "main")
+
+func set_active_screen(screen_id: String) -> void:
+	var inventory_is_open: bool = screen_id == "inventory"
+	var map_is_open: bool = screen_id == "map"
+	main_screen.visible = not inventory_is_open and not map_is_open
+	inventory_screen.visible = inventory_is_open
+	map_screen.visible = map_is_open
+	inventory_button.text = "НАЗАД" if inventory_is_open else "ИНВЕНТАРЬ"
+	inventory_button.tooltip_text = "Вернуться на главный экран" if inventory_is_open else "Открыть инвентарь"
+	map_button.text = "НАЗАД" if map_is_open else "КАРТА"
+	map_button.tooltip_text = "Вернуться на главный экран" if map_is_open else "Открыть карту"
+	inventory_close_button.visible = inventory_is_open or map_is_open
 
 func create_speed_controls() -> void:
 	var speed_controls := HBoxContainer.new()
@@ -297,7 +325,7 @@ func update_hero_panel() -> void:
 		bonus_lines.append("Бонус черты: %s" % trait_bonus_text)
 	var buff_fights: int = simulation.get_combat_buff_fights_remaining()
 	if buff_fights > 0:
-		bonus_lines.append("Божественное благословение: +3 Attack (%d боёв)" % buff_fights)
+		bonus_lines.append("Божественное благословение: +15%% физ. урона (%d боёв)" % buff_fights)
 	var bonuses_text: String = ""
 	if not bonus_lines.is_empty():
 		bonuses_text = "\n" + "\n".join(bonus_lines)

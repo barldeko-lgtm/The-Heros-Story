@@ -23,7 +23,7 @@ Read in this order:
 1. `docs/current-state.md`
 2. `docs/project-map.md`
 3. `docs/dependencies.md`
-4. `docs/The_Heros_Story_Prototype_0.2_Scope_v0.1_EN.md`
+4. `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md`
 
 The latest project documents and current repository are the source of truth.
 
@@ -82,38 +82,25 @@ The simulation must remain testable without player-facing UI.
 
 ## Scope discipline
 
-The project is still Prototype 0.
+The project is building Prototype 0.2. Treat `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md` as the primary design authority and `docs/current-state.md` as the record of what is implemented now.
 
-Do not prematurely implement:
+Implement only the current approved Prototype 0.2 slice. Do not use the larger 0.2 target as permission to silently add later stages or adjacent systems.
 
-- full loot/inventory/equipment;
-- market;
-- crafting;
-- world map;
-- multiple cities;
-- factions;
-- reputation;
-- dungeons;
-- raids;
-- parties;
-- NPC heroes;
-- wars;
-- god progression;
-- full biography/world chronicle systems.
+Do not expand Prototype 0.2 into systems explicitly outside its Scope, including additional starting classes, final specialization tiers, factions/reputation/wars, NPC heroes, parties/raids, more than two normal cities, procedural world generation, crafting, repair, equipment set bonuses, Legendary equipment, deity progression, endgame, retirement, or offline progression.
 
-Keep the architecture ready for the later path:
+Preserve the approved path where relevant:
 
 ```text
 loot
-→ QuestLoot
-→ Inventory
+→ QuestLoot / Inventory
+→ Equipment decision
 → Equipment
 → StatResolver
 → CombatStats
 → Combat / Power
 ```
 
-But do not build those systems before the current step requires them.
+Do not pre-create later systems before the current approved stage requires them.
 
 ## Tests
 

@@ -31,6 +31,9 @@ func resolve(hero_state, include_temporary_effects: bool = true, equipment_overr
 	combat_stats.crit_chance = hero_progression.BASE_CRIT_CHANCE + hero_state.dexterity * CRIT_CHANCE_PER_DEXTERITY + equipment.get_crit_chance_bonus()
 	combat_stats.crit_damage = hero_progression.BASE_CRIT_DAMAGE + effective_strength * CRIT_DAMAGE_PER_STRENGTH + equipment.get_crit_damage_bonus()
 	if include_temporary_effects:
+		var physical_damage_multiplier: float = 1.0
 		for effect in hero_state.active_effects:
 			combat_stats.attack += float(effect.get("attack_bonus", 0.0))
+			physical_damage_multiplier *= float(effect.get("physical_damage_multiplier", 1.0))
+		combat_stats.attack *= physical_damage_multiplier
 	return combat_stats

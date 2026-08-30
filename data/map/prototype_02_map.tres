@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="HexMapDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/hex_map_definition.gd" id="1_map_definition"]
+[ext_resource type="Texture2D" path="res://assets/map/prototype_02_hex_layout.png" id="2_layout"]
+
+[resource]
+script = ExtResource("1_map_definition")
+width = 20
+height = 15
+layout_texture = ExtResource("2_layout")
+source_hex_radius = 20.0
+source_origin = Vector2(22, 22)

@@ -4,7 +4,7 @@ This document describes what is **actually implemented now**.
 
 ## Current development focus
 
-The project is aligning the stabilized Prototype 0 foundation with the Prototype 0.2 Scope before new content is added.
+The project is building the first authored Prototype 0.2 world-map slice before existing quest/travel mechanics are migrated onto it.
 
 Implemented:
 - one autonomous hero;
@@ -33,14 +33,16 @@ Implemented:
 - debug log;
 - empty diary shell;
 - rough developer UI;
+- a read-only 20 × 15 exact-color PNG-driven hex Map screen with plains, forest, hills, two seven-hex cities, one unique hero-start marker, and one road connecting only those cities;
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- continue aligning the existing combat-stat and combat foundation with Prototype 0.2 before adding new content.
+- review the first map layout visually, then introduce map/world ownership and migrate existing travel mechanics in separately approved slices.
 
 Still missing from the current build:
 - diary episodes;
 - player-facing quest-guidance selection UI.
+- hero position, routes, map-backed travel time, quest locations, events, and dungeons on the new map.
 
 ## God-system core
 
@@ -49,7 +51,7 @@ Still missing from the current build:
 `Simulation` retains compatible public wrappers for all four approved commands so UI does not depend directly on God-system internals:
 - instant resurrection at `RemainingRespawnTicks × 0.5` energy;
 - divine healing for 10 energy, +50% MaxHP, 30-tick cooldown;
-- combat buff for 10 energy, +3 Attack for the next 5 fights, 120-tick cooldown;
+- combat buff for 10 energy, +15% resolved Physical Damage for the next 5 fights, 120-tick cooldown;
 - quest guidance for 5 energy, +0.20 DivineModifier for one next selection, 360-tick cooldown.
 
 The center-top god panel now displays energy and provides working buttons for healing, combat blessing, and instant resurrection. Healing can modify live CombatSession HP during a fight. Quest guidance remains headless-only until its selection UI is approved.
@@ -135,7 +137,7 @@ Current equipment reference prices are centralized for ilvl 1/10/20. White uses 
 
 The Starting City shop uses two authored stock-band resources: ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard. Each band samples six distinct White slots and two distinct Green slots from the seven current armor/weapon/shield slots, for 16 listings when fully stocked. Concrete stats, affix budgets, rarity behavior, ItemPower, and prices still come from shared item-generation/economy data. Green listings use the normal generated-affix pipeline. The shop uses a deterministic RNG stream derived from the simulation seed so shop rotation remains reproducible without perturbing the existing main simulation RNG sequence. Full stock refresh occurs at world ticks 200, 400, 600, and so on regardless of where the hero is. Before each shopping decision tick, the developer debug log prints one compact assortment summary by rarity and readable slot name without dumping item stats.
 
-The divine `+3 Attack` is displayed separately and does not alter HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
+The divine `+15% resolved Physical Damage` is displayed separately and does not alter base HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
 After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
 
@@ -283,6 +285,8 @@ Current layout:
 - developer speed controls in the bottom-right corner.
 
 `MainUI` now coordinates dedicated `InventoryScreen`, `GodPanel`, and `NarrativePanel` scenes. `GodPanel` owns the current divine controls, while `NarrativePanel` owns the Log/Diary tabs and debug-log autoscroll; all three receive the same live `Simulation` and do not own gameplay rules.
+
+The Map button opens a dedicated read-only `MapScreen`. `data/map/prototype_02_map.tres` owns the 20 × 15 source geometry and references the editable exact-color texture `assets/map/prototype_02_hex_layout.png`. `HexMapImageDecoder` samples the center of all 300 flat-top hexes, rejects unknown colors with coordinates, derives both compact seven-hex city clusters, identifies the unique bright-red hero-start center, and reconstructs the one unbranched road between the cities. `MapScreen` renders the decoded result. The shared top menu and red close button remain available, and opening the map changes only UI visibility while the existing Simulation continues running.
 
 The Inventory button opens the dedicated `InventoryScreen` scene owned by `scripts/ui/screens/inventory_screen.gd`; `MainUI` retains only screen navigation and passes the existing `Simulation` into it. The main developer content is hidden while the shared top menu remains visible; the Inventory button becomes Back, and a separate red close button provides the same return action. The screen displays the hero over a dark `256 × 464` portrait panel. Five armor slots remain in a column on the left. Main-hand and off-hand slots sit below the portrait, with the sword on the left and shield on the right. The right column is jewelry-only in this order: necklace, earrings, ring, ring, belt. All seven current items show their equipped icons, quality outlines, and shared hover tooltip. Helmet, gloves, pants, and boots use the supplied 300 × 300 RGBA PNG icons; chest, sword, and shield keep their current icon assets. All five armor pieces now have aligned `441 × 800` paper-doll overlays, and equipped helmet, chest, gloves, pants, and boots are layered over the base hero portrait. A titled `6 × 6` grid displays up to 36 retained item instances. Better quality replaces the equipped item in the matching slot and moves the old one into inventory; equal or worse rewards enter inventory directly. Adding item 37 drops the oldest retained item. Manual equipping, dragging, selling, and set bonuses are not implemented. This UI-only screen switch does not pause or replace `Simulation`, so world time and autonomous gameplay continue normally.
 

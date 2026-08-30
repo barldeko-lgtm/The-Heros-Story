@@ -32,7 +32,7 @@ func run_test() -> void:
 	assert(god_panel.combat_buff_button.text.contains("Боёв: 5"), "Active buff button must show remaining fights.")
 	assert(god_panel.combat_buff_button.text.contains("КД: 120"), "Active buff button must show cooldown counting from activation.")
 	assert(main_ui.hero_details_label.text.contains("Атака: %.0f" % main_ui.simulation.base_combat_stats.attack), "Hero UI must keep displaying base Attack while buffed.")
-	assert(main_ui.hero_details_label.text.contains("Божественное благословение: +3 Attack (5 боёв)"), "Hero UI must display the temporary +3 Attack separately.")
+	assert(main_ui.hero_details_label.text.contains("Божественное благословение: +15% физ. урона (5 боёв)"), "Hero UI must display the temporary +15% Physical Damage separately.")
 	assert(main_ui.hero_details_label.text.contains("Бонус черты: +10% урона монстрам"), "Hero UI must explain Noble's conditional damage bonus separately.")
 
 	main_ui.simulation.hero_state.current_hp = 1.0
