@@ -12,6 +12,8 @@ const DEXTERITY_PER_LEVEL: int = 1
 const CONSTITUTION_PER_LEVEL: int = 1
 const BASE_EXPERIENCE_TO_NEXT_LEVEL: int = 1000
 const EXPERIENCE_INCREASE_PER_LEVEL: int = 500
+const POWER_STRIKE_UNLOCK_LEVEL: int = 10
+const BATTLE_GUARD_UNLOCK_LEVEL: int = 20
 
 func get_experience_required_for_next_level(current_level: int) -> int:
 	return BASE_EXPERIENCE_TO_NEXT_LEVEL + maxi(0, current_level - 1) * EXPERIENCE_INCREASE_PER_LEVEL
@@ -34,3 +36,7 @@ func apply_level_up(hero_state) -> void:
 	hero_state.strength += STRENGTH_PER_LEVEL
 	hero_state.dexterity += DEXTERITY_PER_LEVEL
 	hero_state.constitution += CONSTITUTION_PER_LEVEL
+	if hero_state.level >= POWER_STRIKE_UNLOCK_LEVEL and hero_state.power_strike_skill_level == 0:
+		hero_state.power_strike_skill_level = 1
+	if hero_state.level >= BATTLE_GUARD_UNLOCK_LEVEL and hero_state.battle_guard_skill_level == 0:
+		hero_state.battle_guard_skill_level = 1

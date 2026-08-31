@@ -199,7 +199,15 @@ func get_active_combat_world_tick() -> int:
 
 func start_combat() -> void:
 	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, quest_runner.quest_definition.mob_definition.category)
-	active_combat_session = combat_simulator.create_session(combat_stats, quest_runner.get_current_mob_stats(), seeded_rng.get_rng(), hero_damage_multiplier)
+	active_combat_session = combat_simulator.create_session(
+		combat_stats,
+		quest_runner.get_current_mob_stats(),
+		seeded_rng.get_rng(),
+		hero_damage_multiplier,
+		hero_state.power_strike_skill_level,
+		hero_state.wisdom,
+		hero_state.battle_guard_skill_level
+	)
 	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
 
 func advance_active_combat(available_seconds: float) -> float:

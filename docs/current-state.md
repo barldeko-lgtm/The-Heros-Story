@@ -14,6 +14,7 @@ Implemented:
 - one shared seeded RNG for current simulation randomness;
 - one shared Power calculation for hero and mobs;
 - live one-on-one combat with timed strikes;
+- fight-local Warrior Rage plus the autonomous Level 10 Power Strike and Level 20 Battle Guard at Skill Level 1;
 - per-mob XP and post-fight recovery;
 - death, 100-tick natural resurrection, and city recovery;
 - thirteen initial-city mob definitions, from Goblin through Forest Troll and Cave Lizard;
@@ -100,7 +101,7 @@ Current primary-attribute contributions are centralized in `StatResolver`:
 - 1 STR = +2 physical Damage and +5 percentage points Critical Damage;
 - 1 DEX = +10 Accuracy, +2 Dodge, and +3 percentage points Critical Chance;
 - 1 CON = +20 MaxHP and +1 Armor;
-- INT and WIS are stored as real primary attributes but currently provide no resolved Warrior combat bonus.
+- INT and WIS are stored as real primary attributes and still provide no generic resolved CombatStats bonus; WIS now scales Power Strike and Battle Guard through their ability-specific formulas.
 
 Until deity-guided attribute direction and personality-directed adaptive growth are implemented, each level currently grants only the agreed non-divine default growth:
 - +2 STR;
@@ -157,6 +158,11 @@ Current behaviour:
 - physical damage uses `100 / (100 + Armor)`;
 - Fire, Cold, and Lightning use the same resistance curve with non-negative Resistance and a 75% reduction cap;
 - current normal attacks are physical; elemental formulas are implemented but no current content deals elemental damage yet;
+- every fight starts at 0 Rage and discards it on completion; successful normal hero hits grant 5 Rage, critical normal hits grant 7 instead, received hits grant 3 even when blocked, avoided hits grant none, and Rage is capped at 100;
+- reaching hero level 10 learns Power Strike at Skill Level 1; when its 10-second cooldown is ready and at least 30 Rage is available, it automatically replaces the next normal attack opportunity, spends 30 Rage, cannot miss, can still crit, and uses the Scope-approved `1.50 + 2.0 × WisdomFactor` damage multiplier;
+- Power Strike actions carry their own structured action id and are named separately in the combat log;
+- reaching hero level 20 learns Battle Guard at Skill Level 1; after an incoming hit first leaves the hero at 75% MaxHP or lower, it activates without retroactively reducing that threshold-crossing hit, lasts 10 seconds, has a 60-second cooldown, costs no Rage, requires no shield, and multiplies subsequent already-mitigated incoming damage by `1 - (0.25 + 0.15 × WisdomFactor)`;
+- Battle Guard activation carries its own structured action id and is named separately in the combat log;
 - all 13 current mob definitions temporarily use Accuracy = 100 and Dodge = 0 until individual combat-stat tuning is approved;
 - each resolved strike enters the debug log immediately while the world clock is frozen.
 
@@ -309,6 +315,8 @@ Current coverage includes:
 - seeded RNG;
 - hero progression;
 - combat timing, crits, and simultaneous death;
+- fight-local Rage, the level-10 Power Strike unlock, autonomous replacement of the next attack, cooldown/cost, guaranteed hit, critical hits, WIS scaling, blocked/avoided incoming-hit Rage rules, cap/reset, and distinct combat narration;
+- the level-20 Battle Guard unlock, post-threshold activation order, 10-second duration, 60-second cooldown, no Rage cost, post-defense mitigation, WIS scaling, locked-state behavior, and distinct activation narration;
 - quest combat/XP/recovery;
 - death and quest cancellation;
 - exact 100-tick natural resurrection;

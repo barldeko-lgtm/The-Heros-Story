@@ -45,7 +45,7 @@ Mutable hero state and centralized loop-state ids, including:
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
-Also owns current `active_effects`, the hero's `Equipment`, and the current 36-item FIFO `Inventory`.
+Also owns current `active_effects`, learned Power Strike and Battle Guard Skill Levels, the hero's `Equipment`, and the current 36-item FIFO `Inventory`.
 
 ### `scripts/hero/equipment.gd`
 Owns equipped `ItemInstance` objects by slot, replaces an item when Simulation approves a better quality, and exposes persistent stat totals.
@@ -57,10 +57,10 @@ Stores up to 36 retained item instances in acquisition order. Adding item 37 rem
 Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible starting traits, Russian display names, QuestScore personality constants, and the Noble/Dishonorable category-damage multiplier.
 
 ### `scripts/hero/hero_progression.gd`
-Owns XP and the current pre-specialization Warrior level growth of +2 STR / +1 DEX / +1 CON. The future deity-guided point is not yet assigned or stored.
+Owns XP, the current pre-specialization Warrior level growth of +2 STR / +1 DEX / +1 CON, and the automatic Skill Level 1 unlocks of Power Strike at Level 10 and Battle Guard at Level 20. The future deity-guided point is not yet assigned or stored.
 
 ### `scripts/hero/stat_resolver.gd`
-Builds stable base stats and effective combat stats from the same sources. It is the centralized conversion path from STR / DEX / CON to current combat-facing values; INT and WIS are stored but currently have no Warrior combat contribution. Persistent equipment contributes to both views; effective stats additionally include generic bonuses from `HeroState.active_effects`. It resolves raw Armor, Accuracy, Dodge, Resistances, and Block values but does not calculate hit or mitigation outcomes.
+Builds stable base stats and effective combat stats from the same sources. It is the centralized conversion path from STR / DEX / CON to current combat-facing values; INT and WIS are stored but currently add no generic CombatStats bonus, while ability-specific WIS scaling is resolved by the owning ability. Persistent equipment contributes to both views; effective stats additionally include generic bonuses from `HeroState.active_effects`. It resolves raw Armor, Accuracy, Dodge, Resistances, and Block values but does not calculate hit or mitigation outcomes.
 
 ## Combat
 
@@ -68,12 +68,12 @@ Builds stable base stats and effective combat stats from the same sources. It is
 Creates one live duel from already resolved hero and mob `CombatStats`.
 
 ### `scripts/combat/combat_session.gd`
-Owns only one fight: internal combat time, HP, attack opportunities, crits, calls to the shared hit/mitigation rules, conditional hero damage multiplier, and victory/defeat.
+Owns only one fight: internal combat time, HP, attack opportunities, crits, calls to the shared hit/mitigation rules, conditional hero damage multiplier, fight-local Rage, autonomous Skill Level 1 Power Strike, and autonomous Skill Level 1 Battle Guard threshold/duration/cooldown/post-defense mitigation/WIS scaling before victory or defeat.
 
 It does not own resurrection, quest cancellation, god ability state, or flat stat-bonus injection.
 
 ### `scripts/combat/combat_action.gd`
-One resolved attack, including hit/miss, critical, Block, damage type, and final damage facts.
+One resolved attack, including its structured action id, hit/miss, critical, Block, damage type, and final damage facts.
 
 ### `scripts/combat/damage_resolver.gd`
 Shared Prototype 0.2 formulas for Accuracy/Dodge, Armor, elemental Resistances, Block chance, expected Block mitigation, and direct-hit mitigation. Both hero and mob combat use the same implementation.

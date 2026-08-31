@@ -50,6 +50,37 @@ It must not:
 
 Death handling begins only after the completed `CombatResult` reaches the quest/simulation layer.
 
+## Warrior Rage and Base Abilities
+
+Current flow:
+
+```text
+HeroProgression reaches Levels 10 / 20
+→ HeroState owns Power Strike / Battle Guard Skill Level 1
+→ Simulation supplies both Skill Levels + current WIS when combat starts
+→ CombatSession owns fight-local Rage and both ability timelines
+→ CombatAction.action_id distinguishes Power Strike and Battle Guard activation
+→ QuestNarrator writes the combat-log wording
+```
+
+Contracts:
+- each new CombatSession starts at 0 Rage; Rage is not stored or carried between fights;
+- a successful normal hero hit grants 5 Rage, or 7 instead when critical;
+- a successful incoming hit grants 3 Rage even when blocked; an avoided hit grants none;
+- Rage cannot exceed 100;
+- reaching Level 10 automatically learns Power Strike at Skill Level 1;
+- when at least 30 Rage is available and its 10-second cooldown is ready, Power Strike replaces the next normal hero attack opportunity rather than adding a separate strike;
+- activation spends 30 Rage and starts cooldown immediately;
+- Power Strike cannot miss, can still critically hit, and does not generate Rage from its own hit;
+- its current Skill Level 1 multiplier is `1.50 + 2.0 × WisdomFactor`, where `WisdomFactor = max(0, WIS - 5) / (max(0, WIS - 5) + 100)`;
+- reaching Level 20 automatically learns Battle Guard at Skill Level 1;
+- Battle Guard costs no Rage and has no shield requirement;
+- when an incoming hit first leaves the hero at or below 75% MaxHP, that hit resolves in full before Battle Guard activates;
+- Battle Guard lasts 10 seconds and starts its 60-second cooldown on activation;
+- while active, Battle Guard applies after Block and Armor / elemental Resistance by multiplying already-mitigated incoming damage by `1 - (0.25 + 0.15 × WisdomFactor)`;
+- Battle Guard cannot activate again while active or before its cooldown is ready;
+- purchased higher Skill Levels and skill UI remain outside this implemented slice.
+
 ## Primary attributes
 
 `HeroState` stores the five Prototype 0.2 primary attributes. `StatResolver` is the only normal conversion path from those attributes to current combat-facing values.
