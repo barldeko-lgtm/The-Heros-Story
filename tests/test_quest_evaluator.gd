@@ -40,7 +40,14 @@ func _init() -> void:
 
 	assert(result["selected_quest"].id == "power_30", "Highest QuestScore must win; filtered huge reward must not participate.")
 
-	print("PASS: QuestEvaluator applies 95% Hard Filter and relative-cost QuestScore.")
+	var map_backed_quest = make_quest("map_backed", 20.0, 100, 99.0, 2)
+	map_backed_quest.assign_map_target(Vector2i(5, 5), "test_map_target", 3)
+	var map_result: Dictionary = evaluator.select_quest([map_backed_quest], 50.0)
+	var map_evaluation: Dictionary = map_result["evaluations"][0]
+	assert(is_equal_approx(map_evaluation["one_way_travel_ticks"], 3.0), "Map-backed QuestScore must use real route steps instead of legacy abstract distance.")
+	assert(is_equal_approx(map_evaluation["estimated_quest_ticks"], 11.0), "Map-backed quest estimate must count three real travel ticks each way.")
+
+	print("PASS: QuestEvaluator applies 95% Hard Filter and uses real route steps for map-backed quest travel cost.")
 	quit()
 
 func make_quest(quest_id: String, target_power: float, reward: int, distance: float, mob_count: int):

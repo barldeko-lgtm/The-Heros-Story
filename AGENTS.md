@@ -20,10 +20,11 @@ Preserve the simulation-first direction and real hero autonomy. Do not turn the 
 
 Read in this order:
 
-1. `docs/current-state.md`
-2. `docs/project-map.md`
-3. `docs/dependencies.md`
-4. `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md`
+1. `docs/Prototype_0.2_Checklist.md` — short working progress map; never overrides the sources of truth below.
+2. `docs/current-state.md`
+3. `docs/project-map.md`
+4. `docs/dependencies.md`
+5. `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md`
 
 The latest project documents and current repository are the source of truth.
 
@@ -117,6 +118,7 @@ Every gameplay/code change needs narrow validation appropriate to the changed be
 
 Use the working docs for their intended purpose:
 
+- `docs/Prototype_0.2_Checklist.md` — short progress checklist; update statuses when implementation truth changes;
 - `docs/current-state.md` — what is implemented now;
 - `docs/project-map.md` — where files and responsibilities live;
 - `docs/dependencies.md` — runtime flows, boundaries, and fragile contracts.

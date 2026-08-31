@@ -88,12 +88,42 @@ func run_test() -> void:
 	assert(quest_texture != null, "Quest map markers must use the supplied quest activity sprite.")
 	assert(quest_texture.resource_path == main_ui.map_screen.map_tile_visuals.QUEST_MAP_PATH, "Quest map visual must use the permanent activity asset path.")
 	assert(quest_texture.get_size() == Vector2(426.0, 400.0), "Quest source sprite must retain its supplied 426 by 400 resolution.")
+	var quest_outline_mask: Texture2D = main_ui.map_screen.get_quest_outline_mask_texture()
+	assert(quest_outline_mask != null and quest_outline_mask.get_size() == quest_texture.get_size(), "Selected quest highlight must have an alpha-mask texture matching the quest sprite.")
+	var source_image: Image = quest_texture.get_image()
+	var mask_image: Image = quest_outline_mask.get_image()
+	var dark_opaque_pixel_found: bool = false
+	for y in range(source_image.get_height()):
+		if dark_opaque_pixel_found:
+			break
+		for x in range(source_image.get_width()):
+			var source_pixel: Color = source_image.get_pixel(x, y)
+			if source_pixel.a > 0.5 and maxf(source_pixel.r, maxf(source_pixel.g, source_pixel.b)) < 0.25:
+				var mask_pixel: Color = mask_image.get_pixel(x, y)
+				assert(mask_pixel.r > 0.99 and mask_pixel.g > 0.99 and mask_pixel.b > 0.99, "Quest outline mask must replace dark source RGB with white so yellow modulation stays truly yellow.")
+				assert(absf(mask_pixel.a - source_pixel.a) < 0.01, "Quest outline mask must preserve the source alpha silhouette.")
+				dark_opaque_pixel_found = true
+				break
+	assert(dark_opaque_pixel_found, "Quest sprite must contain a dark opaque pixel for alpha-mask outline regression coverage.")
 	for offer in marker_offers:
 		assert(offer.has_map_target() and main_ui.map_screen.hex_centers.has(offer.target_hex), "Quest map marker must resolve to the offer's concrete target hex.")
 		var quest_rect: Rect2 = main_ui.map_screen.get_quest_marker_rect(offer)
 		assert(is_equal_approx(quest_rect.size.y, 65.0), "Quest sprite must render 65 pixels tall at base map zoom.")
 		assert(absf(quest_rect.size.x - 69.225) < 0.02, "Quest sprite must preserve its supplied aspect ratio at roughly half-hex size.")
 		assert(quest_rect.get_center().distance_to(main_ui.map_screen.get_hex_center(offer.target_hex)) < 0.01, "Quest sprite must remain centered on its target hex.")
+	var marker_signature_before_selection: String = main_ui.map_screen.get_quest_marker_signature()
+	assert(not marker_signature_before_selection.contains("selected:"), "Quest markers must start without a selected-quest highlight before the hero chooses an offer.")
+	main_ui.simulation.advance_time(10.0)
+	await process_frame
+	var selected_offer = main_ui.simulation.hero_state.active_quest
+	assert(selected_offer != null and selected_offer.has_map_target(), "Autonomous quest selection must produce one map-backed selected offer for highlight validation.")
+	assert(main_ui.map_screen.is_selected_quest_offer(selected_offer), "The hero's active QuestOffer must qualify for the selected-quest map highlight.")
+	assert(main_ui.map_screen.get_quest_marker_signature().contains("selected:%s" % selected_offer.map_activity_id), "Selecting a quest must change the map marker signature so the highlight redraws immediately.")
+	assert(main_ui.map_screen.QUEST_SELECTED_OUTLINE_COLOR.is_equal_approx(Color("ffe45c")), "Selected quest outline must use the bright yellow color.")
+	assert(main_ui.map_screen.QUEST_SELECTED_OUTLINE_MIDDLE_ALPHA > 0.55 and main_ui.map_screen.QUEST_SELECTED_OUTLINE_OUTER_ALPHA > 0.25, "Selected quest outline must be brighter than the item-rarity middle and outer glow bands.")
+	for offer in marker_offers:
+		if offer != selected_offer:
+			assert(not main_ui.map_screen.is_selected_quest_offer(offer), "Unselected quest markers must not receive the selected-quest highlight.")
 	var start_screen_position: Vector2 = main_ui.map_screen.map_to_screen_position(main_ui.map_screen.get_hex_center(map_definition.starting_city_center))
 	var hover_event := InputEventMouseMotion.new()
 	hover_event.position = start_screen_position

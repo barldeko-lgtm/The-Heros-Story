@@ -18,7 +18,16 @@ func _init() -> void:
 	var accepted_target: Vector2i = accepted_offer.target_hex
 	var accepted_activity_id: String = accepted_offer.map_activity_id
 	assert(simulation.world_state.get_activity_id_at_hex(accepted_target) == accepted_activity_id, "Accepted quest target must remain reserved during quest execution.")
-	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center, "Old abstract quest travel must not move the map hero yet.")
+	var city_center: Vector2i = simulation.hex_map.definition.starting_city_center
+	var outward_route: Array[Vector2i] = simulation.hex_map.find_path(city_center, accepted_target)
+	assert(accepted_offer.map_distance_steps == outward_route.size() - 1, "QuestOffer map distance must equal the real route length from its city center.")
+	assert(simulation.quest_runner.travel_ticks_remaining == accepted_offer.map_distance_steps, "Selected quest travel ticks must come from the real map route length.")
+	assert(simulation.world_state.hero_position == city_center, "Selecting a quest must not move the hero before the first travel world tick.")
+	for route_index in range(1, outward_route.size()):
+		simulation.advance_time(10.0)
+		assert(simulation.world_state.hero_position == outward_route[route_index], "Each outward travel tick must move the hero to the next real route hex.")
+	assert(simulation.hero_state.loop_state == HeroState.DOING_QUEST, "Reaching the real quest target must start quest execution.")
+	assert(simulation.world_state.hero_position == accepted_target, "Hero must physically stand on the quest target while performing it.")
 
 	var untouched_offers: Array = initial_offers.duplicate()
 	simulation.set_time_scale(100.0)
@@ -27,11 +36,21 @@ func _init() -> void:
 		simulation.advance_time(0.01)
 		guard += 1
 	assert(guard < 2000, "The selected safe quest must finish its objective during the test.")
-	assert(not accepted_offer.has_map_target(), "Finishing the quest objective must remove its marker before the old abstract return trip starts.")
+	assert(not accepted_offer.has_map_target(), "Finishing the quest objective must remove its marker before the return trip starts.")
 	assert(simulation.world_state.get_activity_id_at_hex(accepted_target) != accepted_activity_id, "Finishing the quest objective must free its target hex before turn-in.")
+	assert(simulation.world_state.hero_position == accepted_target, "Completing the objective must begin the return route from the real quest target.")
+
+	simulation.set_time_scale(1.0)
+	var return_route: Array[Vector2i] = simulation.hex_map.find_path(accepted_target, city_center)
+	assert(simulation.quest_runner.travel_ticks_remaining == return_route.size() - 1, "Return travel ticks must equal the real route length back to the city center.")
+	for route_index in range(1, return_route.size()):
+		simulation.advance_time(10.0)
+		assert(simulation.world_state.hero_position == return_route[route_index], "Each return travel tick must move the hero to the next real route hex.")
+	assert(simulation.hero_state.loop_state == HeroState.TURNING_IN_QUEST, "Arriving at the city center must enter quest turn-in.")
+	assert(simulation.world_state.hero_position == city_center, "Hero must physically return to the city center before turn-in.")
 
 	while simulation.hero_state.gold == 0 and guard < 4000:
-		simulation.advance_time(0.01)
+		simulation.advance_time(10.0)
 		guard += 1
 	assert(guard < 4000, "The selected safe quest must be turned in during the test.")
 	var refreshed_offers: Array = simulation.quest_pool.get_available_quests()
@@ -44,7 +63,7 @@ func _init() -> void:
 	assert(replacement_offer.has_map_target(), "The replacement board offer must immediately receive a new reserved map target.")
 	assert(replacement_offer.map_activity_id != accepted_activity_id, "The replacement board offer must own a fresh map activity reservation.")
 	assert(simulation.world_state.get_activity_id_at_hex(replacement_offer.target_hex) == replacement_offer.map_activity_id, "The replacement quest marker must correspond to its own live reservation.")
-	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center, "Completing the old abstract quest loop must still leave the map hero in Starting City.")
+	assert(simulation.world_state.hero_position == city_center, "Completing the map-backed quest loop must leave the hero in Starting City.")
 	for index in refreshed_offers.size():
 		if index != accepted_index:
 			assert(refreshed_offers[index] == untouched_offers[index], "Unaccepted tavern offers must stay unchanged after another quest is turned in.")

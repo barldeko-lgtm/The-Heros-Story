@@ -15,6 +15,13 @@ const HEX_OUTLINE_WIDTH: float = 1.0
 const HERO_MAP_DRAW_HEIGHT: float = 120.0
 const HERO_MAP_DRAW_OFFSET: Vector2 = Vector2(0.0, -5.0)
 const QUEST_MAP_DRAW_HEIGHT: float = 65.0
+const QUEST_SELECTED_OUTLINE_COLOR: Color = Color("ffe45c")
+const QUEST_SELECTED_OUTLINE_NEAR_OFFSET: float = 2.0
+const QUEST_SELECTED_OUTLINE_MIDDLE_OFFSET: float = 4.0
+const QUEST_SELECTED_OUTLINE_OUTER_OFFSET: float = 6.0
+const QUEST_SELECTED_OUTLINE_NEAR_ALPHA: float = 1.0
+const QUEST_SELECTED_OUTLINE_MIDDLE_ALPHA: float = 0.75
+const QUEST_SELECTED_OUTLINE_OUTER_ALPHA: float = 0.45
 const QUEST_MARKER_RADIUS: float = 13.0
 const QUEST_MARKER_INNER_RADIUS: float = 10.0
 const QUEST_MARKER_OUTER_COLOR: Color = Color("2d3138")
@@ -128,8 +135,15 @@ func get_quest_marker_signature() -> String:
 	var parts := PackedStringArray()
 	for offer in get_quest_marker_offers():
 		parts.append("%s:%d:%d" % [offer.map_activity_id, offer.target_hex.x, offer.target_hex.y])
+	if simulation != null and simulation.hero_state != null:
+		var active_quest = simulation.hero_state.active_quest
+		if active_quest != null and active_quest.has_method("has_map_target") and active_quest.has_map_target():
+			parts.append("selected:%s" % active_quest.map_activity_id)
 	parts.sort()
 	return "|".join(parts)
+
+func is_selected_quest_offer(offer) -> bool:
+	return simulation != null and simulation.hero_state != null and simulation.hero_state.active_quest == offer
 
 func build_draw_cache() -> void:
 	hex_centers.clear()
@@ -405,6 +419,9 @@ func get_hero_visual_texture() -> Texture2D:
 func get_quest_visual_texture() -> Texture2D:
 	return map_tile_visuals.get_quest_map_texture()
 
+func get_quest_outline_mask_texture() -> Texture2D:
+	return map_tile_visuals.get_quest_outline_mask_texture()
+
 func get_hero_visual_rect() -> Rect2:
 	var hero_texture: Texture2D = get_hero_visual_texture()
 	var hero_cell: Vector2i = get_hero_cell()
@@ -430,14 +447,34 @@ func get_quest_marker_rect(offer) -> Rect2:
 
 func draw_quest_markers() -> void:
 	var quest_texture: Texture2D = get_quest_visual_texture()
+	var quest_outline_mask: Texture2D = get_quest_outline_mask_texture()
 	for offer in get_quest_marker_offers():
 		if quest_texture != null:
-			draw_texture_rect(quest_texture, get_quest_marker_rect(offer), false)
+			var marker_rect: Rect2 = get_quest_marker_rect(offer)
+			if is_selected_quest_offer(offer) and quest_outline_mask != null:
+				draw_selected_quest_outline(quest_outline_mask, marker_rect)
+			draw_texture_rect(quest_texture, marker_rect, false)
 			continue
 		var center: Vector2 = hex_centers[offer.target_hex]
+		if is_selected_quest_offer(offer):
+			draw_circle(center, QUEST_MARKER_RADIUS + 5.0, Color(QUEST_SELECTED_OUTLINE_COLOR, 0.75))
 		draw_circle(center, QUEST_MARKER_RADIUS, QUEST_MARKER_OUTER_COLOR)
 		draw_circle(center, QUEST_MARKER_INNER_RADIUS, QUEST_MARKER_INNER_COLOR)
 		draw_string(ThemeDB.fallback_font, center + Vector2(-7.0, 7.0), "!", HORIZONTAL_ALIGNMENT_CENTER, 14.0, 18, QUEST_MARKER_TEXT_COLOR)
+
+func draw_selected_quest_outline(outline_mask_texture: Texture2D, marker_rect: Rect2) -> void:
+	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_OUTER_OFFSET, QUEST_SELECTED_OUTLINE_OUTER_ALPHA)
+	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_MIDDLE_OFFSET, QUEST_SELECTED_OUTLINE_MIDDLE_ALPHA)
+	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_NEAR_OFFSET, QUEST_SELECTED_OUTLINE_NEAR_ALPHA)
+
+func draw_quest_outline_layer(outline_mask_texture: Texture2D, marker_rect: Rect2, offset_distance: float, alpha: float) -> void:
+	var layer_color := Color(QUEST_SELECTED_OUTLINE_COLOR, alpha)
+	for x in [-1, 0, 1]:
+		for y in [-1, 0, 1]:
+			if x == 0 and y == 0:
+				continue
+			var offset := Vector2(float(x), float(y)) * offset_distance
+			draw_texture_rect(outline_mask_texture, Rect2(marker_rect.position + offset, marker_rect.size), false, layer_color)
 
 func draw_hero_marker() -> void:
 	var hero_cell: Vector2i = get_hero_cell()

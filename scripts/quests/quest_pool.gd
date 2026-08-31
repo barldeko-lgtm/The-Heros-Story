@@ -205,8 +205,10 @@ func reserve_offer_target(offer, target_hex: Vector2i) -> bool:
 	var footprint: Array[Vector2i] = [target_hex]
 	if not placement_world_state.reserve_activity(activity_id, footprint):
 		return false
+	var distance_steps: int = placement_hex_map.get_distance_steps(placement_distance_origin, target_hex)
+	assert(distance_steps >= 0, "Quest target must have a valid route from its city center.")
 	next_map_activity_sequence += 1
-	offer.assign_map_target(target_hex, activity_id)
+	offer.assign_map_target(target_hex, activity_id, distance_steps)
 	return true
 
 func release_offer_map_target(offer) -> bool:

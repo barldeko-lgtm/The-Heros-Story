@@ -6,6 +6,7 @@ const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repository.gd")
 const HexMapScript = preload("res://scripts/world/hex_map.gd")
 const WorldStateScript = preload("res://scripts/world/world_state.gd")
+const TravelSystemScript = preload("res://scripts/world/travel_system.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
@@ -20,6 +21,7 @@ const DiaryScript = preload("res://scripts/narrative/diary.gd")
 const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
+const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
 const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
 const EquipmentRewardSystemScript = preload("res://scripts/loot/equipment_reward_system.gd")
@@ -45,6 +47,7 @@ var simulation_seed: int = DEFAULT_SIMULATION_SEED
 var seeded_rng
 var hex_map
 var world_state
+var travel_system
 var hero_state
 var base_combat_stats
 var combat_stats
@@ -77,6 +80,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	seeded_rng = SeededRngScript.new(simulation_seed)
 	hex_map = HexMapScript.new(DefaultMapDefinition)
 	world_state = WorldStateScript.new(hex_map)
+	travel_system = TravelSystemScript.new(hex_map, world_state)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
 	equipment_reward_system = EquipmentRewardSystemScript.new(loot_generator, item_generator, equipment_evaluator)
@@ -92,7 +96,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	else:
 		var fixed_quest_pool = QuestPoolScript.new([initial_quest_definition], seeded_rng.get_rng())
 		runner_initial_quest = fixed_quest_pool.create_offer(initial_quest_definition)
-	quest_runner = QuestRunnerScript.new(runner_initial_quest)
+	quest_runner = QuestRunnerScript.new(runner_initial_quest, travel_system, hex_map.definition.starting_city_center)
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
 	world_clock.tick_completed.connect(on_world_tick_completed)
@@ -234,6 +238,8 @@ func advance_active_combat(available_seconds: float) -> float:
 			resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
 		var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 		if event != null:
+			if event.event_type == QuestEventScript.HERO_DIED:
+				assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead hero must return to the current city map position for resurrection.")
 			refresh_finished_quest_offer_if_needed(event)
 			debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
 			if hero_state.level != previous_level:

@@ -8,7 +8,7 @@ func describe(event) -> String:
 		QuestEventScript.HERO_SELECTED_QUEST:
 			return "%s выбрал квест «%s»." % [event.hero_name, event.quest_definition.display_name]
 		QuestEventScript.HERO_TRAVELLING_TO_QUEST:
-			return "%s идёт к цели. Осталось: %d км." % [event.hero_name, event.distance_remaining]
+			return "%s идёт к цели. Осталось: %d гекс." % [event.hero_name, event.distance_remaining]
 		QuestEventScript.HERO_ARRIVED_AT_QUEST:
 			return "%s прибыл к цели." % event.hero_name
 		QuestEventScript.HERO_WON_FIGHT:
@@ -16,7 +16,7 @@ func describe(event) -> String:
 		QuestEventScript.HERO_RECOVERED_AFTER_FIGHT:
 			return describe_recovery(event)
 		QuestEventScript.HERO_RETURNING_TO_CITY:
-			return "%s возвращается в город. Осталось: %d км." % [event.hero_name, event.distance_remaining]
+			return "%s возвращается в город. Осталось: %d гекс." % [event.hero_name, event.distance_remaining]
 		QuestEventScript.HERO_RETURNED_TO_CITY:
 			return "%s вернулся в город." % event.hero_name
 		QuestEventScript.HERO_TURNED_IN_QUEST:

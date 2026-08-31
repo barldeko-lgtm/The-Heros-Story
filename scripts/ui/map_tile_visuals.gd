@@ -25,6 +25,7 @@ var terrain_variants: Dictionary = {
 }
 var hero_map_texture: Texture2D
 var quest_map_texture: Texture2D
+var quest_outline_mask_texture: Texture2D
 
 func _init() -> void:
 	for terrain_id in terrain_variants:
@@ -37,6 +38,7 @@ func _init() -> void:
 	assert(TOWN_01.get_size() == Vector2(TOWN_SIZE), "Town visual must remain exactly 418 by 440 pixels.")
 	hero_map_texture = load_optional_texture(HERO_MAP_PATH)
 	quest_map_texture = load_optional_texture(QUEST_MAP_PATH)
+	quest_outline_mask_texture = create_alpha_mask_texture(quest_map_texture)
 
 func get_variant_count(terrain_id: String) -> int:
 	var visual_terrain_id: String = normalize_visual_terrain_id(terrain_id)
@@ -61,6 +63,23 @@ func get_hero_map_texture() -> Texture2D:
 
 func get_quest_map_texture() -> Texture2D:
 	return quest_map_texture
+
+func get_quest_outline_mask_texture() -> Texture2D:
+	return quest_outline_mask_texture
+
+func create_alpha_mask_texture(source_texture: Texture2D) -> Texture2D:
+	if source_texture == null:
+		return null
+	var source_image: Image = source_texture.get_image()
+	if source_image == null or source_image.is_empty():
+		return null
+	source_image.convert(Image.FORMAT_RGBA8)
+	var mask_image := Image.create(source_image.get_width(), source_image.get_height(), false, Image.FORMAT_RGBA8)
+	for y in range(source_image.get_height()):
+		for x in range(source_image.get_width()):
+			var source_alpha: float = source_image.get_pixel(x, y).a
+			mask_image.set_pixel(x, y, Color(1.0, 1.0, 1.0, source_alpha))
+	return ImageTexture.create_from_image(mask_image)
 
 func load_optional_texture(resource_path: String) -> Texture2D:
 	if not ResourceLoader.exists(resource_path):

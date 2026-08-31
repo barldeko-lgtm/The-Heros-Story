@@ -32,6 +32,7 @@ func run_test() -> void:
 
 		var chosen_hex = hex_map.get_hex(offer.target_hex)
 		var chosen_distance: int = hex_map.get_distance_steps(start, offer.target_hex)
+		assert(offer.map_distance_steps == chosen_distance, "QuestOffer must store the real route length to its concrete target: %s" % offer.id)
 		assert(chosen_hex != null and chosen_hex.region_id == region_id, "Quest target must stay inside Starting Region: %s" % offer.id)
 		assert(chosen_distance >= quest_template.placement_distance_hex_min and chosen_distance <= quest_template.placement_distance_hex_max, "Quest target must obey its authored hex-distance range: %s" % offer.id)
 		if not quest_template.placement_allowed_terrain_ids.is_empty():

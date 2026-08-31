@@ -28,6 +28,7 @@ func _init() -> void:
 	assert(simulation.quest_pool.get_available_quests()[cancelled_index] == cancelled_offer, "The cancelled offer must remain in its tavern slot until city recovery finishes.")
 	assert(not cancelled_offer.has_map_target(), "A cancelled quest must disappear from the map immediately on hero death.")
 	assert(simulation.world_state.get_activity_id_at_hex(cancelled_target) != cancelled_activity_id, "Cancelling a quest must immediately free its target hex.")
+	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center, "A hero killed at a quest location must return to the city map position for the resurrection timer.")
 
 	# 100 dead ticks (1000 simulated seconds) plus five 20%-HP recovery ticks
 	# (50 simulated seconds) return the starting Warrior to quest choice exactly.

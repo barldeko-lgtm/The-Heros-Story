@@ -56,10 +56,11 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			relative_recovery_cost = mob_power / weakest_allowed_mob_power
 
 		var estimated_cost_per_mob: float = FIGHT_TICKS_PER_MOB + relative_recovery_cost
+		var one_way_travel_ticks: float = get_one_way_travel_ticks(quest_definition)
 		var estimated_quest_ticks: float = (
-			quest_definition.distance_km
+			one_way_travel_ticks
 			+ float(quest_definition.mob_count) * estimated_cost_per_mob
-			+ quest_definition.distance_km
+			+ one_way_travel_ticks
 			+ TURN_IN_TICKS
 		)
 
@@ -102,6 +103,7 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			"mob_power": mob_power,
 			"relative_recovery_cost": relative_recovery_cost,
 			"estimated_cost_per_mob": estimated_cost_per_mob,
+			"one_way_travel_ticks": one_way_travel_ticks,
 			"estimated_quest_ticks": estimated_quest_ticks,
 			"base_attractiveness": base_attractiveness,
 			"courage_modifier": courage_modifier,
@@ -126,3 +128,8 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 		"weakest_allowed_mob_power": weakest_allowed_mob_power,
 		"evaluations": evaluations,
 	}
+
+func get_one_way_travel_ticks(quest_offer) -> float:
+	if quest_offer != null and quest_offer.has_method("has_map_target") and quest_offer.has_map_target() and quest_offer.map_distance_steps >= 0:
+		return float(quest_offer.map_distance_steps)
+	return maxf(0.0, quest_offer.distance_km)
