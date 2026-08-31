@@ -34,6 +34,7 @@ const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
+const QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 200003
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
@@ -86,6 +87,8 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	var runner_initial_quest
 	if autonomous_quest_choice:
 		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())
+		var quest_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + QUEST_PLACEMENT_RNG_SEED_OFFSET).get_rng()
+		assert(quest_pool.configure_map_placement(hex_map, world_state, hex_map.STARTING_REGION_ID, hex_map.definition.starting_city_center, quest_placement_rng), "Starting City quest board must fit on valid unique map hexes.")
 	else:
 		var fixed_quest_pool = QuestPoolScript.new([initial_quest_definition], seeded_rng.get_rng())
 		runner_initial_quest = fixed_quest_pool.create_offer(initial_quest_definition)

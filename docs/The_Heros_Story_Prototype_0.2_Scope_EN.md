@@ -179,7 +179,10 @@ Working map principles:
 - roads connect the two cities and important local routes;
 - all traversable hexes may initially use the same movement cost;
 - terrain-dependent movement speed and complex pathfinding are not required unless they become necessary during implementation;
-- hidden locations may exist without immediately being known to the hero.
+- hidden locations may exist without immediately being known to the hero;
+- one map hex may be reserved by at most one active world activity at a time;
+- activity placement is constrained to its owning region and may additionally require an inclusive distance range from that region's city center plus allowed terrain ids and allowed/forbidden semantic hex tags;
+- multi-hex activities must reserve their full footprint atomically, and every reserved hex must remain inside the owning region and be free when placement occurs.
 
 Current Prototype 0.2 map scale and ordinary travel cost are:
 
@@ -1449,6 +1452,8 @@ The hero does not globally compare routine quest offers from every city in the w
 
 A quest offer may place its objective on one or more real hexes associated with that city's local region.
 
+Ordinary quest templates may constrain placement by an inclusive hex-step distance band from the local city center, allowed center terrain ids, allowed center semantic tags, and forbidden center semantic tags. These are authored template constraints; the concrete target hex belongs to the runtime `QuestOffer`. Unless an explicitly authored quest says otherwise, current ordinary quests occupy one target hex.
+
 Quest travel therefore uses the actual map and travel system rather than abstract instant mission entry.
 
 ### 14.8. Quest Selection
@@ -1507,11 +1512,11 @@ For Prototype 0.2, the normal working target is:
 
 > **2–4 active temporary travel events on the map at the same time**
 
-A typical event should affect approximately:
+Temporary events use a placement radius measured in hex steps. The current normal event footprint is:
 
-> **3–5 map hexes**
+> **radius 1 = central hex + six direct neighbors = 7 reserved hexes**
 
-The exact shape and occupied hex count depend on the authored event and the final map layout. The event area does not need to be a perfect radius around one central hex.
+Radius 0 means only the central hex. A specific authored event may later use another explicitly approved footprint, but radius 1 is the ordinary Prototype 0.2 default. Placement tags apply to the central hex; the surrounding footprint does not need to share those tags, but every reserved hex must be valid, free, and remain inside the event's region.
 
 An event exists independently of the hero. The hero may travel through its area and encounter it, may alter route because of world circumstances, or may never enter the affected hexes before the event expires.
 

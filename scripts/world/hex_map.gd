@@ -99,6 +99,27 @@ func get_neighbors(cell: Vector2i) -> Array[Vector2i]:
 			result.append(neighbor)
 	return result
 
+func get_cells_within_radius(center: Vector2i, radius: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if radius < 0 or not is_valid_cell(center):
+		return result
+	var distances: Dictionary = {center: 0}
+	var frontier: Array[Vector2i] = [center]
+	var frontier_index: int = 0
+	while frontier_index < frontier.size():
+		var current: Vector2i = frontier[frontier_index]
+		frontier_index += 1
+		result.append(current)
+		var current_distance: int = int(distances[current])
+		if current_distance >= radius:
+			continue
+		for neighbor in get_neighbors(current):
+			if distances.has(neighbor):
+				continue
+			distances[neighbor] = current_distance + 1
+			frontier.append(neighbor)
+	return result
+
 func find_path(start: Vector2i, destination: Vector2i) -> Array[Vector2i]:
 	var empty_path: Array[Vector2i] = []
 	if not is_valid_cell(start) or not is_valid_cell(destination):

@@ -14,6 +14,12 @@ const HEX_OUTLINE_COLOR: Color = Color.BLACK
 const HEX_OUTLINE_WIDTH: float = 1.0
 const HERO_MAP_DRAW_HEIGHT: float = 120.0
 const HERO_MAP_DRAW_OFFSET: Vector2 = Vector2(0.0, -5.0)
+const QUEST_MAP_DRAW_HEIGHT: float = 65.0
+const QUEST_MARKER_RADIUS: float = 13.0
+const QUEST_MARKER_INNER_RADIUS: float = 10.0
+const QUEST_MARKER_OUTER_COLOR: Color = Color("2d3138")
+const QUEST_MARKER_INNER_COLOR: Color = Color("f0c94b")
+const QUEST_MARKER_TEXT_COLOR: Color = Color("20242a")
 const MAP_ORIGIN: Vector2 = Vector2.ZERO
 const MIN_MAP_ZOOM: float = 0.6
 const MAX_MAP_ZOOM: float = 2.0
@@ -57,6 +63,7 @@ var map_tile_visuals
 var hex_centers: Dictionary = {}
 var terrain_counts: Dictionary = {}
 var last_hero_position: Vector2i = Vector2i(-1, -1)
+var last_quest_marker_signature: String = ""
 var hex_tooltip_panel: PanelContainer
 var hex_tooltip_label: Label
 var map_zoom: float = 1.0
@@ -82,21 +89,47 @@ func _ready() -> void:
 	create_hex_tooltip()
 	mouse_exited.connect(hide_hex_tooltip)
 	last_hero_position = get_hero_cell()
+	last_quest_marker_signature = get_quest_marker_signature()
 	queue_redraw()
 
 func _process(_delta: float) -> void:
 	if simulation == null or simulation.world_state == null:
 		return
+	var redraw_needed: bool = false
 	var current_hero_position: Vector2i = get_hero_cell()
-	if current_hero_position == last_hero_position:
-		return
-	last_hero_position = current_hero_position
-	queue_redraw()
+	if current_hero_position != last_hero_position:
+		last_hero_position = current_hero_position
+		redraw_needed = true
+	var current_quest_marker_signature: String = get_quest_marker_signature()
+	if current_quest_marker_signature != last_quest_marker_signature:
+		last_quest_marker_signature = current_quest_marker_signature
+		redraw_needed = true
+	if redraw_needed:
+		queue_redraw()
 
 func get_hero_cell() -> Vector2i:
 	if simulation != null and simulation.world_state != null:
 		return simulation.world_state.hero_position
 	return map_definition.starting_city_center
+
+func get_quest_marker_offers() -> Array:
+	var result: Array = []
+	if simulation == null or simulation.quest_pool == null:
+		return result
+	for offer in simulation.quest_pool.get_available_quests():
+		if offer == null or not offer.has_method("has_map_target") or not offer.has_map_target():
+			continue
+		if not hex_centers.has(offer.target_hex):
+			continue
+		result.append(offer)
+	return result
+
+func get_quest_marker_signature() -> String:
+	var parts := PackedStringArray()
+	for offer in get_quest_marker_offers():
+		parts.append("%s:%d:%d" % [offer.map_activity_id, offer.target_hex.x, offer.target_hex.y])
+	parts.sort()
+	return "|".join(parts)
 
 func build_draw_cache() -> void:
 	hex_centers.clear()
@@ -312,6 +345,7 @@ func _draw() -> void:
 	draw_road()
 	draw_city_overlay(map_definition.starting_city_center)
 	draw_city_overlay(map_definition.mid_city_center)
+	draw_quest_markers()
 	draw_hero_marker()
 	draw_city_label(map_definition.starting_city_center, "СТАРТОВЫЙ ГОРОД", Color("3d2e22"), Vector2(-72.0, 68.0))
 	draw_city_label(map_definition.mid_city_center, "СРЕДНИЙ ГОРОД", Color("302a40"), Vector2(-65.0, -58.0))
@@ -368,6 +402,9 @@ func draw_road() -> void:
 func get_hero_visual_texture() -> Texture2D:
 	return map_tile_visuals.get_hero_map_texture()
 
+func get_quest_visual_texture() -> Texture2D:
+	return map_tile_visuals.get_quest_map_texture()
+
 func get_hero_visual_rect() -> Rect2:
 	var hero_texture: Texture2D = get_hero_visual_texture()
 	var hero_cell: Vector2i = get_hero_cell()
@@ -379,6 +416,28 @@ func get_hero_visual_rect() -> Rect2:
 	var draw_scale: float = HERO_MAP_DRAW_HEIGHT / source_size.y
 	var draw_size: Vector2 = source_size * draw_scale
 	return Rect2(hex_centers[hero_cell] + HERO_MAP_DRAW_OFFSET - draw_size * 0.5, draw_size)
+
+func get_quest_marker_rect(offer) -> Rect2:
+	var quest_texture: Texture2D = get_quest_visual_texture()
+	if quest_texture == null or offer == null or not offer.has_method("has_map_target") or not offer.has_map_target() or not hex_centers.has(offer.target_hex):
+		return Rect2()
+	var source_size: Vector2 = quest_texture.get_size()
+	if source_size.y <= 0.0:
+		return Rect2()
+	var draw_scale: float = QUEST_MAP_DRAW_HEIGHT / source_size.y
+	var draw_size: Vector2 = source_size * draw_scale
+	return Rect2(hex_centers[offer.target_hex] - draw_size * 0.5, draw_size)
+
+func draw_quest_markers() -> void:
+	var quest_texture: Texture2D = get_quest_visual_texture()
+	for offer in get_quest_marker_offers():
+		if quest_texture != null:
+			draw_texture_rect(quest_texture, get_quest_marker_rect(offer), false)
+			continue
+		var center: Vector2 = hex_centers[offer.target_hex]
+		draw_circle(center, QUEST_MARKER_RADIUS, QUEST_MARKER_OUTER_COLOR)
+		draw_circle(center, QUEST_MARKER_INNER_RADIUS, QUEST_MARKER_INNER_COLOR)
+		draw_string(ThemeDB.fallback_font, center + Vector2(-7.0, 7.0), "!", HORIZONTAL_ALIGNMENT_CENTER, 14.0, 18, QUEST_MARKER_TEXT_COLOR)
 
 func draw_hero_marker() -> void:
 	var hero_cell: Vector2i = get_hero_cell()

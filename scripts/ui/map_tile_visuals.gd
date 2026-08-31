@@ -16,6 +16,7 @@ const HILLS_03: Texture2D = preload("res://assets/map/biomes/hills3.png")
 const TOWN_01: Texture2D = preload("res://assets/map/biomes/town1.png")
 const TOWN_SIZE := Vector2i(418, 440)
 const HERO_MAP_PATH: String = "res://assets/map/characters/hero_map.png"
+const QUEST_MAP_PATH: String = "res://assets/map/activities/quest.png"
 
 var terrain_variants: Dictionary = {
 	"plains": [PLAINS_01, PLAINS_02, PLAINS_03],
@@ -23,6 +24,7 @@ var terrain_variants: Dictionary = {
 	"hill": [HILLS_01, HILLS_02, HILLS_03],
 }
 var hero_map_texture: Texture2D
+var quest_map_texture: Texture2D
 
 func _init() -> void:
 	for terrain_id in terrain_variants:
@@ -34,6 +36,7 @@ func _init() -> void:
 	assert(TOWN_01 != null, "Town visual must load from the project PNG file.")
 	assert(TOWN_01.get_size() == Vector2(TOWN_SIZE), "Town visual must remain exactly 418 by 440 pixels.")
 	hero_map_texture = load_optional_texture(HERO_MAP_PATH)
+	quest_map_texture = load_optional_texture(QUEST_MAP_PATH)
 
 func get_variant_count(terrain_id: String) -> int:
 	var visual_terrain_id: String = normalize_visual_terrain_id(terrain_id)
@@ -55,6 +58,9 @@ func get_town_texture() -> Texture2D:
 
 func get_hero_map_texture() -> Texture2D:
 	return hero_map_texture
+
+func get_quest_map_texture() -> Texture2D:
+	return quest_map_texture
 
 func load_optional_texture(resource_path: String) -> Texture2D:
 	if not ResourceLoader.exists(resource_path):
