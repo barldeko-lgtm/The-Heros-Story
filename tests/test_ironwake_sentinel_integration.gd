@@ -3,7 +3,7 @@ extends SceneTree
 const FAMILY_DIRECTORY := "res://data/items/visual_families/ironwake_sentinel"
 const DROP_TABLE_PATH := "res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres"
 const SHOP_PATH := "res://data/shops/starting_city_shop.tres"
-const OLD_DROP_TABLE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
+const OLD_DROP_TABLE_PATH := "res://data/loot/ironward_vanguard_ilvl10_jewelry_drop_table.tres"
 const SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 const FILE_NAMES := {
 	"helmet": "ironwake_sentinel_helmet",
@@ -15,7 +15,7 @@ const FILE_NAMES := {
 	"shield": "ironwake_sentinel_shield",
 }
 const RARITY_SUFFIXES := ["", "_uncommon", "_rare"]
-const WEAK_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit", "giant_spider"]
+const WEAK_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
 
 func _init() -> void:
 	var definitions_by_quality: Array = [[], [], []]
@@ -62,7 +62,7 @@ func _init() -> void:
 		else:
 			strong_count += 1
 			assert(mob.equipment_drop_table == old_drop_table, "Each remaining mob must keep the Ironward Vanguard ilvl 10 source: %s" % mob.id)
-	assert(weak_count == 6 and strong_count == 9, "The 15 mobs must split into six weaker and nine stronger equipment sources.")
+	assert(weak_count == 5 and strong_count == 10, "The 15 mobs must split into five weaker and ten stronger equipment sources.")
 
 	var shop_definition: Resource = load(SHOP_PATH)
 	assert(shop_definition != null, "Starting City shop definition must load.")

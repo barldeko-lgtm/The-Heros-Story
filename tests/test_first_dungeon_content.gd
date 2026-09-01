@@ -27,5 +27,11 @@ func _init() -> void:
 	assert(dungeon.boss_mob_definition.gold_reward == 0, "Dungeon boss combat must not grant per-mob Gold before the separate completion reward.")
 	assert(dungeon.boss_mob_definition.equipment_drop_table == null, "Dungeon boss combat must not use ordinary mob equipment drops.")
 
-	print("PASS: Abandoned Iron Mines data defines three Mine Troglodyte fights at ~200 Power followed by the Deep Devourer at ~300 Power.")
+	assert(dungeon.completion_gold_reward == 700, "Abandoned Iron Mines completion must grant exactly 700 Gold.")
+	assert(dungeon.completion_equipment_source != null, "Abandoned Iron Mines must define one completion equipment source.")
+	assert(dungeon.completion_equipment_source.item_level == 10, "The first dungeon completion item must be ilvl 10.")
+	assert(dungeon.completion_equipment_source.rare_items.size() == 11, "The first dungeon completion pool must cover all current non-Belt equipment slots.")
+	assert(is_equal_approx(dungeon.completion_epic_chance, 0.25), "The first dungeon completion reward must use 75% Rare / 25% Epic rarity odds.")
+
+	print("PASS: Abandoned Iron Mines defines 3 Mine Troglodytes, the Deep Devourer, and a 700 Gold + ilvl 10 Rare/Epic completion reward.")
 	quit()

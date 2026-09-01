@@ -273,7 +273,7 @@ func update_inventory_equipment_display() -> void:
 			continue
 		var equipment_definition = equipped_item.definition
 		equipment_icon.texture = equipment_definition.icon_texture
-		equipment_icon.material = get_quality_outline_material(equipment_definition.quality)
+		equipment_icon.material = get_quality_outline_material(equipped_item.rarity)
 		equipment_icon.visible = true
 
 	for equipment_slot_id in hero_equipment_overlays:
@@ -294,9 +294,10 @@ func update_inventory_equipment_display() -> void:
 			item_icon.material = null
 			item_icon.visible = false
 			continue
-		var inventory_definition = inventory_items[slot_index].definition
+		var inventory_item = inventory_items[slot_index]
+		var inventory_definition = inventory_item.definition
 		item_icon.texture = inventory_definition.icon_texture
-		item_icon.material = get_quality_outline_material(inventory_definition.quality)
+		item_icon.material = get_quality_outline_material(inventory_item.rarity)
 		item_icon.visible = true
 
 func get_quality_outline_material(quality: int):
@@ -306,7 +307,12 @@ func get_quality_outline_material(quality: int):
 		return quality_outline_materials[quality]
 	var material := ShaderMaterial.new()
 	material.shader = ItemQualityOutlineShader
-	material.set_shader_parameter("outline_color", Color("55c96f") if quality == 1 else Color("4f8dff"))
+	var outline_color := Color("55c96f")
+	if quality == 2:
+		outline_color = Color("4f8dff")
+	elif quality >= 3:
+		outline_color = Color("a855f7")
+	material.set_shader_parameter("outline_color", outline_color)
 	material.set_shader_parameter("source_pixels_per_screen_pixel", 3.6)
 	material.set_shader_parameter("middle_alpha", 0.55)
 	material.set_shader_parameter("outer_alpha", 0.25)

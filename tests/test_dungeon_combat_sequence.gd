@@ -50,6 +50,8 @@ func test_full_three_fights_and_boss_sequence() -> void:
 	var dungeon = prepare_dungeon_at_entrance(simulation)
 	var starting_gold: int = simulation.hero_state.gold
 	var starting_inventory_count: int = simulation.hero_state.inventory.get_items().size()
+	var starting_equipment_count: int = simulation.hero_state.equipment.get_all_items().size()
+	var dungeon_hex: Vector2i = dungeon.target_hex
 
 	for ordinary_index in range(3):
 		assert(simulation.dungeon_runner.get_current_mob_definition().id == "mine_troglodyte", "All three ordinary encounters must use the same Mine Troglodyte definition.")
@@ -68,8 +70,15 @@ func test_full_three_fights_and_boss_sequence() -> void:
 	assert(dungeon.completed, "The runtime dungeon instance must remember successful completion.")
 	assert(simulation.dungeon_runner.boss_defeated, "DungeonRunner must record the unique boss as defeated.")
 	assert(simulation.hero_state.experience == 635, "Three 150-XP troglodytes plus the 185-XP boss must grant 635 total combat XP.")
-	assert(simulation.hero_state.gold == starting_gold, "Dungeon combat itself must not grant per-mob Gold before completion rewards are implemented.")
-	assert(simulation.hero_state.inventory.get_items().size() == starting_inventory_count, "Dungeon encounters must not generate ordinary equipment drops.")
+	assert(simulation.hero_state.gold == starting_gold + 700, "Full dungeon completion must grant exactly 700 Gold while ordinary encounters grant no per-mob Gold.")
+	assert(simulation.hero_state.inventory.get_items().size() == starting_inventory_count, "The guaranteed first completion reward should equip on the current naked test hero rather than arrive as an ordinary encounter drop.")
+	assert(simulation.hero_state.equipment.get_all_items().size() == starting_equipment_count + 1, "Full dungeon completion must grant exactly one equipment reward.")
+	var completion_item = simulation.hero_state.equipment.get_all_items()[0]
+	assert(completion_item.item_level == 10, "The guaranteed first-dungeon completion item must be ilvl 10.")
+	assert(completion_item.rarity == 2 or completion_item.rarity == 3, "The guaranteed first-dungeon completion item must be Blue/Rare or Purple/Epic.")
+	assert(not dungeon.has_map_target(), "A completed dungeon must lose its active map target so its marker disappears immediately.")
+	assert(simulation.world_state.get_activity_id_at_hex(dungeon_hex).is_empty(), "A completed dungeon must release its reserved map hex.")
+	assert(simulation.dungeon_system.get_discovered_dungeons().is_empty(), "A completed dungeon must no longer appear in the active discovered-dungeon map view.")
 	var ordinary_stats: Dictionary = simulation.get_combat_results("mine_troglodyte")
 	var boss_stats: Dictionary = simulation.get_combat_results("deep_devourer")
 	assert(int(ordinary_stats.get("total", 0)) == 3 and int(ordinary_stats.get("wins", 0)) == 3, "Combat statistics must record all three real troglodyte fights.")
@@ -78,6 +87,8 @@ func test_full_three_fights_and_boss_sequence() -> void:
 func test_dungeon_death_and_instant_resurrection() -> void:
 	var simulation = SimulationScript.new(8102, null)
 	var dungeon = prepare_dungeon_at_entrance(simulation)
+	var starting_gold: int = simulation.hero_state.gold
+	var starting_equipment_count: int = simulation.hero_state.equipment.get_all_items().size()
 	simulation.hero_state.current_hp = 1.0
 	finish_current_dungeon_fight(simulation)
 	assert(simulation.hero_state.loop_state == HeroState.DEAD_RESPAWNING, "Losing a dungeon fight must enter the shared dead/respawning hero state.")
@@ -87,6 +98,9 @@ func test_dungeon_death_and_instant_resurrection() -> void:
 	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center, "A dead dungeon hero must return to the safe city map position.")
 	assert(not dungeon.completed, "Death before the boss must not mark the dungeon complete.")
 	assert(simulation.hero_state.experience == 0, "A hero who dies in the first dungeon fight must not receive victory XP.")
+	assert(simulation.hero_state.gold == starting_gold, "A failed dungeon attempt must not grant the 700-Gold completion reward.")
+	assert(simulation.hero_state.equipment.get_all_items().size() == starting_equipment_count, "A failed dungeon attempt must not grant completion equipment.")
+	assert(dungeon.has_map_target(), "A failed dungeon must remain on the map for a later readiness-gated retry.")
 
 	var energy_before: float = simulation.god_state.energy
 	assert(simulation.use_instant_resurrection(), "Instant resurrection must work for a dungeon-owned death state too.")

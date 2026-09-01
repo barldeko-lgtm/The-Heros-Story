@@ -143,7 +143,7 @@ Status:
 - ⬜ Potion preparation before attempts.
 - 🟡 Between-fight potion window exists, but Belt/potion selection and actual healing are not implemented yet.
 - ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
-- ⬜ Dungeon completion Gold + Blue/Rare or Purple/Epic equipment reward.
+- ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 11 current non-Belt slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
 - ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
 ## 9. First Warrior specialization
@@ -163,15 +163,15 @@ Status:
 
 - ✅ Item Level framework and base-stat tables.
 - ✅ White / Green / Blue(Rare) affix-count/budget generation foundation.
-- 🟡 Purple/Epic budget rules exist in data/code, but Purple is not yet part of the live content/reward loop.
+- 🟡 Purple/Epic generation is now live through first-dungeon completion; broader Purple reward sources remain incomplete.
 - ✅ ±5% rolled total modifier budget and stat-cost tables.
 - ✅ Generated `ItemInstance`, affixes, inherent stats, ItemPower and tooltips.
 - ✅ Shared-Power-based ItemPower calculation.
 - ✅ Virtual-equip HeroPower comparison.
-- ✅ Current five armor slots + sword + shield mechanically generate/equip/drop.
+- ✅ Current five armor slots + sword + shield + necklace + earrings + two ring slots mechanically generate/equip/drop.
 - ✅ Five armor paper-doll overlays work.
-- 🟡 12-slot UI structure exists, but real live item content is still mostly the current seven armor/weapon/shield slots.
-- ⬜ Functional jewelry items: rings, necklace, earrings with inherent Resistance rules.
+- 🟡 12-slot UI structure now has 11 functional slots; Belt remains the only empty equipment slot.
+- ✅ Functional ilvl 10 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the sixth mob by Power.
 - ⬜ Functional Belt item with Health + potion capacity/level rules.
 - ⬜ Two-handed / full legal hand-configuration equipment content and evaluation.
 - 🟡 Source-driven mob drops exist for current ilvl 1 / ilvl 10 families, but the final six city quest-band ilvl sources are incomplete.
@@ -194,7 +194,7 @@ Status:
 - ✅ Current +20% ItemPower shop threshold plus real virtual-equip validation.
 - ✅ Deterministic 200-world-tick shop refresh.
 - ✅ Purchased shop slots remain empty until refresh.
-- 🟡 Starting City shop currently has ilvl 1 + ilvl 10 bands (**2 / required 3**); ilvl 20 band is missing.
+- 🟡 Starting City shop currently has ilvl 1 + ilvl 10 bands (**2 / required 3**); the ilvl 10 band includes all 11 current non-Belt slots, while the ilvl 20 band is missing.
 - 🟡 Current full stock is 16 equipment listings; final Starting City target is 24 (3 bands × 8).
 - ⬜ Mid-Level City shop: ilvl 30 / 40 / 50 bands.
 - ⬜ Healing potion purchasing/preparation.
@@ -273,7 +273,7 @@ Status:
 - ⬜ First-specialization abilities: **0 / 2**.
 - ⬜ Final personality axes: **0 / 4**; current old trait prototype is temporary.
 - 🟡 Visual armor families: **2 / minimum 5–6**.
-- 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic not yet in the live reward loop.
+- 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic is now live through first-dungeon completion but remains absent from ordinary drops/shops.
 - 🟡 Main progression: leveling framework exists, but final +1 Warrior STR / +4 player allocation, starting questionnaire, and complete approximately level 1–60 content/balance are not yet implemented.
 
 ## 19. Final integration / validation

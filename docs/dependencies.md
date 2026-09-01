@@ -244,15 +244,15 @@ Contracts:
 - `DungeonEvaluator` owns the current retry Power gate and does not participate in QuestScore: first attempt has no retry threshold; a failed attempt stores its starting HeroPower and requires +25% after zero ordinary kills, +15% after ordinary progress before the boss, or +10% after reaching the boss; a later failed retry replaces the remembered baseline with that attempt's own starting HeroPower;
 - after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and permits a new attempt once the threshold is reached; potion readiness is not yet part of this gate;
 - dungeon fights use the same `CombatSession` / Warrior Rage / Power Strike / Battle Guard / trait damage path as quest fights; each fight starts from carried `HeroState.current_hp` rather than resetting to MaxHP;
-- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; completion Gold/item reward remains a separate not-yet-implemented stage;
+- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the eleven-slot non-Belt Ironward source, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
 - dungeon death is owned by `DungeonRunner`: the hero returns to the safe city map hex, uses the normal 100-tick respawn and 1-HP resurrection/city-recovery contract, and Divine instant resurrection routes through the active respawn owner instead of pretending the death belongs to `QuestRunner`;
 - the accepted quest target stays reserved during outward travel, combat, and between-fight recovery; when the final objective is complete and return travel begins, the reservation is released; on fatal cancellation it is released immediately and the dead hero is returned to the safe city position for the resurrection timer; replacement offers acquire a new valid reservation only when their board slot is regenerated;
 - `MapTileVisuals` is presentation-only and loads exactly three `158 × 140` project PNGs each for plains, forest, and hills from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; selection is deterministic by hex coordinates, while road and city cells temporarily reuse plains art as their base terrain visual. It also resolves the hero map texture from `res://assets/map/characters/hero_map.png`; it does not own hero position;
-- `MapScreen` is observation-only presentation: it reads runtime hex data, current board QuestOffers, and the live hero position from Simulation; it draws biome textures 1:1 at base zoom, keeps one-pixel black outlines on non-city hexes, omits internal city-hex outlines, draws `town1.png` as a native-size overlay on both seven-hex city clusters, and draws each currently placed QuestOffer with `res://assets/map/activities/quest.png` at its `target_hex`. The supplied 426 × 400 source is kept unchanged and scaled only at draw time to 65 px tall (about 69.2 × 65 px), centered on the target hex. Quest-marker and hero-position changes trigger redraws and both sprites scale/pan with map content. The hero sprite follows the real tick-by-tick `WorldState.hero_position` produced by `TravelSystem`. The screen exposes current coordinates, terrain, region, and permanent semantic tags through the debug hover tooltip and owns only presentation camera state; it must not choose destinations, reserve/release activities, move the hero, calculate travel time, or otherwise modify Simulation;
-- the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one no-heal preparation tick after each ordinary encounter, including before the boss;
+- `MapScreen` is observation-only presentation: it reads runtime hex data, current board QuestOffers, active dungeon map targets, and the live hero position from Simulation; it draws biome textures 1:1 at base zoom, keeps one-pixel black outlines on non-city hexes, omits internal city-hex outlines, draws `town1.png` as a native-size overlay on both seven-hex city clusters, and draws each currently placed QuestOffer with `res://assets/map/activities/quest.png` at its `target_hex`. The supplied 426 × 400 source is kept unchanged and scaled only at draw time to 65 px tall (about 69.2 × 65 px), centered on the target hex. Quest/dungeon-marker and hero-position changes trigger redraws and the sprites scale/pan with map content. Because completed dungeons lose their active map activity, their marker signature drops out automatically without MapScreen mutating gameplay state. The hero sprite follows the real tick-by-tick `WorldState.hero_position` produced by `TravelSystem`. The screen exposes current coordinates, terrain, region, and permanent semantic tags through the debug hover tooltip and owns only presentation camera state; it must not choose destinations, reserve/release activities, move the hero, calculate travel time, or otherwise modify Simulation;
+- the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one no-heal preparation tick after each ordinary encounter, including before the boss; after boss victory `DungeonSystem` releases that dungeon's map activity and the completed instance no longer appears in active discovered/marker lookup;
 - MapScreen uses `assets/map/activities/dungeon.png` at 65 px draw height; the current developer-only view deliberately shows an unknown dungeon at 40% opacity while keeping its identity out of the tooltip, then renders it fully opaque and named after discovery;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness are integrated; current-route presentation, travel interruption/resumption, city relocation, events, Belt/potion readiness/use, and dungeon completion rewards remain intentionally unintegrated.
+- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/completion reward/removal from the active map are integrated; current-route presentation, travel interruption/resumption, city relocation, events, and Belt/potion readiness/use remain intentionally unintegrated.
 
 ## UI boundary
 
@@ -293,14 +293,14 @@ resurrection
 
 ## Current equipment drop slice and future loot hook
 
-Current seven-slot generated-equipment flow for Ironwake Sentinel and Ironward Vanguard:
+Current generated-equipment flow for Ironwake Sentinel and Ironward Vanguard:
 
 ```text
 defeated current mob
 → 5% equipment-drop check
-→ equal roll among five armor slots + sword + shield
+→ equal roll among 7 slots for the five weakest mobs, or 11 slots from Giant Spider onward
 → Common / Uncommon / Rare roll at 70% / 25% / 5%
-→ mob's drop source supplies Ironwake ilvl 1 or Ironward ilvl 10
+→ mob's drop source supplies Ironwake ilvl 1 or Ironward ilvl 10, with ilvl 10 jewelry available only in the 11-slot source
 → EquipmentRewardSystem coordinates generated-equipment routing
 → ItemGenerator resolves inherent stats / budget / unique affixes
 → generated ItemInstance
@@ -345,7 +345,9 @@ ShopDefinition
 
 Contracts:
 - `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
-- six weakest current mobs reference the ilvl 1 Ironwake Sentinel table and the other seven reference the ilvl 10 Ironward Vanguard table;
+- the five weakest current mobs reference the seven-slot ilvl 1 Ironwake Sentinel table;
+- Giant Spider (the sixth mob by Power) and all nine stronger mobs reference the eleven-slot ilvl 10 Ironward table containing necklace, earrings, Ring 1, and Ring 2 in addition to the previous seven slots;
+- Belt is not part of the current generated/drop slice; the first dungeon uses the same eleven-slot ilvl 10 source with its separate guaranteed Rare/Epic roll;
 - a drop roll happens only after a combat victory, never after defeat or quest turn-in;
 - the seeded roll order is drop chance, equal slot selection, then rarity selection;
 - current ordinary quests contain Gold rewards only and no equipment reward pools;
@@ -368,7 +370,7 @@ Contracts:
 - among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
 - purchased shop positions remain empty until the next stock refresh;
-- the current Starting City shop exposes separate ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard source bands, each with 6 distinct White slots and 2 distinct Green slots independently selected per rarity from the seven current slots;
+- the current Starting City shop exposes separate ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1 band selects from seven slots, while the ilvl 10 band selects from all eleven current non-Belt slots;
 - shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
 - shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
 - shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
@@ -378,6 +380,8 @@ Contracts:
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
 - Ironwake Sentinel drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironward Vanguard drops remain ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block);
+- every ilvl 10 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at value 20, independent of rarity;
+- jewelry random affixes are limited to Fire/Cold/Lightning Resistance, Health, Dodge, Accuracy, Critical Chance, and Critical Damage;
 - Common/Uncommon/Rare create 0/1/2 unique random affixes; current ordinary drops do not generate Epic;
 - ilvl 10 Green affix budget is 78; each Rare affix uses 85% of that value;
 - one seeded 0.95–1.05 roll applies to total modifier budget, then budget splits equally among all affixes;
@@ -389,7 +393,7 @@ Contracts:
 - inherent-stat, Green-budget, rarity-rule, and stat-cost data live in central resources under `data/items/balance/`, not in individual generated instances;
 - `ItemInstance` owns its concrete ilvl, rarity, rolled total budget, affixes, and resolved stats;
 - the old serialized fixed stats on current visual rarity definitions are compatibility data only and do not affect generated runtime equipment;
-- helmet, chest, gloves, pants, and boots each use a dedicated aligned paper-doll overlay from their `ItemDefinition`; sword and shield still have no hero portrait overlay, and UI must not synthesize worn art from equipment icons;
+- helmet, chest, gloves, pants, and boots each use a dedicated aligned paper-doll overlay from their `ItemDefinition`; sword, shield, necklace, earrings, and rings have no hero portrait overlay, and UI must not synthesize worn art from equipment icons;
 - no set-completion bonus exists in the current slice.
 
 General item interactions and QuestLoot are still not implemented. When QuestLoot exists, death must clear only current-quest loot before entering the existing respawn path. Permanent equipment and retained Inventory must remain separate.

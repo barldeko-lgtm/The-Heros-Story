@@ -40,3 +40,6 @@ func record_failed_attempt(attempt_start_power: float, ordinary_encounters_compl
 
 func mark_completed() -> void:
 	completed = true
+
+func clear_map_activity() -> void:
+	map_activity_id = ""

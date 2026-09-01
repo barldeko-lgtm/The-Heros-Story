@@ -13,3 +13,6 @@ extends Resource
 @export var ordinary_mob_definition: Resource
 @export_range(3, 5, 1) var ordinary_encounter_count: int = 3
 @export var boss_mob_definition: Resource
+@export var completion_gold_reward: int = 0
+@export var completion_equipment_source: Resource
+@export_range(0.0, 1.0, 0.01) var completion_epic_chance: float = 0.0

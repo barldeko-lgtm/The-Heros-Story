@@ -7,9 +7,12 @@ const DefaultStatCostTable = preload("res://data/items/balance/item_modifier_sta
 const DefaultBaseStatTable = preload("res://data/items/balance/item_base_stat_table.tres")
 
 const ARMOR_SLOTS := ["helmet", "chest", "gloves", "pants", "boots"]
+const JEWELRY_SLOTS := ["necklace", "earrings", "ring_1", "ring_2"]
+const JEWELRY_RESISTANCE_STATS := ["fire_resistance", "cold_resistance", "lightning_resistance"]
 const ARMOR_AFFIX_POOL := ["health", "armor", "dodge"]
 const WEAPON_AFFIX_POOL := ["damage", "accuracy", "crit_chance_percentage_point", "crit_damage_percentage_point", "attack_speed_percent"]
 const SHIELD_AFFIX_POOL := ["accuracy", "crit_chance_percentage_point", "crit_damage_percentage_point", "block", "health"]
+const JEWELRY_AFFIX_POOL := ["fire_resistance", "cold_resistance", "lightning_resistance", "health", "dodge", "accuracy", "crit_chance_percentage_point", "crit_damage_percentage_point"]
 
 var budget_table: Resource
 var stat_cost_table: Resource
@@ -24,11 +27,11 @@ func _init(
 	stat_cost_table = initial_stat_cost_table
 	base_stat_table = initial_base_stat_table
 
-func generate(item_definition: Resource, item_level: int, rng):
+func generate(item_definition: Resource, item_level: int, rng, rarity_override: int = -1):
 	if item_definition == null or rng == null:
 		return null
-	var rarity: int = int(item_definition.quality)
-	var base_stats: Dictionary = create_base_stats(item_definition.equipment_slot, item_level)
+	var rarity: int = rarity_override if rarity_override >= 0 else int(item_definition.quality)
+	var base_stats: Dictionary = create_base_stats(item_definition.equipment_slot, item_level, rng)
 	if base_stats.is_empty():
 		return null
 
@@ -72,7 +75,7 @@ func generate(item_definition: Resource, item_level: int, rng):
 		resolved_stats
 	)
 
-func create_base_stats(equipment_slot: String, item_level: int) -> Dictionary:
+func create_base_stats(equipment_slot: String, item_level: int, rng = null) -> Dictionary:
 	if ARMOR_SLOTS.has(equipment_slot):
 		var armor: float = base_stat_table.get_armor(item_level)
 		return {"armor": armor} if armor >= 0.0 else {}
@@ -83,6 +86,14 @@ func create_base_stats(equipment_slot: String, item_level: int) -> Dictionary:
 	if equipment_slot == "shield":
 		var block: float = base_stat_table.get_shield_block(item_level)
 		return {"block": block} if block >= 0.0 else {}
+	if JEWELRY_SLOTS.has(equipment_slot):
+		if rng == null:
+			return {}
+		var resistance: float = base_stat_table.get_jewelry_resistance(item_level)
+		if resistance < 0.0:
+			return {}
+		var resistance_stat: String = JEWELRY_RESISTANCE_STATS[rng.randi_range(0, JEWELRY_RESISTANCE_STATS.size() - 1)]
+		return {resistance_stat: resistance}
 	return {}
 
 func get_affix_pool(equipment_slot: String) -> Array:
@@ -92,6 +103,8 @@ func get_affix_pool(equipment_slot: String) -> Array:
 		return WEAPON_AFFIX_POOL.duplicate()
 	if equipment_slot == "shield":
 		return SHIELD_AFFIX_POOL.duplicate()
+	if JEWELRY_SLOTS.has(equipment_slot):
+		return JEWELRY_AFFIX_POOL.duplicate()
 	return []
 
 func apply_affix_to_resolved_stats(resolved_stats: Dictionary, stat_id: String, value: float) -> void:

@@ -26,7 +26,24 @@ func resolve_mob_equipment_drop(hero_state, mob_definition: Resource, rng) -> Di
 	result["item_definition"] = item_definition
 	return result
 
-func receive_item(hero_state, item_definition: Resource, item_level: int, rng) -> Dictionary:
+func resolve_dungeon_completion_reward(hero_state, dungeon_definition: Resource, rng) -> Dictionary:
+	var roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon_definition, rng)
+	if roll.is_empty():
+		return {
+			"item_definition": null,
+			"item_instance": null,
+			"equipment_evaluation": {},
+			"equipped": false,
+			"inventory_item": null,
+			"dropped_item": null,
+		}
+	var item_definition: Resource = roll["item_definition"]
+	var result: Dictionary = receive_item(hero_state, item_definition, int(roll["item_level"]), rng, int(roll["rarity"]))
+	result["item_definition"] = item_definition
+	result["rolled_rarity"] = int(roll["rarity"])
+	return result
+
+func receive_item(hero_state, item_definition: Resource, item_level: int, rng, rarity_override: int = -1) -> Dictionary:
 	var result: Dictionary = {
 		"item_instance": null,
 		"equipment_evaluation": {},
@@ -37,7 +54,7 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng) -
 	if hero_state == null or item_definition == null or rng == null:
 		return result
 
-	var item_instance = item_generator.generate(item_definition, item_level, rng)
+	var item_instance = item_generator.generate(item_definition, item_level, rng, rarity_override)
 	if item_instance == null:
 		return result
 	result["item_instance"] = item_instance

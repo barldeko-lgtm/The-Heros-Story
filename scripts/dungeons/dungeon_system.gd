@@ -66,7 +66,7 @@ func get_all_dungeons() -> Array:
 func get_discovered_dungeons() -> Array:
 	var result: Array = []
 	for instance in dungeon_instances:
-		if instance != null and instance.discovered:
+		if instance != null and instance.discovered and not instance.completed and instance.has_map_target():
 			result.append(instance)
 	return result
 
@@ -110,6 +110,16 @@ func reveal_random_unknown_in_region(region_id: String, rng: RandomNumberGenerat
 
 func get_discovered_dungeon_at_hex(cell: Vector2i):
 	for instance in dungeon_instances:
-		if instance != null and instance.discovered and instance.target_hex == cell:
+		if instance != null and instance.discovered and not instance.completed and instance.has_map_target() and instance.target_hex == cell:
 			return instance
 	return null
+
+func remove_completed_dungeon_from_map(instance) -> bool:
+	if instance == null or not instance.completed:
+		return false
+	if instance.map_activity_id.is_empty():
+		return true
+	if world_state == null or not world_state.release_activity(instance.map_activity_id):
+		return false
+	instance.clear_map_activity()
+	return true

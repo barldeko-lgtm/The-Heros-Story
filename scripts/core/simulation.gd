@@ -346,7 +346,17 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 			combat_world_tick
 		)
 	elif result_type == "completed":
-		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name), combat_world_tick)
+		var completed_dungeon = dungeon_runner.active_dungeon
+		var dungeon_definition: Resource = completed_dungeon.definition
+		var gold_reward: int = maxi(0, dungeon_definition.completion_gold_reward)
+		hero_state.gold += gold_reward
+		var previous_max_hp: float = combat_stats.max_hp
+		var reward_result: Dictionary = equipment_reward_system.resolve_dungeon_completion_reward(hero_state, dungeon_definition, seeded_rng.get_rng())
+		var reward_item = reward_result.get("item_instance")
+		assert(reward_item != null, "Completed dungeon must produce its guaranteed equipment reward.")
+		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
+		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp)
+		assert(dungeon_system.remove_completed_dungeon_from_map(completed_dungeon), "Completed dungeon must release its map activity and disappear from the map.")
 
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
@@ -579,10 +589,10 @@ func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, r
 	var result: Dictionary = equipment_reward_system.resolve_mob_equipment_drop(hero_state, mob_definition, rng)
 	return finalize_item_reward(result, completed_tick, previous_max_hp)
 
-func receive_item_reward(item_definition: Resource, completed_tick: int = 0, item_level: int = 10, rng_override = null) -> Dictionary:
+func receive_item_reward(item_definition: Resource, completed_tick: int = 0, item_level: int = 10, rng_override = null, rarity_override: int = -1) -> Dictionary:
 	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
 	var previous_max_hp: float = combat_stats.max_hp
-	var result: Dictionary = equipment_reward_system.receive_item(hero_state, item_definition, item_level, rng)
+	var result: Dictionary = equipment_reward_system.receive_item(hero_state, item_definition, item_level, rng, rarity_override)
 	return finalize_item_reward(result, completed_tick, previous_max_hp)
 
 func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_hp: float) -> Dictionary:

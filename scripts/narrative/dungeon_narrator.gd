@@ -47,5 +47,5 @@ func describe_city_recovery(hero_name: String, current_hp: float, max_hp: float,
 		message += " Полностью восстановился и вернулся к обычным делам."
 	return message
 
-func describe_completed(hero_name: String, dungeon_name: String) -> String:
-	return "%s победил босса и полностью прошёл данж «%s». Награда за завершение пока не подключена." % [hero_name, dungeon_name]
+func describe_completed(hero_name: String, dungeon_name: String, gold_reward: int) -> String:
+	return "%s победил босса и полностью прошёл данж «%s», получив %d золота. Данж исчез с карты." % [hero_name, dungeon_name, gold_reward]

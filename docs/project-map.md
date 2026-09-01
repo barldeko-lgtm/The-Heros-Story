@@ -165,7 +165,7 @@ Structured quest/runtime events, including death, resurrection, and city recover
 ## Dungeons
 
 ### `scripts/model/definitions/dungeon_definition.gd` / `data/dungeons/starting_region/0001_abandoned_iron_mines.tres`
-Immutable ordinary-dungeon data. The first dungeon is `Заброшенные железные шахты`: Starting Region, hill terrain, 4–7 hex steps from the Starting City center, one reserved hex. Its current authored encounter content is exactly three ordinary fights using one shared `Шахтный троглодит` definition followed by the unique boss `Глубинный пожиратель`. The definition stores content only; it does not execute the expedition.
+Immutable ordinary-dungeon data. The first dungeon is `Заброшенные железные шахты`: Starting Region, hill terrain, 4–7 hex steps from the Starting City center, one reserved hex. Its current authored encounter content is exactly three ordinary fights using one shared `Шахтный троглодит` definition followed by the unique boss `Глубинный пожиратель`. It also owns the first completion-reward tuning: 700 Gold, the existing ilvl 10 Ironward equipment source, and 25% Epic chance (therefore 75% Rare). The definition stores content/tuning only; it does not execute the expedition or award the reward.
 
 ### `data/dungeons/starting_region/0001_mine_troglodyte.tres` / `0001_deep_devourer.tres`
 Dungeon-only `MobDefinition` resources. The Mine Troglodyte is tuned to approximately 200 shared Power and grants 150 XP; the Deep Devourer is approximately 300 shared Power and grants 185 XP. They are not ordinary city-quest mobs, grant no per-mob Gold, and have no normal equipment-drop table.
@@ -174,7 +174,7 @@ Dungeon-only `MobDefinition` resources. The Mine Troglodyte is tuned to approxim
 Runtime dungeon placement/knowledge/progress state: immutable definition reference, concrete `target_hex`, reservation id, discovered flag/source, completed flag, and persistent failed-attempt memory used by retry readiness: attempt count, HeroPower at the start of the latest failed attempt, ordinary progress, and whether the boss was reached. It does not duplicate the tunable +25% / +15% / +10% balance rules; `DungeonEvaluator` derives the current requirement from this memory.
 
 ### `scripts/dungeons/dungeon_system.gd`
-Owns current dungeon map placement and discovery. It chooses valid free centers through `ActivityPlacementFinder`, reserves dungeon footprints through `WorldState`, exposes known/unknown dungeon views including discovered dungeons by region, discovers a dungeon when the hero physically enters its exact hex, and supports revealing one random unknown dungeon in a region for Divine Vision. It does not execute travel or dungeon combat.
+Owns current dungeon map placement and discovery. It chooses valid free centers through `ActivityPlacementFinder`, reserves dungeon footprints through `WorldState`, exposes active known/unknown dungeon views including discovered dungeons by region, discovers a dungeon when the hero physically enters its exact hex, supports revealing one random unknown dungeon in a region for Divine Vision, and releases/clears the map activity of a successfully completed dungeon so it disappears from active map views. It does not execute travel or dungeon combat.
 
 ### `scripts/dungeons/dungeon_runner.gd`
 Owns the current first expedition slice after the city decision point. It accepts an already-discovered uncompleted dungeon after readiness has been approved, records HeroPower at the start of that expedition, starts the shared `TravelSystem` route to its real `target_hex`, owns the authored encounter cursor, carries current hero HP between fights, inserts exactly one world tick of preparation after every ordinary victory, advances into the boss after the third ordinary encounter, marks completion after boss victory, and owns dungeon-specific 100-tick death/resurrection + city-recovery state. On failure it reports the attempt-start Power and reached progress so retry memory can be recorded. The current preparation tick performs no healing because Belt/potions are not implemented yet. Combat itself remains the shared `CombatSession`; `QuestRunner` is not reused for dungeon execution.
@@ -195,7 +195,10 @@ Protects the first dungeon's authored `3 × Mine Troglodyte (~200 Power, 150 XP)
 Protects the current autonomous decision boundary: discovery cannot interrupt the active quest, the normal quest turn-in → market → shopping routine still completes first, a known local dungeon then takes priority over another ordinary quest, and the hero physically travels to its real map hex where the first encounter becomes ready without an extra arrival-delay tick.
 
 ### `tests/test_dungeon_combat_sequence.gd`
-Protects the live first-dungeon combat loop: three real shared-CombatSession troglodyte fights, exactly one no-heal world tick between encounters including before the boss, carried HP, boss completion, 635 total combat XP, no ordinary Gold/equipment drops, and dungeon-owned death/instant-resurrection behavior.
+Protects the live first-dungeon combat loop: three real shared-CombatSession troglodyte fights, exactly one no-heal world tick between encounters including before the boss, carried HP, boss completion, 635 total combat XP, no ordinary per-mob Gold/equipment drops, the final +700 Gold and exactly one ilvl 10 Rare/Epic completion item, completed-map reservation removal, and dungeon-owned death/instant-resurrection behavior.
+
+### `tests/test_dungeon_completion_reward.gd`
+Protects the first dungeon's exact 75% Rare / 25% Epic completion roll, eleven-slot ilvl 10 non-Belt source pool, and real Epic ItemInstance generation with three affixes.
 
 ### `tests/test_dungeon_retry_readiness.gd`
 Protects the +25% / +15% / +10% retry thresholds, persistent failed-attempt Power/progress memory, blocking an immediate same-Power retry after first-room death, and allowing a later retry once the remembered required HeroPower is reached.
@@ -248,7 +251,7 @@ Displays:
 Dedicated Inventory screen root instantiated by `MainUI`.
 
 ### `scripts/ui/screens/inventory_screen.gd`
-Owns Inventory presentation: the scaled hero portrait and armor overlays, equipment slots, the `6 × 6` retained-item grid, quality outlines, and item tooltips. It reads equipment/inventory state from the supplied `Simulation` but does not grant, equip, replace, or drop items.
+Owns Inventory presentation: the scaled hero portrait and armor overlays, equipment slots, the `6 × 6` retained-item grid, ItemInstance-rarity quality outlines, and item tooltips. It reads equipment/inventory state from the supplied `Simulation` but does not grant, equip, replace, or drop items. Live outline colors now cover Green/Uncommon, Blue/Rare, and Purple/Epic so dungeon Epic rewards do not inherit the blue color of their shared Rare visual definition.
 
 ### `scripts/ui/map_tile_visuals.gd` / `assets/map/biomes/*.png` / `assets/map/characters/` / `assets/map/activities/`
 Presentation-only map visual source. `MapTileVisuals` exposes three authored `158 × 140` RGBA PNG variants each for plains, forest, and hills plus the authored `418 × 440` `town1.png`. Biome variants are chosen deterministically from hex coordinates. Road and city cells temporarily reuse plains variants as their base terrain visuals; both city clusters then receive the same town overlay. The helper also resolves the optional high-resolution hero map sprite from `assets/map/characters/hero_map.png` and the supplied `426 × 400` quest activity sprite from `assets/map/activities/quest.png`. The helper does not own terrain, regions, map topology, hero position, quest placement, or gameplay state.
@@ -282,10 +285,10 @@ Central Scope 19 budget data: Green affix budgets for ilvl 1/10/20/30/40/50/60, 
 Central Scope 19.5 conversion costs from modifier budget into Health, Armor, Dodge, Accuracy, Damage, critical stats, speed stats, elemental Resistance, and Block. Primary attributes are absent from the table.
 
 ### `scripts/model/definitions/item_base_stat_table_definition.gd` / `data/items/balance/item_base_stat_table.tres`
-Central inherent base-stat control points for ilvl 1/10/20/30/40/50/60. The current seven-slot set uses armor Armor, sword Damage/+0.10 Attack Speed, and shield Block from this table.
+Central inherent base-stat control points for ilvl 1/10/20/30/40/50/60. Current generated items use armor Armor, sword Damage/+0.10 Attack Speed, shield Block, and jewelry elemental Resistance from this table.
 
 ### `scripts/items/item_generator.gd`
-Creates one generated `ItemInstance` from a visual rarity definition, source Item Level, and the shared seeded RNG. It resolves inherent stats, rolls the item-wide modifier budget, selects unique slot-legal affixes, splits budget equally, converts budget through stat costs, and stores both readable affixes and combat-ready resolved values.
+Creates one generated `ItemInstance` from a visual item definition, source Item Level, and the shared seeded RNG. It resolves inherent stats, rolls the item-wide modifier budget, selects unique slot-legal affixes, splits budget equally, converts budget through stat costs, and stores both readable affixes and combat-ready resolved values. Necklace, earrings, and both ring slots each receive one seeded inherent Fire/Cold/Lightning Resistance and use only the approved jewelry affix pool. Normal generation uses the definition rarity; completion rewards may pass an explicit ItemInstance rarity override so the current Rare Ironward visual source can produce a mechanically real Epic/Purple three-affix reward without duplicating seven visual definitions.
 
 ### `scripts/hero/equipment_evaluator.gd`
 Performs virtual equip for one candidate against the hero's complete current equipment dictionary. It resolves base persistent CombatStats for current and copied candidate configurations, compares both through the shared `PowerCalculator`, and recommends replacement only for a strict HeroPower increase. It never mutates live equipment and excludes temporary effects.
@@ -309,21 +312,21 @@ Owns mutable shop stock, deterministic stock refresh, purchased vacancies, and e
 Owns the current autonomous equipment-purchase comparison. It filters for affordability and the Scope's +20% ItemPower threshold, validates the candidate through the existing virtual-equip `EquipmentEvaluator`, and chooses the valid listing with the largest real HeroPower increase. It does not mutate equipment or Gold.
 
 ### `scripts/loot/loot_generator.gd`
-Owns the first stage of the current source-driven mob equipment roll. It checks the configured 5% drop chance, chooses one of seven existing slots with equal probability, and selects Common/Uncommon/Rare with 70%/25%/5% probability. `EquipmentRewardSystem` then passes that definition and the selected source table's ilvl 1 or ilvl 10 to `ItemGenerator`.
+Owns source-driven equipment rolls. Ordinary mob equipment keeps its configured 5% drop chance and Common/Uncommon/Rare 70%/25%/5% split; ilvl 1 sources roll seven equal slots, while Giant-Spider-and-stronger ilvl 10 sources roll eleven equal slots including necklace, earrings, Ring 1, and Ring 2. Dungeon completion uses the same eleven-slot ilvl 10 source but keeps its separate guaranteed 75% Rare / 25% Epic roll. `LootGenerator` selects source/slot/rarity only; `ItemGenerator` still creates the concrete stats.
 
 ### `scripts/loot/equipment_reward_system.gd`
-Owns generated-equipment reward routing after a source is resolved. It asks `LootGenerator` and `ItemGenerator` for a concrete candidate where applicable, evaluates that candidate through `EquipmentEvaluator`, and mutates only the hero's Equipment/Inventory routing. It returns structured result data; `Simulation` keeps the public reward entry points, refreshes resolved combat stats/HP when equipment changes, and writes the current debug-log text.
+Owns generated-equipment reward routing after a source is resolved. It asks `LootGenerator` and `ItemGenerator` for a concrete candidate where applicable, including the new guaranteed dungeon-completion roll, evaluates that candidate through `EquipmentEvaluator`, and mutates only the hero's Equipment/Inventory routing. It returns structured result data; `Simulation` grants the authored dungeon Gold, keeps public reward entry points, refreshes resolved combat stats/HP when equipment changes, and writes the current debug-log text.
 
 ### `scripts/model/definitions/equipment_drop_table_definition.gd` / `data/loot/*.tres`
-The current immutable drop tables store source item level, drop chance, and three aligned seven-slot rarity pools. Six weaker mobs reference `ironwake_sentinel_ilvl1_drop_table.tres`; seven stronger mobs retain `initial_equipment_drop_table.tres` for ilvl 10 Ironward Vanguard.
+The immutable drop tables store source item level, drop chance, and three aligned rarity pools. Five weaker mobs reference the seven-slot `ironwake_sentinel_ilvl1_drop_table.tres`; Giant Spider, the nine stronger mobs, and the first dungeon completion reward reference the eleven-slot `ironward_vanguard_ilvl10_jewelry_drop_table.tres`. The dungeon applies its own guaranteed Rare/Epic rarity override after selecting from that source.
 
 ### `data/items/visual_families/ironward_vanguard/`
-Contains the seven current visual item families in Common, Uncommon, and Rare variants. Their ids, slots, names, icons, and armor overlays select presentation and rarity. Live inherent and random combat stats are generated on `ItemInstance`; the old serialized experimental stat fields are ignored by current runtime generation.
+Contains the seven armor/weapon/shield definitions plus ilvl 10 necklace, earrings, Ring 1, and Ring 2 in Common/Uncommon/Rare variants. The two mechanical ring slots share one supplied icon. Jewelry icons appear only in equipment/inventory slots and provide no hero overlay. Live inherent and random combat stats are generated on `ItemInstance`; the old serialized experimental stat fields are ignored by current runtime generation.
 
 ### `data/items/visual_families/ironwake_sentinel/`
 Contains the seven `Страж Железного Следа` (`Ironwake Sentinel`) definitions in Common, Uncommon, and Rare variants. The five armor slots use supplied 300 × 300 icons and aligned 441 × 800 hero overlays under `assets/items/icons/ironwake_sentinel/` and `assets/items/overlays/ironwake_sentinel/`. Sword and shield currently reuse the existing neutral placeholder icons and have no hero overlays. The supplied armor artwork is integrated unchanged, including its current green edge remnants.
 
-Every current mob references one of the two source-driven equipment tables. After each defeated mob, `Simulation` delegates the equipment-reward operation to `EquipmentRewardSystem`, which preserves the seeded `LootGenerator → ItemGenerator → EquipmentEvaluator` chain. Strict improvements equip and replaced/rejected instances enter FIFO Inventory; `Simulation` then refreshes resolved stats/HP and records the result. Current quest definitions contain Gold rewards only.
+Every current mob references its assigned source-driven equipment table. After each defeated mob, `Simulation` delegates the equipment-reward operation to `EquipmentRewardSystem`, which preserves the seeded `LootGenerator → ItemGenerator → EquipmentEvaluator` chain. Strict improvements equip and replaced/rejected instances enter FIFO Inventory; `Simulation` then refreshes resolved stats/HP and records the result. Current quest definitions contain Gold rewards only.
 
 Item tooltips read the generated instance and display rarity, ilvl, rolled budget, inherent stats, affixes, dynamic ItemPower, reference shop value, and sell price.
 

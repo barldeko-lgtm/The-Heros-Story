@@ -2,8 +2,8 @@ extends SceneTree
 
 const MOB_DIRECTORY := "res://data/mobs"
 const IRONWAKE_DROP_TABLE_PATH := "res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres"
-const IRONWARD_DROP_TABLE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
-const IRONWAKE_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit", "giant_spider"]
+const IRONWARD_DROP_TABLE_PATH := "res://data/loot/ironward_vanguard_ilvl10_jewelry_drop_table.tres"
+const IRONWAKE_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
 const EXPECTED_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 
 class ScriptedRng:
@@ -53,17 +53,18 @@ func _init() -> void:
 			ironward_count += 1
 		assert(is_equal_approx(mob.equipment_drop_table.drop_chance, 0.05), "Every current mob must keep the 5% drop chance.")
 		assert(mob.equipment_drop_table.item_level == expected_item_level, "Each current mob must keep its assigned source-driven item level.")
-		assert(mob.equipment_drop_table.common_items.size() == 7, "Every current mob must expose all seven Common slot results.")
-		assert(mob.equipment_drop_table.uncommon_items.size() == 7, "Every current mob must expose all seven Uncommon slot results.")
-		assert(mob.equipment_drop_table.rare_items.size() == 7, "Every current mob must expose all seven Rare slot results.")
+		var expected_slot_count: int = 7 if expected_item_level == 1 else 11
+		assert(mob.equipment_drop_table.common_items.size() == expected_slot_count, "Each mob source must expose its approved Common slot count.")
+		assert(mob.equipment_drop_table.uncommon_items.size() == expected_slot_count, "Each mob source must expose its approved Uncommon slot count.")
+		assert(mob.equipment_drop_table.rare_items.size() == expected_slot_count, "Each mob source must expose its approved Rare slot count.")
 
 		var no_drop = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.05]))
 		assert(no_drop == null, "Every mob must reject equipment rolls at or above 5%.")
 		var rare_shield = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.0, 0.95], [6]))
 		assert(rare_shield != null and rare_shield.equipment_slot == EXPECTED_SLOTS[6] and rare_shield.quality == 2, "Every mob must keep the shared slot and 70/25/5 rarity rolls.")
 
-	assert(ironwake_count == 6 and ironward_count == 9, "Current mobs must split into six ilvl 1 Ironwake and nine ilvl 10 Ironward sources.")
-	print("PASS: Current mobs use the approved six/nine split across ilvl 1 Ironwake and ilvl 10 Ironward drop tables.")
+	assert(ironwake_count == 5 and ironward_count == 10, "Current mobs must split into five ilvl 1 Ironwake and ten ilvl 10 jewelry-enabled Ironward sources.")
+	print("PASS: Current mobs use the approved five/ten split across ilvl 1 and jewelry-enabled ilvl 10 drop tables.")
 	quit()
 
 func fail(message: String) -> void:
