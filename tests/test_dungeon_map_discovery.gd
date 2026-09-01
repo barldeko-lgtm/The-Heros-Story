@@ -10,7 +10,7 @@ func run_test() -> void:
 	test_spawn_and_vision_discovery()
 	test_physical_hex_discovery()
 	await test_map_visibility_boundary()
-	print("PASS: One Starting Region dungeon spawns on a real hidden map hex and becomes visible only after Vision or physical discovery.")
+	print("PASS: One Starting Region dungeon spawns on a real hidden map hex, uses a 40-percent-visible debug marker while unknown, and becomes fully visible after discovery.")
 	quit()
 
 func test_spawn_and_vision_discovery() -> void:
@@ -55,13 +55,25 @@ func test_map_visibility_boundary() -> void:
 	get_root().add_child(map_screen)
 	await process_frame
 
-	assert(map_screen.get_discovered_dungeons().is_empty(), "MapScreen must receive no dungeon marker while the dungeon is unknown.")
-	assert(map_screen.get_dungeon_marker_signature().is_empty(), "Unknown dungeon location must not leak through the map marker signature.")
-	assert(not map_screen.get_hex_tooltip_text(simulation.hex_map.get_hex(dungeon.target_hex)).contains(dungeon.definition.display_name), "Unknown dungeon location must not leak through the hex tooltip.")
+	assert(map_screen.get_discovered_dungeons().is_empty(), "Unknown dungeon must remain absent from the hero's discovered-dungeon view.")
+	assert(map_screen.get_dungeon_marker_instances().size() == 1, "Debug MapScreen must still receive the existing unknown dungeon for translucent marker rendering.")
+	var dungeon_texture: Texture2D = map_screen.get_dungeon_visual_texture()
+	assert(dungeon_texture != null, "Dungeon markers must use the supplied dungeon activity sprite.")
+	assert(dungeon_texture.resource_path == map_screen.map_tile_visuals.DUNGEON_MAP_PATH, "Dungeon visual must use assets/map/activities/dungeon.png.")
+	assert(dungeon_texture.get_size() == Vector2(440.0, 400.0), "Dungeon source sprite must retain its supplied 440 by 400 resolution.")
+	var dungeon_rect: Rect2 = map_screen.get_dungeon_marker_rect(dungeon)
+	assert(is_equal_approx(dungeon_rect.size.y, 65.0), "Dungeon sprite must render 65 pixels tall at base map zoom, matching the quest marker height.")
+	assert(is_equal_approx(dungeon_rect.size.x, 71.5), "Dungeon sprite must preserve its 440:400 aspect ratio at 65 pixels tall.")
+	assert(dungeon_rect.get_center().distance_to(map_screen.get_hex_center(dungeon.target_hex)) < 0.01, "Dungeon sprite must remain centered on its real target hex.")
+	assert(is_equal_approx(map_screen.get_dungeon_marker_alpha(dungeon), 0.40), "Unknown dungeon debug marker must render at 40 percent opacity.")
+	var marker_signature_before_discovery: String = map_screen.get_dungeon_marker_signature()
+	assert(marker_signature_before_discovery.contains(dungeon.map_activity_id), "Debug dungeon marker signature must include the existing unknown dungeon.")
+	assert(not map_screen.get_hex_tooltip_text(simulation.hex_map.get_hex(dungeon.target_hex)).contains(dungeon.definition.display_name), "Unknown dungeon identity must not leak through the hex tooltip.")
 
 	assert(simulation.use_divine_vision(), "Map visibility test requires Vision to reveal the dungeon.")
 	await process_frame
 	assert(map_screen.get_discovered_dungeons().size() == 1, "Discovered dungeon must become available to MapScreen.")
-	assert(map_screen.get_dungeon_marker_signature().contains(dungeon.map_activity_id), "Discovery must change the map marker signature so the dungeon redraws immediately.")
+	assert(is_equal_approx(map_screen.get_dungeon_marker_alpha(dungeon), 1.0), "Discovered dungeon marker must become fully opaque.")
+	assert(map_screen.get_dungeon_marker_signature() != marker_signature_before_discovery, "Discovery must change the map marker signature so the opacity redraws immediately.")
 	assert(map_screen.get_hex_tooltip_text(simulation.hex_map.get_hex(dungeon.target_hex)).contains(dungeon.definition.display_name), "A discovered dungeon hex tooltip must show its dungeon name.")
 	map_screen.free()

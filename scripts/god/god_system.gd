@@ -8,18 +8,18 @@ var god_state
 func _init(initial_god_state) -> void:
 	god_state = initial_god_state
 
-func use_instant_resurrection(hero_state, quest_runner, combat_stats) -> Dictionary:
+func use_instant_resurrection(hero_state, respawn_owner, combat_stats) -> Dictionary:
 	var result: Dictionary = {
 		"succeeded": false,
 		"event": null,
 	}
-	if hero_state == null or quest_runner == null or combat_stats == null:
+	if hero_state == null or respawn_owner == null or combat_stats == null:
 		return result
 	if hero_state.loop_state != HeroStateScript.DEAD_RESPAWNING:
 		return result
-	if not god_state.try_spend_resurrection(quest_runner.respawn_ticks_remaining):
+	if not god_state.try_spend_resurrection(respawn_owner.respawn_ticks_remaining):
 		return result
-	var event = quest_runner.force_resurrection(hero_state, combat_stats)
+	var event = respawn_owner.force_resurrection(hero_state, combat_stats)
 	result["event"] = event
 	result["succeeded"] = event != null
 	return result

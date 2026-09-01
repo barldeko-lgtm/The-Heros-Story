@@ -4,7 +4,7 @@ This document describes what is **actually implemented now**.
 
 ## Current development focus
 
-The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement and ordinary quest travel are now map-backed; later travel events, dungeons, and city relocation remain unintegrated.
+The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and the first dungeon placement/discovery/travel/combat/retry-readiness slice are now map-backed; potion preparation, dungeon completion rewards, temporary travel events, and city relocation remain unintegrated.
 
 Implemented:
 - one autonomous hero;
@@ -27,35 +27,39 @@ Implemented:
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
 - current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and 10% category damage for Noble/Dishonorable;
-- headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, and one-selection quest guidance;
+- headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, one-selection quest guidance, and Divine Vision for revealing an unknown dungeon in the current region;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
 - separate quest narration;
 - debug log;
 - empty diary shell;
 - rough developer UI;
+- one Starting Region dungeon, `Заброшенные железные шахты`, spawned on one deterministic reserved hill hex 4–7 steps from the Starting City center; it begins unknown, is discovered either by Divine Vision or when the hero physically enters its hex, and uses the supplied 440×400 dungeon map sprite at 65 px draw height; the current developer map intentionally renders an unknown dungeon at 40% opacity while keeping its name hidden until discovery;
+- the first dungeon definition authors exactly three ordinary encounters using the same `Шахтный троглодит` (~200 Power, 150 XP) followed by the unique boss `Глубинный пожиратель` (~300 Power, 185 XP); discovery does not interrupt the hero's current activity, and after the current quest is turned in and the normal market/shopping routine finishes a known local dungeon is considered before another ordinary quest only if its current readiness check passes; `DungeonRunner` sends the hero along the real `TravelSystem` route and then executes the authored 3+boss sequence through the same live `CombatSession` used by quests; current HP carries between encounters, each ordinary victory creates exactly one world tick of between-fight preparation with no healing in the current no-potion slice, the boss follows after the third such preparation tick, ordinary/boss combat grants XP but no ordinary equipment drop or per-mob Gold, boss victory marks the runtime dungeon completed, and dungeon death returns the hero to the city with the normal 100-tick resurrection/city-recovery flow; every failed attempt now remembers the HeroPower recorded when that attempt began and the reached progress, and later post-shopping dungeon decisions are blocked until Power reaches the current retry gate: +25% if no ordinary enemy was killed, +15% after ordinary progress before the boss, or +10% after reaching the boss; a new failed retry replaces the baseline with that retry's own starting HeroPower; potion readiness and completion Gold/item rewards are not implemented yet;
 - a 20 × 15 exact-color PNG-driven hex world foundation where all 300 cells become `HexDefinition` objects with logical coordinates, terrain, city-region ownership, and permanent semantic tags; current tags are `city` on all 14 city hexes, `city_center` on the two city centers, and `road` on the authored ordered road path, with ordinary untagged cells allowed; each city region extends up to seven hex steps from its city center, overlapping candidates belong to the nearer city, four equal-distance boundary hexes are split left/right 2/2, and the resulting current map contains 124 Starting Region hexes, 124 Mid Region hexes, and 52 peripheral hexes with no region; `HexMap` can return complete radius areas around a center, `WorldState` can atomically reserve/release map hexes for active activities with a strict one-activity-per-hex rule, `ActivityPlacementFinder` can filter valid activity centers, and `TravelSystem` now owns deterministic multi-tick hero movement along `HexMap` routes at exactly one adjacent hex per world tick; ordinary selected quests travel from the Starting City center to their real `QuestOffer.target_hex` and return to the city center after completion; plains/forest/hill cells render from three authored 158 × 140 RGBA sprite variants per biome, road cells temporarily reuse plains sprites under the existing road line, both seven-hex city clusters use the same authored 418 × 440 RGBA `town1.png` overlay at native size, and the current hero map visual uses the supplied high-resolution sprite scaled only at draw time to 120 px tall while following the live `WorldState.hero_position`; the map also has one-pixel black hex outlines on non-city cells, runtime route/distance queries, an interactive debug tooltip that shows coordinates, terrain, region, and tags, mouse-wheel zoom, and right-button drag panning;
 - automated regression tests and GitHub CI.
 
 Current next major gameplay step:
-- not yet selected after completing the first ordinary quest placement + real map-travel slice; travel interruption/resumption for temporary events, dungeons, and city relocation remain later Prototype 0.2 work.
+- continue the first ordinary-dungeon vertical slice from its working sequential combat + Power retry-readiness loop into Belt/potion preparation/use and completion rewards.
 
 Still missing from the current build:
 - diary episodes;
 - player-facing quest-guidance selection UI;
-- travel interruption/resumption, temporary events, dungeons, and city-to-city relocation on the new map.
+- Belt/potion preparation/use, the remaining potion side of dungeon readiness, and completion Gold/item rewards beyond the current first-dungeon placement/discovery/post-quest-priority/travel/3+boss combat/+25%/+15%/+10% Power retry slice;
+- travel interruption/resumption, temporary events, and city-to-city relocation on the new map.
 
 ## God-system core
 
 `scripts/god/god_state.gd` owns 100 maximum/starting energy, +1 energy per 6 world ticks, ability cooldowns, and one pending guided quest id. `scripts/god/god_system.gd` validates and applies the current divine commands through the state owners they affect. The active five-fight blessing itself lives in `HeroState.active_effects` as a real stat source.
 
-`Simulation` retains compatible public wrappers for all four approved commands so UI does not depend directly on God-system internals:
+`Simulation` retains compatible public wrappers for the currently implemented divine commands so UI does not depend directly on God-system internals:
 - instant resurrection at `RemainingRespawnTicks × 0.5` energy;
 - divine healing for 10 energy, +50% MaxHP, 30-tick cooldown;
 - combat buff for 10 energy, +15% resolved Physical Damage for the next 5 fights, 120-tick cooldown;
-- quest guidance for 5 energy, +0.20 DivineModifier for one next selection, 360-tick cooldown.
+- quest guidance for 5 energy, +0.20 DivineModifier for one next selection, 360-tick cooldown;
+- Divine Vision for 80 energy and a 1500-world-tick cooldown, revealing one random existing unknown dungeon in the hero's current region.
 
-The center-top god panel now displays energy and provides working buttons for healing, combat blessing, and instant resurrection. Healing can modify live CombatSession HP during a fight. Quest guidance remains headless-only until its selection UI is approved.
+The center-top god panel now displays energy and provides working buttons for healing, combat blessing, instant resurrection, and Divine Vision. Healing can modify live CombatSession HP during a fight. Quest guidance remains headless-only until its selection UI is approved.
 
 ## World time
 
@@ -85,6 +89,11 @@ Current loop states include:
 - `TURNING_IN_QUEST`;
 - `VISITING_MARKET`;
 - `SHOPPING`;
+- `TRAVEL_TO_DUNGEON`;
+- `AT_DUNGEON_ENTRANCE`;
+- `DOING_DUNGEON`;
+- `DUNGEON_BETWEEN_FIGHTS`;
+- `DUNGEON_COMPLETED`;
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
@@ -134,7 +143,7 @@ Common items have no random affix, Uncommon items have one, and Rare items have 
 
 Every generated candidate is now evaluated through virtual equip before routing. `EquipmentEvaluator` compares the hero's full base persistent HeroPower with the current loadout against a copied loadout containing the candidate. Any rarity, including the same rarity as the equipped item, replaces it only when candidate HeroPower is strictly higher. Equal or weaker candidates enter Inventory. Temporary divine effects are excluded, displayed ItemPower is not used as the decision rule, and evaluation does not mutate live equipment.
 
-Current equipment reference prices are centralized for ilvl 1/10/20. White uses 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 1 White/Green/Rare items sell for 10/30/90 Gold, while ilvl 10 equivalents sell for 50/150/450 Gold. Successful quest turn-in enters `VISITING_MARKET`. On the following dedicated world tick, every unequipped ordinary item in Inventory is sold, removed, and converted into Gold, then the hero enters `SHOPPING`. Each later shopping world tick can buy at most one equipment item. A candidate must be affordable, meet the current +20% ItemPower threshold against the equipped comparison item, and improve the hero through the real virtual-equip HeroPower evaluation. Among valid candidates the hero chooses the largest real HeroPower gain. Purchased stock positions remain empty until refresh; replaced equipped gear is sold immediately for its normal resale value instead of entering Inventory. When no further valid purchase exists, the hero returns to `CHOOSING_QUEST`. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
+Current equipment reference prices are centralized for ilvl 1/10/20. White uses 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 1 White/Green/Rare items sell for 10/30/90 Gold, while ilvl 10 equivalents sell for 50/150/450 Gold. Successful quest turn-in enters `VISITING_MARKET`. On the following dedicated world tick, every unequipped ordinary item in Inventory is sold, removed, and converted into Gold, then the hero enters `SHOPPING`. Each later shopping world tick can buy at most one equipment item. A candidate must be affordable, meet the current +20% ItemPower threshold against the equipped comparison item, and improve the hero through the real virtual-equip HeroPower evaluation. Among valid candidates the hero chooses the largest real HeroPower gain. Purchased stock positions remain empty until refresh; replaced equipped gear is sold immediately for its normal resale value instead of entering Inventory. When no further valid purchase exists, the hero normally returns to `CHOOSING_QUEST`; if a local dungeon is known, `DungeonEvaluator` first checks its current retry readiness. A first attempt may start immediately, while a dungeon with failed-attempt memory starts only when current HeroPower reaches the remembered +25% / +15% / +10% threshold; otherwise the hero returns to ordinary quest progression. Dungeon discovery still never interrupts an activity already in progress. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
 
 The Starting City shop uses two authored stock-band resources: ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard. Each band samples six distinct White slots and two distinct Green slots from the seven current armor/weapon/shield slots, for 16 listings when fully stocked. Concrete stats, affix budgets, rarity behavior, ItemPower, and prices still come from shared item-generation/economy data. Green listings use the normal generated-affix pipeline. The shop uses a deterministic RNG stream derived from the simulation seed so shop rotation remains reproducible without perturbing the existing main simulation RNG sequence. Full stock refresh occurs at world ticks 200, 400, 600, and so on regardless of where the hero is. Before each shopping decision tick, the developer debug log prints one compact assortment summary by rarity and readable slot name without dumping item stats.
 
@@ -237,7 +246,8 @@ choose quest
 → Gold
 → one market/sale tick
 → one or more shopping ticks while meaningful affordable upgrades exist
-→ repeat
+→ if no ready local dungeon: repeat ordinary quest loop
+→ if a local dungeon passes first-attempt/retry readiness: TRAVEL_TO_DUNGEON → AT_DUNGEON_ENTRANCE
 ```
 
 Current defeat loop:

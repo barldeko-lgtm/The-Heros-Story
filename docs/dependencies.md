@@ -203,12 +203,15 @@ assets/map/prototype_02_hex_layout.png
 → HexMap runtime adjacency / radius / route / distance queries
 → WorldState mutable hero position + active-activity hex occupancy
 → ActivityPlacementFinder valid center queries from region / distance / terrain / tags / free footprint
+→ DungeonSystem uses a dedicated seeded placement RNG to choose/reserve the first dungeon target and owns known/unknown discovery state
 → QuestPool uses a dedicated seeded placement RNG to choose and reserve current QuestOffer.target_hex values
 → TravelSystem owns the active adjacent-hex route and advances WorldState.hero_position by one route step per completed world tick
 → QuestRunner starts outward/return travel for the already selected QuestOffer and reacts to TravelSystem arrival
-→ future Dungeon / Event systems reuse the same placement/reservation and travel foundations
-→ MapTileVisuals loads 3 authored 158 × 140 sprites per normal biome + 418 × 440 town overlay + optional high-resolution hero map sprite
-→ MapScreen sprite drawing / city overlays / live quest sprites / live hero sprite / hover inspection / camera transform
+→ after a known-dungeon post-quest city decision, DungeonRunner starts/advances the real route to the dungeon entrance through the same TravelSystem
+→ DungeonRunner owns the authored encounter cursor / between-fight timing while Simulation uses the same shared CombatSession for each dungeon fight
+→ future potion/retry/reward logic / Event systems reuse the same placement/reservation and travel foundations
+→ MapTileVisuals loads 3 authored 158 × 140 sprites per normal biome + 418 × 440 town overlay + hero/quest/dungeon map sprites
+→ MapScreen sprite drawing / city overlays / live quest sprites / dungeon debug/discovered sprites / live hero sprite / hover inspection / camera transform
 ```
 
 Contracts:
@@ -229,21 +232,30 @@ Contracts:
 - hero presence does not reserve a hex as an activity; changing `WorldState.hero_position` must validate the destination through `HexMap`; destination choice and tick-by-tick travel do not belong to `WorldState`;
 - `ActivityPlacementFinder` is a read-only placement filter: the requested center must belong to the requested region, lie inside the inclusive min/max hex-step distance from the supplied origin, satisfy any allowed-terrain filter plus the center's allowed/forbidden tag filters, and have a complete footprint for the requested radius; every footprint hex must remain inside the same region and be unoccupied; allowed terrain and allowed/forbidden tags apply to the center only, a non-empty terrain list requires an exact terrain-id match, and a non-empty allowed-tag list means at least one listed tag must match;
 - current Starting City `QuestDefinition` resources already author future map placement through inclusive `placement_distance_hex_min/max`, optional `placement_allowed_terrain_ids`, optional `placement_allowed_tags`, and `placement_forbidden_tags`; every current ordinary quest forbids `city`, and the thirteen-template set is regression-tested to fit simultaneously on unique Starting Region hexes;
-- `ActivityPlacementFinder` remains a pure filter and does not choose a candidate, reserve cells, create runtime activities, or mutate Simulation; current `QuestPool` is now its first consumer, using a dedicated seeded placement RNG and then reserving the chosen radius-0 target through `WorldState`; future Dungeon/Event systems remain responsible for their own choice/lifecycle logic;
+- `ActivityPlacementFinder` remains a pure filter and does not choose a candidate, reserve cells, create runtime activities, or mutate Simulation; current `DungeonSystem` and `QuestPool` are separate consumers, each using its own deterministic placement RNG stream and reserving its chosen footprint through `WorldState`; future Event systems remain responsible for their own choice/lifecycle logic;
 - each current board `QuestOffer` owns one concrete `target_hex` plus the reservation id that protects that hex and a `map_distance_steps` value equal to the actual shortest route length from the Starting City center; live QuestScore travel estimation uses that real route distance whenever a map target exists, while legacy `distance_km_min/max` remains only for fixed compatibility offers that have no map target;
 - `TravelSystem` owns only active map-route execution: `start_travel()` builds a deterministic `HexMap` route from the current hero position to the destination, starting travel does not teleport the hero, and each `advance_one_tick()` moves `WorldState.hero_position` to exactly one adjacent route cell until arrival;
 - `QuestRunner` remains the ordinary-quest execution owner: on a map-backed selected offer it starts `TravelSystem` toward `target_hex`, enters combat only after the hero physically reaches that target, and after the final objective/recovery starts a real return route to the Starting City center; it does not calculate pathfinding itself;
+- discovering a dungeon never interrupts the current activity or replaces an active quest route; after successful quest turn-in, the dedicated market tick and all current shopping decisions finish first; only when shopping has no further valid purchase does a known dungeon in the hero's current region become a candidate for dungeon readiness instead of automatically overriding `CHOOSING_QUEST`;
+- `DungeonRunner` owns the dungeon-specific route and expedition sequence: it records base HeroPower at the start of each approved attempt; after reaching the real `target_hex` the first authored encounter becomes combat-ready, every ordinary victory preserves current HP and enters exactly one `DUNGEON_BETWEEN_FIGHTS` world tick with no current free healing, then the next ordinary fight or boss becomes ready; boss victory marks the runtime dungeon completed; failure reports the start Power and reached progress; it does not reuse or expand `QuestRunner`;
+- `DungeonEvaluator` owns the current retry Power gate and does not participate in QuestScore: first attempt has no retry threshold; a failed attempt stores its starting HeroPower and requires +25% after zero ordinary kills, +15% after ordinary progress before the boss, or +10% after reaching the boss; a later failed retry replaces the remembered baseline with that attempt's own starting HeroPower;
+- after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and permits a new attempt once the threshold is reached; potion readiness is not yet part of this gate;
+- dungeon fights use the same `CombatSession` / Warrior Rage / Power Strike / Battle Guard / trait damage path as quest fights; each fight starts from carried `HeroState.current_hp` rather than resetting to MaxHP;
+- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; completion Gold/item reward remains a separate not-yet-implemented stage;
+- dungeon death is owned by `DungeonRunner`: the hero returns to the safe city map hex, uses the normal 100-tick respawn and 1-HP resurrection/city-recovery contract, and Divine instant resurrection routes through the active respawn owner instead of pretending the death belongs to `QuestRunner`;
 - the accepted quest target stays reserved during outward travel, combat, and between-fight recovery; when the final objective is complete and return travel begins, the reservation is released; on fatal cancellation it is released immediately and the dead hero is returned to the safe city position for the resurrection timer; replacement offers acquire a new valid reservation only when their board slot is regenerated;
 - `MapTileVisuals` is presentation-only and loads exactly three `158 × 140` project PNGs each for plains, forest, and hills from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; selection is deterministic by hex coordinates, while road and city cells temporarily reuse plains art as their base terrain visual. It also resolves the hero map texture from `res://assets/map/characters/hero_map.png`; it does not own hero position;
 - `MapScreen` is observation-only presentation: it reads runtime hex data, current board QuestOffers, and the live hero position from Simulation; it draws biome textures 1:1 at base zoom, keeps one-pixel black outlines on non-city hexes, omits internal city-hex outlines, draws `town1.png` as a native-size overlay on both seven-hex city clusters, and draws each currently placed QuestOffer with `res://assets/map/activities/quest.png` at its `target_hex`. The supplied 426 × 400 source is kept unchanged and scaled only at draw time to 65 px tall (about 69.2 × 65 px), centered on the target hex. Quest-marker and hero-position changes trigger redraws and both sprites scale/pan with map content. The hero sprite follows the real tick-by-tick `WorldState.hero_position` produced by `TravelSystem`. The screen exposes current coordinates, terrain, region, and permanent semantic tags through the debug hover tooltip and owns only presentation camera state; it must not choose destinations, reserve/release activities, move the hero, calculate travel time, or otherwise modify Simulation;
+- the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one no-heal preparation tick after each ordinary encounter, including before the boss;
+- MapScreen uses `assets/map/activities/dungeon.png` at 65 px draw height; the current developer-only view deliberately shows an unknown dungeon at 40% opacity while keeping its identity out of the tooltip, then renders it fully opaque and named after discovery;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- ordinary quest-board locations and ordinary quest travel are now integrated; current-route presentation, travel interruption/resumption, city relocation, events, dungeons, discovery, and hidden-information rules remain intentionally unintegrated.
+- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness are integrated; current-route presentation, travel interruption/resumption, city relocation, events, Belt/potion readiness/use, and dungeon completion rewards remain intentionally unintegrated.
 
 ## UI boundary
 
 `main_ui.gd` coordinates top-level screens and the remaining main developer panels. It instantiates `InventoryScreen`, `GodPanel`, and `NarrativePanel`, supplies the same live `Simulation` to each, and owns Inventory Back/close navigation.
 
-It may read `QuestRunner.respawn_ticks_remaining` for the current developer-state label, but it does not decrement the timer or change HP/state.
+It may read the active respawn countdown only through `Simulation.get_respawn_ticks_remaining()` so quest- and dungeon-owned deaths display consistently; UI does not decrement the timer or change HP/state.
 
 `scripts/ui/screens/inventory_screen.gd` reads equipped and retained-item state to display icons, quality outlines, tooltips, and portrait overlays. Its equipment layout is fixed to five armor slots left of the portrait, main-hand/off-hand below it, and necklace/earrings/two-rings/belt on the right. It does not grant, equip, drop, or modify items.
 
@@ -273,7 +285,8 @@ resurrection
 - Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
 - the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
-- UI must call Simulation command wrappers rather than mutate GodState, GodSystem, HP, quest scores, combat stats, or respawn state directly.
+- Divine Vision costs 80 Energy, starts a 1500-world-tick cooldown, and may reveal one random already-existing unknown dungeon only in the hero's current region; it never creates a dungeon or orders the hero to visit it;
+- UI must call Simulation command wrappers rather than mutate GodState, GodSystem, dungeon discovery state, HP, quest scores, combat stats, or respawn state directly.
 
 ## Current equipment drop slice and future loot hook
 
@@ -311,7 +324,9 @@ successful HERO_TURNED_IN_QUEST
 → immediately sell replaced equipped item at normal resale value
 → purchased listing remains empty
 → repeat on later ticks while another valid purchase exists
-→ HeroState.CHOOSING_QUEST
+→ if a local dungeon is known: DungeonEvaluator checks first-attempt / remembered retry Power readiness
+→ if ready: DungeonRunner → TRAVEL_TO_DUNGEON
+→ if blocked by retry Power: HeroState.CHOOSING_QUEST
 ```
 
 Starting City stock:
@@ -345,6 +360,7 @@ Contracts:
 - successful turn-in does not sell immediately; it schedules exactly one `VISITING_MARKET` world tick;
 - the market tick performs sale only and then enters `SHOPPING`; buying cannot occur during the sale tick;
 - each `SHOPPING` world tick may consume at most one listing, so multiple purchases require multiple world ticks;
+- dungeon discovery never skips the market or shopping phases; only after shopping finishes may a known dungeon replace the normal transition back to `CHOOSING_QUEST`, and only when `DungeonEvaluator` says its current first-attempt/retry readiness passes;
 - a shop candidate must be affordable, at least 20% stronger by displayed ItemPower than the equipped comparison item when one exists, and a strict real HeroPower improvement through virtual equip;
 - among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;

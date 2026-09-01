@@ -1641,7 +1641,7 @@ After failure, the hero remembers how far they progressed.
 
 The current working retry-readiness gates are:
 
-- died before killing one ordinary dungeon enemy → retry after approximately **+20% Hero Power** from the start of that attempt;
+- died before killing one ordinary dungeon enemy → retry after approximately **+25% Hero Power** from the start of that attempt;
 - killed at least one ordinary enemy but did not reach boss → retry after approximately **+15% Hero Power**;
 - reached boss and died → retry after approximately **+10% Hero Power**.
 

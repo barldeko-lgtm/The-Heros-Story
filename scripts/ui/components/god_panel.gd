@@ -106,8 +106,9 @@ func refresh() -> void:
 	elif god.combat_buff_cooldown_ticks > 0:
 		combat_buff_button.text = "Благословение\nКД: %d" % god.combat_buff_cooldown_ticks
 
-	var resurrection_cost: float = god.get_resurrection_cost(simulation.quest_runner.respawn_ticks_remaining)
-	instant_resurrection_button.disabled = not hero_is_dead or simulation.quest_runner.respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
+	var respawn_ticks_remaining: int = simulation.get_respawn_ticks_remaining()
+	var resurrection_cost: float = god.get_resurrection_cost(respawn_ticks_remaining)
+	instant_resurrection_button.disabled = not hero_is_dead or respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
 	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
 
 	var has_unknown_dungeon: bool = simulation.has_unknown_dungeon_in_current_region()

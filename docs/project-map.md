@@ -25,6 +25,7 @@ Coordinates:
 - live CombatSession;
 - QuestPool / QuestEvaluator;
 - QuestRunner;
+- DungeonSystem / DungeonRunner;
 - QuestNarrator;
 - DebugLog;
 - Diary shell;
@@ -161,13 +162,51 @@ It does not award XP, choose quests, calculate QuestScore, or implement combat i
 ### `scripts/quests/quest_event.gd`
 Structured quest/runtime events, including death, resurrection, and city recovery.
 
+## Dungeons
+
+### `scripts/model/definitions/dungeon_definition.gd` / `data/dungeons/starting_region/0001_abandoned_iron_mines.tres`
+Immutable ordinary-dungeon data. The first dungeon is `Заброшенные железные шахты`: Starting Region, hill terrain, 4–7 hex steps from the Starting City center, one reserved hex. Its current authored encounter content is exactly three ordinary fights using one shared `Шахтный троглодит` definition followed by the unique boss `Глубинный пожиратель`. The definition stores content only; it does not execute the expedition.
+
+### `data/dungeons/starting_region/0001_mine_troglodyte.tres` / `0001_deep_devourer.tres`
+Dungeon-only `MobDefinition` resources. The Mine Troglodyte is tuned to approximately 200 shared Power and grants 150 XP; the Deep Devourer is approximately 300 shared Power and grants 185 XP. They are not ordinary city-quest mobs, grant no per-mob Gold, and have no normal equipment-drop table.
+
+### `scripts/model/runtime/dungeon_instance.gd`
+Runtime dungeon placement/knowledge/progress state: immutable definition reference, concrete `target_hex`, reservation id, discovered flag/source, completed flag, and persistent failed-attempt memory used by retry readiness: attempt count, HeroPower at the start of the latest failed attempt, ordinary progress, and whether the boss was reached. It does not duplicate the tunable +25% / +15% / +10% balance rules; `DungeonEvaluator` derives the current requirement from this memory.
+
+### `scripts/dungeons/dungeon_system.gd`
+Owns current dungeon map placement and discovery. It chooses valid free centers through `ActivityPlacementFinder`, reserves dungeon footprints through `WorldState`, exposes known/unknown dungeon views including discovered dungeons by region, discovers a dungeon when the hero physically enters its exact hex, and supports revealing one random unknown dungeon in a region for Divine Vision. It does not execute travel or dungeon combat.
+
+### `scripts/dungeons/dungeon_runner.gd`
+Owns the current first expedition slice after the city decision point. It accepts an already-discovered uncompleted dungeon after readiness has been approved, records HeroPower at the start of that expedition, starts the shared `TravelSystem` route to its real `target_hex`, owns the authored encounter cursor, carries current hero HP between fights, inserts exactly one world tick of preparation after every ordinary victory, advances into the boss after the third ordinary encounter, marks completion after boss victory, and owns dungeon-specific 100-tick death/resurrection + city-recovery state. On failure it reports the attempt-start Power and reached progress so retry memory can be recorded. The current preparation tick performs no healing because Belt/potions are not implemented yet. Combat itself remains the shared `CombatSession`; `QuestRunner` is not reused for dungeon execution.
+
+### `scripts/dungeons/dungeon_evaluator.gd`
+Owns the current dungeon retry-readiness Power rules without participating in QuestScore. A first attempt has no Power retry gate. After failure it requires current base HeroPower to reach the remembered threshold from that failed attempt: **+25%** when no ordinary enemy was killed, **+15%** after at least one ordinary victory without reaching the boss, or **+10%** after reaching the boss. The comparison uses the HeroPower recorded at the start of that failed attempt. Potion readiness remains a separate later condition.
+
+### `scripts/narrative/dungeon_narrator.gd`
+Presentation-only dungeon combat/debug narration for encounter starts/actions, victories, one-tick preparation, death/resurrection/recovery, and completion. It does not resolve combat or change dungeon state.
+
+### `tests/test_dungeon_map_discovery.gd`
+Protects first-dungeon placement, reservation, unknown/known state, physical discovery, Divine Vision discovery, and the current 40%-visible developer marker before discovery.
+
+### `tests/test_first_dungeon_content.gd`
+Protects the first dungeon's authored `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` encounter structure and the absence of ordinary Gold/equipment drops.
+
+### `tests/test_dungeon_post_quest_decision.gd`
+Protects the current autonomous decision boundary: discovery cannot interrupt the active quest, the normal quest turn-in → market → shopping routine still completes first, a known local dungeon then takes priority over another ordinary quest, and the hero physically travels to its real map hex where the first encounter becomes ready without an extra arrival-delay tick.
+
+### `tests/test_dungeon_combat_sequence.gd`
+Protects the live first-dungeon combat loop: three real shared-CombatSession troglodyte fights, exactly one no-heal world tick between encounters including before the boss, carried HP, boss completion, 635 total combat XP, no ordinary Gold/equipment drops, and dungeon-owned death/instant-resurrection behavior.
+
+### `tests/test_dungeon_retry_readiness.gd`
+Protects the +25% / +15% / +10% retry thresholds, persistent failed-attempt Power/progress memory, blocking an immediate same-Power retry after first-room death, and allowing a later retry once the remembered required HeroPower is reached.
+
 ## God system
 
 ### `scripts/god/god_state.gd`
 Owns energy, six-tick recovery progress, ability cooldowns, pending quest guidance, and resurrection energy cost. The active blessing and its remaining fights live in `HeroState.active_effects`.
 
 ### `scripts/god/god_system.gd`
-Owns divine-command rules and applies them through the existing state owners: live/non-combat healing, instant resurrection through `QuestRunner`, five-fight blessing activation/consumption in `HeroState.active_effects`, and validation of quest-guidance targets. It returns structured results where coordination is still required. `Simulation` keeps the stable public command wrappers, refreshes resolved stats after blessing changes, and records resurrection narrative.
+Owns divine-command rules and applies them through the existing state owners: live/non-combat healing, instant resurrection through whichever active respawn owner currently owns the death state (`QuestRunner` or `DungeonRunner`), five-fight blessing activation/consumption in `HeroState.active_effects`, and validation of quest-guidance targets. It returns structured results where coordination is still required. `Simulation` keeps the stable public command wrappers, refreshes resolved stats after blessing changes, and records context-appropriate resurrection narrative.
 
 ### `tests/test_god_state.gd`
 Protects energy, recovery, cooldown activation rules, guidance consumption, and resurrection cost.

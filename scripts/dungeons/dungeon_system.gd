@@ -70,6 +70,15 @@ func get_discovered_dungeons() -> Array:
 			result.append(instance)
 	return result
 
+func get_discovered_dungeons_in_region(region_id: String) -> Array:
+	var result: Array = []
+	for instance in dungeon_instances:
+		if instance == null or not instance.discovered or instance.completed or instance.definition == null:
+			continue
+		if instance.definition.region_id == region_id:
+			result.append(instance)
+	return result
+
 func get_unknown_dungeons_in_region(region_id: String) -> Array:
 	var result: Array = []
 	for instance in dungeon_instances:

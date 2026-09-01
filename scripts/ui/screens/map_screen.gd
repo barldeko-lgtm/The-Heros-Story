@@ -15,6 +15,7 @@ const HEX_OUTLINE_WIDTH: float = 1.0
 const HERO_MAP_DRAW_HEIGHT: float = 120.0
 const HERO_MAP_DRAW_OFFSET: Vector2 = Vector2(0.0, -5.0)
 const QUEST_MAP_DRAW_HEIGHT: float = 65.0
+const DUNGEON_MAP_DRAW_HEIGHT: float = 65.0
 const QUEST_SELECTED_OUTLINE_COLOR: Color = Color("ff8c00")
 const QUEST_SELECTED_OUTLINE_NEAR_OFFSET: float = 2.0
 const QUEST_SELECTED_OUTLINE_MIDDLE_OFFSET: float = 4.0
@@ -31,6 +32,7 @@ const DUNGEON_MARKER_OUTER_COLOR: Color = Color("3f3448")
 const DUNGEON_MARKER_STONE_COLOR: Color = Color("8d785f")
 const DUNGEON_MARKER_ENTRANCE_COLOR: Color = Color("17151a")
 const DUNGEON_MARKER_TEXT_COLOR: Color = Color("2a202f")
+const DUNGEON_UNDISCOVERED_DEBUG_ALPHA: float = 0.40
 const MAP_ORIGIN: Vector2 = Vector2.ZERO
 const MIN_MAP_ZOOM: float = 0.6
 const MAX_MAP_ZOOM: float = 2.0
@@ -160,14 +162,24 @@ func get_discovered_dungeons() -> Array:
 		return []
 	return simulation.dungeon_system.get_discovered_dungeons()
 
+func get_dungeon_marker_instances() -> Array:
+	if simulation == null or simulation.dungeon_system == null:
+		return []
+	return simulation.dungeon_system.get_all_dungeons()
+
 func get_dungeon_marker_signature() -> String:
 	var parts := PackedStringArray()
-	for dungeon_instance in get_discovered_dungeons():
+	for dungeon_instance in get_dungeon_marker_instances():
 		if dungeon_instance == null or not dungeon_instance.has_map_target() or not hex_centers.has(dungeon_instance.target_hex):
 			continue
-		parts.append("%s:%d:%d" % [dungeon_instance.map_activity_id, dungeon_instance.target_hex.x, dungeon_instance.target_hex.y])
+		parts.append("%s:%d:%d:%s" % [dungeon_instance.map_activity_id, dungeon_instance.target_hex.x, dungeon_instance.target_hex.y, str(dungeon_instance.discovered)])
 	parts.sort()
 	return "|".join(parts)
+
+func get_dungeon_marker_alpha(dungeon_instance) -> float:
+	if dungeon_instance != null and dungeon_instance.discovered:
+		return 1.0
+	return DUNGEON_UNDISCOVERED_DEBUG_ALPHA
 
 func get_discovered_dungeon_at_hex(cell: Vector2i):
 	if simulation == null or simulation.dungeon_system == null:
@@ -456,6 +468,9 @@ func get_quest_visual_texture() -> Texture2D:
 func get_quest_outline_mask_texture() -> Texture2D:
 	return map_tile_visuals.get_quest_outline_mask_texture()
 
+func get_dungeon_visual_texture() -> Texture2D:
+	return map_tile_visuals.get_dungeon_map_texture()
+
 func get_hero_visual_rect() -> Rect2:
 	var hero_texture: Texture2D = get_hero_visual_texture()
 	var hero_cell: Vector2i = get_hero_cell()
@@ -479,6 +494,17 @@ func get_quest_marker_rect(offer) -> Rect2:
 	var draw_size: Vector2 = source_size * draw_scale
 	return Rect2(hex_centers[offer.target_hex] - draw_size * 0.5, draw_size)
 
+func get_dungeon_marker_rect(dungeon_instance) -> Rect2:
+	var dungeon_texture: Texture2D = get_dungeon_visual_texture()
+	if dungeon_texture == null or dungeon_instance == null or not dungeon_instance.has_map_target() or not hex_centers.has(dungeon_instance.target_hex):
+		return Rect2()
+	var source_size: Vector2 = dungeon_texture.get_size()
+	if source_size.y <= 0.0:
+		return Rect2()
+	var draw_scale: float = DUNGEON_MAP_DRAW_HEIGHT / source_size.y
+	var draw_size: Vector2 = source_size * draw_scale
+	return Rect2(hex_centers[dungeon_instance.target_hex] - draw_size * 0.5, draw_size)
+
 func draw_quest_markers() -> void:
 	var quest_texture: Texture2D = get_quest_visual_texture()
 	var quest_outline_mask: Texture2D = get_quest_outline_mask_texture()
@@ -497,16 +523,21 @@ func draw_quest_markers() -> void:
 		draw_string(ThemeDB.fallback_font, center + Vector2(-7.0, 7.0), "!", HORIZONTAL_ALIGNMENT_CENTER, 14.0, 18, QUEST_MARKER_TEXT_COLOR)
 
 func draw_dungeon_markers() -> void:
-	for dungeon_instance in get_discovered_dungeons():
+	var dungeon_texture: Texture2D = get_dungeon_visual_texture()
+	for dungeon_instance in get_dungeon_marker_instances():
 		if dungeon_instance == null or not dungeon_instance.has_map_target() or not hex_centers.has(dungeon_instance.target_hex):
 			continue
+		var marker_alpha: float = get_dungeon_marker_alpha(dungeon_instance)
+		if dungeon_texture != null:
+			draw_texture_rect(dungeon_texture, get_dungeon_marker_rect(dungeon_instance), false, Color(1.0, 1.0, 1.0, marker_alpha))
+			continue
 		var center: Vector2 = hex_centers[dungeon_instance.target_hex]
-		draw_circle(center, 24.0, DUNGEON_MARKER_OUTER_COLOR)
-		draw_circle(center, 19.0, DUNGEON_MARKER_STONE_COLOR)
-		draw_rect(Rect2(center + Vector2(-12.0, 1.0), Vector2(24.0, 17.0)), DUNGEON_MARKER_STONE_COLOR)
-		draw_circle(center + Vector2(0.0, 3.0), 10.0, DUNGEON_MARKER_ENTRANCE_COLOR)
-		draw_rect(Rect2(center + Vector2(-10.0, 3.0), Vector2(20.0, 15.0)), DUNGEON_MARKER_ENTRANCE_COLOR)
-		draw_string(ThemeDB.fallback_font, center + Vector2(-27.0, 39.0), "ДАНЖ", HORIZONTAL_ALIGNMENT_CENTER, 54.0, 11, DUNGEON_MARKER_TEXT_COLOR)
+		draw_circle(center, 24.0, Color(DUNGEON_MARKER_OUTER_COLOR, marker_alpha))
+		draw_circle(center, 19.0, Color(DUNGEON_MARKER_STONE_COLOR, marker_alpha))
+		draw_rect(Rect2(center + Vector2(-12.0, 1.0), Vector2(24.0, 17.0)), Color(DUNGEON_MARKER_STONE_COLOR, marker_alpha))
+		draw_circle(center + Vector2(0.0, 3.0), 10.0, Color(DUNGEON_MARKER_ENTRANCE_COLOR, marker_alpha))
+		draw_rect(Rect2(center + Vector2(-10.0, 3.0), Vector2(20.0, 15.0)), Color(DUNGEON_MARKER_ENTRANCE_COLOR, marker_alpha))
+		draw_string(ThemeDB.fallback_font, center + Vector2(-27.0, 39.0), "ДАНЖ", HORIZONTAL_ALIGNMENT_CENTER, 54.0, 11, Color(DUNGEON_MARKER_TEXT_COLOR, marker_alpha))
 
 func draw_selected_quest_outline(outline_mask_texture: Texture2D, marker_rect: Rect2) -> void:
 	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_OUTER_OFFSET, QUEST_SELECTED_OUTLINE_OUTER_ALPHA)

@@ -120,17 +120,22 @@ Status:
 
 ## 8. Dungeons
 
-- ⬜ Runtime dungeon definitions/instances and map placement.
-- ⬜ Dungeon discovery / known-vs-unknown world knowledge.
-- ⬜ 2 ordinary dungeons in Starting Region.
-- ⬜ 2 ordinary dungeons in Mid Region.
-- ⬜ 3–5 ordinary encounters + boss flow.
-- ⬜ Dungeon readiness rules.
+- ✅ Runtime dungeon definition/instance foundation and real map placement for the first Starting Region dungeon.
+- ✅ Dungeon discovery / known-vs-unknown world knowledge for physical hex entry and Divine Vision.
+- 🟡 Starting Region ordinary dungeons: **1 / 2** (`Заброшенные железные шахты`).
+- ⬜ Mid Region ordinary dungeons: **0 / 2**.
+- ✅ First dungeon executes its authored `3 × Шахтный троглодит → Глубинный пожиратель` sequence through the shared live combat system.
+- ✅ Dungeon discovery does not interrupt the current activity; after quest turn-in → market → shopping, a known local dungeon takes priority over selecting another ordinary quest.
+- ✅ Real map travel to the known dungeon entrance through `TravelSystem`.
+- ✅ Dungeon combat preserves current HP between encounters, grants normal combat XP, and does not roll ordinary mob equipment drops.
+- ✅ Exactly 1 world tick of between-fight preparation after each ordinary encounter, including before the boss; the current no-potion slice gives no free healing.
+- ✅ Dungeon death uses the normal 100-tick resurrection / city-recovery contract and Divine instant resurrection.
+- 🟡 Dungeon readiness now includes post-failure HeroPower retry gates; first-attempt/potion preparation rules are still incomplete.
 - ⬜ Potion preparation before attempts.
-- ⬜ Between-fight potion healing.
-- ⬜ Failure memory and +20% / +15% / +10% retry Power gates.
+- 🟡 Between-fight potion window exists, but Belt/potion selection and actual healing are not implemented yet.
+- ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
 - ⬜ Dungeon completion Gold + Blue/Rare or Purple/Epic equipment reward.
-- ⬜ Divine Vision reveal integration.
+- ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
 ## 9. First Warrior specialization
 

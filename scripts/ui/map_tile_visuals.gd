@@ -17,6 +17,7 @@ const TOWN_01: Texture2D = preload("res://assets/map/biomes/town1.png")
 const TOWN_SIZE := Vector2i(418, 440)
 const HERO_MAP_PATH: String = "res://assets/map/characters/hero_map.png"
 const QUEST_MAP_PATH: String = "res://assets/map/activities/quest.png"
+const DUNGEON_MAP_PATH: String = "res://assets/map/activities/dungeon.png"
 
 var terrain_variants: Dictionary = {
 	"plains": [PLAINS_01, PLAINS_02, PLAINS_03],
@@ -25,6 +26,7 @@ var terrain_variants: Dictionary = {
 }
 var hero_map_texture: Texture2D
 var quest_map_texture: Texture2D
+var dungeon_map_texture: Texture2D
 var quest_outline_mask_texture: Texture2D
 
 func _init() -> void:
@@ -38,6 +40,7 @@ func _init() -> void:
 	assert(TOWN_01.get_size() == Vector2(TOWN_SIZE), "Town visual must remain exactly 418 by 440 pixels.")
 	hero_map_texture = load_optional_texture(HERO_MAP_PATH)
 	quest_map_texture = load_optional_texture(QUEST_MAP_PATH)
+	dungeon_map_texture = load_optional_texture(DUNGEON_MAP_PATH)
 	quest_outline_mask_texture = create_alpha_mask_texture(quest_map_texture)
 
 func get_variant_count(terrain_id: String) -> int:
@@ -63,6 +66,9 @@ func get_hero_map_texture() -> Texture2D:
 
 func get_quest_map_texture() -> Texture2D:
 	return quest_map_texture
+
+func get_dungeon_map_texture() -> Texture2D:
+	return dungeon_map_texture
 
 func get_quest_outline_mask_texture() -> Texture2D:
 	return quest_outline_mask_texture

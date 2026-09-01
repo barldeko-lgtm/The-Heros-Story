@@ -8,6 +8,11 @@ var target_hex: Vector2i = INVALID_TARGET_HEX
 var map_activity_id: String = ""
 var discovered: bool = false
 var discovery_source: String = ""
+var completed: bool = false
+var failed_attempt_count: int = 0
+var last_failed_attempt_start_power: float = 0.0
+var last_failure_ordinary_encounters_completed: int = 0
+var last_failure_reached_boss: bool = false
 
 func _init(initial_definition: Resource, initial_target_hex: Vector2i, initial_map_activity_id: String) -> void:
 	definition = initial_definition
@@ -23,3 +28,15 @@ func discover(source: String) -> bool:
 	discovered = true
 	discovery_source = source
 	return true
+
+func has_failed_attempt() -> bool:
+	return failed_attempt_count > 0
+
+func record_failed_attempt(attempt_start_power: float, ordinary_encounters_completed: int, reached_boss: bool) -> void:
+	failed_attempt_count += 1
+	last_failed_attempt_start_power = maxf(0.0, attempt_start_power)
+	last_failure_ordinary_encounters_completed = maxi(0, ordinary_encounters_completed)
+	last_failure_reached_boss = reached_boss
+
+func mark_completed() -> void:
+	completed = true

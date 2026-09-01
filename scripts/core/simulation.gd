@@ -8,6 +8,8 @@ const HexMapScript = preload("res://scripts/world/hex_map.gd")
 const WorldStateScript = preload("res://scripts/world/world_state.gd")
 const TravelSystemScript = preload("res://scripts/world/travel_system.gd")
 const DungeonSystemScript = preload("res://scripts/dungeons/dungeon_system.gd")
+const DungeonRunnerScript = preload("res://scripts/dungeons/dungeon_runner.gd")
+const DungeonEvaluatorScript = preload("res://scripts/dungeons/dungeon_evaluator.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
@@ -20,6 +22,7 @@ const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd"
 const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
 const DiaryScript = preload("res://scripts/narrative/diary.gd")
 const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
+const DungeonNarratorScript = preload("res://scripts/narrative/dungeon_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
@@ -41,11 +44,14 @@ const SHOP_RNG_SEED_OFFSET: int = 100003
 const QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 200003
 const DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 300003
 const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
+const COMBAT_CONTEXT_QUEST: String = "quest"
+const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
 var quest_narrator = QuestNarratorScript.new()
+var dungeon_narrator = DungeonNarratorScript.new()
 var time_scale: float = 1.0
 var simulation_seed: int = DEFAULT_SIMULATION_SEED
 var seeded_rng
@@ -53,11 +59,15 @@ var hex_map
 var world_state
 var travel_system
 var dungeon_system
+var dungeon_runner
+var dungeon_evaluator = DungeonEvaluatorScript.new()
 var dungeon_vision_rng: RandomNumberGenerator
 var hero_state
 var base_combat_stats
 var combat_stats
 var active_combat_session
+var active_combat_mob_definition: Resource
+var active_combat_context: String = ""
 var skip_quest_advance_on_completed_combat_tick: bool = false
 
 var hero_progression = HeroProgressionScript.new()
@@ -88,6 +98,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	world_state = WorldStateScript.new(hex_map)
 	travel_system = TravelSystemScript.new(hex_map, world_state)
 	dungeon_system = DungeonSystemScript.new([DefaultStartingDungeon])
+	dungeon_runner = DungeonRunnerScript.new(travel_system)
 	var dungeon_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + DUNGEON_PLACEMENT_RNG_SEED_OFFSET).get_rng()
 	dungeon_vision_rng = SeededRngScript.new(simulation_seed + DUNGEON_VISION_RNG_SEED_OFFSET).get_rng()
 	var dungeon_origins: Dictionary = {
@@ -128,6 +139,9 @@ func advance_time(delta_seconds: float) -> void:
 		if hero_state.loop_state == HeroState.DOING_QUEST:
 			start_combat()
 			continue
+		if hero_state.loop_state == HeroState.DOING_DUNGEON:
+			start_dungeon_combat()
+			continue
 		var seconds_until_next_tick: float = WorldClock.TICK_DURATION_SECONDS - world_clock.elapsed_seconds
 		var world_time_step: float = minf(remaining_seconds, seconds_until_next_tick)
 		if world_time_step <= TIME_EPSILON:
@@ -151,9 +165,9 @@ func get_current_hero_hp() -> float:
 	return hero_state.current_hp
 
 func get_current_opponent_name() -> String:
-	if active_combat_session == null:
+	if active_combat_session == null or active_combat_mob_definition == null:
 		return ""
-	return quest_runner.quest_definition.mob_definition.display_name
+	return active_combat_mob_definition.display_name
 
 func get_current_opponent_stats():
 	if active_combat_session == null:
@@ -199,6 +213,12 @@ func get_combat_results(mob_id: String) -> Dictionary:
 	return combat_results_by_mob.get(mob_id, {}).duplicate()
 
 func get_current_combat_results() -> Dictionary:
+	if active_combat_mob_definition != null:
+		return get_combat_results(active_combat_mob_definition.id)
+	if dungeon_runner != null and dungeon_runner.active_dungeon != null:
+		var dungeon_mob = dungeon_runner.get_current_mob_definition()
+		if dungeon_mob != null:
+			return get_combat_results(dungeon_mob.id)
 	if quest_runner == null or quest_runner.quest_definition == null or quest_runner.quest_definition.mob_definition == null:
 		return {}
 	return get_combat_results(quest_runner.quest_definition.mob_definition.id)
@@ -220,48 +240,113 @@ func get_active_combat_world_tick() -> int:
 	return world_clock.world_tick + 1
 
 func start_combat() -> void:
-	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, quest_runner.quest_definition.mob_definition.category)
+	var mob_definition: Resource = quest_runner.quest_definition.mob_definition
+	start_combat_session(mob_definition, COMBAT_CONTEXT_QUEST, hero_state.current_hp)
+	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
+
+func start_dungeon_combat() -> void:
+	var mob_definition = dungeon_runner.get_current_mob_definition()
+	assert(mob_definition != null, "Dungeon combat requires a current authored encounter.")
+	start_combat_session(mob_definition, COMBAT_CONTEXT_DUNGEON, hero_state.current_hp)
+	debug_log.record_combat_event(
+		dungeon_narrator.describe_combat_started(
+			hero_state.hero_name,
+			dungeon_runner.active_dungeon.definition.display_name,
+			mob_definition,
+			dungeon_runner.get_current_encounter_number(),
+			dungeon_runner.get_total_encounter_count(),
+			dungeon_runner.current_encounter_is_boss()
+		),
+		get_active_combat_world_tick()
+	)
+
+func start_combat_session(mob_definition: Resource, combat_context: String, starting_hero_hp: float) -> void:
+	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, mob_definition.category)
 	active_combat_session = combat_simulator.create_session(
 		combat_stats,
-		quest_runner.get_current_mob_stats(),
+		mob_definition.get_combat_stats(),
 		seeded_rng.get_rng(),
 		hero_damage_multiplier,
 		hero_state.power_strike_skill_level,
 		hero_state.wisdom,
 		hero_state.battle_guard_skill_level
 	)
-	debug_log.record_combat_event(quest_narrator.describe_combat_started(hero_state.hero_name, quest_runner.quest_definition, quest_runner.get_next_mob_number(), quest_runner.quest_definition.mob_count), get_active_combat_world_tick())
+	active_combat_session.hero_remaining_hp = clampf(starting_hero_hp, 0.0, combat_stats.max_hp)
+	active_combat_mob_definition = mob_definition
+	active_combat_context = combat_context
 
 func advance_active_combat(available_seconds: float) -> float:
 	var previous_elapsed_seconds: float = active_combat_session.elapsed_seconds
 	var actions = active_combat_session.advance(available_seconds)
 	for action in actions:
-		debug_log.record_combat_event(quest_narrator.describe_combat_action(action, hero_state.hero_name, quest_runner.quest_definition), get_active_combat_world_tick())
+		if active_combat_context == COMBAT_CONTEXT_DUNGEON:
+			debug_log.record_combat_event(dungeon_narrator.describe_combat_action(action, hero_state.hero_name, active_combat_mob_definition), get_active_combat_world_tick())
+		else:
+			debug_log.record_combat_event(quest_narrator.describe_combat_action(action, hero_state.hero_name, quest_runner.quest_definition), get_active_combat_world_tick())
 	var consumed_seconds: float = active_combat_session.elapsed_seconds - previous_elapsed_seconds
 	if active_combat_session.is_finished:
 		var combat_result = active_combat_session.get_result()
+		var fought_mob_definition: Resource = active_combat_mob_definition
+		var finished_combat_context: String = active_combat_context
+		var dungeon_was_boss: bool = finished_combat_context == COMBAT_CONTEXT_DUNGEON and dungeon_runner.current_encounter_is_boss()
 		consume_combat_buff_fight()
-		var fought_mob_definition: Resource = quest_runner.quest_definition.mob_definition
 		active_combat_session = null
 		record_combat_result(fought_mob_definition, combat_result.hero_won)
 		var combat_world_tick: int = get_active_combat_world_tick()
 		var previous_level: int = hero_state.level
 		if combat_result.hero_won:
-			hero_progression.add_experience(hero_state, quest_runner.get_current_mob_experience_reward())
+			hero_progression.add_experience(hero_state, fought_mob_definition.experience_reward)
 			if hero_state.level != previous_level:
 				refresh_combat_stats()
-			resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
-		var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
-		if event != null:
-			if event.event_type == QuestEventScript.HERO_DIED:
-				assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead hero must return to the current city map position for resurrection.")
-			refresh_finished_quest_offer_if_needed(event)
-			debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
-			if hero_state.level != previous_level:
-				debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
+
+		if finished_combat_context == COMBAT_CONTEXT_DUNGEON:
+			complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
+		else:
+			if combat_result.hero_won:
+				resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
+			var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
+			if event != null:
+				if event.event_type == QuestEventScript.HERO_DIED:
+					assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead hero must return to the current city map position for resurrection.")
+				refresh_finished_quest_offer_if_needed(event)
+				debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
+
+		if hero_state.level != previous_level:
+			debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
+		active_combat_mob_definition = null
+		active_combat_context = ""
 		skip_quest_advance_on_completed_combat_tick = true
 		world_clock.complete_tick()
 	return consumed_seconds
+
+func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was_boss: bool, combat_world_tick: int) -> void:
+	var result: Dictionary = dungeon_runner.complete_fight(hero_state, combat_stats, combat_result)
+	if result.is_empty():
+		return
+	var result_type: String = str(result.get("type", ""))
+	if combat_result.hero_won:
+		debug_log.record_combat_event(
+			dungeon_narrator.describe_fight_won(hero_state.hero_name, fought_mob_definition, fought_mob_definition.experience_reward, hero_state.current_hp, combat_stats.max_hp, was_boss),
+			combat_world_tick
+		)
+	if result_type == "died":
+		var attempt_start_power: float = float(result.get("attempt_start_power", 0.0))
+		var ordinary_encounters_completed: int = int(result.get("ordinary_encounters_completed", 0))
+		var reached_boss: bool = bool(result.get("was_boss", false))
+		var retry_growth: float = dungeon_evaluator.get_retry_growth(ordinary_encounters_completed, reached_boss)
+		var required_retry_power: float = dungeon_evaluator.get_required_retry_power(attempt_start_power, ordinary_encounters_completed, reached_boss)
+		dungeon_runner.active_dungeon.record_failed_attempt(attempt_start_power, ordinary_encounters_completed, reached_boss)
+		assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead dungeon hero must return to the current city map position for resurrection.")
+		debug_log.record_combat_event(
+			dungeon_narrator.describe_death(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, fought_mob_definition, dungeon_runner.respawn_ticks_remaining),
+			combat_world_tick
+		)
+		debug_log.record_combat_event(
+			dungeon_narrator.describe_retry_requirement(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, attempt_start_power, required_retry_power, retry_growth),
+			combat_world_tick
+		)
+	elif result_type == "completed":
+		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name), combat_world_tick)
 
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
@@ -276,7 +361,28 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.SHOPPING:
 		advance_shop_purchase_tick(completed_tick)
 		return
-	if hero_state.loop_state == HeroState.DOING_QUEST:
+	if hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON:
+		advance_dungeon_travel_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.AT_DUNGEON_ENTRANCE:
+		if dungeon_runner.enter(hero_state):
+			debug_log.record_event(completed_tick, "%s вошёл в данж «%s»." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name])
+		else:
+			debug_log.record_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.DUNGEON_BETWEEN_FIGHTS:
+		advance_dungeon_between_fights_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.DUNGEON_COMPLETED:
+		debug_log.record_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.DEAD_RESPAWNING and dungeon_runner.owns_respawn_state():
+		advance_dungeon_respawn_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.RECOVERING_IN_CITY and dungeon_runner.owns_respawn_state():
+		advance_dungeon_city_recovery_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.DOING_QUEST or hero_state.loop_state == HeroState.DOING_DUNGEON:
 		return
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
 		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
@@ -319,15 +425,15 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	debug_log.record_event(completed_tick, get_shop_stock_debug_text())
 	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings())
 	if best_purchase.is_empty():
-		hero_state.loop_state = HeroState.CHOOSING_QUEST
 		debug_log.record_event(completed_tick, "%s осмотрел магазин, но достаточно выгодных покупок не нашёл." % hero_state.hero_name)
+		finish_shopping_phase(completed_tick)
 		return empty_result
 
 	var previous_max_hp: float = combat_stats.max_hp
 	var result: Dictionary = shop_system.purchase_listing(hero_state, int(best_purchase["listing_index"]))
 	if not bool(result.get("purchased", false)):
-		hero_state.loop_state = HeroState.CHOOSING_QUEST
 		debug_log.record_event(completed_tick, "%s не смог завершить выбранную покупку." % hero_state.hero_name)
+		finish_shopping_phase(completed_tick)
 		return result
 
 	refresh_combat_stats()
@@ -347,8 +453,98 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	debug_log.record_event(completed_tick, log_text)
 
 	if spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings()).is_empty():
-		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		finish_shopping_phase(completed_tick)
 	return result
+
+func finish_shopping_phase(completed_tick: int) -> void:
+	if try_start_discovered_dungeon_trip(completed_tick):
+		return
+	hero_state.loop_state = HeroState.CHOOSING_QUEST
+
+func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
+	if dungeon_system == null or dungeon_runner == null:
+		return false
+	var current_region_id: String = get_current_region_id()
+	if current_region_id.is_empty():
+		return false
+	var candidates: Array = dungeon_system.get_discovered_dungeons_in_region(current_region_id)
+	if candidates.is_empty():
+		return false
+	var current_hero_power: float = get_hero_power()
+	var first_blocked_readiness: Dictionary = {}
+	var first_blocked_dungeon = null
+	for candidate in candidates:
+		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
+		if bool(readiness.get("ready", false)):
+			if not dungeon_runner.begin_trip(hero_state, candidate, current_hero_power):
+				continue
+			debug_log.record_event(completed_tick, "%s закончил дела в городе и отправился в данж «%s»." % [hero_state.hero_name, candidate.definition.display_name])
+			return true
+		if first_blocked_readiness.is_empty() and str(readiness.get("reason", "")) == "retry_power_too_low":
+			first_blocked_readiness = readiness
+			first_blocked_dungeon = candidate
+	if first_blocked_dungeon != null:
+		debug_log.record_event(
+			completed_tick,
+			dungeon_narrator.describe_retry_postponed(
+				hero_state.hero_name,
+				first_blocked_dungeon.definition.display_name,
+				float(first_blocked_readiness.get("current_power", current_hero_power)),
+				float(first_blocked_readiness.get("required_power", 0.0))
+			)
+		)
+	return false
+
+func advance_dungeon_travel_tick(completed_tick: int) -> void:
+	var result: Dictionary = dungeon_runner.advance(hero_state)
+	if result.is_empty():
+		debug_log.record_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.AT_DUNGEON_ENTRANCE:
+		debug_log.record_event(completed_tick, "%s прибыл ко входу в данж «%s»." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name])
+		assert(dungeon_runner.enter(hero_state), "Arrival at a valid active dungeon must begin the expedition without an extra world-tick delay.")
+	else:
+		debug_log.record_event(completed_tick, "%s идёт к данжу «%s». Осталось гексов: %d." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, int(result.get("remaining_steps", 0))])
+
+func advance_dungeon_between_fights_tick(completed_tick: int) -> void:
+	var result: Dictionary = dungeon_runner.advance_between_fights(hero_state)
+	if result.is_empty():
+		debug_log.record_tick(completed_tick)
+		return
+	debug_log.record_event(
+		completed_tick,
+		dungeon_narrator.describe_between_fights(
+			hero_state.hero_name,
+			hero_state.current_hp,
+			combat_stats.max_hp,
+			bool(result.get("next_is_boss", false))
+		)
+	)
+
+func advance_dungeon_respawn_tick(completed_tick: int) -> void:
+	var result: Dictionary = dungeon_runner.advance_respawn(hero_state, combat_stats)
+	if result.is_empty():
+		debug_log.record_tick(completed_tick)
+		return
+	if str(result.get("type", "")) == "resurrected":
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_resurrected(hero_state.hero_name, hero_state.current_hp))
+	else:
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_waiting_for_resurrection(hero_state.hero_name, dungeon_runner.respawn_ticks_remaining))
+
+func advance_dungeon_city_recovery_tick(completed_tick: int) -> void:
+	var result: Dictionary = dungeon_runner.advance_city_recovery(hero_state, combat_stats)
+	if result.is_empty():
+		debug_log.record_tick(completed_tick)
+		return
+	debug_log.record_event(
+		completed_tick,
+		dungeon_narrator.describe_city_recovery(
+			hero_state.hero_name,
+			hero_state.current_hp,
+			combat_stats.max_hp,
+			bool(result.get("fully_recovered", false))
+		)
+	)
 
 func get_shop_stock_debug_text() -> String:
 	var white_slots: Array[String] = []
@@ -405,11 +601,26 @@ func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_
 		debug_log.record_event(completed_tick, "Инвентарь переполнен: самый старый предмет «%s» (%s) выпал." % [dropped_instance.definition.display_name, dropped_instance.get_quality_display_name()])
 	return result
 
+func get_active_respawn_owner():
+	if dungeon_runner != null and dungeon_runner.owns_respawn_state():
+		return dungeon_runner
+	return quest_runner
+
+func get_respawn_ticks_remaining() -> int:
+	var respawn_owner = get_active_respawn_owner()
+	if respawn_owner == null:
+		return 0
+	return int(respawn_owner.respawn_ticks_remaining)
+
 func use_instant_resurrection() -> bool:
-	var result: Dictionary = god_system.use_instant_resurrection(hero_state, quest_runner, combat_stats)
+	var dungeon_respawn_active: bool = dungeon_runner != null and dungeon_runner.owns_respawn_state()
+	var result: Dictionary = god_system.use_instant_resurrection(hero_state, get_active_respawn_owner(), combat_stats)
 	var event = result.get("event")
 	if event != null:
-		debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
+		if dungeon_respawn_active:
+			debug_log.record_event(world_clock.world_tick, dungeon_narrator.describe_resurrected(hero_state.hero_name, hero_state.current_hp))
+		else:
+			debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
 	return bool(result.get("succeeded", false))
 
 func use_divine_healing() -> bool:
