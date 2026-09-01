@@ -62,7 +62,7 @@ func _init() -> void:
 		else:
 			strong_count += 1
 			assert(mob.equipment_drop_table == old_drop_table, "Each remaining mob must keep the Ironward Vanguard ilvl 10 source: %s" % mob.id)
-	assert(weak_count == 6 and strong_count == 7, "The 13 mobs must split into six weaker and seven stronger equipment sources.")
+	assert(weak_count == 6 and strong_count == 9, "The 15 mobs must split into six weaker and nine stronger equipment sources.")
 
 	var shop_definition: Resource = load(SHOP_PATH)
 	assert(shop_definition != null, "Starting City shop definition must load.")

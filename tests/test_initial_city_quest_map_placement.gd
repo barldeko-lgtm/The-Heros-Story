@@ -15,7 +15,7 @@ func run_test() -> void:
 	var quest_templates: Array[Resource] = simulation.quest_pool.quest_templates
 	var quest_offers: Array = simulation.quest_pool.get_available_quests()
 
-	assert(quest_templates.size() == 13, "Current Starting City content must expose exactly 13 quest templates for placement validation.")
+	assert(quest_templates.size() == 15, "Current Starting City content must expose exactly 15 quest templates for placement validation.")
 	assert(quest_offers.size() == quest_templates.size(), "Every current Starting City quest template must produce one active board offer.")
 	assert(world_state.hero_position == start, "Placing quest offers on the map must not move the hero from Starting City.")
 
@@ -61,12 +61,12 @@ func run_test() -> void:
 	for probe_seed in [1, 2, 7, 17, 101, 999, 4242, 12345]:
 		var probe_simulation = SimulationScript.new(probe_seed, null)
 		var probe_offers: Array = probe_simulation.quest_pool.get_available_quests()
-		assert(probe_offers.size() == 13, "Every sampled simulation seed must keep all current Starting City board offers.")
+		assert(probe_offers.size() == 15, "Every sampled simulation seed must keep all current Starting City board offers.")
 		var probe_targets: Dictionary = {}
 		for probe_offer in probe_offers:
 			assert(probe_offer.has_map_target(), "Every sampled simulation seed must place every board offer on the map.")
 			assert(not probe_targets.has(probe_offer.target_hex), "Every sampled simulation seed must keep quest targets unique.")
 			probe_targets[probe_offer.target_hex] = true
 
-	print("PASS: All 13 Starting City board offers own valid unique deterministic target hexes across sampled seeds without moving the hero.")
+	print("PASS: All 15 Starting City board offers own valid unique deterministic target hexes across sampled seeds without moving the hero.")
 	quit()

@@ -119,7 +119,7 @@ func run_test() -> void:
 	assert(selected_offer != null and selected_offer.has_map_target(), "Autonomous quest selection must produce one map-backed selected offer for highlight validation.")
 	assert(main_ui.map_screen.is_selected_quest_offer(selected_offer), "The hero's active QuestOffer must qualify for the selected-quest map highlight.")
 	assert(main_ui.map_screen.get_quest_marker_signature().contains("selected:%s" % selected_offer.map_activity_id), "Selecting a quest must change the map marker signature so the highlight redraws immediately.")
-	assert(main_ui.map_screen.QUEST_SELECTED_OUTLINE_COLOR.is_equal_approx(Color("ffe45c")), "Selected quest outline must use the bright yellow color.")
+	assert(main_ui.map_screen.QUEST_SELECTED_OUTLINE_COLOR.is_equal_approx(Color("ff8c00")), "Selected quest outline must use the requested orange color.")
 	assert(main_ui.map_screen.QUEST_SELECTED_OUTLINE_MIDDLE_ALPHA > 0.55 and main_ui.map_screen.QUEST_SELECTED_OUTLINE_OUTER_ALPHA > 0.25, "Selected quest outline must be brighter than the item-rarity middle and outer glow bands.")
 	for offer in marker_offers:
 		if offer != selected_offer:

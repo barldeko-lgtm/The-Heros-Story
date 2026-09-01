@@ -37,7 +37,7 @@ func _init() -> void:
 		if file_name.ends_with(".tres"):
 			resource_files.append(file_name)
 	resource_files.sort()
-	assert(resource_files.size() == 13, "The current initial-city set must contain 13 mob definitions.")
+	assert(resource_files.size() == 15, "The current initial-city set must contain 15 mob definitions.")
 
 	var ironwake_count := 0
 	var ironward_count := 0
@@ -62,8 +62,8 @@ func _init() -> void:
 		var rare_shield = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.0, 0.95], [6]))
 		assert(rare_shield != null and rare_shield.equipment_slot == EXPECTED_SLOTS[6] and rare_shield.quality == 2, "Every mob must keep the shared slot and 70/25/5 rarity rolls.")
 
-	assert(ironwake_count == 6 and ironward_count == 7, "Current mobs must split into six ilvl 1 Ironwake and seven ilvl 10 Ironward sources.")
-	print("PASS: Current mobs use the approved six/seven split across ilvl 1 Ironwake and ilvl 10 Ironward drop tables.")
+	assert(ironwake_count == 6 and ironward_count == 9, "Current mobs must split into six ilvl 1 Ironwake and nine ilvl 10 Ironward sources.")
+	print("PASS: Current mobs use the approved six/nine split across ilvl 1 Ironwake and ilvl 10 Ironward drop tables.")
 	quit()
 
 func fail(message: String) -> void:

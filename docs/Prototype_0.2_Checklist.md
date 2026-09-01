@@ -78,7 +78,7 @@ Status:
 - ✅ `TravelSystem`: real route movement one adjacent hex per world tick.
 - ✅ Hero sprite follows live map position.
 - ✅ Quest activity sprite on real target hexes.
-- ✅ Current selected quest target is marked by a brighter yellow rarity-style outline.
+- ✅ Current selected quest target is marked by a brighter orange rarity-style outline.
 - ✅ Map zoom and right-mouse panning.
 - 🟡 Map Screen is functional but does not yet show the current travel route/destination line required by the final 0.2 UI.
 - ⬜ Full city runtime/context system.
@@ -89,14 +89,14 @@ Status:
 ## 6. Ordinary quests and quest board
 
 - ✅ `QuestDefinition` and runtime `QuestOffer` are separate.
-- ✅ 13 current Starting City quest templates.
+- ✅ 15 current Starting City quest templates.
 - ✅ Each current quest has authored hex-distance and terrain/tag placement constraints.
 - ✅ Quest offers receive concrete unique `target_hex` positions.
 - ✅ Quest target reservation/release lifecycle.
 - ✅ Real travel to target and real travel back to Starting City.
 - ✅ Live QuestScore travel cost uses actual route length in hexes.
 - ✅ Current combat/recovery/turn-in/Gold quest loop.
-- 🟡 Starting City content target: **13 / 15** ordinary quest templates.
+- ✅ Starting City content target: **15 / 15** ordinary quest templates.
 - ⬜ Mid-Level City content target: **0 / 15** ordinary quest templates.
 - ⬜ Three explicit quest strength bands: 5 lower / 5 middle / 5 higher per city.
 - ⬜ Final active board: maximum 6 offers per city, maximum 2 from each band.
@@ -104,7 +104,7 @@ Status:
 - ⬜ 150-world-tick template cooldown after completion.
 - ⬜ City-local quest pools for both cities.
 - ⬜ "Hero outgrew this city" relocation trigger from the current active offers.
-- 🟡 Current build exposes all 13 Starting City templates simultaneously; this is a prototype state, not the final rotating-board rule.
+- 🟡 Current build exposes all 15 Starting City templates simultaneously; this is a prototype state, not the final rotating-board rule.
 
 ## 7. Temporary events
 

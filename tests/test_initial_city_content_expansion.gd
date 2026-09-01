@@ -11,6 +11,8 @@ const NEW_CONTENT := [
 	{"mob_file": "0011_young_ogre.tres", "mob_id": "young_ogre", "quest_file": "0011_hill_ogre.tres", "quest_id": "hill_ogre", "power_min": 77.0, "power_max": 79.0},
 	{"mob_file": "0012_forest_troll.tres", "mob_id": "forest_troll", "quest_file": "0012_forest_crossing_troll.tres", "quest_id": "forest_crossing_troll", "power_min": 104.0, "power_max": 106.0},
 	{"mob_file": "0013_cave_lizard.tres", "mob_id": "cave_lizard", "quest_file": "0013_limestone_cave_tracks.tres", "quest_id": "limestone_cave_tracks", "power_min": 89.0, "power_max": 91.0},
+	{"mob_file": "0014_mountain_beast.tres", "mob_id": "mountain_beast", "quest_file": "0014_roar_from_stony_slopes.tres", "quest_id": "roar_from_stony_slopes", "power_min": 124.0, "power_max": 125.0},
+	{"mob_file": "0015_orc_raider.tres", "mob_id": "orc_raider", "quest_file": "0015_campfires_deep_in_forest.tres", "quest_id": "campfires_deep_in_forest", "power_min": 131.0, "power_max": 133.0},
 ]
 
 func _init() -> void:
@@ -44,6 +46,11 @@ func _init() -> void:
 		assert(quest.distance_km_min >= 1 and quest.distance_km_max >= quest.distance_km_min, "Quest distance range must be valid: %s" % quest.id)
 		assert(quest.gold_per_mob_min >= 1 and quest.gold_per_mob_max >= quest.gold_per_mob_min, "Quest gold-per-mob range must be valid: %s" % quest.id)
 
-	assert(stronger_than_bear == 6, "Exactly six of the ten new mobs must be stronger than the Bear.")
-	print("PASS: Ten initial-city mobs and quests satisfy content, range, and Power tiers.")
+	assert(stronger_than_bear == 8, "Exactly eight of the twelve expanded initial-city mobs must be stronger than the Bear.")
+	var forest_troll = load("res://data/mobs/0012_forest_troll.tres")
+	var mountain_beast = load("res://data/mobs/0014_mountain_beast.tres")
+	var orc_raider = load("res://data/mobs/0015_orc_raider.tres")
+	assert(mountain_beast.get_power() > forest_troll.get_power(), "Mountain Beast must be stronger than the previous Starting City peak mob.")
+	assert(orc_raider.get_power() > mountain_beast.get_power(), "Orc Raider must be the strongest ordinary Starting City mob.")
+	print("PASS: Twelve expanded initial-city mobs and quests satisfy content, range, and Power tiers.")
 	quit()

@@ -141,7 +141,7 @@ Contracts:
 - UI must not choose quests;
 - changing `.tres` mob/quest tuning must not require changing selection code.
 
-`QuestPool` loads immutable reusable quest templates from `data/quests` and uses the established quest RNG to create current `QuestOffer` objects. In the current one-city Prototype 0 build, every current initial-city template is exposed simultaneously; with the present content set this means 13 offers. Templates own tuning ranges plus map-placement constraints, while each offer owns rolled count, legacy abstract distance, gold per mob, a runtime `target_hex`, and its one-hex map reservation id. Total Gold remains derived as `MobCount × GoldPerMob`. A separate deterministic placement RNG stream chooses targets so adding map placement does not perturb the established quest-roll sequence.
+`QuestPool` loads immutable reusable quest templates from `data/quests` and uses the established quest RNG to create current `QuestOffer` objects. In the current one-city Prototype 0 build, every current initial-city template is exposed simultaneously; with the present content set this means 15 offers. Templates own tuning ranges plus map-placement constraints, while each offer owns rolled count, legacy abstract distance, gold per mob, a runtime `target_hex`, and its one-hex map reservation id. Total Gold remains derived as `MobCount × GoldPerMob`. A separate deterministic placement RNG stream chooses targets so adding map placement does not perturb the established quest-roll sequence.
 
 There is no current 5–7-offer cap. Stronger offers remain in the single-city pool and are excluded from actual consideration by Hard Filter until the hero is strong enough.
 
