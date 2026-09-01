@@ -7,15 +7,17 @@ func _init() -> void:
 	var simulation: RefCounted = simulation_script.new(12345)
 	simulation.hero_state.hero_name = "Алексей"
 
-	# Reach the quest location.
-	simulation.advance_time(30.0)
-	assert(simulation.hero_state.loop_state == HeroState.DOING_QUEST, "Hero must be ready to fight.")
+	# Wait for the real combat session instead of assuming old fixed quest/combat timing.
+	var wait_steps := 0
+	while simulation.active_combat_session == null and wait_steps < 240:
+		simulation.advance_time(0.25)
+		wait_steps += 1
+	assert(simulation.active_combat_session != null, "Hero must enter live combat within the bounded wait.")
 
-	# Start combat and advance far enough for the goblin to land a hit,
-	# while keeping the fight active.
+	# Advance far enough for the goblin to land a hit while keeping the stronger fight active.
 	simulation.advance_time(2.1)
 
-	assert(simulation.active_combat_session != null, "Combat must still be active.")
+	assert(simulation.active_combat_session != null, "Combat must still be active after the first incoming-hit window.")
 	assert(
 		simulation.active_combat_session.hero_remaining_hp < simulation.combat_stats.max_hp,
 		"The goblin must have damaged the hero during the live fight."

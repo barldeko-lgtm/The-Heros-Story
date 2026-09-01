@@ -7,6 +7,7 @@ const HeroNameRepositoryScript = preload("res://scripts/core/hero_name_repositor
 const HexMapScript = preload("res://scripts/world/hex_map.gd")
 const WorldStateScript = preload("res://scripts/world/world_state.gd")
 const TravelSystemScript = preload("res://scripts/world/travel_system.gd")
+const DungeonSystemScript = preload("res://scripts/dungeons/dungeon_system.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
@@ -33,10 +34,13 @@ const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluato
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
 const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
+const DefaultStartingDungeon = preload("res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
 const QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 200003
+const DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 300003
+const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
@@ -48,6 +52,8 @@ var seeded_rng
 var hex_map
 var world_state
 var travel_system
+var dungeon_system
+var dungeon_vision_rng: RandomNumberGenerator
 var hero_state
 var base_combat_stats
 var combat_stats
@@ -81,6 +87,15 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	hex_map = HexMapScript.new(DefaultMapDefinition)
 	world_state = WorldStateScript.new(hex_map)
 	travel_system = TravelSystemScript.new(hex_map, world_state)
+	dungeon_system = DungeonSystemScript.new([DefaultStartingDungeon])
+	var dungeon_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + DUNGEON_PLACEMENT_RNG_SEED_OFFSET).get_rng()
+	dungeon_vision_rng = SeededRngScript.new(simulation_seed + DUNGEON_VISION_RNG_SEED_OFFSET).get_rng()
+	var dungeon_origins: Dictionary = {
+		hex_map.STARTING_REGION_ID: hex_map.definition.starting_city_center,
+		hex_map.MID_REGION_ID: hex_map.definition.mid_city_center,
+	}
+	assert(dungeon_system.configure_map_placement(hex_map, world_state, dungeon_origins, dungeon_placement_rng), "Starting Region dungeon must spawn on one valid reserved map hex.")
+	world_state.hero_position_changed.connect(on_hero_position_changed)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
 	equipment_reward_system = EquipmentRewardSystemScript.new(loot_generator, item_generator, equipment_evaluator)
@@ -417,6 +432,35 @@ func consume_combat_buff_fight() -> void:
 func guide_hero_to_quest(quest_id: String) -> bool:
 	var available_quests: Array = [] if quest_pool == null else quest_pool.get_available_quests()
 	return god_system.guide_hero_to_quest(quest_id, autonomous_quest_choice, available_quests)
+
+func get_current_region_id() -> String:
+	if hex_map == null or world_state == null:
+		return ""
+	var current_hex = hex_map.get_hex(world_state.hero_position)
+	return "" if current_hex == null else current_hex.region_id
+
+func has_unknown_dungeon_in_current_region() -> bool:
+	if dungeon_system == null:
+		return false
+	return not dungeon_system.get_unknown_dungeons_in_region(get_current_region_id()).is_empty()
+
+func use_divine_vision() -> bool:
+	var revealed_dungeon = god_system.use_vision(dungeon_system, get_current_region_id(), dungeon_vision_rng)
+	if revealed_dungeon == null:
+		return false
+	record_dungeon_discovery(revealed_dungeon, "Божественное видение открыло")
+	return true
+
+func on_hero_position_changed(cell: Vector2i) -> void:
+	if dungeon_system == null:
+		return
+	for discovered_dungeon in dungeon_system.discover_at_hex(cell):
+		record_dungeon_discovery(discovered_dungeon, "%s обнаружил" % hero_state.hero_name)
+
+func record_dungeon_discovery(dungeon_instance, prefix: String) -> void:
+	if dungeon_instance == null or dungeon_instance.definition == null:
+		return
+	debug_log.record_event(world_clock.world_tick, "%s данж «%s»." % [prefix, dungeon_instance.definition.display_name])
 
 func refresh_finished_quest_offer_if_needed(event) -> void:
 	if not autonomous_quest_choice:

@@ -12,6 +12,7 @@ var god_status_label: Label
 var divine_healing_button: Button
 var combat_buff_button: Button
 var instant_resurrection_button: Button
+var vision_button: Button
 
 func setup(simulation_reference) -> void:
 	simulation = simulation_reference
@@ -52,24 +53,31 @@ func create_content() -> void:
 
 	divine_healing_button = Button.new()
 	divine_healing_button.name = "DivineHealingButton"
-	divine_healing_button.custom_minimum_size = Vector2(156.0, 58.0)
+	divine_healing_button.custom_minimum_size = Vector2(116.0, 58.0)
 	apply_secondary_button_style(divine_healing_button)
 	divine_healing_button.pressed.connect(on_divine_healing_pressed)
 	buttons.add_child(divine_healing_button)
 
 	combat_buff_button = Button.new()
 	combat_buff_button.name = "CombatBuffButton"
-	combat_buff_button.custom_minimum_size = Vector2(156.0, 58.0)
+	combat_buff_button.custom_minimum_size = Vector2(116.0, 58.0)
 	apply_secondary_button_style(combat_buff_button)
 	combat_buff_button.pressed.connect(on_combat_buff_pressed)
 	buttons.add_child(combat_buff_button)
 
 	instant_resurrection_button = Button.new()
 	instant_resurrection_button.name = "InstantResurrectionButton"
-	instant_resurrection_button.custom_minimum_size = Vector2(156.0, 58.0)
+	instant_resurrection_button.custom_minimum_size = Vector2(116.0, 58.0)
 	apply_secondary_button_style(instant_resurrection_button)
 	instant_resurrection_button.pressed.connect(on_instant_resurrection_pressed)
 	buttons.add_child(instant_resurrection_button)
+
+	vision_button = Button.new()
+	vision_button.name = "VisionButton"
+	vision_button.custom_minimum_size = Vector2(116.0, 58.0)
+	apply_secondary_button_style(vision_button)
+	vision_button.pressed.connect(on_vision_pressed)
+	buttons.add_child(vision_button)
 
 	god_status_label = Label.new()
 	god_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -102,6 +110,14 @@ func refresh() -> void:
 	instant_resurrection_button.disabled = not hero_is_dead or simulation.quest_runner.respawn_ticks_remaining <= 0 or god.energy < resurrection_cost
 	instant_resurrection_button.text = "Воскрешение\n%.1f энергии" % resurrection_cost
 
+	var has_unknown_dungeon: bool = simulation.has_unknown_dungeon_in_current_region()
+	vision_button.disabled = not has_unknown_dungeon or god.vision_cooldown_ticks > 0 or god.energy < GodStateScript.VISION_COST
+	vision_button.text = "Видение\n80 энергии"
+	if god.vision_cooldown_ticks > 0:
+		vision_button.text = "Видение\nКД: %d" % god.vision_cooldown_ticks
+	elif not has_unknown_dungeon:
+		vision_button.text = "Видение\nнет цели"
+
 	if combat_buff_fights_remaining > 0:
 		god_status_label.text = "Активно: +15%% физ. урона | Боёв: %d | КД: %d" % [combat_buff_fights_remaining, god.combat_buff_cooldown_ticks]
 	else:
@@ -119,6 +135,11 @@ func on_combat_buff_pressed() -> void:
 
 func on_instant_resurrection_pressed() -> void:
 	if simulation.use_instant_resurrection():
+		hero_state_changed.emit()
+	refresh()
+
+func on_vision_pressed() -> void:
+	if simulation.use_divine_vision():
 		hero_state_changed.emit()
 	refresh()
 

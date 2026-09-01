@@ -79,6 +79,15 @@ func guide_hero_to_quest(quest_id: String, autonomous_quest_choice: bool, availa
 			return god_state.try_set_quest_guidance(quest_id)
 	return false
 
+func use_vision(dungeon_system, region_id: String, rng: RandomNumberGenerator):
+	if dungeon_system == null or region_id.is_empty() or rng == null:
+		return null
+	if dungeon_system.get_unknown_dungeons_in_region(region_id).is_empty():
+		return null
+	if not god_state.try_activate_vision():
+		return null
+	return dungeon_system.reveal_random_unknown_in_region(region_id, rng)
+
 func get_combat_buff_effect_index(hero_state) -> int:
 	if hero_state == null:
 		return -1

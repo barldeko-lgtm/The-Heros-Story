@@ -319,7 +319,7 @@ Protects seeded integer offer rolls, per-mob reward calculation, and preservatio
 Protects the boundary: templates retain only ranges, while `QuestOffer` owns the rolled values and derives total Gold.
 
 ### `tests/test_initial_city_content_expansion.gd`
-Protects the ten added initial-city mob/quest pairs: unique IDs, valid ranges, every new mob stronger than Goblin, and the intended broad progression bands.
+Protects all 15 Starting City mob/quest pairs: unique IDs, valid quest ranges, strict mob-Power ordering, and the approved approximately 35-to-600 Power progression curve.
 
 ### `tests/test_quest_offer_refresh_lifecycle.gd`
 Protects the Simulation-to-QuestPool integration for replacing only a turned-in quest offer without assuming a fixed tavern-pool size.

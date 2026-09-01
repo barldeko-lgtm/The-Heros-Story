@@ -25,10 +25,16 @@ func _init() -> void:
 	assert(god_state.consume_quest_guidance() == "wolf_hunt", "Guidance must apply to exactly one next quest-selection action.")
 	assert(god_state.consume_quest_guidance().is_empty(), "Consumed guidance must not survive another selection.")
 
+	var vision_state = GodStateScript.new()
+	assert(vision_state.try_activate_vision(), "Vision must activate with full energy and no cooldown.")
+	assert(is_equal_approx(vision_state.energy, 20.0), "Vision must cost 80 energy.")
+	assert(vision_state.vision_cooldown_ticks == 1500, "Vision must start a 1500-tick cooldown.")
+	assert(not vision_state.try_activate_vision(), "Vision must not reactivate during its cooldown.")
+
 	assert(is_equal_approx(god_state.get_resurrection_cost(20), 10.0), "Twenty remaining respawn ticks must cost 10 energy.")
 	var energy_before_resurrection: float = god_state.energy
 	assert(god_state.try_spend_resurrection(20), "Instant resurrection must spend energy when affordable.")
 	assert(is_equal_approx(god_state.energy, energy_before_resurrection - 10.0), "Instant resurrection must deduct half the remaining ticks as energy.")
 
-	print("PASS: GodState owns energy, recovery, cooldowns, guidance, and resurrection cost.")
+	print("PASS: GodState owns energy, recovery, cooldowns, guidance, Vision, and resurrection cost.")
 	quit()

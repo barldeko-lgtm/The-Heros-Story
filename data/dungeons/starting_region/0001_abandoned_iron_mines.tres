@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DungeonDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/dungeon_definition.gd" id="1_dungeon_definition"]
+
+[resource]
+script = ExtResource("1_dungeon_definition")
+id = "abandoned_iron_mines"
+display_name = "Заброшенные железные шахты"
+region_id = "starting_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 7
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 0

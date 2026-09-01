@@ -27,6 +27,10 @@ const QUEST_MARKER_INNER_RADIUS: float = 10.0
 const QUEST_MARKER_OUTER_COLOR: Color = Color("2d3138")
 const QUEST_MARKER_INNER_COLOR: Color = Color("f0c94b")
 const QUEST_MARKER_TEXT_COLOR: Color = Color("20242a")
+const DUNGEON_MARKER_OUTER_COLOR: Color = Color("3f3448")
+const DUNGEON_MARKER_STONE_COLOR: Color = Color("8d785f")
+const DUNGEON_MARKER_ENTRANCE_COLOR: Color = Color("17151a")
+const DUNGEON_MARKER_TEXT_COLOR: Color = Color("2a202f")
 const MAP_ORIGIN: Vector2 = Vector2.ZERO
 const MIN_MAP_ZOOM: float = 0.6
 const MAX_MAP_ZOOM: float = 2.0
@@ -71,6 +75,7 @@ var hex_centers: Dictionary = {}
 var terrain_counts: Dictionary = {}
 var last_hero_position: Vector2i = Vector2i(-1, -1)
 var last_quest_marker_signature: String = ""
+var last_dungeon_marker_signature: String = ""
 var hex_tooltip_panel: PanelContainer
 var hex_tooltip_label: Label
 var map_zoom: float = 1.0
@@ -97,6 +102,7 @@ func _ready() -> void:
 	mouse_exited.connect(hide_hex_tooltip)
 	last_hero_position = get_hero_cell()
 	last_quest_marker_signature = get_quest_marker_signature()
+	last_dungeon_marker_signature = get_dungeon_marker_signature()
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -110,6 +116,10 @@ func _process(_delta: float) -> void:
 	var current_quest_marker_signature: String = get_quest_marker_signature()
 	if current_quest_marker_signature != last_quest_marker_signature:
 		last_quest_marker_signature = current_quest_marker_signature
+		redraw_needed = true
+	var current_dungeon_marker_signature: String = get_dungeon_marker_signature()
+	if current_dungeon_marker_signature != last_dungeon_marker_signature:
+		last_dungeon_marker_signature = current_dungeon_marker_signature
 		redraw_needed = true
 	if redraw_needed:
 		queue_redraw()
@@ -144,6 +154,25 @@ func get_quest_marker_signature() -> String:
 
 func is_selected_quest_offer(offer) -> bool:
 	return simulation != null and simulation.hero_state != null and simulation.hero_state.active_quest == offer
+
+func get_discovered_dungeons() -> Array:
+	if simulation == null or simulation.dungeon_system == null:
+		return []
+	return simulation.dungeon_system.get_discovered_dungeons()
+
+func get_dungeon_marker_signature() -> String:
+	var parts := PackedStringArray()
+	for dungeon_instance in get_discovered_dungeons():
+		if dungeon_instance == null or not dungeon_instance.has_map_target() or not hex_centers.has(dungeon_instance.target_hex):
+			continue
+		parts.append("%s:%d:%d" % [dungeon_instance.map_activity_id, dungeon_instance.target_hex.x, dungeon_instance.target_hex.y])
+	parts.sort()
+	return "|".join(parts)
+
+func get_discovered_dungeon_at_hex(cell: Vector2i):
+	if simulation == null or simulation.dungeon_system == null:
+		return null
+	return simulation.dungeon_system.get_discovered_dungeon_at_hex(cell)
 
 func build_draw_cache() -> void:
 	hex_centers.clear()
@@ -226,7 +255,7 @@ func get_hex_tooltip_text(hex_definition) -> String:
 	if not hex_definition.region_id.is_empty():
 		region_name = str(REGION_DISPLAY_NAMES.get(hex_definition.region_id, hex_definition.region_id))
 		region_raw_id = hex_definition.region_id
-	return "Координаты: (%d, %d)\nМестность: %s [%s]\nРегион: %s [%s]\nТеги: %s" % [
+	var tooltip_text := "Координаты: (%d, %d)\nМестность: %s [%s]\nРегион: %s [%s]\nТеги: %s" % [
 		hex_definition.coordinates.x,
 		hex_definition.coordinates.y,
 		terrain_name,
@@ -235,6 +264,10 @@ func get_hex_tooltip_text(hex_definition) -> String:
 		region_raw_id,
 		get_hex_tags_tooltip_text(hex_definition.tags),
 	]
+	var dungeon_instance = get_discovered_dungeon_at_hex(hex_definition.coordinates)
+	if dungeon_instance != null and dungeon_instance.definition != null:
+		tooltip_text += "\nОбъект: %s [данж]" % dungeon_instance.definition.display_name
+	return tooltip_text
 
 func get_hex_tags_tooltip_text(tags: PackedStringArray) -> String:
 	if tags.is_empty():
@@ -360,6 +393,7 @@ func _draw() -> void:
 	draw_city_overlay(map_definition.starting_city_center)
 	draw_city_overlay(map_definition.mid_city_center)
 	draw_quest_markers()
+	draw_dungeon_markers()
 	draw_hero_marker()
 	draw_city_label(map_definition.starting_city_center, "СТАРТОВЫЙ ГОРОД", Color("3d2e22"), Vector2(-72.0, 68.0))
 	draw_city_label(map_definition.mid_city_center, "СРЕДНИЙ ГОРОД", Color("302a40"), Vector2(-65.0, -58.0))
@@ -461,6 +495,18 @@ func draw_quest_markers() -> void:
 		draw_circle(center, QUEST_MARKER_RADIUS, QUEST_MARKER_OUTER_COLOR)
 		draw_circle(center, QUEST_MARKER_INNER_RADIUS, QUEST_MARKER_INNER_COLOR)
 		draw_string(ThemeDB.fallback_font, center + Vector2(-7.0, 7.0), "!", HORIZONTAL_ALIGNMENT_CENTER, 14.0, 18, QUEST_MARKER_TEXT_COLOR)
+
+func draw_dungeon_markers() -> void:
+	for dungeon_instance in get_discovered_dungeons():
+		if dungeon_instance == null or not dungeon_instance.has_map_target() or not hex_centers.has(dungeon_instance.target_hex):
+			continue
+		var center: Vector2 = hex_centers[dungeon_instance.target_hex]
+		draw_circle(center, 24.0, DUNGEON_MARKER_OUTER_COLOR)
+		draw_circle(center, 19.0, DUNGEON_MARKER_STONE_COLOR)
+		draw_rect(Rect2(center + Vector2(-12.0, 1.0), Vector2(24.0, 17.0)), DUNGEON_MARKER_STONE_COLOR)
+		draw_circle(center + Vector2(0.0, 3.0), 10.0, DUNGEON_MARKER_ENTRANCE_COLOR)
+		draw_rect(Rect2(center + Vector2(-10.0, 3.0), Vector2(20.0, 15.0)), DUNGEON_MARKER_ENTRANCE_COLOR)
+		draw_string(ThemeDB.fallback_font, center + Vector2(-27.0, 39.0), "ДАНЖ", HORIZONTAL_ALIGNMENT_CENTER, 54.0, 11, DUNGEON_MARKER_TEXT_COLOR)
 
 func draw_selected_quest_outline(outline_mask_texture: Texture2D, marker_rect: Rect2) -> void:
 	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_OUTER_OFFSET, QUEST_SELECTED_OUTLINE_OUTER_ALPHA)

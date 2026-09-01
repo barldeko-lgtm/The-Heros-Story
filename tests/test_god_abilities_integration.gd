@@ -7,7 +7,8 @@ func _init() -> void:
 	test_instant_resurrection()
 	test_combat_buff()
 	test_quest_guidance()
-	print("PASS: Simulation integrates all four god abilities with hero, combat, and quest selection.")
+	test_vision()
+	print("PASS: Simulation integrates healing, resurrection, combat buff, quest guidance, and dungeon Vision.")
 	quit()
 
 func test_divine_healing() -> void:
@@ -79,3 +80,12 @@ func test_quest_guidance() -> void:
 	assert(not target_evaluation.is_empty(), "The guided eligible quest must participate in QuestScore.")
 	assert(is_equal_approx(target_evaluation["divine_modifier"], 0.20), "Guidance must add exactly 0.20 to the target offer for one selection.")
 	assert(simulation.god_state.guided_quest_id.is_empty(), "Guidance must be consumed after the next selection action.")
+
+func test_vision() -> void:
+	var simulation = SimulationScript.new(1005, null)
+	var dungeon = simulation.dungeon_system.get_all_dungeons()[0]
+	assert(not dungeon.discovered, "Vision integration test dungeon must begin unknown.")
+	assert(simulation.has_unknown_dungeon_in_current_region(), "The Starting Region must expose one valid unknown Vision target.")
+	assert(simulation.use_divine_vision(), "Vision must reveal an existing unknown dungeon through Simulation.")
+	assert(dungeon.discovered and dungeon.discovery_source == "vision", "Vision must reveal the existing dungeon rather than create a replacement.")
+	assert(not simulation.has_unknown_dungeon_in_current_region(), "After revealing the only current dungeon, the region must have no unknown Vision target.")

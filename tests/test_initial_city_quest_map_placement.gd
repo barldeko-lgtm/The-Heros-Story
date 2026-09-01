@@ -49,7 +49,7 @@ func run_test() -> void:
 		placed_centers[offer.target_hex] = offer.id
 
 	assert(placed_centers.size() == quest_offers.size(), "All active quest-board offers must fit simultaneously on unique Starting Region hexes.")
-	assert(world_state.activity_id_by_hex.size() == quest_offers.size(), "Current radius-0 quest board must reserve exactly one hex per offer.")
+	assert(world_state.activity_id_by_hex.size() >= quest_offers.size(), "Current quest-board reservations must remain present even when other map activities such as dungeons also reserve hexes.")
 
 	var repeated_simulation = SimulationScript.new(53, null)
 	var repeated_offers: Array = repeated_simulation.quest_pool.get_available_quests()

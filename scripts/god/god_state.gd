@@ -16,6 +16,8 @@ const COMBAT_BUFF_EFFECT_ID: String = "divine_combat_blessing"
 const QUEST_GUIDANCE_COST: float = 5.0
 const QUEST_GUIDANCE_COOLDOWN_TICKS: int = 360
 const QUEST_GUIDANCE_MODIFIER: float = 0.20
+const VISION_COST: float = 80.0
+const VISION_COOLDOWN_TICKS: int = 1500
 const RESURRECTION_COST_PER_REMAINING_TICK: float = 0.5
 
 var energy: float = STARTING_ENERGY
@@ -24,12 +26,14 @@ var healing_cooldown_ticks: int = 0
 var combat_buff_cooldown_ticks: int = 0
 
 var quest_guidance_cooldown_ticks: int = 0
+var vision_cooldown_ticks: int = 0
 var guided_quest_id: String = ""
 
 func advance_world_tick() -> void:
 	healing_cooldown_ticks = maxi(0, healing_cooldown_ticks - 1)
 	combat_buff_cooldown_ticks = maxi(0, combat_buff_cooldown_ticks - 1)
 	quest_guidance_cooldown_ticks = maxi(0, quest_guidance_cooldown_ticks - 1)
+	vision_cooldown_ticks = maxi(0, vision_cooldown_ticks - 1)
 
 	energy_recovery_tick_progress += 1
 	if energy_recovery_tick_progress >= ENERGY_RECOVERY_TICKS:
@@ -59,6 +63,12 @@ func consume_quest_guidance() -> String:
 	var result := guided_quest_id
 	guided_quest_id = ""
 	return result
+
+func try_activate_vision() -> bool:
+	if vision_cooldown_ticks > 0 or not spend_energy(VISION_COST):
+		return false
+	vision_cooldown_ticks = VISION_COOLDOWN_TICKS
+	return true
 
 func get_resurrection_cost(remaining_respawn_ticks: int) -> float:
 	return float(maxi(0, remaining_respawn_ticks)) * RESURRECTION_COST_PER_REMAINING_TICK

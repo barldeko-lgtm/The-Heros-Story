@@ -1,6 +1,8 @@
 class_name WorldState
 extends RefCounted
 
+signal hero_position_changed(cell: Vector2i)
+
 var hex_map
 var hero_position: Vector2i
 var activity_id_by_hex: Dictionary = {}
@@ -15,7 +17,10 @@ func _init(initial_hex_map) -> void:
 func set_hero_position(cell: Vector2i) -> bool:
 	if not hex_map.is_valid_cell(cell):
 		return false
+	if hero_position == cell:
+		return true
 	hero_position = cell
+	hero_position_changed.emit(cell)
 	return true
 
 func is_hex_occupied(cell: Vector2i) -> bool:

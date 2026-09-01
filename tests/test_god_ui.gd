@@ -26,12 +26,14 @@ func run_test() -> void:
 	assert(god_panel.instant_resurrection_button.disabled, "Resurrection button must be disabled while the hero is alive.")
 	assert(god_panel.divine_healing_button.disabled, "Healing button must be disabled at full HP.")
 	assert(not god_panel.combat_buff_button.disabled, "Combat buff button must be available with full energy and no cooldown.")
+	assert(god_panel.vision_button != null and not god_panel.vision_button.disabled, "Vision button must be available while an unknown dungeon exists in the current region and energy is full.")
+	assert(god_panel.vision_button.text.contains("80"), "Vision button must display its 80-energy cost.")
 	assert(main_ui.simulation.use_combat_buff(), "God UI test must activate the combat buff.")
 	main_ui.update_hero_panel()
 	god_panel.refresh()
 	assert(god_panel.combat_buff_button.text.contains("Боёв: 5"), "Active buff button must show remaining fights.")
 	assert(god_panel.combat_buff_button.text.contains("КД: 120"), "Active buff button must show cooldown counting from activation.")
-	assert(main_ui.hero_details_label.text.contains("Атака: %.0f" % main_ui.simulation.base_combat_stats.attack), "Hero UI must keep displaying base Attack while buffed.")
+	assert(main_ui.hero_details_label.text.contains("Физ. урон: %.0f" % main_ui.simulation.base_combat_stats.attack), "Hero UI must keep displaying base physical Damage while buffed.")
 	assert(main_ui.hero_details_label.text.contains("Божественное благословение: +15% физ. урона (5 боёв)"), "Hero UI must display the temporary +15% Physical Damage separately.")
 	assert(main_ui.hero_details_label.text.contains("Бонус черты: +10% урона монстрам"), "Hero UI must explain Noble's conditional damage bonus separately.")
 
@@ -49,5 +51,5 @@ func run_test() -> void:
 
 	await process_frame
 	main_ui.free()
-	print("PASS: God UI shows energy and correctly gates healing, buff, and resurrection controls.")
+	print("PASS: God UI shows energy and correctly gates healing, buff, resurrection, and Vision controls.")
 	quit()
