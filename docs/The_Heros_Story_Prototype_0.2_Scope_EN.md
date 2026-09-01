@@ -35,7 +35,7 @@ This Scope must therefore become increasingly self-contained as its systems are 
 
 Prototype 0.2 asks:
 
-> **Is it interesting to follow one autonomous hero through the first meaningful stage of their life, as lived experience gradually shapes their personality, combat style, development, equipment, and first specialization, creating a hero with recognizable behavior, history, and gameplay profile?**
+> **Is it interesting to follow one autonomous hero through the first meaningful stage of their life, as lived experience gradually shapes their personality, combat style, equipment, and first specialization while the player guides the hero’s capabilities through primary-attribute development, creating a hero with recognizable behavior, history, and gameplay profile?**
 
 A second important question is:
 
@@ -49,7 +49,7 @@ Prototype 0.2 remains focused on the project’s core fantasy:
 
 > **The hero lives. The world creates circumstances. The player guides.**
 
-The player does not directly control movement, quest choice, equipment choice, attacks, ability use, shopping decisions, or specialization. The player observes, understands, and softly influences the hero while retaining a limited set of direct divine interventions.
+The player does not directly control movement, quest choice, equipment choice, attacks, ability use, shopping decisions, or specialization. The player directly guides long-term capability growth by distributing the hero's free primary-attribute points and may also use a limited set of divine interventions, while the hero remains autonomous in what they actually do with those capabilities.
 
 Prototype 0.2 is not intended to implement the full game. It is the first version where the early life of the hero should feel like a coherent small RPG simulation rather than a collection of isolated prototype systems.
 
@@ -61,8 +61,10 @@ Prototype 0.2 must include, at minimum:
 
 - one autonomous hero;
 - one starting class: **Warrior**;
+- a small starting questionnaire that creates a mild initial personality bias and a small pool of additional player-distributed primary-attribute points without implementing the full future biography system;
 - progression from approximately level 1 through **level 50–60**;
 - five primary attributes;
+- player distribution of the free primary-attribute points gained through normal level progression;
 - the agreed secondary combat-stat framework relevant to the Warrior and current enemies;
 - two base Warrior abilities;
 - two first-tier Warrior specializations: **Protector** and **Slayer**;
@@ -127,7 +129,7 @@ The following are outside this Scope unless explicitly promoted later:
 - equipment set bonuses;
 - Legendary / Orange equipment;
 - deity progression;
-- full hero biography creation;
+- full hero biography creation beyond the limited Prototype 0.2 starting questionnaire;
 - long-term endgame goals;
 - retirement / final biography / end-of-life systems;
 - offline progression while the application is closed;
@@ -251,7 +253,6 @@ Primary attributes belong to long-term hero development. Standard random equipme
 
 ---
 
-
 ### Base Critical Damage
 
 Before STR and equipment modifiers are applied, the hero's base Critical Damage is:
@@ -260,7 +261,7 @@ Before STR and equipment modifiers are applied, the hero's base Critical Damage 
 
 STR adds its Critical Damage bonus on top of this base value.
 
-### Starting Primary Attributes
+### Starting Primary Attributes and Starting Questionnaire
 
 At the beginning of a new Prototype 0.2 game, the Warrior starts with:
 
@@ -270,19 +271,34 @@ At the beginning of a new Prototype 0.2 game, the Warrior starts with:
 - **CON = 5**
 - **WIS = 5**
 
-These values are the hero's base starting primary attributes before later level-up growth, deity-guided points, personality-directed adaptive growth, specialization growth, or other permanent progression is applied.
+These values are the hero's symmetrical base starting primary attributes.
 
-The starting values are intentionally symmetrical for Prototype 0.2 so that later differences in the hero's profile come from actual development rather than a hidden starting bias.
+Prototype 0.2 then presents a **small fixed set of questions about the hero's past**. This is a lightweight starting questionnaire, not the full future biography-creation system.
 
-## 7. Level Progression and Autonomous Attribute Growth
+The questionnaire has two mechanical purposes:
+
+1. it grants a **small pool of additional primary-attribute points** that the player distributes directly among STR / DEX / INT / CON / WIS;
+2. individual answers may apply a **small hidden starting shift** toward one side of an appropriate personality axis.
+
+The exact number of questionnaire questions, the size of the additional primary-attribute pool, and the numerical hidden personality shifts are tuning values to be finalized during implementation.
+
+A starting personality shift must be deliberately smaller than the amount required to create an established visible trait by itself. A biography answer may therefore make the hero begin somewhat closer to Brave, Cautious, Noble, Devious, Greedy, Generous, Curious, or Conservative without immediately labeling the hero with that trait.
+
+Starting questions create **initial capability choices and mild personality inertia**, not a finished personality. The hero's later formative decisions in the world determine whether that initial tendency becomes stronger, disappears, or eventually develops in the opposite direction.
+
+Primary attributes and personality remain conceptually separate. High STR does not mean Brave, high CON does not mean Cautious, and the same attribute may support actions with different personality meanings depending on the event.
+
+---
+
+## 7. Level Progression and Player-Guided Attribute Growth
 
 Prototype 0.2 should support meaningful progression through approximately level 50–60.
 
-The player does not manually distribute every attribute point.
+Normal primary-attribute growth deliberately separates **class identity**, **player guidance**, and **specialization identity**.
 
-Before the first specialization is obtained, the Warrior gains:
+Before the first specialization is obtained, every gained hero level provides:
 
-> **5 primary-attribute points per level = 1 fixed Warrior point + 3 adaptive hero-development points + 1 deity-guided point**
+> **5 primary-attribute points per level = 1 fixed Warrior point + 4 player-distributed points**
 
 ### Fixed Warrior Growth
 
@@ -290,35 +306,31 @@ One point per level is the permanent class-directed Warrior contribution:
 
 > **+1 STR per level**
 
-This point remains fixed throughout the Prototype 0.2 progression and guarantees that the hero continues to develop the basic physical foundation of the Warrior class.
+This point is applied automatically and remains fixed throughout Prototype 0.2. It guarantees that every Warrior continues to develop the basic physical foundation of the class regardless of how the player spends the free points.
 
-### Adaptive Hero-Development Growth
+### Player-Distributed Growth
 
-Three additional points per level belong to the hero's autonomous development.
+Four additional primary-attribute points per level belong to player-guided long-term development.
 
-While the hero's personality is still weakly formed, these three points use the default Warrior profile:
+The player may distribute these points among:
 
-> **+1 STR +1 DEX +1 CON**
+- STR;
+- DEX;
+- INT;
+- CON;
+- WIS.
 
-Therefore, early Warrior growth normally totals:
+This is a direct development choice by the player acting as the hero's patron. It is **not** a direct command over the hero's actions.
 
-> **+2 STR +1 DEX +1 CON +1 deity-guided point per level**
+The player determines which capabilities become stronger; the autonomous hero still determines which quests, events, risks, equipment, and specialization path they actually choose within the game rules.
 
-As meaningful personality traits appear and become established, the three adaptive points gradually stop following the default `STR / DEX / CON` distribution and are redistributed according to the hero's developed traits.
+Personality does **not** automatically redirect, constrain, or redistribute these four points. This separation is intentional because primary attributes are one of the independent causes used by formative decisions that may later shape personality.
 
-There is no fixed level at which this system suddenly switches modes. The same adaptive-growth system is used from the beginning:
+The system must not recreate a feedback loop such as:
 
-- if the hero has no sufficiently established trait influence, the default Warrior profile fills the adaptive points;
-- established traits may redirect one or more adaptive points toward primary attributes that fit the hero's developed character;
-- if trait influences do not clearly determine all three points, any unresolved adaptive points fall back to the default Warrior profile.
+> **personality → automatic attribute growth → formative choice → the same personality**
 
-The Prototype 0.2 trait-to-attribute mapping is fixed in Section 12.2 and is part of this adaptive-growth system. Personality-driven growth must not become a disguised manual talent tree.
-
-### Deity-Guided Growth
-
-One point per level is influenced by the player's current divine development direction.
-
-This remains a distinct player-guidance channel rather than being folded into personality. The deity can softly encourage one primary-attribute direction without turning level-up into ordinary manual stat allocation.
+If the player does not spend all newly available points immediately, the unspent points remain stored as pending primary-attribute points and may be distributed later. Unspent points provide no stat benefit until actually allocated and must persist through save/load.
 
 ### First-Specialization Growth
 
@@ -328,7 +340,7 @@ After the first specialization is actually obtained, it adds:
 
 Normal post-specialization growth therefore becomes:
 
-> **1 fixed Warrior point + 3 adaptive hero points + 1 deity-guided point + 1 specialization-directed point = 6 points per level**
+> **1 fixed Warrior STR + 4 player-distributed points + 1 specialization-directed point = 6 primary-attribute points per level**
 
 The specialization also grants its current working immediate profile reward when completed:
 
@@ -338,7 +350,7 @@ The exact size of this immediate reward remains a provisional balance value.
 
 If the hero completes the first specialization later than the normal level-40 milestone, delayed specialization-directed growth is not permanently lost. The missing post-40 specialization points are granted when the specialization becomes active.
 
-Exact XP requirements, attribute coefficients, trait-to-stat mappings, and level pace are tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the level-50–60 range.
+Exact XP requirements, primary-attribute coefficients, questionnaire bonuses, and level pace remain tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the level-50–60 range.
 
 ---
 
@@ -555,7 +567,6 @@ The same Block conversion and expected-mitigation model must be used for hero Po
 
 Do not assign an arbitrary flat Power value to Block.
 
-
 ---
 
 ## 10. Warrior Class, Rage, and Base Abilities
@@ -605,8 +616,6 @@ Current working rules:
 - requires a living valid target;
 - must work with ordinary Warrior weapon setups;
 - is not tied to either first specialization.
-
-
 
 #### Wisdom Scaling
 
@@ -733,13 +742,13 @@ Prototype 0.2 includes two first-specialization directions:
 
 The player does not directly select the specialization from a menu.
 
-The hero forms a specialization preference from their actual development, then may receive one limited divine nudge before the decision becomes final.
+The hero forms a specialization preference from their actual developed primary attributes and established character, then may receive one limited divine nudge before the decision becomes final.
 
 The specialization is not granted immediately when the direction is chosen. Choosing the direction activates the corresponding **Specialization Quest**, and the specialization becomes owned only after that quest is completed.
 
 ### 11.1. Attribute-Based Specialization Preference
 
-The hero's developed primary-attribute profile is the main influence on the first specialization decision.
+The hero's developed primary-attribute profile is one main influence on the first specialization decision.
 
 Because Warrior receives one permanent class-directed Strength point per level, that mandatory class growth must not by itself bias every Warrior toward Slayer.
 
@@ -775,13 +784,24 @@ If future balance changes alter the exact mandatory Warrior Strength gained befo
 
 ### 11.2. Personality Influence
 
-Personality does **not** add a separate direct specialization-score modifier in Prototype 0.2.
+Personality is a **separate secondary influence** on the first-specialization preference because personality no longer distributes the hero's primary attributes.
 
-This is intentional because the three personality axes that influence adaptive attribute growth already shape the hero's STR / DEX / CON / WIS profile over time.
+For Prototype 0.2, only the personality axis that directly represents attitude toward danger is used for this first-tier split:
 
-Therefore personality affects the first specialization **indirectly through the hero's developed attributes**, avoiding double-counting the same developmental cause twice.
+- established **Brave** provides a soft modifier toward **Slayer**;
+- established **Cautious** provides a soft modifier toward **Protector**;
+- if neither side is established, no personality modifier is applied.
 
-Other personality traits also do not receive separate specialization-score bonuses merely because they exist.
+The exact numerical size of this personality modifier remains a tuning value.
+
+Noble / Devious, Greedy / Generous, and Curious / Conservative do not receive direct first-specialization score bonuses merely because they exist. They may matter to later content or future specialization designs only where their meaning genuinely fits.
+
+Stats and personality are intentionally allowed to contribute together because they now represent different causes:
+
+> **primary attributes = player-guided capability development**  
+> **personality = character formed through the hero's lived decisions**
+
+This preserves autonomy without double-counting one underlying automatic-development system.
 
 ### 11.3. One-Time Divine Direction
 
@@ -816,11 +836,11 @@ This preserves the core principle:
 
 The current first-specialization score is:
 
-> **`SlayerScore = SlayerBase + SlayerDivineModifier`**
+> **`SlayerScore = SlayerBase + SlayerPersonalityModifier + SlayerDivineModifier`**
 
-> **`ProtectorScore = ProtectorBase + ProtectorDivineModifier`**
+> **`ProtectorScore = ProtectorBase + ProtectorPersonalityModifier + ProtectorDivineModifier`**
 
-The divine modifier is zero when no divine guidance has been used.
+Personality modifiers are zero when the relevant Brave / Cautious trait is not established. The divine modifier is zero when no divine guidance has been used.
 
 The scores do not need to sum to exactly `1.0` after modifiers are applied. They are comparison scores, not displayed probabilities.
 
@@ -979,6 +999,7 @@ The normal resolved Attack Speed reduction and 10-second duration apply to them 
 The following are current working balance values and may be tuned through testing:
 
 - `40` mandatory class Strength removed from the specialization comparison;
+- the exact Brave / Cautious specialization modifier;
 - divine modifier `+0.15`;
 - divine cost `80 Energy`;
 - decision window `180 ticks`;
@@ -986,9 +1007,10 @@ The following are current working balance values and may be tuned through testin
 
 The structural rules are fixed unless explicitly redesigned:
 
-- stats are the primary specialization influence;
+- stats are one primary specialization influence;
 - mandatory Warrior Strength must not create false Slayer bias;
-- personality influences specialization indirectly through the developed attribute profile and is not counted again as a direct score bonus;
+- Brave / Cautious personality is an independent soft specialization influence;
+- primary attributes and personality are not treated as the same developmental evidence;
 - divine guidance is one-time and secondary;
 - the hero may decide before the deadline if the direction is clear;
 - the hero chooses autonomously when the window closes;
@@ -998,13 +1020,15 @@ The structural rules are fixed unless explicitly redesigned:
 
 ## 12. Personality and Trait Development
 
-Prototype 0.2 must move beyond static starting traits.
+Prototype 0.2 must move beyond static starting traits while avoiding a self-reinforcing personality loop.
 
-Personality uses opposing hidden continuous axes. Visible traits appear when hidden values cross thresholds.
+Personality uses opposing hidden continuous axes. Visible traits appear only when hidden values cross the appropriate thresholds.
 
-General structure:
+The hero may begin with small hidden shifts from the starting questionnaire, but those shifts are not sufficient to grant an established visible trait by themselves.
 
-> **meaningful outcome → hidden personality movement → threshold crossing → visible trait change**
+General formation structure:
+
+> **starting bias + formative decisions → hidden personality movement → threshold crossing → visible trait change**
 
 The visible trait should not flip back and forth after small opposite changes. Appearance and disappearance thresholds should therefore use hysteresis.
 
@@ -1074,52 +1098,99 @@ It does not grant hidden information directly. Curiosity affects the desire to i
 
 `Observant ↔ Inattentive` is not implemented as a Prototype 0.2 personality axis.
 
-The current Prototype 0.2 content does not provide enough meaningful perception-specific decisions to justify a dedicated personality axis. It may be reconsidered later if perception and discovery systems become deep enough to support it.
+It remains part of the broader design's current personality set, but the current Prototype 0.2 content does not yet provide enough perception-specific decisions to justify implementing it in this vertical slice. It may be promoted later when perception and discovery systems provide enough real gameplay meaning.
 
-### Trait Development Rules
+### Three Decision Roles
 
-Routine repetition does not normally change general personality by itself.
+Authored event or quest decision points that may interact with general personality must explicitly use one of three roles:
 
-Ordinary quest completion, routine combat, shopping, and repeatedly acting according to an existing trait should not automatically reinforce that trait forever.
+1. **Formative decision** — may change general personality, but general personality does not participate in choosing the response;
+2. **Expressive decision** — may use established personality to influence the response, but does not change the general personality axes;
+3. **Neutral decision** — neither forms general personality nor needs to use it.
 
-Personality changes primarily through **meaningful authored outcomes**, especially:
+The role belongs to the **individual decision point / stage**, not necessarily to the entire event. One handcrafted event may contain a formative stage, later an expressive stage, and also neutral mechanical decisions.
 
-- temporary events;
-- dungeon situations;
-- specialization-related decisions;
-- unusual quest outcomes;
-- other authored consequences explicitly designed to leave a mark.
+#### Formative Decisions
 
-The event/content definition owns the direction and magnitude of personality movement caused by its outcomes.
+A formative decision exists to let independent circumstances and the hero's capabilities create personality over time.
 
-There is no universal rule such as:
+General personality axes must **not** be read to:
 
-> **success always increases bravery**
+- unlock or hide options;
+- score available options;
+- break ties;
+- otherwise determine the chosen response.
 
-A successful reckless action may reinforce Bravery, while a traumatic success could instead make the hero more Cautious if that authored outcome explicitly says so.
+A formative decision may instead use factors such as:
+
+- relevant primary attributes;
+- class or specialization where mechanically appropriate;
+- current HP / resources / condition;
+- relationships or world state;
+- objective event-specific circumstances;
+- other non-personality facts explicitly owned by that event.
+
+Primary attributes are capabilities, not personality labels. STR does not automatically mean Brave, DEX does not automatically mean Cautious or Devious, and the same primary attribute may support different kinds of behavior in different situations.
+
+If multiple formative responses receive exactly equal final evaluations, the tie may be resolved through the shared seeded RNG so the result remains reproducible.
+
+The authored formative response may then apply hidden movement on one or more personality axes according to the meaning of the **chosen action**.
+
+For example, an event may resolve a stat-driven choice and then apply an authored movement such as toward Brave or toward Cautious. The exact magnitude belongs to that content definition.
+
+Success or failure of the action remains a separate concept. Personality movement is not automatically determined by whether the action succeeded. A designer may author additional consequences from success or failure, but Prototype 0.2 does not use a universal rule such as "success increases Brave" or "failure increases Cautious."
+
+#### Expressive Decisions
+
+An expressive decision exists to let the already-developed character affect later life.
+
+Established visible personality traits may influence:
+
+- option availability where appropriate;
+- option attractiveness / score;
+- risk preference;
+- economic or social preference;
+- other authored behavioral modifiers.
+
+However, an expressive decision does **not** move the general personality axes.
+
+If Brave helped the hero choose a risky response, that response does not award additional Brave merely for expressing the trait that already influenced the choice.
+
+Any decision point whose option availability or evaluation reads a general personality trait must therefore be treated as expressive with respect to general personality development.
+
+#### Neutral Decisions
+
+A neutral decision does not participate in general personality development.
+
+It may be resolved through ordinary objective rules, system-specific evaluation, primary attributes, resources, or other relevant facts without needing to read or modify personality.
+
+Not every choice in the game needs to say something about who the hero is.
 
 ### Hidden Values and Visible Traits
 
 Each personality axis is stored as a continuous hidden value.
 
-The exact numeric range, movement sizes, visible-trait thresholds, and hysteresis thresholds remain tuning values to be defined during implementation/testing.
+The exact numeric range, movement sizes, visible-trait thresholds, starting-questionnaire shifts, and hysteresis thresholds remain tuning values to be defined during implementation/testing.
 
 The architecture must nevertheless support:
 
+- small non-visible starting biases from the questionnaire;
 - neutral hidden states with no visible trait;
-- gradual movement toward either side;
+- gradual movement toward either side through formative decisions;
 - visible trait appearance after a threshold;
-- trait strengthening through further meaningful movement;
-- trait weakening through opposing meaningful outcomes;
+- trait strengthening through further formative movement;
+- trait weakening through opposing formative movement;
 - removal of the visible trait before the opposite trait can appear.
 
 The player should see the hero's established personality, not the exact hidden numerical meter unless a later UI decision explicitly changes this.
 
 ### Personality and Autonomous Decisions
 
-Personality affects autonomous choices through decision modifiers but must not override obvious common sense or hard eligibility rules.
+Personality affects autonomous behavior where the owning decision is explicitly **expressive** or where a system-level behavioral rule in this Scope uses an established trait.
 
-The normal order remains:
+For such decisions, personality remains a soft influence and must not override obvious impossibility or hard eligibility rules.
+
+A common expressive order may therefore be:
 
 ```text
 Hard eligibility / feasibility
@@ -1128,46 +1199,23 @@ Hard eligibility / feasibility
 → final autonomous choice
 ```
 
-A personality trait therefore changes preference among viable options. It does not normally make an impossible activity possible.
+Formative decision points are the deliberate exception: they do not read general personality and instead use independent capabilities and circumstances as defined above.
 
-### Personality and Attribute Growth
+### Personality and Primary Attributes Are Separate
 
-Established personality traits influence the three adaptive hero-development attribute points defined in Section 7.
+Established personality traits do **not** distribute level-up primary-attribute points in Prototype 0.2.
 
-The current Prototype 0.2 trait-to-attribute mapping is:
+Normal development follows Section 7:
 
-- **Brave → STR**
-- **Cautious → CON**
-- **Curious → DEX**
-- **Conservative → WIS**
-- **Devious → DEX**
-- **Noble → CON**
+- +1 STR from Warrior automatically;
+- +4 primary-attribute points distributed directly by the player;
+- after specialization, +1 specialization-directed point per later level.
 
-`Greedy` and `Generous` do **not** directly redirect adaptive attribute growth in Prototype 0.2.
+Personality and primary attributes may both influence later systems when their meanings are independently relevant, but neither is treated as a disguised copy of the other.
 
-Their gameplay role remains primarily behavioral and economic rather than combat-stat driven.
+This separation is required to prevent a circular development loop:
 
-The three adaptive hero-development points correspond directly to the three personality axes that influence attributes:
-
-1. **Brave ↔ Cautious**
-   - Brave → **+1 STR**
-   - Cautious → **+1 CON**
-
-2. **Noble ↔ Devious**
-   - Noble → **+1 CON**
-   - Devious → **+1 DEX**
-
-3. **Curious ↔ Conservative**
-   - Curious → **+1 DEX**
-   - Conservative → **+1 WIS**
-
-Therefore each of these three personality axes controls exactly one of the three adaptive attribute points per level.
-
-If an axis has not yet developed a sufficiently established visible direction, that axis's adaptive point falls back to the corresponding default Warrior-profile point defined in Section 7.
-
-`Greedy ↔ Generous` does not control an adaptive attribute point in Prototype 0.2.
-
-This mapping must remain secondary to the personality system's actual behavioral meaning. Traits must not be designed merely as disguised stat talents.
+> **trait → automatic stats → formative choice → same trait**
 
 Combat-specific fears/confidences remain a separate possible future layer and are not required merely to satisfy the Prototype 0.2 personality goal.
 
@@ -1188,6 +1236,8 @@ Ordinary quest choice keeps its dedicated two-stage model:
 > **Hard Filter → QuestScore → highest valid quest**
 
 `QuestEvaluator` owns this logic.
+
+Ordinary quest selection is an **expressive system-level decision** when established personality traits modify its eligibility or attractiveness. It may express personality, but normal quest selection does not itself award general personality movement.
 
 #### Hard Filter Power Window
 
@@ -1251,11 +1301,19 @@ Temporary events are primarily circumstances created by the world.
 
 The hero does not normally browse a pool of unrelated events and choose the one with the highest generic score.
 
-When an event becomes relevant to the hero because of location, timing, travel interruption, or another authored trigger, the hero reacts to that event according to its available options and the personality/decision rules defined for that event.
+When an event becomes relevant to the hero because of location, timing, travel interruption, or another authored trigger, the hero reacts to that event according to its available decision points.
+
+Every decision point that interacts with general personality must follow the **formative / expressive / neutral** role rules from Section 12.
+
+An event may therefore:
+
+- contain a formative stat/context-driven choice that can move hidden personality;
+- later contain an expressive choice where established personality modifies the response without changing personality;
+- contain neutral decisions that do neither.
 
 An event may allow multiple reactions, including ignoring it when the authored event explicitly permits that outcome.
 
-Event resolution remains deterministic and explainable, but it does not need to share the ordinary QuestScore formula.
+Event resolution remains deterministic and explainable except for explicit seeded tie-breaks or authored reproducible randomness. It does not need to share the ordinary QuestScore formula.
 
 ### 13.4. Leaving a City / Region
 
@@ -1296,7 +1354,7 @@ known dungeon
 → dungeon readiness / retry rules
 
 temporary event
-→ EventSystem + authored event options
+→ EventSystem + authored formative / expressive / neutral decision points
 
 city relocation
 → city progression condition
@@ -1506,7 +1564,7 @@ Each event has:
 - a local activation area;
 - a finite lifetime;
 - importance / urgency where relevant;
-- one or more authored outcomes.
+- one or more authored decision points and outcomes.
 
 For Prototype 0.2, the normal working target is:
 
@@ -1528,23 +1586,35 @@ Prototype 0.2 content target:
 
 A normal event should generally contain one or two broadly available responses plus additional conditional options only where they make sense.
 
-Conditional options may depend on:
+Every authored decision point that interacts with general personality must declare whether it is:
+
+- **formative**;
+- **expressive**;
+- **neutral**.
+
+For **formative** decision points, general personality traits may not be used to unlock or score options. Conditional options may instead depend on:
 
 - primary attributes;
-- personality traits;
 - class / specialization;
 - HP or other resources;
 - items;
 - previous event state;
-- other explicit event-specific conditions.
+- relationships / world state where appropriate;
+- other explicit non-personality event conditions.
 
-Availability, choice, and success are separate concepts. Unlocking a special option does not force the hero to choose it.
+The chosen formative response may apply authored hidden personality movement.
+
+For **expressive** decision points, established personality traits may affect option availability or attractiveness, but that decision point does not move the general personality axes.
+
+Neutral decision points need neither personality input nor personality change.
+
+Availability, choice, and success remain separate concepts. Unlocking a special option does not force the hero to choose it, and success/failure does not automatically define the personality meaning of the chosen response.
 
 An event may create a temporary detour objective. The hero’s original objective is suspended rather than forgotten and may resume after the event resolves.
 
-Events should be a major source of meaningful personality development in Prototype 0.2.
+Formative event decisions should be a major source of meaningful personality development in Prototype 0.2, while expressive event decisions should make already-established personality visible in play.
 
-They should remain uncommon enough that ordinary adventuring still exists as the stable rhythm of life.
+Events should remain uncommon enough that ordinary adventuring still exists as the stable rhythm of life.
 
 ---
 
@@ -2039,7 +2109,6 @@ They are concrete enough to implement and test.
 
 They are not permanently locked balance constants. Real equipment generation, full 12-slot builds, enemies, specialization profiles, and long-run simulation may justify later numerical tuning without changing the ownership or structure of the system.
 
-
 ---
 
 ## 20. Loot Sources and QuestLoot
@@ -2249,7 +2318,6 @@ The same implementation must be used for:
 - EquipmentEvaluator virtual equip comparisons.
 
 There must not be a separate shield-only or UI-only Block value formula.
-
 
 ### Block Contribution to ItemPower
 
@@ -2972,7 +3040,7 @@ Prototype 0.2 retains the core principle that divine influence sits on top of a 
 
 The player must not become the hero's hidden commander.
 
-Divine influence may:
+Direct allocation of the hero's free primary-attribute points is the player's normal long-term development role and is separate from divine abilities. Divine influence may additionally:
 
 - help the hero in exceptional moments;
 - reveal information;
@@ -2980,7 +3048,7 @@ Divine influence may:
 - reduce the consequences of failure;
 - temporarily strengthen the hero.
 
-It must not replace the hero's normal development, equipment, abilities, or autonomous decision-making.
+Divine abilities must not replace the hero's equipment, abilities, autonomous decision-making, or the normal player-guided primary-attribute progression defined in Section 7.
 
 ### 29.1. Divine Energy
 
@@ -3178,6 +3246,8 @@ The player may help, reveal, encourage, or occasionally rescue.
 
 The player does not directly control movement, equipment, combat actions, quest execution, or specialization as ordinary commands.
 
+Direct primary-attribute allocation remains a long-term development input rather than an action command.
+
 The governing principle remains:
 
 > **The hero lives. The world creates circumstances. The player guides.**
@@ -3317,10 +3387,11 @@ The diary should make the hero's development understandable through visible caus
 Examples:
 
 - the hero completed several quests and gained enough XP to reach a new level;
+- the player guided the hero's capabilities through primary-attribute allocation, while the hero's own later choices determined how those capabilities were used;
 - a quest reward provided a better weapon, explaining the new sword shown on the hero;
 - a dungeon failure caused the hero to return to normal work until stronger;
 - the hero bought stronger equipment before trying the dungeon again;
-- accumulated development gradually pushed the hero toward Protector or Slayer;
+- the combination of developed attributes and established character gradually pushed the hero toward Protector or Slayer;
 - a divine intervention helped the hero survive or changed an important decision.
 
 The diary does not need to expose exact formulas or hidden values.
@@ -3476,7 +3547,8 @@ Examples:
 - dungeon logic provides readiness / retry reasons;
 - relocation logic provides the progression condition that triggered leaving;
 - economy logic provides the reason for a purchase or for saving Gold;
-- specialization logic provides the major factors currently favoring Protector or Slayer;
+- specialization logic provides the major attribute, personality, and divine factors currently favoring Protector or Slayer;
+- event logic identifies whether an important response was formative, expressive, or neutral and which non-hidden factors materially determined it;
 - God systems report whether a divine modifier was active.
 
 Required direction:
@@ -3590,6 +3662,7 @@ For example, quest selection should be able to show:
 
 The same principle should later apply to other important autonomous systems, including:
 
+- formative / expressive event decision evaluation;
 - purchases;
 - equipment replacement;
 - dungeon readiness / retry;
@@ -3608,6 +3681,7 @@ The Developer Debug Log may include:
 - item comparisons;
 - dungeon readiness thresholds;
 - hidden personality values;
+- formative personality movements and decision-role identifiers;
 - RNG / seed information where useful;
 - combat rolls and results;
 - cooldowns;
@@ -3690,13 +3764,15 @@ Expected information:
 
 Must show final resolved values, including:
 
-- primary attributes;
+- primary attributes and any currently unspent player-distributed primary-attribute points;
 - secondary combat stats;
 - class / specialization;
 - abilities and Skill Levels;
 - personality traits;
 - Power;
 - progression information.
+
+The Hero Screen may provide the player-facing controls for allocating pending primary-attribute points, but the allocation rules and validation belong to the Hero/progression simulation layer rather than UI code.
 
 ### Inventory Screen
 
@@ -3767,6 +3843,8 @@ When the game is not running, world simulation time does not advance. Loading re
 The save must preserve enough state to continue the same life, including at least:
 
 - hero level / XP / attributes;
+- unspent player-distributed primary-attribute points;
+- starting-questionnaire completion / applied starting state needed to avoid reapplying it;
 - personality hidden values and visible traits;
 - class / specialization state;
 - abilities and Skill Levels;
@@ -3800,6 +3878,7 @@ This includes where applicable:
 - quest-offer generation;
 - shop stock;
 - temporary event placement / outcomes where random;
+- formative-decision exact-tie resolution;
 - dungeon generation choices where random;
 - narrative phrasing variation.
 
@@ -3816,6 +3895,7 @@ Current Prototype 0.2 content target:
 | Content | Minimum working target |
 | --- | ---: |
 | Normal cities | 2 |
+| Starting questionnaire | small fixed set of questions |
 | Ordinary quest templates | 15 per city |
 | Simultaneous ordinary quest offers | up to 6 per city: maximum 2 from each of the 3 relative-strength bands |
 | Handcrafted temporary events | 15–20 total |
@@ -3824,7 +3904,7 @@ Current Prototype 0.2 content target:
 | Specialization dungeon variants | 1 per first specialization path, sharing one system |
 | Base Warrior abilities | 2 |
 | First-specialization abilities | 1 Protector + 1 Slayer |
-| Personality axes | exactly 4 meaningful pairs |
+| Personality axes | exactly 4 meaningful pairs in Prototype 0.2 |
 | Visual armor families | at least 5–6 |
 | Item rarity | White, Green, Blue, Purple |
 | Main playable progression | approximately level 1–60 |
@@ -3857,7 +3937,7 @@ Combat resolves one fight; it does not grant unrelated rewards, update UI, write
 
 Power remains one shared implementation for hero and enemies.
 
-Concrete mobs, items, quests, dungeons, shops, and event definitions should be data-driven whenever practical.
+Concrete mobs, items, quests, dungeons, shops, starting-questionnaire answers, and event definitions should be data-driven whenever practical.
 
 Current experimental code may be refactored or replaced where necessary to satisfy these boundaries.
 
@@ -4115,11 +4195,13 @@ Examples:
 
 `hero_progression.gd` owns XP and level progression.
 
-`attribute_growth.gd` owns autonomous allocation of level-up primary-attribute points, including the class-fixed, trait-directed, deity-guided and specialization-directed channels defined by this Scope.
+`attribute_growth.gd` owns the level-up primary-attribute channels defined by this Scope: automatic Warrior STR, storage and validated application of the four player-distributed points per level, and specialization-directed growth after the specialization is obtained. It does **not** autonomously allocate free points from personality.
 
 `hero_traits.gd` stores the hero's current personality/combat traits and their state.
 
-`trait_development.gd` owns how meaningful outcomes move hidden trait values and how visible traits appear, strengthen, weaken or disappear.
+`trait_development.gd` owns hidden personality values, starting-questionnaire shifts, personality movement emitted by formative decisions, and visible-trait threshold / hysteresis transitions. Expressive and neutral decisions must not use this system to award general personality movement.
+
+The limited starting questionnaire belongs to the Hero layer. Its data and gameplay effects must not be calculated by UI controls; the exact file split may be chosen when that small creation flow is implemented.
 
 `hero_specialization.gd` owns specialization state and specialization milestones.
 
@@ -4139,7 +4221,7 @@ The intended chain is:
 
 ```text
 Hero base/profile
-+ level and primary attributes
++ level and allocated primary attributes
 + specialization
 + equipment
 + persistent effects
@@ -4176,12 +4258,11 @@ Different autonomous actions are triggered and evaluated by the system that owns
 
 - `quest_evaluator.gd` compares ordinary quest offers;
 - dungeon logic checks preparation and post-failure retry readiness;
-- `event_system.gd` presents and resolves temporary events when their authored trigger makes them relevant;
+- `event_system.gd` presents and resolves temporary events when their authored trigger makes them relevant and respects each decision point's formative / expressive / neutral role;
 - city / travel logic applies the approved progression trigger for leaving the current city;
 - economy systems evaluate purchases, training and preparation only in their relevant context.
 
 These systems must not be forced to translate their decisions into one shared score merely so unrelated activities can compete numerically.
-
 
 #### Quests
 
@@ -4272,6 +4353,8 @@ Economy logic must not be placed inside UI controls.
 
 Divine influence may modify decisions or combat, but must not bypass the hero's autonomy unless the ability is explicitly defined as a direct intervention.
 
+Primary-attribute point allocation is ordinary player-guided hero development and belongs to the Hero/progression layer rather than `god_system.gd` or the Divine Energy economy.
+
 #### Narrative
 
 Simulation produces structured facts/events first.
@@ -4310,12 +4393,13 @@ UI may:
 
 - read simulation state;
 - display it;
-- send explicit player/deity requests.
+- send explicit player/deity requests, including primary-attribute allocation requests.
 
 UI must not:
 
 - calculate Hero Power;
 - resolve stats;
+- validate or apply attribute growth itself;
 - evaluate quests;
 - generate loot;
 - choose equipment;
@@ -4350,7 +4434,7 @@ Prototype 0.2 succeeds if testing creates all of the following feelings.
 
 > **“This hero is clearly not the same person or fighter they were twenty levels ago.”**
 
-Progression should be visible through stats, abilities, equipment, appearance, personality, choices, and specialization — not only a level number.
+Progression should be visible through player-guided stats, abilities, equipment, appearance, personality, choices, and specialization — not only a level number.
 
 ### Autonomous Decisions Remain Understandable
 
@@ -4366,7 +4450,9 @@ Two cities, changing offers, events, dungeons, shops, and travel should create e
 
 ### Personality Actually Develops
 
-The player should be able to notice that meaningful experiences changed the hero and later decisions reflect those changes.
+The player should be able to notice that independent capabilities and circumstances led the hero through formative choices that gradually changed hidden personality, and that later expressive decisions reflect the character that emerged.
+
+Different heroes with similar development should be able to become meaningfully different because they encountered different formative situations or resolved them differently, without personality becoming pure random noise or a self-reinforcing loop.
 
 ### Equipment Progression Is Interesting
 
@@ -4378,7 +4464,7 @@ Preparation, uncertainty, failure, learning, and eventual success should make a 
 
 ### Specialization Feels Earned
 
-Protector or Slayer should feel like the result of the hero’s development and a completed adventure rather than a menu choice granted at level 40.
+Protector or Slayer should feel like the combined result of player-guided capability development, the hero's developed character, and a completed autonomous adventure rather than a menu choice granted at level 40.
 
 ### The Diary Makes Background Play Worth Returning To
 
@@ -4396,6 +4482,8 @@ Prototype 0.2 needs reconsideration if:
 - rotating quests feel different only in text but play identically;
 - events happen so often that ordinary life disappears;
 - events are too rare or too weak to affect the hero’s story;
+- formative decisions secretly read the same personality trait they later increase;
+- personality traits automatically redistribute primary attributes and recreate the stats → choices → traits feedback loop;
 - traits change constantly and the hero has no stable personality;
 - traits never meaningfully change at all;
 - the Mid-Level City exists only as a stronger copy of the Starting City with no reason to travel there beyond bigger numbers;
@@ -4430,7 +4518,10 @@ Required work includes:
 
 Implement the approved Prototype 0.2 hero-combat foundation:
 
+- the limited starting questionnaire and its initial stat/personality effects;
 - five primary attributes;
+- +1 automatic Warrior STR and +4 player-distributed primary-attribute points per normal level;
+- persistent pending points when the player has not allocated them yet;
 - approved secondary combat stats;
 - updated `StatResolver`;
 - updated shared `PowerCalculator`;
@@ -4512,15 +4603,18 @@ Keep ordinary quest selection owned by `QuestEvaluator`; do not introduce a univ
 
 Implement:
 
-- exactly four approved personality axes;
+- exactly four approved Prototype 0.2 personality axes;
 - hidden continuous personality values;
+- small hidden starting biases from the questionnaire without automatic visible traits;
 - visible traits with thresholds / hysteresis;
-- authored meaningful event outcomes that can change personality;
-- personality-driven adaptive attribute growth;
+- formative, expressive, and neutral decision roles;
+- formative choices that use primary attributes / objective context without reading general personality and may apply authored personality movement;
+- expressive choices that may use established personality but do not change general personality axes;
+- seeded tie-breaks for exact formative-score ties;
 - context-specific behavioural effects;
 - temporary world events and hero reactions when those events become relevant.
 
-Routine repetition must not farm personality changes.
+Routine repetition and expressive decisions must not farm personality changes.
 
 ### Stage 8 — Dungeons
 
@@ -4545,6 +4639,8 @@ A successful dungeon completion is also a major autosave milestone.
 Implement:
 
 - autonomous Protector / Slayer direction;
+- attribute-based specialization preference from the player-guided primary-attribute profile;
+- independent Brave / Cautious personality modifier;
 - specialization decision window;
 - optional one-time divine specialization guidance;
 - Specialization Quest;
@@ -4579,9 +4675,10 @@ Implement and validate:
 - save on normal exit / game close;
 - milestone autosave after successful dungeon completion;
 - milestone autosave when specialization is gained;
+- persistence of unspent player-distributed primary-attribute points;
 - no offline simulation;
 - restoration of the full required simulation state;
-- long autonomous runs through approximately levels 50–60;
+- long autonomous runs through approximately levels 50–60, including runs where some free primary-attribute points remain pending until later player allocation;
 - seeded reproducibility checks;
 - economy / progression / equipment / dungeon balance observation;
 - regression testing for previously completed stages.
@@ -4620,6 +4717,10 @@ The following should **not** be treated as missing architecture simply because t
 
 They should be tuned after the relevant systems exist and can be tested together:
 
+- exact number of starting-questionnaire prompts and the size of its additional primary-attribute pool;
+- exact hidden personality shifts from starting-questionnaire answers;
+- hidden personality ranges, visible-trait thresholds, hysteresis, and formative movement magnitudes;
+- exact Brave / Cautious first-specialization modifier;
 - final tuning of the working item-level affix budgets and secondary-stat cost table defined in Section 19;
 - exact strength / item-level ranges of the three shop progression bands;
 - potion prices;
@@ -4647,7 +4748,6 @@ The following diary details remain implementation / testing decisions rather tha
 
 These values should be decided from real text volume and prototype behavior rather than guessed in advance.
 
-
 ---
 
 ## 41. Main Constraint
@@ -4663,4 +4763,4 @@ If a proposed system does neither, it should not be added merely because similar
 
 The goal is not to build every planned feature.
 
-The goal is to prove that one autonomous Warrior can live through a small but genuinely varied early career and emerge as a recognizable Protector or Slayer with a personal history worth following.
+The goal is to prove that one autonomous Warrior can live through a small but genuinely varied early career, be guided in capabilities by the player, form a recognizable personality through lived formative choices, and emerge as a recognizable Protector or Slayer with a personal history worth following.

@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-08-31**.
+Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-01**.
 
 This file is a short working progress map, not a design authority.
 
@@ -32,11 +32,14 @@ Status:
 - ✅ HP, Armor, Dodge, Accuracy, Damage, Attack Speed, Crit, Crit Damage, Fire/Cold/Lightning Resistance, Block.
 - ✅ Shared Armor / Resistance / Accuracy-Dodge / Block combat formulas.
 - ✅ XP, levels, excess-XP carryover.
-- ✅ Current pre-specialization automatic growth: +2 STR / +1 DEX / +1 CON per level.
+- 🟡 Current code still uses the legacy pre-specialization automatic growth of +2 STR / +1 DEX / +1 CON per level; this must be replaced by the final 0.2 rule.
 - 🟡 Level progression framework works, but full 1–60 content/balance is not complete.
-- ⬜ Personality-directed adaptive attribute growth.
-- ⬜ Deity-guided attribute point growth.
-- ⬜ First-specialization-specific attribute growth.
+- ⬜ Lightweight starting questionnaire about the hero's past.
+- ⬜ Questionnaire grants a small additional primary-attribute pool that the player distributes among STR / DEX / INT / CON / WIS.
+- ⬜ Final pre-specialization growth: +1 STR from Warrior automatically + 4 primary-attribute points distributed directly by the player per level.
+- ⬜ Unspent player-distributed primary-attribute points remain pending, provide no benefit until spent, and persist through save/load.
+- ⬜ First-specialization-specific +1 primary-attribute point per later level.
+- ⬜ Immediate specialization-profile attribute reward and delayed post-40 catch-up growth.
 
 ## 3. Combat and Warrior abilities
 
@@ -56,10 +59,14 @@ Status:
 
 - 🟡 Current prototype rolls 1–2 starting traits from the older `Coward / Brave / Dishonorable / Noble / Greedy` set and uses them in quest/combat decisions.
 - 🟡 Current QuestScore personality modifiers work, but the final Scope personality model is not yet implemented.
-- ⬜ Final four personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
+- ⬜ Final four Prototype 0.2 personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
 - ⬜ Hidden continuous personality values, thresholds/hysteresis and visible-trait development.
-- ⬜ Personality development from events and meaningful outcomes.
-- ⬜ Personality-directed attribute growth.
+- ⬜ Starting questionnaire applies small hidden personality shifts that remain below the visible-trait threshold by themselves.
+- ⬜ Decision-point roles: Formative / Expressive / Neutral.
+- ⬜ Formative decisions do not read general personality and may move hidden personality axes according to the authored meaning of the chosen action.
+- ⬜ Expressive decisions may use established personality but do not move the general personality axes.
+- ⬜ Neutral decisions neither need to read nor modify general personality.
+- ⬜ Personality and primary-attribute development remain independent; traits do not distribute level-up stat points.
 - 🟡 Ordinary quest autonomous selection works, but the Scope's personality-adjusted minimum/maximum MobPower Hard Filter window is not yet implemented; current code still uses the older 95% upper limit model.
 
 ## 5. World map and travel
@@ -115,7 +122,9 @@ Status:
 - ⬜ Travel collision/activation with event areas.
 - ⬜ Suspend original travel objective → resolve event → resume travel.
 - ⬜ Conditional event options and autonomous reactions.
-- ⬜ Event-driven personality development.
+- ⬜ Event decision stages support Formative / Expressive / Neutral roles.
+- ⬜ Formative event stages can change hidden personality according to the chosen action without reading current general personality.
+- ⬜ Expressive event stages can react to established traits without reinforcing those same general traits.
 - ⬜ Approximately 15–20 handcrafted events across both regions.
 
 ## 8. Dungeons
@@ -140,15 +149,15 @@ Status:
 ## 9. First Warrior specialization
 
 - ⬜ Protector / Slayer preference scores.
-- ⬜ Attribute contribution to specialization preference.
-- ⬜ Personality contribution to specialization preference.
+- ⬜ Player-guided primary attributes contribute to specialization preference while mandatory Warrior STR is excluded from false Slayer bias.
+- ⬜ Brave / Cautious provides an independent soft specialization modifier; exact numerical strength remains a tuning value.
 - ⬜ One-time divine specialization guidance.
 - ⬜ Specialization decision window / lock.
 - ⬜ Specialization Quest activation.
 - ⬜ Protector specialization dungeon variant.
 - ⬜ Slayer specialization dungeon variant.
 - ⬜ Relic/objective completion and specialization granting.
-- ⬜ Protector/Slayer post-specialization progression rules.
+- ⬜ Protector/Slayer post-specialization +1 attribute growth and immediate profile reward.
 
 ## 10. Items, equipment, loot and inventory
 
@@ -232,6 +241,8 @@ Status:
 - 🟡 Map Screen is functional: both cities, road, hero, quest targets, terrain inspection and camera; route display, dungeons/events/hidden-information presentation remain missing.
 - ⬜ Menu Screen.
 - 🟡 God controls exist for healing/blessing/resurrection; quest guidance UI is missing.
+- ⬜ Player-facing primary-attribute allocation UI for pending stat points.
+- ⬜ Starting questionnaire UI / flow.
 - ⬜ Player-facing Diary UI with real diary content.
 - ⬜ Player-facing Explanatory Log UI.
 
@@ -243,6 +254,8 @@ Status:
 - ⬜ Dungeon-completion milestone save.
 - ⬜ Specialization milestone save.
 - ⬜ Full simulation-state serialization.
+- ⬜ Persist pending unspent primary-attribute points and already allocated player-guided attributes.
+- ⬜ Persist questionnaire completion/state plus hidden personality values and visible traits.
 - ⬜ RNG-state/reproducible continuation after load.
 - ⬜ Save/load status in Menu Screen.
 - 🚫 Offline simulation while the game is closed.
@@ -250,8 +263,8 @@ Status:
 ## 18. Prototype 0.2 content targets at a glance
 
 - 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
-- 🟡 Ordinary quest templates: **13 / 30 total target**.
-- 🟡 Simultaneous quest offers: current **13 Starting City offers**, final target **up to 6 per city, 2/2/2 by band**.
+- 🟡 Ordinary quest templates: **15 / 30 total target**.
+- 🟡 Simultaneous quest offers: current **15 Starting City offers**, final target **up to 6 per city, 2/2/2 by band**.
 - ⬜ Handcrafted temporary events: **0 / 15–20**.
 - ⬜ Ordinary dungeons: **0 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
@@ -261,13 +274,18 @@ Status:
 - ⬜ Final personality axes: **0 / 4**; current old trait prototype is temporary.
 - 🟡 Visual armor families: **2 / minimum 5–6**.
 - 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic not yet in the live reward loop.
-- 🟡 Main progression: leveling framework exists; complete approximately level 1–60 content and balance do not.
+- 🟡 Main progression: leveling framework exists, but final +1 Warrior STR / +4 player allocation, starting questionnaire, and complete approximately level 1–60 content/balance are not yet implemented.
 
 ## 19. Final integration / validation
 
 - ⬜ Full autonomous loop across both cities.
+- ⬜ Starting questionnaire creates only mild hidden personality bias rather than immediately assigning established traits.
+- ⬜ Player-guided stat allocation affects capabilities without directly commanding hero decisions.
+- ⬜ Formative decisions can create/change personality without reading the current general trait state.
+- ⬜ Expressive decisions reflect established personality without automatically reinforcing it.
 - ⬜ Events interrupt/resume real travel correctly.
 - ⬜ Dungeons integrate travel, preparation, combat, loot, death and retry memory.
+- ⬜ Specialization combines player-shaped stats, independent Brave/Cautious character influence, and optional divine guidance.
 - ⬜ Specialization is reached through its full quest/dungeon flow rather than level alone.
 - ⬜ Diary makes recent autonomous life understandable without reading the debug log.
 - ⬜ Explanatory Log makes major decisions understandable without raw formulas.
@@ -281,10 +299,11 @@ Status:
 This is only a working order, not permission to implement automatically:
 
 1. Finish the Starting City quest-board rules: 15 templates, strength bands, 6-offer 2/2/2 rotation, lifetime and cooldown.
-2. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
-3. Implement temporary events and travel interruption/resumption.
-4. Replace the old trait prototype with the final four-axis personality/development model.
-5. Implement Belt/potions, then ordinary dungeons and discovery/readiness/retry.
-6. Implement first Warrior specialization and specialization dungeon flow.
-7. Complete item/shop/content breadth, Diary, Explanatory Log and remaining UI screens.
-8. Add Save/Load and run long-duration Prototype 0.2 validation.
+2. Replace legacy automatic attribute growth with +1 Warrior STR + 4 player-distributed points, pending-point storage, and the lightweight starting questionnaire foundation.
+3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
+4. Implement temporary events and travel interruption/resumption together with Formative / Expressive / Neutral decision roles.
+5. Replace the old trait prototype with the final four-axis hidden-value personality model and connect formative/expressive event behavior.
+6. Implement Belt/potions, then ordinary dungeons and discovery/readiness/retry.
+7. Implement first Warrior specialization using stats + Brave/Cautious + divine guidance, then the specialization dungeon flow.
+8. Complete item/shop/content breadth, Diary, Explanatory Log and remaining UI screens.
+9. Add Save/Load and run long-duration Prototype 0.2 validation.
