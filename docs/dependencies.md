@@ -109,7 +109,8 @@ Current decision flow:
 ```text
 CHOOSING_QUEST
 → QuestPool current single-city offers
-→ Hard Filter: MobPower <= base persistent HeroPower × 0.95
+→ personality-adjusted Hard Filter Power window:
+   standard 55–95% / Brave 60–100% / current legacy Coward-as-Cautious 50–90%
 → WeakestAllowedMobPower among allowed quests
 → RelativeRecoveryCost = MobPower / WeakestAllowedMobPower
 → EstimatedCostPerMob = 1 + RelativeRecoveryCost
@@ -124,6 +125,8 @@ CHOOSING_QUEST
 
 Contracts:
 - Hard Filter uses full-HP **base persistent HeroPower**, not current injured HP and not temporary combat-only bonuses;
+- standard heroes consider MobPower from 55% through 95% of HeroPower; Brave uses 60–100%; the current legacy Coward trait temporarily represents Cautious and uses 50–90%;
+- both bounds are inclusive within evaluator epsilon; quests below the minimum are outgrown and quests above the maximum are too dangerous, so neither participates in QuestScore;
 - temporary finite effects such as the divine five-fight `+3 Attack` do not alter HeroPower or Hard Filter;
 - conditional Noble/Dishonorable +10% category damage does not alter HeroPower or Hard Filter;
 - mob count does not affect Hard Filter;

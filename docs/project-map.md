@@ -117,7 +117,7 @@ References the editable PNG and stores only its 20 × 15 logical dimensions and 
 ## Quests
 
 ### `scripts/model/definitions/quest_definition.gd` / `data/quests/*.tres`
-Immutable ordinary-quest templates. In addition to combat/reward tuning, every current Starting City quest now authors its future map-placement band in hex steps plus either allowed terrain or an allowed semantic tag and forbidden tags. The current thirteen templates all forbid `city`; road-themed quests use the `road` tag, while the rest currently use plains, forest, or hill terrain constraints. Legacy `distance_km_min/max` values remain temporarily for the still-unmigrated abstract QuestOffer/QuestRunner travel path and are not the future placement authority.
+Immutable ordinary-quest templates. In addition to combat/reward tuning, every current Starting City quest now authors its future map-placement band in hex steps plus either allowed terrain or an allowed semantic tag and forbidden tags. All fifteen current templates forbid `city`; road-themed quests use the `road` tag, while the rest currently use plains, forest, or hill terrain constraints. Current tuning also keeps `Банда у каменного моста` at the reduced 24–28 Gold-per-mob range and gives several stronger templates wider 1–3-enemy rolls. Legacy `distance_km_min/max` values remain temporarily for the still-unmigrated abstract QuestOffer/QuestRunner travel path and are not the future placement authority.
 
 ### `scripts/quests/quest_pool.gd`
 Owns immutable quest templates and the currently available runtime tavern offers for this Prototype 0 slice.
@@ -133,7 +133,7 @@ Runtime quest offer. Owns the rolled mob count, legacy abstract distance, gold p
 
 ### `scripts/quests/quest_evaluator.gd`
 Owns autonomous quest evaluation:
-- 95% Hard Filter;
+- personality-adjusted lower/upper MobPower Hard Filter window: standard 55–95%, Brave 60–100%, current legacy Coward as temporary Cautious 50–90%;
 - weakest-allowed-mob normalization;
 - estimated combat/recovery cost;
 - BaseAttractiveness;
@@ -143,7 +143,7 @@ Owns autonomous quest evaluation:
 - optional one-selection `DivineModifier = +0.20` for the currently guided eligible offer;
 - strict highest-score selection.
 
-Hard Filter uses base persistent HeroPower. Guidance cannot bypass Hard Filter.
+Hard Filter uses base persistent HeroPower. Quests below the lower bound are treated as outgrown, quests above the upper bound are too dangerous, and neither group participates in QuestScore. Guidance cannot bypass Hard Filter.
 
 ### `scripts/quests/quest_runner.gd`
 Executes the current already-selected quest.
@@ -367,7 +367,10 @@ Protects the Simulation-to-QuestPool integration for replacing only a turned-in 
 Protects delayed replacement of only a cancelled offer after natural resurrection and city recovery.
 
 ### `tests/test_quest_evaluator.gd`
-Protects the 95% Hard Filter, weakest-mob normalization, estimated quest time, and strict highest QuestScore selection using in-memory test data.
+Protects the standard 55–95% Hard Filter window, weakest-mob normalization, estimated quest time, and strict highest QuestScore selection using in-memory test data.
+
+### `tests/test_quest_selection_balance.gd`
+Protects the current Starting City balance pass: the reduced Stone Bridge reward, wider 1–3-enemy rolls on stronger quests, no Hard Filter dead zone across HeroPower 45–700 for standard/Brave/Cautious profiles, and progression through multiple QuestScore winners instead of one permanent favorite.
 
 ### `tests/test_autonomous_quest_choice.gd`
 Integration coverage that `Simulation` selects first and `QuestRunner` executes the already selected quest.

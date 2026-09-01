@@ -27,6 +27,7 @@ Implemented:
 - autonomous choice among the current quest offers;
 - seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
 - current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and 10% category damage for Noble/Dishonorable;
+- ordinary quest Hard Filter now uses the Scope Power window before QuestScore: standard 55–95% of HeroPower, Brave 60–100%, and the current legacy Coward trait as the temporary Cautious equivalent at 50–90%;
 - headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, one-selection quest guidance, and Divine Vision for revealing an unknown dungeon in the current region;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
@@ -203,7 +204,7 @@ Full unsafe-loot loss is still only a future hook because QuestLoot does not exi
 
 ## Current quest content and selection
 
-Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. A quest template contains inclusive mob-count and gold-per-mob ranges plus authored map-placement rules: `placement_distance_hex_min/max`, optional allowed terrain ids, optional allowed semantic tags, and forbidden semantic tags. All fifteen current Starting City templates have a 1–7-hex placement band, one terrain-or-tag placement constraint, and `city` forbidden. The old `distance_km_min/max` fields remain only as a temporary compatibility path for fixed legacy tests/offers that do not receive map targets; live autonomous quest selection and travel no longer use that abstract distance as their spatial authority. Templates do not store rolled values, a total Gold reward, concrete target hexes, or equipment rewards. Current ordinary quests reward Gold only.
+Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. The current Starting City balance pass reduces the unusually profitable `Банда у каменного моста` reward band and gives several stronger quests wider 1–3-enemy rolls so later offers have more runtime variety. A quest template contains inclusive mob-count and gold-per-mob ranges plus authored map-placement rules: `placement_distance_hex_min/max`, optional allowed terrain ids, optional allowed semantic tags, and forbidden semantic tags. All fifteen current Starting City templates have a 1–7-hex placement band, one terrain-or-tag placement constraint, and `city` forbidden. The old `distance_km_min/max` fields remain only as a temporary compatibility path for fixed legacy tests/offers that do not receive map targets; live autonomous quest selection and travel no longer use that abstract distance as their spatial authority. Templates do not store rolled values, a total Gold reward, concrete target hexes, or equipment rewards. Current ordinary quests reward Gold only.
 
 The developer build loads all `.tres` quest templates from `res://data/quests` into `QuestPool`. With the current single-city content set this means all fifteen templates are present simultaneously. Each runtime `QuestOffer` owns its rolled mob count, compatibility-only legacy abstract distance, gold per mob, concrete `target_hex`, and `map_distance_steps` equal to the actual shortest route length from the Starting City center. `QuestPool` uses a separate deterministic placement RNG stream plus `ActivityPlacementFinder` to choose a valid free target inside Starting Region and reserves that hex through `WorldState`, so all current board offers occupy unique real map cells without perturbing the established quest-roll RNG sequence. `QuestEvaluator` uses `map_distance_steps` for live travel-cost estimation whenever a real target exists.
 
@@ -213,9 +214,11 @@ Only the accepted quest offer is regenerated. Its existing map target remains re
 
 At every `CHOOSING_QUEST` decision point:
 
-1. `QuestEvaluator` applies the Hard Filter:
-   `MobPower <= HeroPower × 0.95`;
-2. only allowed quests participate further;
+1. `QuestEvaluator` applies the personality-adjusted Hard Filter Power window:
+   - standard: `55% <= MobPower / HeroPower <= 95%`;
+   - Brave: `60% <= MobPower / HeroPower <= 100%`;
+   - current legacy Coward trait as temporary Cautious: `50% <= MobPower / HeroPower <= 90%`;
+2. only quests inside both the lower and upper bounds participate further;
 3. the weakest allowed mob becomes the recovery baseline (`1`);
 4. for every allowed quest:
    `RelativeRecoveryCost = MobPower / WeakestAllowedMobPower`;

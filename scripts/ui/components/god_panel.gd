@@ -175,6 +175,7 @@ func create_menu_button_style(background_color: Color, border_color: Color, shad
 	return style
 
 func apply_secondary_button_style(button: Button) -> void:
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", Color("edf0f4"))
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_color_override("font_pressed_color", Color.WHITE)

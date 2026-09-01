@@ -7,6 +7,7 @@ const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.t
 const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
+const HERO_TEXT_CONTENT_WIDTH: float = 288.0
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation = SimulationScript.new(simulation_seed, null)
 var time_progress_bar: ProgressBar
@@ -138,7 +139,7 @@ func apply_progress_bar_style(progress_bar: ProgressBar, fill_color: Color) -> v
 func create_top_menu() -> void:
 	var top_menu := HBoxContainer.new()
 	top_menu.name = "TopMenu"
-	top_menu.position = Vector2(328.0, 20.0)
+	top_menu.position = Vector2(371.0, 20.0)
 	top_menu.add_theme_constant_override("separation", 8)
 	add_child(top_menu)
 
@@ -169,7 +170,7 @@ func create_inventory_close_button() -> void:
 	inventory_close_button = Button.new()
 	inventory_close_button.name = "InventoryCloseButton"
 	inventory_close_button.text = "✕"
-	inventory_close_button.position = Vector2(1212.0, 20.0)
+	inventory_close_button.position = Vector2(1298.0, 20.0)
 	inventory_close_button.size = Vector2(44.0, 44.0)
 	inventory_close_button.tooltip_text = "Вернуться на главный экран"
 	inventory_close_button.add_theme_font_size_override("font_size", 22)
@@ -217,7 +218,7 @@ func set_active_screen(screen_id: String) -> void:
 func create_speed_controls() -> void:
 	var speed_controls := HBoxContainer.new()
 	speed_controls.name = "SpeedControls"
-	speed_controls.position = Vector2(818.0, 666.0)
+	speed_controls.position = Vector2(904.0, 714.0)
 	speed_controls.size = Vector2(430.0, 38.0)
 	speed_controls.add_theme_constant_override("separation", 6)
 	add_to_main_screen(speed_controls)
@@ -248,13 +249,13 @@ func create_hero_panel() -> void:
 
 	hero_details_label = Label.new()
 	hero_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hero_details_label.add_theme_font_size_override("font_size", 16)
+	hero_details_label.add_theme_font_size_override("font_size", 14)
 	panel.add_child(hero_details_label)
 
 func create_opponent_panel() -> void:
 	var panel := PanelContainer.new()
 	apply_panel_style(panel)
-	panel.position = Vector2(928.0, 80.0)
+	panel.position = Vector2(1014.0, 80.0)
 	panel.size = Vector2(320.0, 400.0)
 	add_to_main_screen(panel)
 
@@ -283,7 +284,7 @@ func update_opponent_panel() -> void:
 func create_combat_statistics_panel() -> void:
 	var panel := PanelContainer.new()
 	apply_panel_style(panel)
-	panel.position = Vector2(928.0, 500.0)
+	panel.position = Vector2(1014.0, 500.0)
 	panel.size = Vector2(320.0, 120.0)
 	add_to_main_screen(panel)
 
@@ -330,7 +331,15 @@ func update_hero_panel() -> void:
 	var bonuses_text: String = ""
 	if not bonus_lines.is_empty():
 		bonuses_text = "\n" + "\n".join(bonus_lines)
-	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\n\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s\nКвест: %s\n\nСила: %d\nЛовкость: %d\nИнтеллект: %d\nТелосложение: %d\nМудрость: %d\n\nФиз. урон: %.0f\nТочность: %.0f\nУклонение: %.0f\nБроня: %d (снижение %.1f%%)\nОгонь / Холод / Молния: %.0f / %.0f / %.0f\nБлок: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, get_state_display_name(hero.loop_state), active_quest_name, effective_strength, hero.dexterity, hero.intelligence, hero.constitution, hero.wisdom, stats.attack, stats.accuracy, stats.dodge, armor, physical_reduction_percent, stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance, stats.block, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+	var state_display_name: String = get_state_display_name(hero.loop_state)
+	var state_spacer: String = get_state_spacer(state_display_name)
+	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s%s\nКвест: %s\nСила: %d\nЛовкость: %d\nИнтеллект: %d\nТелосложение: %d\nМудрость: %d\nФиз. урон: %.0f\nТочность: %.0f\nУклонение: %.0f\nБроня: %d (снижение %.1f%%)\nОгонь / Холод / Молния: %.0f / %.0f / %.0f\nБлок: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, state_display_name, state_spacer, active_quest_name, effective_strength, hero.dexterity, hero.intelligence, hero.constitution, hero.wisdom, stats.attack, stats.accuracy, stats.dodge, armor, physical_reduction_percent, stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance, stats.block, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+
+func get_state_spacer(state_display_name: String) -> String:
+	var font: Font = hero_details_label.get_theme_font("font")
+	var font_size: int = hero_details_label.get_theme_font_size("font_size")
+	var state_line_width: float = font.get_string_size("Состояние: %s" % state_display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	return "\n" if state_line_width <= HERO_TEXT_CONTENT_WIDTH else ""
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:
@@ -361,7 +370,7 @@ func create_god_panel() -> void:
 
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
-	indicator.position = Vector2(380.0, 335.0)
+	indicator.position = Vector2(423.0, 335.0)
 	indicator.size = Vector2(520.0, 44.0)
 	indicator.add_theme_constant_override("separation", 16)
 	add_to_main_screen(indicator)

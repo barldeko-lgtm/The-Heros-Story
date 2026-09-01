@@ -8,46 +8,40 @@ const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 func _init() -> void:
 	var evaluator = QuestEvaluatorScript.new()
 
-	var quest_20 = make_quest("power_20", 20.0, 100, 2.0, 2)
-	var quest_30 = make_quest("power_30", 30.0, 120, 2.0, 2)
-	var quest_45 = make_quest("power_45", 45.0, 100, 2.0, 2)
-	var quest_48 = make_quest("power_48", 48.0, 1000, 1.0, 1)
+	var quest_50 = make_quest("power_50", 50.0, 100, 2.0, 2)
+	var quest_60 = make_quest("power_60", 60.0, 100, 2.0, 2)
+	var quest_80 = make_quest("power_80", 80.0, 120, 2.0, 2)
+	var quest_96 = make_quest("power_96", 96.0, 1000, 1.0, 1)
 
 	var result: Dictionary = evaluator.select_quest(
-		[quest_20, quest_30, quest_45, quest_48],
-		50.0
+		[quest_50, quest_60, quest_80, quest_96],
+		100.0
 	)
 
-	assert(is_equal_approx(result["hard_filter_limit"], 47.5), "Hard Filter must be 95% of HeroPower.")
-	assert(result["eligible_count"] == 3, "Power 48 must be rejected when HeroPower is 50.")
-	assert(is_equal_approx(result["weakest_allowed_mob_power"], 20.0), "Weakest allowed mob must define recovery factor 1.")
+	assert(is_equal_approx(result["hard_filter_minimum"], 55.0), "Standard Hard Filter minimum must be 55% of HeroPower.")
+	assert(is_equal_approx(result["hard_filter_limit"], 95.0), "Standard Hard Filter maximum must be 95% of HeroPower.")
+	assert(result["eligible_count"] == 2, "Power 50 must be outgrown and Power 96 must be too dangerous when HeroPower is 100.")
+	assert(is_equal_approx(result["weakest_allowed_mob_power"], 60.0), "Weakest allowed mob must define recovery factor 1.")
 
 	var by_id := {}
 	for evaluation in result["evaluations"]:
 		by_id[evaluation["quest"].id] = evaluation
 
-	assert(is_equal_approx(by_id["power_20"]["relative_recovery_cost"], 1.0), "Weakest allowed quest must have recovery factor 1.")
-	assert(is_equal_approx(by_id["power_30"]["relative_recovery_cost"], 1.5), "Power 30 / Power 20 must produce recovery factor 1.5.")
-	assert(is_equal_approx(by_id["power_45"]["relative_recovery_cost"], 2.25), "Power 45 / Power 20 must produce recovery factor 2.25.")
+	assert(not by_id.has("power_50") and not by_id.has("power_96"), "Filtered quests must not participate in QuestScore.")
+	assert(is_equal_approx(by_id["power_60"]["relative_recovery_cost"], 1.0), "Weakest allowed quest must have recovery factor 1.")
+	assert(is_equal_approx(by_id["power_80"]["relative_recovery_cost"], 80.0 / 60.0), "Power 80 must normalize against the weakest allowed Power 60 mob.")
+	assert(is_equal_approx(by_id["power_60"]["estimated_cost_per_mob"], 2.0), "Weakest mob must cost 1 fight tick + 1 recovery unit.")
+	assert(is_equal_approx(by_id["power_80"]["estimated_cost_per_mob"], 1.0 + 80.0 / 60.0), "Stronger mob estimated cost must include normalized recovery.")
+	assert(result["selected_quest"].id == "power_80", "Highest valid QuestScore must win while both lower- and upper-filtered quests stay excluded.")
 
-	assert(is_equal_approx(by_id["power_20"]["estimated_cost_per_mob"], 2.0), "Weakest mob must cost 1 fight tick + 1 recovery unit.")
-	assert(is_equal_approx(by_id["power_30"]["estimated_cost_per_mob"], 2.5), "Power 30 mob cost must be 2.5 estimated ticks.")
-	assert(is_equal_approx(by_id["power_45"]["estimated_cost_per_mob"], 3.25), "Power 45 mob cost must be 3.25 estimated ticks.")
-
-	assert(is_equal_approx(by_id["power_20"]["estimated_quest_ticks"], 9.0), "Power 20 quest estimate must include travel, mobs, and turn-in.")
-	assert(is_equal_approx(by_id["power_30"]["estimated_quest_ticks"], 10.0), "Power 30 quest estimate must include relative recovery cost.")
-	assert(is_equal_approx(by_id["power_45"]["estimated_quest_ticks"], 11.5), "Power 45 quest estimate must include relative recovery cost.")
-
-	assert(result["selected_quest"].id == "power_30", "Highest QuestScore must win; filtered huge reward must not participate.")
-
-	var map_backed_quest = make_quest("map_backed", 20.0, 100, 99.0, 2)
+	var map_backed_quest = make_quest("map_backed", 60.0, 100, 99.0, 2)
 	map_backed_quest.assign_map_target(Vector2i(5, 5), "test_map_target", 3)
-	var map_result: Dictionary = evaluator.select_quest([map_backed_quest], 50.0)
+	var map_result: Dictionary = evaluator.select_quest([map_backed_quest], 100.0)
 	var map_evaluation: Dictionary = map_result["evaluations"][0]
 	assert(is_equal_approx(map_evaluation["one_way_travel_ticks"], 3.0), "Map-backed QuestScore must use real route steps instead of legacy abstract distance.")
 	assert(is_equal_approx(map_evaluation["estimated_quest_ticks"], 11.0), "Map-backed quest estimate must count three real travel ticks each way.")
 
-	print("PASS: QuestEvaluator applies 95% Hard Filter and uses real route steps for map-backed quest travel cost.")
+	print("PASS: QuestEvaluator applies the standard 55%-95% Hard Filter window and uses real route steps for map-backed quest travel cost.")
 	quit()
 
 func make_quest(quest_id: String, target_power: float, reward: int, distance: float, mob_count: int):

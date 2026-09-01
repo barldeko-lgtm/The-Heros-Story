@@ -3,8 +3,8 @@
 [ext_resource type="Script" path="res://scripts/ui/components/god_panel.gd" id="1_god_panel"]
 
 [node name="GodPanel" type="PanelContainer"]
-offset_left = 380.0
+offset_left = 423.0
 offset_top = 80.0
-offset_right = 900.0
+offset_right = 967.0
 offset_bottom = 315.0
 script = ExtResource("1_god_panel")

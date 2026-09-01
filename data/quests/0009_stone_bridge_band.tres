@@ -16,5 +16,5 @@ placement_distance_hex_min = 3
 placement_distance_hex_max = 6
 placement_allowed_tags = PackedStringArray("road")
 placement_forbidden_tags = PackedStringArray("city")
-gold_per_mob_min = 36
-gold_per_mob_max = 40
+gold_per_mob_min = 24
+gold_per_mob_max = 28

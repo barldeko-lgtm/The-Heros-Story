@@ -64,9 +64,10 @@ func test_combat_buff() -> void:
 func test_quest_guidance() -> void:
 	var simulation = SimulationScript.new(1004, null)
 	var target_quest = null
-	var hard_filter_limit: float = simulation.get_hero_power() * 0.95
+	var power_window: Dictionary = simulation.quest_evaluator.get_hard_filter_power_window(simulation.get_hero_power(), simulation.hero_state.traits)
 	for quest in simulation.quest_pool.get_available_quests():
-		if quest.mob_definition.get_power() <= hard_filter_limit:
+		var mob_power: float = quest.mob_definition.get_power()
+		if mob_power >= float(power_window["minimum"]) and mob_power <= float(power_window["maximum"]):
 			target_quest = quest
 			break
 	assert(target_quest != null, "Guidance test requires an eligible quest.")

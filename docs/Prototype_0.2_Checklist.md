@@ -67,7 +67,7 @@ Status:
 - ⬜ Expressive decisions may use established personality but do not move the general personality axes.
 - ⬜ Neutral decisions neither need to read nor modify general personality.
 - ⬜ Personality and primary-attribute development remain independent; traits do not distribute level-up stat points.
-- 🟡 Ordinary quest autonomous selection works, but the Scope's personality-adjusted minimum/maximum MobPower Hard Filter window is not yet implemented; current code still uses the older 95% upper limit model.
+- ✅ Ordinary quest autonomous selection uses the Scope's personality-adjusted MobPower window: standard 55–95% of HeroPower, Brave 60–100%, and the current legacy Coward trait as the temporary Cautious equivalent at 50–90%.
 
 ## 5. World map and travel
 

@@ -3,8 +3,8 @@
 [ext_resource type="Script" path="res://scripts/ui/components/narrative_panel.gd" id="1_narrative_panel"]
 
 [node name="NarrativePanel" type="TabContainer"]
-offset_left = 380.0
+offset_left = 423.0
 offset_top = 400.0
-offset_right = 900.0
+offset_right = 967.0
 offset_bottom = 650.0
 script = ExtResource("1_narrative_panel")

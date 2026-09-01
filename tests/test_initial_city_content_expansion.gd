@@ -46,5 +46,5 @@ func _init() -> void:
 		assert(quest.gold_per_mob_min >= 1 and quest.gold_per_mob_max >= quest.gold_per_mob_min, "Quest gold-per-mob range must be valid: %s" % quest.id)
 
 	assert(seen_mob_ids.size() == 15 and seen_quest_ids.size() == 15, "Starting City must keep exactly 15 tuned mob/quest pairs.")
-	print("PASS: All 15 Starting City mobs follow the approved approximately 35-to-600 Power curve without changing quest reward ranges.")
+	print("PASS: All 15 Starting City mobs follow the approved approximately 35-to-600 Power curve and all matching quest tuning ranges remain valid.")
 	quit()

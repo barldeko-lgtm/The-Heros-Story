@@ -3,13 +3,20 @@ extends RefCounted
 
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
-const HARD_FILTER_RATIO: float = 0.95
+const STANDARD_MIN_POWER_RATIO: float = 0.55
+const STANDARD_MAX_POWER_RATIO: float = 0.95
+const BRAVE_MIN_POWER_RATIO: float = 0.60
+const BRAVE_MAX_POWER_RATIO: float = 1.00
+const CAUTIOUS_MIN_POWER_RATIO: float = 0.50
+const CAUTIOUS_MAX_POWER_RATIO: float = 0.90
 const FIGHT_TICKS_PER_MOB: float = 1.0
 const TURN_IN_TICKS: float = 1.0
 const SCORE_EPSILON: float = 0.000001
 
 func select_quest(available_quests: Array, hero_power: float, hero_traits: Array[String] = [], guided_quest_id: String = "", divine_guidance_modifier: float = 0.0) -> Dictionary:
-	var hard_filter_limit: float = maxf(0.0, hero_power) * HARD_FILTER_RATIO
+	var power_window: Dictionary = get_hard_filter_power_window(hero_power, hero_traits)
+	var hard_filter_minimum: float = float(power_window["minimum"])
+	var hard_filter_limit: float = float(power_window["maximum"])
 	var eligible_quests: Array[Dictionary] = []
 
 	for quest_definition in available_quests:
@@ -17,7 +24,7 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			continue
 
 		var mob_power: float = quest_definition.mob_definition.get_power()
-		if mob_power <= hard_filter_limit + SCORE_EPSILON:
+		if mob_power + SCORE_EPSILON >= hard_filter_minimum and mob_power <= hard_filter_limit + SCORE_EPSILON:
 			eligible_quests.append({
 				"quest": quest_definition,
 				"mob_power": mob_power,
@@ -28,6 +35,7 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			"selected_quest": null,
 			"total_count": available_quests.size(),
 			"eligible_count": 0,
+			"hard_filter_minimum": hard_filter_minimum,
 			"hard_filter_limit": hard_filter_limit,
 			"weakest_allowed_mob_power": 0.0,
 			"evaluations": [],
@@ -124,9 +132,27 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 		"selected_quest": selected_quest,
 		"total_count": available_quests.size(),
 		"eligible_count": eligible_quests.size(),
+		"hard_filter_minimum": hard_filter_minimum,
 		"hard_filter_limit": hard_filter_limit,
 		"weakest_allowed_mob_power": weakest_allowed_mob_power,
 		"evaluations": evaluations,
+	}
+
+func get_hard_filter_power_window(hero_power: float, hero_traits: Array[String]) -> Dictionary:
+	var minimum_ratio: float = STANDARD_MIN_POWER_RATIO
+	var maximum_ratio: float = STANDARD_MAX_POWER_RATIO
+	if hero_traits.has(HeroTraitsScript.BRAVE):
+		minimum_ratio = BRAVE_MIN_POWER_RATIO
+		maximum_ratio = BRAVE_MAX_POWER_RATIO
+	elif hero_traits.has(HeroTraitsScript.COWARD):
+		minimum_ratio = CAUTIOUS_MIN_POWER_RATIO
+		maximum_ratio = CAUTIOUS_MAX_POWER_RATIO
+	var safe_hero_power: float = maxf(0.0, hero_power)
+	return {
+		"minimum": safe_hero_power * minimum_ratio,
+		"maximum": safe_hero_power * maximum_ratio,
+		"minimum_ratio": minimum_ratio,
+		"maximum_ratio": maximum_ratio,
 	}
 
 func get_one_way_travel_ticks(quest_offer) -> float:

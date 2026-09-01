@@ -6,8 +6,8 @@ const QuestDefinitionScript = preload("res://scripts/model/definitions/quest_def
 const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 
 func _init() -> void:
-	var cheap_quest = make_quest("cheap", 10.0, 10, 1.0, 1)
-	var valuable_quest = make_quest("valuable", 20.0, 30, 1.0, 1)
+	var cheap_quest = make_quest("cheap", 30.0, 10, 1.0, 1)
+	var valuable_quest = make_quest("valuable", 40.0, 30, 1.0, 1)
 
 	# null initial quest enables autonomous selection.
 	# Explicit in-memory quest list keeps this test independent of tuned .tres data.

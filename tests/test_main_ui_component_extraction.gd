@@ -33,8 +33,8 @@ func run_test() -> void:
 		return
 	assert(god_panel.get_script().resource_path == GOD_SCRIPT_PATH, "GodPanel must own its extracted presentation script.")
 	assert(narrative_panel.get_script().resource_path == NARRATIVE_SCRIPT_PATH, "NarrativePanel must own its extracted presentation script.")
-	assert(god_panel.position == Vector2(380.0, 80.0) and god_panel.size == Vector2(520.0, 235.0), "GodPanel geometry must remain unchanged.")
-	assert(narrative_panel.position == Vector2(380.0, 400.0) and narrative_panel.size == Vector2(520.0, 250.0), "NarrativePanel geometry must remain unchanged.")
+	assert(god_panel.position == Vector2(423.0, 80.0) and god_panel.size == Vector2(544.0, 235.0), "GodPanel must keep its size at the centered 1366px layout position.")
+	assert(narrative_panel.position == Vector2(423.0, 400.0) and narrative_panel.size == Vector2(544.0, 250.0), "NarrativePanel must match the full width of the divine-skill panel.")
 
 	assert(is_equal_approx(god_panel.god_energy_bar.max_value, 100.0), "Extracted GodPanel must retain the energy scale.")
 	assert(god_panel.divine_healing_button.disabled, "Healing must remain disabled at full HP.")
