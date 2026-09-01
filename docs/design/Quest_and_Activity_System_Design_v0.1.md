@@ -136,7 +136,7 @@ Ordinary adventures should already gain variety through the hero, the world, que
 - change the hero’s current objective;
 - create an unusual opportunity;
 - force a change of route or plans;
-- affect personality or preferences;
+- create personality-forming decisions or change preferences;
 - create or change an attitude toward someone;
 - leave a long-term consequence.
 
@@ -221,15 +221,69 @@ For example, an event in which a merchant is trapped under a damaged wagon could
 
 > **Events should react to who this hero has become without requiring every event to test every part of the character sheet.**
 
+### Event Decision-Point Types
+
+A handcrafted event may contain different kinds of decision points. The type belongs to the **individual decision point**, not to the whole event, so one multi-stage event may contain several different types.
+
+The current design uses three categories:
+
+#### Personality-Forming Decision
+
+A personality-forming decision exists to help create or change the hero’s core personality.
+
+The hero’s existing core personality traits are **not read when this decision is made**. They do not unlock options, modify scores, or break ties. This prevents an existing trait from causing the behaviour that then reinforces that same trait.
+
+The choice should instead be driven primarily by the primary attribute explicitly associated with each response, together with non-personality hard requirements that determine whether an option is actually available. Where the authored situation genuinely needs an additional objective condition, that condition may be included, but personality and personality-like preference modifiers must not be used as hidden substitutes for the excluded trait influence.
+
+For example, one response may represent a STR approach, another a DEX approach, and another a WIS approach. The available response with the strongest relevant evaluation is chosen. If the final evaluations are exactly tied, a seeded tie-break roll may choose between the tied options.
+
+The **chosen action itself** may then apply an authored movement to one or more hidden personality axes. Success or failure may create other consequences, but does not automatically decide which personality direction the action represents.
+
+> **In a personality-forming decision, the hero acts from capabilities and circumstances; the action then helps shape who the hero becomes.**
+
+#### Personality-Expressive Decision
+
+A personality-expressive decision exists to let the hero’s already developed character affect behaviour.
+
+Core personality traits may unlock options or modify their attractiveness together with the normal objective factors appropriate to the situation.
+
+However, a personality-expressive decision **does not change the core personality axes**. If Brave helped the hero choose a risky response, that response does not award additional Brave merely for expressing the existing trait.
+
+If an option is available specifically because of a core personality trait, that decision point is therefore expressive rather than personality-forming.
+
+> **An expressive decision shows who the hero is; it does not reward the hero for already being that person.**
+
+#### Neutral Decision
+
+A neutral decision is not intended either to form or specifically express the hero’s core personality.
+
+It may be resolved through practical factors such as distance, cost, reward, current resources, objective requirements, or another system-specific rule. It does not need to read personality and does not award core personality movement.
+
+Neutral decisions remain useful because not every choice in the hero’s life should be psychologically significant.
+
+> **Some decisions simply solve the current problem; they do not need to become statements about character.**
+
+A single authored event may therefore use a sequence such as:
+
+> **personality-forming decision → consequence → personality-expressive decision → combat or detour → neutral resolution**
+
+This allows complex events to both shape the hero and later react to who the hero has become without creating a self-reinforcing personality loop.
+
 ### Availability, Choice, and Success Are Separate
 
 A requirement may make an option available without forcing the hero to choose it.
 
-For example, high Strength may unlock an intimidation or lifting option, while the hero’s personality and circumstances still determine whether that option is attractive enough to use.
+For example, high Strength may unlock an intimidation or lifting option. What determines whether the hero actually chooses that option depends on the decision-point type.
+
+In a **personality-forming decision**, core personality does not participate in availability or choice evaluation. The authored attribute/circumstance logic determines the response, with a seeded tie-break only when the final evaluations are tied.
+
+In a **personality-expressive decision**, personality may unlock or modify an option together with the normal circumstances and other valid modifiers, but the resulting choice cannot modify the core personality axes.
+
+In a **neutral decision**, the owning activity or event system defines the practical evaluation and no personality change occurs.
 
 Likewise, selecting an option and succeeding at it are conceptually separate. Some special options may guarantee an improved result when their requirement is met; others may still involve risk or a success check if that better fits the authored event.
 
-The hero’s event decision should use the normal decision philosophy from `Personality_and_Decision_System_Design_v0.1.md`: objective circumstances establish what makes sense, while personality, preferences, current goals, risk, reward, and other relevant factors affect which available response the hero actually chooses.
+The detailed personality rules and the general decision philosophy are defined in `Personality_and_Decision_System_Design_v0.1.md`.
 
 ### Events Can Create Temporary Detours
 
@@ -426,13 +480,13 @@ Rare and significant events should be authored by hand because context, conseque
 Such an event may take into account:
 
 - the hero’s class and capabilities;
-- personality and preferences;
+- personality and preferences where the relevant decision point is personality-expressive;
 - relationships with participants;
 - current world state;
 - previous events;
-- possible divine influence.
+- possible divine influence where appropriate for that decision-point type.
 
-There is no need to create a separate branch for every class or every trait. Alternatives should exist only where they genuinely make sense for the situation.
+A single unique event may contain personality-forming, personality-expressive, and neutral decision points at different stages. There is no need to create a separate branch for every class or every trait. Alternatives should exist only where they genuinely make sense for the situation.
 
 > **Systems create the hero’s everyday life. Handcrafted events create its special episodes.**
 
