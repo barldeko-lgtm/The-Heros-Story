@@ -144,6 +144,26 @@ func advance_between_fights(hero_state) -> Dictionary:
 		"current_hp": hero_state.current_hp,
 	}
 
+func begin_return_to_city(hero_state, city_center: Vector2i) -> bool:
+	if hero_state == null or active_dungeon == null or not active_dungeon.completed:
+		return false
+	if hero_state.loop_state != HeroState.DUNGEON_COMPLETED:
+		return false
+	if not travel_system.begin_travel(city_center):
+		return false
+	hero_state.loop_state = HeroState.DUNGEON_RETURNING_TO_CITY
+	return true
+
+func advance_return_to_city(hero_state) -> Dictionary:
+	if hero_state == null or hero_state.loop_state != HeroState.DUNGEON_RETURNING_TO_CITY or active_dungeon == null:
+		return {}
+	var result: Dictionary = travel_system.advance_one_tick()
+	assert(result["moved"] or result["arrived"], "Active dungeon return travel must either move one hex or already be at the city.")
+	if bool(result["arrived"]):
+		hero_state.loop_state = HeroState.VISITING_MARKET
+		clear()
+	return result
+
 func advance_respawn(hero_state, combat_stats: CombatStats) -> Dictionary:
 	if hero_state == null or combat_stats == null or not failure_recovery_active or hero_state.loop_state != HeroState.DEAD_RESPAWNING:
 		return {}

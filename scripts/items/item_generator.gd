@@ -35,8 +35,9 @@ func generate(item_definition: Resource, item_level: int, rng, rarity_override: 
 	if base_stats.is_empty():
 		return null
 
-	var affix_count: int = budget_table.get_affix_count(rarity)
-	var nominal_total_budget: float = budget_table.get_nominal_total_budget(item_level, rarity)
+	var is_belt: bool = item_definition.equipment_slot == "belt"
+	var affix_count: int = 0 if is_belt else budget_table.get_affix_count(rarity)
+	var nominal_total_budget: float = 0.0 if is_belt else budget_table.get_nominal_total_budget(item_level, rarity)
 	if nominal_total_budget < 0.0:
 		return null
 	var rolled_total_budget: float = 0.0
@@ -86,6 +87,9 @@ func create_base_stats(equipment_slot: String, item_level: int, rng = null) -> D
 	if equipment_slot == "shield":
 		var block: float = base_stat_table.get_shield_block(item_level)
 		return {"block": block} if block >= 0.0 else {}
+	if equipment_slot == "belt":
+		var health: float = base_stat_table.get_belt_health(item_level)
+		return {"max_hp": health} if health >= 0.0 else {}
 	if JEWELRY_SLOTS.has(equipment_slot):
 		if rng == null:
 			return {}

@@ -3,7 +3,7 @@ extends SceneTree
 const FAMILY_DIRECTORY := "res://data/items/visual_families/ironwake_sentinel"
 const DROP_TABLE_PATH := "res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres"
 const SHOP_PATH := "res://data/shops/starting_city_shop.tres"
-const OLD_DROP_TABLE_PATH := "res://data/loot/ironward_vanguard_ilvl10_jewelry_drop_table.tres"
+const IRONWARD_DROP_TABLE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
 const SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 const FILE_NAMES := {
 	"helmet": "ironwake_sentinel_helmet",
@@ -47,8 +47,8 @@ func _init() -> void:
 	assert(drop_table.uncommon_items == definitions_by_quality[1], "The new drop table must expose all seven Green family definitions in slot order.")
 	assert(drop_table.rare_items == definitions_by_quality[2], "The new drop table must expose all seven Blue family definitions in slot order.")
 
-	var old_drop_table: Resource = load(OLD_DROP_TABLE_PATH)
-	assert(old_drop_table != null, "The existing Ironward Vanguard drop table must remain available.")
+	var ironward_drop_table: Resource = load(IRONWARD_DROP_TABLE_PATH)
+	assert(ironward_drop_table != null, "The existing Ironward Vanguard drop table must remain available.")
 	var weak_count := 0
 	var strong_count := 0
 	for file_name in DirAccess.get_files_at("res://data/mobs"):
@@ -61,7 +61,7 @@ func _init() -> void:
 			assert(mob.equipment_drop_table == drop_table, "Each selected weak mob must use the Ironwake Sentinel ilvl 1 source: %s" % mob.id)
 		else:
 			strong_count += 1
-			assert(mob.equipment_drop_table == old_drop_table, "Each remaining mob must keep the Ironward Vanguard ilvl 10 source: %s" % mob.id)
+			assert(mob.equipment_drop_table == ironward_drop_table, "Each remaining mob must keep the Ironward Vanguard ilvl 10 source: %s" % mob.id)
 	assert(weak_count == 5 and strong_count == 10, "The 15 mobs must split into five weaker and ten stronger equipment sources.")
 
 	var shop_definition: Resource = load(SHOP_PATH)

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/model/definitions/dungeon_definition.gd" id="1_dungeon_definition"]
 [ext_resource type="Resource" path="res://data/dungeons/starting_region/0001_mine_troglodyte.tres" id="2_ordinary_mob"]
 [ext_resource type="Resource" path="res://data/dungeons/starting_region/0001_deep_devourer.tres" id="3_boss_mob"]
-[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl10_jewelry_drop_table.tres" id="4_completion_equipment"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="4_completion_equipment"]
 
 [resource]
 script = ExtResource("1_dungeon_definition")

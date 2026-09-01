@@ -5,7 +5,7 @@ const SimulationScript = preload("res://scripts/core/simulation.gd")
 func _init() -> void:
 	test_full_three_fights_and_boss_sequence()
 	test_dungeon_death_and_instant_resurrection()
-	print("PASS: DungeonRunner executes 3 ordinary fights, one no-heal tick between encounters, the boss fight, and dungeon death/resurrection through shared combat.")
+	print("PASS: DungeonRunner executes 3 ordinary fights, boss completion, real return-to-city travel, and dungeon death/resurrection through shared combat.")
 	quit()
 
 func prepare_dungeon_at_entrance(simulation):
@@ -66,7 +66,7 @@ func test_full_three_fights_and_boss_sequence() -> void:
 	assert(simulation.dungeon_runner.current_encounter_is_boss(), "After three ordinary encounters the next and only encounter must be the boss.")
 	assert(simulation.dungeon_runner.get_current_mob_definition().id == "deep_devourer", "The final encounter must use the Deep Devourer boss definition.")
 	finish_current_dungeon_fight(simulation)
-	assert(simulation.hero_state.loop_state == HeroState.DUNGEON_COMPLETED, "Boss victory must finish the dungeon rather than enter another preparation tick.")
+	assert(simulation.hero_state.loop_state == HeroState.DUNGEON_RETURNING_TO_CITY, "Boss victory must immediately start the real return route to the city.")
 	assert(dungeon.completed, "The runtime dungeon instance must remember successful completion.")
 	assert(simulation.dungeon_runner.boss_defeated, "DungeonRunner must record the unique boss as defeated.")
 	assert(simulation.hero_state.experience == 635, "Three 150-XP troglodytes plus the 185-XP boss must grant 635 total combat XP.")
@@ -79,6 +79,18 @@ func test_full_three_fights_and_boss_sequence() -> void:
 	assert(not dungeon.has_map_target(), "A completed dungeon must lose its active map target so its marker disappears immediately.")
 	assert(simulation.world_state.get_activity_id_at_hex(dungeon_hex).is_empty(), "A completed dungeon must release its reserved map hex.")
 	assert(simulation.dungeon_system.get_discovered_dungeons().is_empty(), "A completed dungeon must no longer appear in the active discovered-dungeon map view.")
+	var city_center: Vector2i = simulation.hex_map.definition.starting_city_center
+	var return_route: Array[Vector2i] = simulation.hex_map.find_path(dungeon_hex, city_center)
+	assert(simulation.travel_system.get_remaining_steps() == return_route.size() - 1, "Dungeon completion must start the exact real route back to the city.")
+	for route_index in range(1, return_route.size()):
+		var tick_before: int = simulation.world_clock.world_tick
+		simulation.advance_time(10.0)
+		assert(simulation.world_clock.world_tick == tick_before + 1, "Each dungeon return step must consume exactly one world tick.")
+		assert(simulation.world_state.hero_position == return_route[route_index], "Dungeon return travel must move the hero exactly one route hex per tick.")
+		if route_index < return_route.size() - 1:
+			assert(simulation.hero_state.loop_state == HeroState.DUNGEON_RETURNING_TO_CITY, "The hero must stay in dungeon-return travel until reaching the city.")
+	assert(simulation.hero_state.loop_state == HeroState.VISITING_MARKET, "Returning from a completed dungeon must resume the normal city market cycle.")
+	assert(simulation.dungeon_runner.active_dungeon == null, "DungeonRunner must release the completed expedition after the hero reaches the city.")
 	var ordinary_stats: Dictionary = simulation.get_combat_results("mine_troglodyte")
 	var boss_stats: Dictionary = simulation.get_combat_results("deep_devourer")
 	assert(int(ordinary_stats.get("total", 0)) == 3 and int(ordinary_stats.get("wins", 0)) == 3, "Combat statistics must record all three real troglodyte fights.")

@@ -143,7 +143,7 @@ Status:
 - ⬜ Potion preparation before attempts.
 - 🟡 Between-fight potion window exists, but Belt/potion selection and actual healing are not implemented yet.
 - ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
-- ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 11 current non-Belt slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
+- ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
 - ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
 ## 9. First Warrior specialization
@@ -170,9 +170,9 @@ Status:
 - ✅ Virtual-equip HeroPower comparison.
 - ✅ Current five armor slots + sword + shield + necklace + earrings + two ring slots mechanically generate/equip/drop.
 - ✅ Five armor paper-doll overlays work.
-- 🟡 12-slot UI structure now has 11 functional slots; Belt remains the only empty equipment slot.
+- ✅ All 12 equipment slots now generate/equip/display; Belt is currently a simple Health-only item until potion utility is added.
 - ✅ Functional ilvl 10 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the sixth mob by Power.
-- ⬜ Functional Belt item with Health + potion capacity/level rules.
+- 🟡 Belt item generation/drop/shop/equip works with inherent Health; potion capacity and potion-level rules are not implemented yet.
 - ⬜ Two-handed / full legal hand-configuration equipment content and evaluation.
 - 🟡 Source-driven mob drops exist for current ilvl 1 / ilvl 10 families, but the final six city quest-band ilvl sources are incomplete.
 - ⬜ `QuestLoot` temporary unsafe adventure loot.
@@ -194,7 +194,7 @@ Status:
 - ✅ Current +20% ItemPower shop threshold plus real virtual-equip validation.
 - ✅ Deterministic 200-world-tick shop refresh.
 - ✅ Purchased shop slots remain empty until refresh.
-- 🟡 Starting City shop currently has ilvl 1 + ilvl 10 bands (**2 / required 3**); the ilvl 10 band includes all 11 current non-Belt slots, while the ilvl 20 band is missing.
+- 🟡 Starting City shop currently has ilvl 1 + ilvl 10 bands (**2 / required 3**); the ilvl 10 band includes all 12 equipment slots, while the ilvl 20 band is missing.
 - 🟡 Current full stock is 16 equipment listings; final Starting City target is 24 (3 bands × 8).
 - ⬜ Mid-Level City shop: ilvl 30 / 40 / 50 bands.
 - ⬜ Healing potion purchasing/preparation.
@@ -204,7 +204,7 @@ Status:
 
 ## 13. Belt and healing potions
 
-- ⬜ Real Belt item content.
+- 🟡 Real ilvl 10 Belt item content exists with +40 inherent Health; potion utility remains pending.
 - ⬜ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
 - ⬜ Belt-level potion eligibility.
 - ⬜ Potion tiers level 1 / 10 / 20 / 30 / 40 / 50.

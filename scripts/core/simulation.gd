@@ -357,6 +357,8 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
 		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp)
 		assert(dungeon_system.remove_completed_dungeon_from_map(completed_dungeon), "Completed dungeon must release its map activity and disappear from the map.")
+		assert(dungeon_runner.begin_return_to_city(hero_state, hex_map.definition.starting_city_center), "Completed dungeon must start a real return route to the city.")
+		debug_log.record_combat_event(dungeon_narrator.describe_return_started(hero_state.hero_name, dungeon_definition.display_name, travel_system.get_remaining_steps()), combat_world_tick)
 
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
@@ -383,7 +385,11 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.DUNGEON_BETWEEN_FIGHTS:
 		advance_dungeon_between_fights_tick(completed_tick)
 		return
+	if hero_state.loop_state == HeroState.DUNGEON_RETURNING_TO_CITY:
+		advance_dungeon_return_tick(completed_tick)
+		return
 	if hero_state.loop_state == HeroState.DUNGEON_COMPLETED:
+		push_error("Completed dungeon must transition immediately into return travel.")
 		debug_log.record_tick(completed_tick)
 		return
 	if hero_state.loop_state == HeroState.DEAD_RESPAWNING and dungeon_runner.owns_respawn_state():
@@ -531,6 +537,17 @@ func advance_dungeon_between_fights_tick(completed_tick: int) -> void:
 		)
 	)
 
+func advance_dungeon_return_tick(completed_tick: int) -> void:
+	var dungeon_name: String = dungeon_runner.active_dungeon.definition.display_name
+	var result: Dictionary = dungeon_runner.advance_return_to_city(hero_state)
+	if result.is_empty():
+		debug_log.record_tick(completed_tick)
+		return
+	if bool(result.get("arrived", false)):
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_returned_to_city(hero_state.hero_name, dungeon_name))
+	else:
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_returning_to_city(hero_state.hero_name, dungeon_name, int(result.get("remaining_steps", 0))))
+
 func advance_dungeon_respawn_tick(completed_tick: int) -> void:
 	var result: Dictionary = dungeon_runner.advance_respawn(hero_state, combat_stats)
 	if result.is_empty():
@@ -581,6 +598,11 @@ func get_shop_slot_debug_name(equipment_slot: String) -> String:
 		"boots": return "сапоги"
 		"weapon": return "меч"
 		"shield": return "щит"
+		"necklace": return "ожерелье"
+		"earrings": return "серьги"
+		"ring_1": return "кольцо 1"
+		"ring_2": return "кольцо 2"
+		"belt": return "пояс"
 	return equipment_slot
 
 func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, rng_override = null) -> Dictionary:

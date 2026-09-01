@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="MobDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
-[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl10_jewelry_drop_table.tres" id="2_drop_table"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="2_drop_table"]
 
 [resource]
 script = ExtResource("1_mob_definition")

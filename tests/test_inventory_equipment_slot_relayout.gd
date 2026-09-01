@@ -11,6 +11,8 @@ func run_test() -> void:
 	await process_frame
 	main_ui.inventory_button.pressed.emit()
 	await process_frame
+	var inventory_screen = main_ui.inventory_screen
+	assert(inventory_screen != null, "MainUI must expose the extracted InventoryScreen instance.")
 
 	var armor_slots := main_ui.find_child("ArmorSlots", true, false) as VBoxContainer
 	var portrait_panel := main_ui.find_child("HeroPortraitPanel", true, false) as PanelContainer
@@ -38,11 +40,11 @@ func run_test() -> void:
 	for slot in all_slots:
 		assert(slot.size == Vector2(86.0, 86.0), "Every equipment slot must remain 86x86 pixels.")
 
-	assert(main_ui.get_equipment_slot_id("NecklaceSlot") == "necklace", "Necklace slot must have a stable equipment id.")
-	assert(main_ui.get_equipment_slot_id("EarringsSlot") == "earrings", "Earrings slot must have a stable equipment id.")
-	assert(main_ui.get_equipment_slot_id("RingSlot1") == "ring_1", "First ring slot must have a stable equipment id.")
-	assert(main_ui.get_equipment_slot_id("RingSlot2") == "ring_2", "Second ring slot must have a stable equipment id.")
-	assert(main_ui.get_equipment_slot_id("BeltSlot") == "belt", "Belt slot must have a stable equipment id.")
+	assert(inventory_screen.get_equipment_slot_id("NecklaceSlot") == "necklace", "Necklace slot must have a stable equipment id.")
+	assert(inventory_screen.get_equipment_slot_id("EarringsSlot") == "earrings", "Earrings slot must have a stable equipment id.")
+	assert(inventory_screen.get_equipment_slot_id("RingSlot1") == "ring_1", "First ring slot must have a stable equipment id.")
+	assert(inventory_screen.get_equipment_slot_id("RingSlot2") == "ring_2", "Second ring slot must have a stable equipment id.")
+	assert(inventory_screen.get_equipment_slot_id("BeltSlot") == "belt", "Belt slot must have a stable equipment id.")
 
 	main_ui.free()
 	print("PASS: Equipment screen uses the approved 5 armor + 2 weapon + 5 jewelry layout.")

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=24 format=3]
+[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/shop_stock_band_definition.gd" id="1_band"]
 [ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet.tres" id="2_w_helmet"]
@@ -23,10 +23,12 @@
 [ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/ironward_earrings_uncommon.tres" id="21_g_earrings"]
 [ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/ironward_ring_1_uncommon.tres" id="22_g_ring_1"]
 [ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/ironward_ring_2_uncommon.tres" id="23_g_ring_2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/ironward_belt.tres" id="24_w_belt"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/ironward_belt_uncommon.tres" id="25_g_belt"]
 
 [resource]
 script = ExtResource("1_band")
 item_level = 10
 white_listings = 6
 uncommon_listings = 2
-item_definitions = Array[Resource]([ExtResource("2_w_helmet"), ExtResource("3_w_chest"), ExtResource("4_w_gloves"), ExtResource("5_w_pants"), ExtResource("6_w_boots"), ExtResource("7_w_sword"), ExtResource("8_w_shield"), ExtResource("16_w_necklace"), ExtResource("17_w_earrings"), ExtResource("18_w_ring_1"), ExtResource("19_w_ring_2"), ExtResource("9_g_helmet"), ExtResource("10_g_chest"), ExtResource("11_g_gloves"), ExtResource("12_g_pants"), ExtResource("13_g_boots"), ExtResource("14_g_sword"), ExtResource("15_g_shield"), ExtResource("20_g_necklace"), ExtResource("21_g_earrings"), ExtResource("22_g_ring_1"), ExtResource("23_g_ring_2")])
+item_definitions = Array[Resource]([ExtResource("2_w_helmet"), ExtResource("3_w_chest"), ExtResource("4_w_gloves"), ExtResource("5_w_pants"), ExtResource("6_w_boots"), ExtResource("7_w_sword"), ExtResource("8_w_shield"), ExtResource("16_w_necklace"), ExtResource("17_w_earrings"), ExtResource("18_w_ring_1"), ExtResource("19_w_ring_2"), ExtResource("24_w_belt"), ExtResource("9_g_helmet"), ExtResource("10_g_chest"), ExtResource("11_g_gloves"), ExtResource("12_g_pants"), ExtResource("13_g_boots"), ExtResource("14_g_sword"), ExtResource("15_g_shield"), ExtResource("20_g_necklace"), ExtResource("21_g_earrings"), ExtResource("22_g_ring_1"), ExtResource("23_g_ring_2"), ExtResource("25_g_belt")])

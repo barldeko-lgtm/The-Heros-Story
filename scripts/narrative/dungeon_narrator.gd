@@ -49,3 +49,12 @@ func describe_city_recovery(hero_name: String, current_hp: float, max_hp: float,
 
 func describe_completed(hero_name: String, dungeon_name: String, gold_reward: int) -> String:
 	return "%s победил босса и полностью прошёл данж «%s», получив %d золота. Данж исчез с карты." % [hero_name, dungeon_name, gold_reward]
+
+func describe_return_started(hero_name: String, dungeon_name: String, remaining_steps: int) -> String:
+	return "%s покинул пройденный данж «%s» и отправился обратно в город. Осталось гексов: %d." % [hero_name, dungeon_name, remaining_steps]
+
+func describe_returning_to_city(hero_name: String, dungeon_name: String, remaining_steps: int) -> String:
+	return "%s возвращается в город после данжа «%s». Осталось гексов: %d." % [hero_name, dungeon_name, remaining_steps]
+
+func describe_returned_to_city(hero_name: String, dungeon_name: String) -> String:
+	return "%s вернулся в город после прохождения данжа «%s» и отправился на рынок." % [hero_name, dungeon_name]

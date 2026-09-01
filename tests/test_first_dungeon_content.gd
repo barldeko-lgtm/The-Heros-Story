@@ -30,7 +30,7 @@ func _init() -> void:
 	assert(dungeon.completion_gold_reward == 700, "Abandoned Iron Mines completion must grant exactly 700 Gold.")
 	assert(dungeon.completion_equipment_source != null, "Abandoned Iron Mines must define one completion equipment source.")
 	assert(dungeon.completion_equipment_source.item_level == 10, "The first dungeon completion item must be ilvl 10.")
-	assert(dungeon.completion_equipment_source.rare_items.size() == 11, "The first dungeon completion pool must cover all current non-Belt equipment slots.")
+	assert(dungeon.completion_equipment_source.rare_items.size() == 12, "The first dungeon completion pool must cover all twelve current equipment slots including Belt.")
 	assert(is_equal_approx(dungeon.completion_epic_chance, 0.25), "The first dungeon completion reward must use 75% Rare / 25% Epic rarity odds.")
 
 	print("PASS: Abandoned Iron Mines defines 3 Mine Troglodytes, the Deep Devourer, and a 700 Gold + ilvl 10 Rare/Epic completion reward.")

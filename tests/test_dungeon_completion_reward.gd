@@ -31,16 +31,19 @@ func _init() -> void:
 	assert(not epic_roll.is_empty(), "Dungeon completion must always produce an equipment roll when its reward data is valid.")
 	assert(int(epic_roll["rarity"]) == 3, "A rarity roll below 25% must produce Epic/Purple.")
 	assert(int(epic_roll["item_level"]) == 10, "Dungeon completion equipment must use ilvl 10.")
-	assert(epic_roll["item_definition"].equipment_slot == "helmet", "The scripted first slot must resolve the helmet from the eleven-slot completion pool.")
+	assert(epic_roll["item_definition"].equipment_slot == "helmet", "The scripted first slot must resolve the helmet from the twelve-slot completion pool.")
 
-	var rare_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon, ScriptedRng.new([0.25], [10]))
+	var rare_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon, ScriptedRng.new([0.25], [11]))
 	assert(int(rare_roll["rarity"]) == 2, "A rarity roll at or above 25% must produce Rare/Blue, giving the configured 75% Blue / 25% Purple split.")
-	assert(rare_roll["item_definition"].equipment_slot == "ring_2", "The scripted last slot must resolve Ring 2 from the eleven-slot completion pool.")
+	assert(rare_roll["item_definition"].equipment_slot == "belt", "The scripted last slot must resolve Belt from the twelve-slot completion pool.")
+	var rare_belt = item_generator.generate(rare_roll["item_definition"], 10, ScriptedRng.new(), 2)
+	assert(rare_belt != null and is_equal_approx(rare_belt.get_stat_bonus("max_hp"), 40.0), "Dungeon Belt rewards must use the normal ilvl 10 base Health of 40.")
+	assert(rare_belt.affixes.is_empty(), "Belt rarity must not gain ordinary random affixes before potion capacity is implemented.")
 
 	var epic_item = item_generator.generate(epic_roll["item_definition"], 10, ScriptedRng.new([0.5], [0, 0, 0]), 3)
 	assert(epic_item != null, "ItemGenerator must support an Epic rarity override for a dungeon reward.")
 	assert(epic_item.rarity == 3 and epic_item.affixes.size() == 3, "Epic dungeon equipment must be a real Purple ItemInstance with three affixes.")
 	assert(epic_item.get_quality_display_name() == "Эпическое", "Epic dungeon equipment must expose its real rarity through ItemInstance presentation.")
 
-	print("PASS: Dungeon completion loot rolls eleven ilvl-10 slots at exactly 75% Rare / 25% Epic and generates real three-affix Epic ItemInstances.")
+	print("PASS: Dungeon completion loot rolls all twelve ilvl-10 slots at exactly 75% Rare / 25% Epic, with simple affixless Belt rewards and normal Epic equipment elsewhere.")
 	quit()
