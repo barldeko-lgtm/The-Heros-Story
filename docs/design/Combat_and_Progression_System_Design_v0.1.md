@@ -45,27 +45,43 @@ The game does not use a separate TES-like progression system for every weapon ty
 
 ## Attribute Growth on Level-Up
 
-The player does not manually distribute all of the hero’s attributes after every level-up.
+Primary-attribute growth deliberately combines **direct player development** with **automatic class and specialization identity**.
 
-Before specialization, attribute growth is shared between three influences:
+Before the first specialization is obtained, each hero level grants:
 
-1. **class** — guarantees part of the growth toward the class’s core attribute or attributes;
-2. **deity guidance** — allows the player to softly encourage one development direction;
-3. **the hero** — most growth is distributed autonomously according to the hero’s own tendencies and development logic.
+> **5 primary-attribute points per level = 1 fixed class-directed point + 4 freely distributed player points.**
 
-The current working baseline before the first specialization is:
+For the Warrior, the fixed class point is:
 
-> **5 attribute points per level: 1 from class + 1 from deity guidance + 3 distributed by the hero.**
+> **+1 STR per level**
 
-After the hero actually gains the first specialization, unlocked from level 40 through the specialization-quest structure defined later in this document and in `Quest_and_Activity_System_Design_v0.1.md`, that specialization becomes an additional permanent influence on level-up growth. The first specialization contributes **+1 specialization-directed attribute point per hero level** associated with that tier.
+The other **4 points are distributed directly by the player** among STR, DEX, INT, CON, and WIS.
 
-After the hero actually gains the second specialization tier, unlocked from level 80 through the same progression structure, the final specialization adds **another +1 specialization-directed attribute point per hero level**.
+These four points represent the deity/patron guiding the hero’s long-term development. They are not an autonomous decision made by the hero and are not distributed according to personality traits, preferences, or previous behaviour.
 
-The intended normal structure after the corresponding specializations have been obtained is therefore:
+This separation is intentional. Primary attributes help determine what kinds of solutions are practical or attractive during personality-forming situations, while personality is formed through the hero’s lived choices. Personality therefore must not automatically feed back into attribute allocation and create a self-reinforcing loop of:
 
-- before the first specialization: `1 class + 3 hero + 1 deity = 5`;
-- after the first specialization: the same growth + `1 first-specialization point = 6`;
-- after the second specialization: the same growth + `1 first-specialization point + 1 final-specialization point = 7`.
+> **attributes → choices → personality → attributes**
+
+The player may strongly shape what the hero becomes capable of doing without directly selecting what kind of person the hero becomes.
+
+### Specialization-Directed Growth
+
+After the hero actually gains the first specialization, unlocked from level 40 through the specialization-quest structure defined later in this document and in `Quest_and_Activity_System_Design_v0.1.md`, that specialization adds:
+
+> **+1 specialization-directed primary-attribute point per later hero level**
+
+Normal growth after the first specialization therefore becomes:
+
+> **1 fixed class point + 4 player-distributed points + 1 first-specialization point = 6 points per level**
+
+After the hero actually gains the second specialization tier, unlocked from level 80 through the same progression structure, the final specialization adds another:
+
+> **+1 final-specialization-directed primary-attribute point per later hero level**
+
+Normal growth after the final specialization therefore becomes:
+
+> **1 fixed class point + 4 player-distributed points + 1 first-specialization point + 1 final-specialization point = 7 points per level**
 
 Specialization-directed points go toward the attribute or attributes that define that specialization. The exact distribution inside a specialization profile will be defined when the individual class branches are designed.
 
@@ -90,29 +106,24 @@ The same principle applies to the second specialization tier after level 80.
 
 The exact timing of the catch-up presentation — for example whether all accumulated points are displayed immediately on quest completion or bundled into the next level-up presentation — is an implementation/UI question. The conceptual rule is simply that the hero neither benefits from an unearned specialization early nor permanently loses its intended post-milestone growth by completing the quest late.
 
-The current numbers are working design values and may be tuned during implementation, but the structural principle is that each specialization tier creates both an immediate stat step and a persistent directed component of long-term growth.
+The current immediate specialization bonuses and later balance values may still be tuned during implementation, but the structural principle is fixed: **the player distributes four primary-attribute points per level, the base class contributes one automatic point, and each obtained specialization tier contributes one additional automatic profile point.**
 
-The hero’s autonomous share should not be random. It may be influenced by biography, personality, preferences, lifestyle, and meaningful accumulated experience.
-
-Divine guidance should influence development without becoming ordinary manual point allocation by the player.
-
-> **The hero develops themselves; class, specialization, and the deity shape the direction without replacing the hero’s own growth.**
+> **The player shapes the hero’s capabilities; class and specialization preserve the identity of the chosen combat path.**
 
 ## Hero Growth Must Be Understandable
 
-Although attribute growth is allocated automatically, the result should not feel random to the player.
+Attribute growth should be explicit rather than mysterious.
 
 When the hero levels up, the player should be able to understand:
 
-- which attributes increased;
-- which part of the growth came from class;
-- which part came from the hero’s current specialization path;
-- which direction was encouraged by deity guidance;
-- which tendencies, preferences, or experiences influenced the hero’s autonomous share.
+- which four primary-attribute points are available for manual distribution;
+- which automatic point came from the base class;
+- which automatic points, if any, came from obtained specialization tiers;
+- how the resulting primary-attribute profile changes the hero’s combat capabilities and possible non-combat approaches.
 
-The exact way this information is presented will be defined separately.
+The player directly controls the free attribute allocation, but still does not directly control the hero’s activities, event decisions, combat actions, personality, or specialization choice.
 
-> **The player does not directly control the hero’s development, but should understand why the hero is developing in that direction.**
+> **The patron guides development directly through attributes, while the hero remains autonomous in how they live with those capabilities.**
 
 ## Base Attributes and Resources
 
@@ -656,17 +667,22 @@ The current conceptual inputs are deliberately kept small:
 
 - the hero’s **personality / character tendencies**;
 - the hero’s **actual primary-attribute profile**;
-- potentially a **soft divine direction** from the player.
+- potentially a **soft additional divine direction** from the player.
 
-Personality and attributes should not be treated as completely independent evidence and blindly added at full weight. The hero’s attributes are already partly the result of their autonomous development, which itself is influenced by personality and preferences. The final selection method should therefore avoid effectively counting the same underlying tendency twice.
+Under the current development model, personality and primary attributes are intentionally **different kinds of evidence** rather than two measurements of the same autonomous tendency:
+
+- the primary-attribute profile is shaped strongly by the player’s direct development choices, together with automatic class and obtained-specialization growth;
+- personality is shaped by the hero’s lived personality-forming decisions and may later influence personality-expressive decisions.
+
+The specialization system may therefore evaluate both personality and attributes together without treating their overlap as automatic double-counting. The exact weights still require tuning: neither one high attribute nor one strong personality trait should mechanically force the result by itself unless a particular specialization is explicitly designed around such a hard requirement.
 
 For now, **lived combat experience is not a separate specialization-choice factor**. It may be reconsidered only if later design or testing shows that it adds meaningful information that is not already represented by character and development.
 
-The deity may be allowed to nudge the hero toward one of the available paths, but this should remain a soft influence rather than a direct subclass-selection button.
+An additional explicit divine nudge may exist as a weak influence, but it must not become a direct subclass-selection button. Because the player already shapes the hero’s attributes, any separate specialization nudge should be deliberately limited so that the hero’s final choice still reflects both the life they have lived and the capabilities the patron helped develop.
 
-The player should eventually receive enough information about possible future paths for divine guidance to be meaningful rather than a blind guess. The exact level at which potential specializations become visible, how strongly they are previewed, and how the UI presents the hero’s current inclination remain open design questions.
+The player should eventually receive enough information about possible future paths for their development choices and any divine guidance to be meaningful rather than blind guesses. The exact level at which potential specializations become visible, how strongly they are previewed, and how the UI presents the hero’s current inclination remain open design questions.
 
-> **A specialization choice should feel inevitable in hindsight without being manually predetermined in advance.**
+> **The player helps shape what the hero is capable of becoming; the hero’s developed character and actual profile determine which path they ultimately take.**
 
 ### Current Working Warrior Specialization Tree
 
@@ -751,13 +767,13 @@ At the first specialization tier, the broad split should follow the same logic r
 - **Protector** is naturally supported by stronger CON and protective/cautious character tendencies, with WIS or STR helping determine the later Paladin/Guardian direction;
 - **Slayer** is naturally supported by stronger STR and greater willingness to take risks, with DEX, CON and character differences helping determine the later Champion/Berserker direction.
 
-These are **conceptual affinities, not final formulas or thresholds**. A high CON value alone should not automatically force Guardian, and a high STR value alone should not automatically force Berserker. The final choice should reflect the combination of the hero’s character and the development that character has produced.
+These are **conceptual affinities, not final formulas or thresholds**. A high CON value alone should not automatically force Guardian, and a high STR value alone should not automatically force Berserker. The final choice should reflect the combination of the hero’s character and their actual developed attribute profile.
 
 In particular, Berserker is not defined as an evil or cruel Warrior. A kind hero may still become a Berserker if their combat-development direction is highly aggressive and risk-tolerant. Moral traits should be used only where they genuinely distinguish the fantasy of one path from another.
 
 A possible future progression layer may further improve each of the four final specializations without another branching choice. That possibility is deliberately left undefined for now.
 
-> **The player chooses the starting class; the hero’s development progressively determines which of that class’s four final paths they become.**
+> **The player chooses the starting class and shapes attributes; the hero’s lived character and developed profile progressively determine which of that class’s four final paths they become.**
 
 ## Base Starting Classes
 
