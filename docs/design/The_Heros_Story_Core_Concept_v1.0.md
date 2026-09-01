@@ -50,7 +50,7 @@ Desired player feeling:
 
 The hero independently chooses activities, travels, fights, develops, finds and replaces equipment, reacts to circumstances, makes mistakes, succeeds, and gradually builds a personal history.
 
-Their autonomy must be real: decisions depend on personality, preferences, current state, available opportunities, and circumstances.
+Their autonomy must be real: decisions depend on the hero's capabilities, current state, available opportunities, and circumstances; where a decision expresses established character, personality and preferences may also influence the choice.
 
 ## Simulating the Hero’s Journey, Not Their Entire Life
 
@@ -79,7 +79,7 @@ Specific nations, cultures, religions, history, and world structure are develope
 - **Godville** — the relationship between one deity and one hero, hero autonomy, and the pleasure of observing an independent character. The project does not inherit excessive player passivity or a fully comedic foundation.
 - **The Tale** — personality and preferences as part of autonomous behavior, gradual personality formation, and soft influence over development. MMO structure and collective player systems are not part of the project’s direction.
 - **TBH: Task Bar Hero** — play that does not require constant attention, short check-ins, and the sense that the hero’s life continues while the player is busy. The project should not become a conventional idle clicker, a multiplier race, or a resource generator.
-- **Mount & Blade II: Bannerlord** — sequential choices about the hero’s past as a reference for character-creation structure. In **The Hero’s Story**, these choices primarily establish initial personality, tendencies, interests, and preferences rather than granting direct attribute bonuses.
+- **Mount & Blade II: Bannerlord** — sequential choices about the hero’s past as a reference for character-creation structure. In **The Hero’s Story**, these choices may provide a small amount of player-directed starting capability development and mild hidden personality inertia, but they do not create a finished personality or directly assign established traits.
 
 > **References help clarify individual solutions. They do not define the structure of the game as a whole and always remain subordinate to the core concept of The Hero’s Story.**
 
@@ -89,7 +89,7 @@ Different playthroughs should lead to noticeably different life paths.
 
 These differences should primarily emerge from a chain of causes and consequences:
 
-> **past → personality and tendencies → decisions → events and consequences → development and equipment → new possibilities → new decisions**
+> **past + player-guided capabilities → circumstances → formative decisions → personality and tendencies → later decisions and consequences → development and equipment → new possibilities**
 
 Randomness may influence the path, but it should not be the only source of difference.
 
@@ -121,17 +121,17 @@ The main reward for time spent away from the game window is not accumulated reso
 
 ## The Player Is a Patron, Not a Commander
 
-The player influences the hero in limited and primarily indirect ways.
+The player may directly shape the hero's long-term capabilities through approved development choices and may intervene through limited patron/deity mechanics.
 
-The player changes direction and the probability of decisions rather than choosing every action directly.
+This direct influence over development does **not** extend to normal control over the hero's actions. The hero still independently chooses movement, activities, combat actions, equipment, reactions, and other ordinary behavior.
 
-Influence must be limited enough to preserve the hero’s independence, but noticeable enough for the player’s choices to matter.
+Player influence must remain noticeable enough to matter while preserving the hero's independence as the one who lives through the consequences.
 
 ## Core Principle
 
 > **The hero lives. The world creates circumstances. The player guides.**
 
-> **The player does not control the hero — the player influences the probability of the hero’s fate.**
+> **The player does not control the hero's actions — the player shapes their capabilities and influences their fate.**
 
 ## Migration Note
 
