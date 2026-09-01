@@ -30,13 +30,24 @@ This document defines the hero as a persistent autonomous character and describe
 
 At the beginning, the player gives the hero a name and makes roughly **4–5 sequential choices about their past**.
 
-These choices do not grant simple bonuses such as “+2 Strength.” Instead, they establish the hero’s initial personality, tendencies, interests, and preferences, which later influence autonomous decisions and the direction of development.
+These background choices have two main mechanical purposes:
 
-The hero’s past may influence, for example, their attitude toward risk, types of activities, combat styles, or equipment.
+1. they determine a **small pool of additional primary-attribute points** that the player may then distribute among the hero’s available primary attributes;
+2. they create **small initial shifts on one or more hidden personality scales**, representing early inclinations formed by the hero’s past.
 
-> **The biography creates the hero’s initial inertia, but it does not define their fate.**
+The background questions do **not** directly grant a visible personality trait. Their personality shifts are intentionally smaller than the amount required to establish a visible trait, so the hero begins life with some personal inclination but still has room to develop in another direction through later personality-forming choices.
 
-After the game begins, lived experiences and the hero’s own decisions can gradually change these initial tendencies.
+For example, if a future tuned personality scale requires a much larger accumulated value before `Brave` becomes visible, one background answer might provide only a modest partial movement toward Brave. Exact scale ranges, trait thresholds, per-answer movement, and any creation-time cap are balance values owned by the personality system.
+
+The complete character-creation sequence must be tuned so that the biography by itself does not normally cross a visible personality threshold. A starting inclination is not the same thing as an established trait.
+
+The additional primary-attribute points are under direct player control. The background determines how much additional development is available at creation, while the player decides how to distribute that pool among the hero’s primary attributes. The exact pool size and whether different answers can change its size remain tuning questions.
+
+Primary attributes and personality remain different concepts. High Strength does not mean Brave, high Dexterity does not mean Devious, and no primary attribute automatically assigns a personality trait. Attributes describe what approaches the hero is capable of using effectively; personality describes the tendencies that gradually emerge from the hero’s life and later influence personality-expressive decisions.
+
+After the game begins, the hero’s visible personality develops through the personality-forming choice rules defined in `Personality_and_Decision_System_Design_v0.1.md`. Starting background shifts may make one direction somewhat closer than another, but they do not determine the hero’s fate.
+
+> **The biography gives the hero starting capabilities and a slight personal inclination; their lived choices determine who they actually become.**
 
 ## Starting Class
 
