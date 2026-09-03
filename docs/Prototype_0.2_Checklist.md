@@ -131,7 +131,7 @@ Status:
 
 - ✅ Runtime dungeon definition/instance foundation, automatic ordinary-dungeon loading from the Starting/Mid region data folders, and real map placement for the current dungeon population.
 - ✅ Dungeon discovery / known-vs-unknown world knowledge for physical hex entry and Divine Vision.
-- 🟡 Starting Region ordinary dungeons: **1 / 2** (`Заброшенные железные шахты`).
+- ✅ Starting Region ordinary dungeons: **2 / 2** (`Заброшенные железные шахты`, `Городище Черноклыков`).
 - ⬜ Mid Region ordinary dungeons: **0 / 2**.
 - ✅ First dungeon executes its authored `3 × Шахтный троглодит → Глубинный пожиратель` sequence through the shared live combat system.
 - ✅ Dungeon discovery does not interrupt the current activity; after quest turn-in → market → shopping, a known local dungeon takes priority over selecting another ordinary quest.
@@ -144,6 +144,7 @@ Status:
 - ✅ Between-fight potion use works: ordinary rooms avoid overheal, boss preparation may accept it, and multiple potions may be consumed in one preparation window.
 - ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
 - ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
+- ✅ Second Starting Region dungeon: forest `Городище Черноклыков`, `3 × Гоблин-гвардеец` at approximately 600 Power / 260 XP → `Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 20 item across all 12 slots at 75% Blue/Rare / 25% Purple/Epic.
 - ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
 ## 9. First Warrior specialization
@@ -266,7 +267,7 @@ Status:
 - 🟡 Ordinary quest templates: **15 / 30 total target**.
 - 🟡 Simultaneous quest offers: current **15 Starting City offers**, final target **up to 6 per city, 2/2/2 by band**.
 - ⬜ Handcrafted temporary events: **0 / 15–20**.
-- ⬜ Ordinary dungeons: **0 / 4**.
+- 🟡 Ordinary dungeons: **2 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
 - ⬜ Specialization dungeon variants: **0 / 2**.
 - ✅ Base Warrior abilities: **2 / 2** at Skill Level 1.

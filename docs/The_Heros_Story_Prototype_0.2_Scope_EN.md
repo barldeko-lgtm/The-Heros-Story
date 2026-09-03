@@ -1747,6 +1747,15 @@ They may become known through:
 
 Discovery should use map knowledge rather than omniscient UI.
 
+### 16.7. Current Starting Region Dungeon Content
+
+The currently approved Starting Region pair is:
+
+- **Abandoned Iron Mines / `Заброшенные железные шахты`** — hill placement, 4–7 hexes from Starting City, `3 × Mine Troglodyte` at approximately 200 Power / 150 XP, then `Deep Devourer` at approximately 300 Power / 185 XP; completion grants 700 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
+- **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 600 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 20 item at 75% Rare / 25% Epic.
+
+Both completion equipment sources cover all twelve current equipment slots. These concrete Power, XP, Gold, distance, and rarity values remain balance data and may be tuned without changing the shared dungeon architecture.
+
 ---
 
 ## 17. Specialization Quest and Specialization Dungeon

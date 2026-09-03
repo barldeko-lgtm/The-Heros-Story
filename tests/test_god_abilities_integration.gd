@@ -84,9 +84,17 @@ func test_quest_guidance() -> void:
 
 func test_vision() -> void:
 	var simulation = SimulationScript.new(1005, null)
-	var dungeon = simulation.dungeon_system.get_all_dungeons()[0]
-	assert(not dungeon.discovered, "Vision integration test dungeon must begin unknown.")
-	assert(simulation.has_unknown_dungeon_in_current_region(), "The Starting Region must expose one valid unknown Vision target.")
+	var dungeons: Array = simulation.dungeon_system.get_all_dungeons()
+	assert(dungeons.size() == 2, "Vision integration must use the two current Starting Region dungeons.")
+	for dungeon in dungeons:
+		assert(not dungeon.discovered, "Vision integration test dungeons must begin unknown.")
+	assert(simulation.has_unknown_dungeon_in_current_region(), "The Starting Region must expose valid unknown Vision targets.")
 	assert(simulation.use_divine_vision(), "Vision must reveal an existing unknown dungeon through Simulation.")
-	assert(dungeon.discovered and dungeon.discovery_source == "vision", "Vision must reveal the existing dungeon rather than create a replacement.")
-	assert(not simulation.has_unknown_dungeon_in_current_region(), "After revealing the only current dungeon, the region must have no unknown Vision target.")
+	var discovered_count: int = 0
+	for dungeon in dungeons:
+		if dungeon.discovered:
+			discovered_count += 1
+			assert(dungeon.discovery_source == "vision", "The dungeon revealed by Vision must record Vision as its discovery source.")
+	assert(discovered_count == 1, "One Vision use must reveal exactly one already-existing unknown dungeon.")
+	assert(simulation.dungeon_system.get_all_dungeons().size() == dungeons.size(), "Vision must reveal an existing dungeon rather than create a replacement.")
+	assert(simulation.has_unknown_dungeon_in_current_region(), "After revealing one of two current dungeons, the other must remain an unknown Vision target.")

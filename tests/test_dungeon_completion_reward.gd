@@ -3,6 +3,7 @@ extends SceneTree
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
 const DUNGEON_PATH := "res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres"
+const SECOND_DUNGEON_PATH := "res://data/dungeons/starting_region/0002_blackfang_settlement.tres"
 
 class ScriptedRng:
 	var float_values: Array[float] = []
@@ -47,5 +48,16 @@ func _init() -> void:
 	assert(epic_item.rarity == 3 and epic_item.affixes.size() == 3, "Epic dungeon equipment must be a real Purple ItemInstance with three affixes.")
 	assert(epic_item.get_quality_display_name() == "Эпическое", "Epic dungeon equipment must expose its real rarity through ItemInstance presentation.")
 
-	print("PASS: Dungeon completion loot rolls all twelve ilvl-10 slots at exactly 75% Rare / 25% Epic, with potion-capacity Belt rewards and normal Epic equipment elsewhere.")
+	var second_dungeon = load(SECOND_DUNGEON_PATH)
+	assert(second_dungeon != null, "The second dungeon completion definition must load.")
+	var second_epic_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(second_dungeon, ScriptedRng.new([0.249999], [0]))
+	assert(int(second_epic_roll["rarity"]) == 3 and int(second_epic_roll["item_level"]) == 20, "Blackfang Settlement must award Epic ilvl 20 equipment below its 25% Epic threshold.")
+	var second_rare_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(second_dungeon, ScriptedRng.new([0.25], [11]))
+	assert(int(second_rare_roll["rarity"]) == 2 and int(second_rare_roll["item_level"]) == 20, "Blackfang Settlement must award Rare ilvl 20 equipment at or above its Epic threshold.")
+	assert(second_rare_roll["item_definition"].equipment_slot == "belt", "The ilvl 20 completion pool must include Belt as its stable last slot.")
+	var second_rare_belt = item_generator.generate(second_rare_roll["item_definition"], 20, ScriptedRng.new(), 2)
+	assert(second_rare_belt != null and is_equal_approx(second_rare_belt.get_stat_bonus("max_hp"), 50.0), "A Rare ilvl 20 dungeon Belt must use the normal 50 base Health.")
+	assert(belt_rules.get_capacity(second_rare_belt) == 3 and is_equal_approx(belt_rules.get_potential_healing(second_rare_belt), 450.0), "A Rare ilvl 20 dungeon Belt must provide three Level 20 potion slots worth 450 potential healing.")
+
+	print("PASS: Both Starting Region dungeon reward pools use all twelve slots at 75% Rare / 25% Epic with their authored ilvl 10/20 tiers.")
 	quit()

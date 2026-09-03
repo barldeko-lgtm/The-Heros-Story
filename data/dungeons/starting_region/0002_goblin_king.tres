@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "goblin_king"
+display_name = "Король гоблинов"
+category = 0
+max_hp = 3600.0
+attack = 210.0
+attack_speed = 1.0
+accuracy = 110.0
+armor = 20.0
+crit_chance = 0.10
+crit_damage = 1.80
+experience_reward = 320
+

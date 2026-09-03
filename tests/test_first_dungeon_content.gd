@@ -1,6 +1,7 @@
 extends SceneTree
 
 const DUNGEON_PATH := "res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres"
+const SECOND_DUNGEON_PATH := "res://data/dungeons/starting_region/0002_blackfang_settlement.tres"
 const DungeonSystemScript = preload("res://scripts/dungeons/dungeon_system.gd")
 
 func _init() -> void:
@@ -42,5 +43,28 @@ func _init() -> void:
 	assert(dungeon.completion_equipment_source.rare_items.size() == 12, "The first dungeon completion pool must cover all twelve current equipment slots including Belt.")
 	assert(is_equal_approx(dungeon.completion_epic_chance, 0.25), "The first dungeon completion reward must use 75% Rare / 25% Epic rarity odds.")
 
-	print("PASS: DungeonSystem auto-loads ordinary dungeon definitions, and Abandoned Iron Mines defines 3 Mine Troglodytes, the Deep Devourer, and a 700 Gold + ilvl 10 Rare/Epic completion reward.")
+	var second_dungeon = load(SECOND_DUNGEON_PATH)
+	assert(second_dungeon != null, "The second Starting Region dungeon definition must exist.")
+	assert(second_dungeon.id == "blackfang_settlement", "The second dungeon must keep its stable id.")
+	assert(second_dungeon.display_name == "Городище Черноклыков", "The second dungeon must keep its approved name.")
+	assert(second_dungeon.region_id == "starting_region", "Blackfang Settlement must belong to Starting Region.")
+	assert(second_dungeon.placement_allowed_terrain_ids == PackedStringArray(["forest"]), "Blackfang Settlement must be placed on forest terrain.")
+	assert(second_dungeon.placement_distance_hex_min == 5 and second_dungeon.placement_distance_hex_max == 7, "Blackfang Settlement must use the authored five-to-seven-hex placement band.")
+	assert(second_dungeon.ordinary_encounter_count == 3, "Blackfang Settlement must contain exactly three ordinary combat encounters before the boss.")
+	assert(second_dungeon.ordinary_mob_definition != null and second_dungeon.ordinary_mob_definition.id == "blackfang_guard", "All three ordinary encounters must use the Blackfang Guard.")
+	var second_ordinary_power: float = second_dungeon.ordinary_mob_definition.get_power()
+	assert(second_ordinary_power >= 595.0 and second_ordinary_power <= 605.0, "Blackfang Guard Power must remain approximately 600; got %.2f." % second_ordinary_power)
+	assert(second_dungeon.ordinary_mob_definition.experience_reward == 260, "Blackfang Guard must grant 260 normal combat XP.")
+	assert(second_dungeon.ordinary_mob_definition.gold_reward == 0 and second_dungeon.ordinary_mob_definition.equipment_drop_table == null, "Blackfang Guards must not grant per-mob Gold or ordinary equipment drops inside the dungeon.")
+	assert(second_dungeon.boss_mob_definition != null and second_dungeon.boss_mob_definition.id == "goblin_king", "Blackfang Settlement must end with the unique Goblin King boss.")
+	var second_boss_power: float = second_dungeon.boss_mob_definition.get_power()
+	assert(second_boss_power >= 745.0 and second_boss_power <= 755.0, "Goblin King Power must remain approximately 750; got %.2f." % second_boss_power)
+	assert(second_dungeon.boss_mob_definition.experience_reward == 320, "Goblin King must grant 320 normal combat XP.")
+	assert(second_dungeon.boss_mob_definition.gold_reward == 0 and second_dungeon.boss_mob_definition.equipment_drop_table == null, "Goblin King combat must not grant per-mob Gold or ordinary equipment drops before the completion reward.")
+	assert(second_dungeon.completion_gold_reward == 2000, "Blackfang Settlement completion must grant exactly 2000 Gold.")
+	assert(second_dungeon.completion_equipment_source != null and second_dungeon.completion_equipment_source.item_level == 20, "Blackfang Settlement completion item must be ilvl 20.")
+	assert(second_dungeon.completion_equipment_source.rare_items.size() == 12, "Blackfang Settlement completion pool must cover all twelve current ilvl 20 equipment slots.")
+	assert(is_equal_approx(second_dungeon.completion_epic_chance, 0.25), "Blackfang Settlement completion reward must use 75% Rare / 25% Epic rarity odds.")
+
+	print("PASS: DungeonSystem auto-loads both Starting Region dungeons with their approved mobs, bosses, Power/XP tuning, placement, and Rare/Epic completion rewards.")
 	quit()
