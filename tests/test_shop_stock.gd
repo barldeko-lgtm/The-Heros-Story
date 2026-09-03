@@ -6,9 +6,10 @@ func _init() -> void:
 	var shop = simulation.shop_system
 	var listings: Array = shop.get_listings()
 
-	assert(listings.size() == 16, "Starting City shop must contain two bands: 8 ilvl 1 Ironwake + 8 ilvl 10 Ironward listings.")
-	assert_shop_band(listings, 1, "ironwake_sentinel")
-	assert_shop_band(listings, 10, "ironward_vanguard")
+	assert(listings.size() == 24, "Starting City shop must contain three 8-listing ilvl 1/10/20 bands.")
+	assert_shop_band(listings, 1)
+	assert_shop_band(listings, 10)
+	assert_shop_band(listings, 20)
 
 	simulation.hero_state.gold = 100000
 	var purchased = shop.purchase_listing(simulation.hero_state, 0)
@@ -17,7 +18,7 @@ func _init() -> void:
 	assert(not shop.advance_world_tick(199), "Shop stock must not refresh before tick 200.")
 	assert(shop.get_listings()[0]["item_instance"] == null, "A purchased vacancy must persist before the refresh tick.")
 	assert(shop.advance_world_tick(200), "Shop stock must refresh exactly on tick 200.")
-	assert(shop.get_listings().size() == 16, "Refresh must rebuild both current 8-listing bands.")
+	assert(shop.get_listings().size() == 24, "Refresh must rebuild all three 8-listing bands.")
 	for listing in shop.get_listings():
 		assert(listing.get("item_instance") != null, "Normal refresh must refill every shop listing.")
 
@@ -30,10 +31,10 @@ func _init() -> void:
 	refresh_log_simulation.on_world_tick_completed(200)
 	assert(refresh_log_simulation.debug_log.get_text().contains("Магазин: ассортимент обновлён."), "A scheduled stock refresh must be visible in the developer log even when the hero is away from the shop.")
 
-	print("PASS: Starting City shop uses separate ilvl 1 Ironwake and ilvl 10 Ironward bands with unique rarity slots and 200-tick refresh.")
+	print("PASS: Starting City shop keeps shared mechanics across ilvl 1/10/20 Rustchain, Ironwake, and Ironward bands.")
 	quit()
 
-func assert_shop_band(listings: Array, item_level: int, family_path_part: String) -> void:
+func assert_shop_band(listings: Array, item_level: int) -> void:
 	for rarity in [0, 1]:
 		var expected_count: int = 6 if rarity == 0 else 2
 		var slots: Array[String] = []
@@ -45,17 +46,24 @@ func assert_shop_band(listings: Array, item_level: int, family_path_part: String
 			if item_instance.item_level != item_level or item_instance.rarity != rarity:
 				continue
 			matching_count += 1
-			assert(item_instance.definition.resource_path.contains(family_path_part), "Each shop band must use its assigned visual family.")
-			assert_uses_shared_generation(item_instance)
 			var slot: String = item_instance.definition.equipment_slot
+			if item_level == 1:
+				assert(item_instance.definition.resource_path.contains("rustchain_initiate"), "The ilvl 1 shop band must use Rustchain Initiate.")
+			elif item_level == 20:
+				assert(item_instance.definition.resource_path.contains("ironward_vanguard/boar_"), "The ilvl 20 shop band must use Ironward Vanguard core equipment.")
+			elif slot in ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]:
+				assert(item_instance.definition.resource_path.contains("ironwake_sentinel"), "Core ilvl 10 shop slots must use Ironwake Sentinel.")
+			else:
+				assert(item_instance.definition.resource_path.contains("ironward_vanguard/ironward_"), "Current ilvl 10 accessories must remain unchanged.")
+			assert_uses_shared_generation(item_instance)
 			assert(not slots.has(slot), "One band/rarity rotation must not contain duplicate equipment slots.")
 			slots.append(slot)
 		assert(matching_count == expected_count, "Each shop band must contain exactly 6 White and 2 Green listings.")
 
 func assert_uses_shared_generation(item_instance) -> void:
-	var expected_armor: float = 5.0 if item_instance.item_level == 1 else 7.0
-	var expected_attack: float = 10.0 if item_instance.item_level == 1 else 13.0
-	var expected_block: float = 10.0 if item_instance.item_level == 1 else 13.0
+	var expected_armor: float = 5.0 if item_instance.item_level == 1 else (7.0 if item_instance.item_level == 10 else 10.0)
+	var expected_attack: float = 10.0 if item_instance.item_level == 1 else (13.0 if item_instance.item_level == 10 else 17.0)
+	var expected_block: float = 10.0 if item_instance.item_level == 1 else (13.0 if item_instance.item_level == 10 else 17.0)
 	match item_instance.definition.equipment_slot:
 		"helmet", "chest", "gloves", "pants", "boots":
 			assert(is_equal_approx(item_instance.get_base_stat("armor"), expected_armor), "Shop armor must use its band item level through the shared base-stat table.")

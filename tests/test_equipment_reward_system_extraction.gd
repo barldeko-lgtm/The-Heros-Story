@@ -1,7 +1,7 @@
 extends SceneTree
 
 const REWARD_SYSTEM_PATH := "res://scripts/loot/equipment_reward_system.gd"
-const COMMON_CHEST_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres"
+const COMMON_CHEST_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_chestplate.tres"
 
 func _init() -> void:
 	var reward_system_script: Script = load(REWARD_SYSTEM_PATH)

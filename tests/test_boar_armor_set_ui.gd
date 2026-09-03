@@ -32,7 +32,7 @@ func run_test() -> void:
 	for slot_id in EQUIPPED_ITEMS:
 		var definition: Resource = load(EQUIPPED_ITEMS[slot_id])
 		assert(definition != null, "Every equipped test definition must load.")
-		simulation.receive_item_reward(definition, 1)
+		simulation.receive_item_reward(definition, 1, 20)
 
 	var main_ui = main_ui_script.new()
 	main_ui.simulation = simulation
@@ -58,7 +58,7 @@ func run_test() -> void:
 	assert(tooltip_panel.visible, "Hovering any equipped armor slot must show tooltip.")
 	assert(tooltip_label.text.contains("Поножи Авангарда Железного Оплота"), "Tooltip must show the correct equipped item name.")
 	assert(tooltip_label.text.contains("Качество: Редкое"), "Tooltip must show item quality.")
-	assert(tooltip_label.text.contains("Сила предмета: 10.18"), "Tooltip must show universal ItemPower.")
+	assert(tooltip_label.text.contains("Сила предмета: %.2f" % simulation.hero_state.equipment.get_item("pants").get_item_power()), "Tooltip must show the equipped item's universal ItemPower.")
 
 	for slot_id in OVERLAY_NODES:
 		var hero_overlay := main_ui.find_child(OVERLAY_NODES[slot_id], true, false) as TextureRect

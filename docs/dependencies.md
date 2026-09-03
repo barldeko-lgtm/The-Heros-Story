@@ -244,7 +244,7 @@ Contracts:
 - `DungeonEvaluator` owns the current retry Power gate and does not participate in QuestScore: first attempt has no retry threshold; a failed attempt stores its starting HeroPower and requires +25% after zero ordinary kills, +15% after ordinary progress before the boss, or +10% after reaching the boss; a later failed retry replaces the remembered baseline with that attempt's own starting HeroPower;
 - after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and permits a new attempt once the threshold is reached; potion readiness is not yet part of this gate;
 - dungeon fights use the same `CombatSession` / Warrior Rage / Power Strike / Battle Guard / trait damage path as quest fights; each fight starts from carried `HeroState.current_hp` rather than resetting to MaxHP;
-- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the full twelve-slot Ironward source, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; standard equipment follows its normal rarity affixes, while Belt currently remains Health-only until potion-capacity rarity is implemented; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
+- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the unchanged full twelve-slot source now containing Ironwake core equipment plus existing accessories, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; standard equipment follows its normal rarity affixes, while Belt currently remains Health-only until potion-capacity rarity is implemented; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
 - dungeon death is owned by `DungeonRunner`: the hero returns to the safe city map hex, uses the normal 100-tick respawn and 1-HP resurrection/city-recovery contract, and Divine instant resurrection routes through the active respawn owner instead of pretending the death belongs to `QuestRunner`;
 - the accepted quest target stays reserved during outward travel, combat, and between-fight recovery; when the final objective is complete and return travel begins, the reservation is released; on fatal cancellation it is released immediately and the dead hero is returned to the safe city position for the resurrection timer; replacement offers acquire a new valid reservation only when their board slot is regenerated;
 - `MapTileVisuals` is presentation-only and loads exactly three `158 × 140` project PNGs each for plains, forest, and hills from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; selection is deterministic by hex coordinates, while road and city cells temporarily reuse plains art as their base terrain visual. It also resolves the hero map texture from `res://assets/map/characters/hero_map.png`; it does not own hero position;
@@ -293,14 +293,14 @@ resurrection
 
 ## Current equipment drop slice and future loot hook
 
-Current generated-equipment flow for Ironwake Sentinel and Ironward Vanguard:
+Current generated-equipment flow for Rustchain Initiate, Ironwake Sentinel core equipment, and existing accessories:
 
 ```text
 defeated current mob
 → 5% equipment-drop check
-→ equal roll among 7 slots for the five weakest mobs, or all 12 slots from Giant Spider onward
+→ equal roll among 7 ilvl 1 slots for the five weakest mobs, 12 ilvl 10 slots for the middle five, or 7 ilvl 20 slots for the five strongest
 → Common / Uncommon / Rare roll at 70% / 25% / 5%
-→ mob's drop source supplies Ironwake ilvl 1 or Ironward ilvl 10, with jewelry and Belt available only in the 12-slot ilvl 10 source
+→ mob's drop source supplies Rustchain ilvl 1, the full ilvl 10 source (Ironwake core plus jewelry/Belt), or Ironward core ilvl 20
 → EquipmentRewardSystem coordinates generated-equipment routing
 → ItemGenerator resolves inherent stats / budget / unique affixes
 → generated ItemInstance
@@ -336,8 +336,8 @@ Starting City stock:
 
 ```text
 ShopDefinition
-→ ilvl 1 Ironwake Sentinel stock band
-→ ilvl 10 Ironward Vanguard stock band
+→ ilvl 1 Rustchain Initiate stock band
+→ ilvl 10 Ironwake-core-plus-accessory stock band
 → ShopSystem
 → per band: 6 unique-slot White + 2 unique-slot Green ItemInstances
 → deterministic refresh on world ticks 200 / 400 / 600 / ...
@@ -345,8 +345,12 @@ ShopDefinition
 
 Contracts:
 - `ItemDefinition` is immutable data; `ItemInstance` is the acquired object;
-- the five weakest current mobs reference the seven-slot ilvl 1 Ironwake Sentinel table;
-- Giant Spider (the sixth mob by Power) and all nine stronger mobs reference the twelve-slot ilvl 10 Ironward table containing necklace, earrings, Ring 1, Ring 2, and Belt in addition to the previous seven slots;
+- every new hero begins with fixed Common ilvl 1 instances in Chest, Pants, and Boots; each has exactly +1 resolved Armor, no random affixes, and its supplied icon/paper-doll overlay;
+- starting armor is not added to ordinary drop or shop source tables; stronger found/purchased gear replaces it through the existing virtual-equip path and routes the replaced piece through normal Inventory/sale behavior;
+- each starting definition overrides its reference shop value to 10 Gold, so the shared 10% resale rule returns exactly 1 Gold without changing central ilvl 1 generated-item prices;
+- the five weakest current mobs retain the seven-slot ilvl 1 source with unchanged mechanics and Rustchain Initiate definitions;
+- Giant Spider, Bear, Rabid Elk, Bandit Veteran, and Swamp Crocodile use the twelve-slot ilvl 10 source with Ironwake Sentinel core slots and the unchanged necklace, earrings, Ring 1, Ring 2, and Belt definitions;
+- Young Ogre, Cave Lizard, Forest Troll, Mountain Beast, and Orc Raider use the seven-slot ilvl 20 Ironward Vanguard source; the same core family is available in the third shop band, while the first dungeon deliberately remains ilvl 10;
 - Belt is part of the current generated/drop slice as a simple inherent-Health item; it deliberately has no ordinary random affixes, and potion capacity/maximum potion level are not implemented yet; the first dungeon uses the same twelve-slot ilvl 10 source with its separate guaranteed Rare/Epic roll;
 - a drop roll happens only after a combat victory, never after defeat or quest turn-in;
 - the seeded roll order is drop chance, equal slot selection, then rarity selection;
@@ -370,7 +374,7 @@ Contracts:
 - among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
 - purchased shop positions remain empty until the next stock refresh;
-- the current Starting City shop exposes separate ilvl 1 Ironwake Sentinel and ilvl 10 Ironward Vanguard source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1 band selects from seven slots, while the ilvl 10 band selects from all twelve equipment slots;
+- the current Starting City shop exposes ilvl 1 Rustchain, ilvl 10 Ironwake-core-plus-accessories, and ilvl 20 Ironward source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1/20 bands select from seven core slots, while the ilvl 10 band selects from all twelve equipment slots;
 - shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
 - shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
 - shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
@@ -379,7 +383,7 @@ Contracts:
 - unpriced future Item Levels/rarities remain in Inventory instead of receiving an invented price;
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
-- Ironwake Sentinel drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironward Vanguard drops remain ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block);
+- Rustchain Initiate drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironwake Sentinel core drops are ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block); live Ironward Vanguard core drops are ilvl 20 (10 Armor, 17 sword Damage/+0.10 Attack Speed, 17 shield Block);
 - every ilvl 10 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at value 20, independent of rarity; the current ilvl 10 Belt instead has exactly 40 inherent Health;
 - jewelry random affixes are limited to Fire/Cold/Lightning Resistance, Health, Dodge, Accuracy, Critical Chance, and Critical Damage;
 - Common/Uncommon/Rare standard equipment creates 0/1/2 unique random affixes; Belt is the explicit current exception and stays affixless at every rarity until potion-capacity rarity is implemented; current ordinary drops do not generate Epic;

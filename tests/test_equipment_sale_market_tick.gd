@@ -1,6 +1,6 @@
 extends SceneTree
 
-const COMMON_CHEST_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres"
+const COMMON_CHEST_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_chestplate.tres"
 
 class EmptyRng:
 	extends RefCounted

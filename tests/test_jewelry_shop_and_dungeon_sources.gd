@@ -74,7 +74,7 @@ func run_test() -> void:
 	var belt_listing_seen: bool = false
 	for seed in range(1, 101):
 		var seeded_shop = shop_system_script.new(shop_definition, load("res://scripts/items/item_generator.gd").new(), seed)
-		assert(seeded_shop.get_listings().size() == 16, "Expanded candidate pools must keep the existing 16 total shop listings.")
+		assert(seeded_shop.get_listings().size() == 24, "Three live item tiers must produce 24 total shop listings.")
 		for listing in seeded_shop.get_listings():
 			var item = listing.get("item_instance")
 			if item != null and item.item_level == 10 and item.definition.equipment_slot in ["necklace", "earrings", "ring_1", "ring_2"]:

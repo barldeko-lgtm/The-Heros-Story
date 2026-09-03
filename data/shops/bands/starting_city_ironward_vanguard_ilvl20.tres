@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/shop_stock_band_definition.gd" id="1_band"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet.tres" id="item_00"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres" id="item_01"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets.tres" id="item_02"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings.tres" id="item_03"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots.tres" id="item_04"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword.tres" id="item_05"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield.tres" id="item_06"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres" id="item_07"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_chestplate_uncommon.tres" id="item_08"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_gauntlets_uncommon.tres" id="item_09"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_leggings_uncommon.tres" id="item_10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_boots_uncommon.tres" id="item_11"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_sword_uncommon.tres" id="item_12"]
+[ext_resource type="Resource" path="res://data/items/visual_families/ironward_vanguard/boar_shield_uncommon.tres" id="item_13"]
+
+[resource]
+script = ExtResource("1_band")
+item_level = 20
+white_listings = 6
+uncommon_listings = 2
+item_definitions = Array[Resource]([ExtResource("item_00"), ExtResource("item_01"), ExtResource("item_02"), ExtResource("item_03"), ExtResource("item_04"), ExtResource("item_05"), ExtResource("item_06"), ExtResource("item_07"), ExtResource("item_08"), ExtResource("item_09"), ExtResource("item_10"), ExtResource("item_11"), ExtResource("item_12"), ExtResource("item_13")])

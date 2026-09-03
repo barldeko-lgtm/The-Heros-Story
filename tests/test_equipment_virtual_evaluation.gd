@@ -1,6 +1,6 @@
 extends SceneTree
 
-const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres"
+const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_helmet_uncommon.tres"
 
 class ScriptedRng:
 	extends RefCounted

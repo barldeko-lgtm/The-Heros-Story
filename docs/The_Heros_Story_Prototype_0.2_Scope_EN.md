@@ -2747,9 +2747,9 @@ Conceptually:
 
 Examples:
 
-- Level 1 Belt → Level 1 potion only;
-- Level 10 Belt → Level 1 or Level 10 potion;
-- Level 20 Belt → Level 1 / 10 / 20 potion;
+- Level 1 Belt → no current healing potion is eligible because potion progression begins at Level 10;
+- Level 10 Belt → Level 10 potion;
+- Level 20 Belt → Level 10 or Level 20 potion;
 - and so on.
 
 A higher-level Belt therefore improves both its normal item stats and the strength of healing consumables the hero can prepare.
@@ -2760,9 +2760,10 @@ Prototype 0.2 uses a simple starting potion progression aligned with the main eq
 
 Current working healing values:
 
+Healing potions begin at **Level 10**. Prototype 0.2 does not use a Level 1 healing potion.
+
 | Potion Level | HP Restored |
 |---:|---:|
-| 1 | 50 HP |
 | 10 | 100 HP |
 | 20 | 150 HP |
 | 30 | 200 HP |
@@ -2783,6 +2784,10 @@ If hero HP growth makes potions too weak or too strong at later levels, the heal
 
 Healing potions are ordinary consumables purchased with Gold.
 
+All current Prototype 0.2 healing-potion tiers cost:
+
+> **100 Gold per potion**
+
 They physically belong to the hero's inventory.
 
 The Belt determines how many potions are currently prepared and available for dungeon use.
@@ -2800,7 +2805,9 @@ Potion purchasing remains part of the economy system, not UI logic.
 
 ### 26.5. Potion Use Between Dungeon Fights
 
-Healing potions are not used during ordinary combat in Prototype 0.2.
+Healing potions are not used anywhere in the ordinary quest flow in Prototype 0.2, including ordinary quest combat and the time between quest encounters.
+
+They are reserved for dungeon preparation and dungeon expedition healing.
 
 Between normal dungeon encounters, the hero may consume a prepared healing potion.
 

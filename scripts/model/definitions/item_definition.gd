@@ -14,6 +14,7 @@ const QUALITY_RARE: int = 2
 @export_enum("Обычное", "Необычное", "Редкое") var quality: int = QUALITY_COMMON
 @export var icon_texture: Texture2D
 @export var hero_overlay_texture: Texture2D
+@export var reference_shop_value_override: int = -1
 @export var max_hp_bonus: float = 0.0
 @export var armor_bonus: int = 0
 @export var strength_bonus: int = 0

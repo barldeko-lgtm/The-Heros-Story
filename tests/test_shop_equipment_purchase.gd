@@ -30,11 +30,12 @@ func _init() -> void:
 	assert(first_purchase_log.contains("купил") and first_purchase_log.contains("сила героя +"), "Purchase must write a concise debug-log entry with price and Power gain.")
 
 	var replacement_simulation = simulation_script.new(29)
-	var chest_definition = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres")
+	var old_chest_definition = load("res://data/items/visual_families/rustchain_initiate/rustchain_initiate_chestplate.tres")
+	var replacement_chest_definition = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres")
 	var local_rng := RandomNumberGenerator.new()
 	local_rng.seed = 99
-	var old_item = replacement_simulation.item_generator.generate(chest_definition, 1, local_rng)
-	var replacement_item = replacement_simulation.item_generator.generate(chest_definition, 20, local_rng)
+	var old_item = replacement_simulation.item_generator.generate(old_chest_definition, 1, local_rng)
+	var replacement_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 20, local_rng)
 	replacement_simulation.hero_state.equipment.replace_item(old_item)
 	replacement_simulation.refresh_combat_stats()
 	replacement_simulation.hero_state.current_hp = replacement_simulation.combat_stats.max_hp
@@ -52,7 +53,7 @@ func _init() -> void:
 	assert(not replacement_simulation.hero_state.inventory.get_items().has(old_item), "Immediately sold replaced gear must not enter Inventory.")
 	assert(replacement_simulation.debug_log.get_text().contains("Старый предмет") and replacement_simulation.debug_log.get_text().contains("сразу продан"), "Replacement purchase log must explain the immediate sale of old equipment.")
 
-	var equal_item = replacement_simulation.item_generator.generate(chest_definition, 20, local_rng)
+	var equal_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 20, local_rng)
 	replacement_simulation.shop_system.listings = [{"item_instance": equal_item}]
 	replacement_simulation.hero_state.gold = 100000
 	assert(replacement_simulation.spending_evaluator.select_best_equipment_purchase(replacement_simulation.hero_state, replacement_simulation.shop_system.get_listings()).is_empty(), "A technically equal item must not pass the 20% shop-upgrade threshold.")

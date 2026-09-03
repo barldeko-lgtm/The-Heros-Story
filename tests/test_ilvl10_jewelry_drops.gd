@@ -13,7 +13,8 @@ const JEWELRY_FILES := {
 }
 const RARITY_SUFFIXES := ["", "_uncommon", "_rare"]
 const WEAK_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
-const JEWELRY_MOB_IDS := ["giant_spider", "bear", "rabid_elk", "bandit_veteran", "swamp_crocodile", "young_ogre", "cave_lizard", "forest_troll", "mountain_beast", "orc_raider"]
+const JEWELRY_MOB_IDS := ["giant_spider", "bear", "rabid_elk", "bandit_veteran", "swamp_crocodile"]
+const ILVL20_MOB_IDS := ["young_ogre", "cave_lizard", "forest_troll", "mountain_beast", "orc_raider"]
 
 class ScriptedRng:
 	extends RefCounted
@@ -70,6 +71,7 @@ func run_test() -> void:
 	assert(bandit.equipment_drop_table != jewelry_table and bandit.equipment_drop_table.item_level == 1, "The five weaker mobs must remain on seven-slot ilvl 1 drops.")
 	var seen_weak: int = 0
 	var seen_jewelry: int = 0
+	var seen_ilvl20: int = 0
 	for file_name in DirAccess.get_files_at("res://data/mobs"):
 		if not file_name.ends_with(".tres"):
 			continue
@@ -77,10 +79,13 @@ func run_test() -> void:
 		if WEAK_MOB_IDS.has(mob.id):
 			seen_weak += 1
 			assert(mob.equipment_drop_table.item_level == 1 and mob.equipment_drop_table.common_items.size() == 7, "Every weaker mob must keep the ilvl 1 seven-slot source.")
-		else:
+		elif JEWELRY_MOB_IDS.has(mob.id):
 			seen_jewelry += 1
-			assert(JEWELRY_MOB_IDS.has(mob.id) and mob.equipment_drop_table == jewelry_table, "Every Giant-Spider-and-stronger mob must use the shared twelve-slot source.")
-	assert(seen_weak == 5 and seen_jewelry == 10, "The current roster must split into five weaker and ten jewelry-enabled mobs.")
+			assert(mob.equipment_drop_table == jewelry_table, "Every middle-tier mob must use the shared twelve-slot ilvl 10 source.")
+		else:
+			seen_ilvl20 += 1
+			assert(ILVL20_MOB_IDS.has(mob.id) and mob.equipment_drop_table.item_level == 20 and mob.equipment_drop_table.common_items.size() == 7, "Every strongest mob must use the seven-slot ilvl 20 source without ilvl 10 jewelry.")
+	assert(seen_weak == 5 and seen_jewelry == 5 and seen_ilvl20 == 5, "The current roster must split into five ilvl 1, five jewelry-enabled ilvl 10, and five ilvl 20 mobs.")
 	assert(load("%s/ironward_ring_1.tres" % JEWELRY_DIRECTORY).icon_texture == load("%s/ironward_ring_2.tres" % JEWELRY_DIRECTORY).icon_texture, "Both ring slots must use the same supplied ring icon.")
 
 	var generator = load("res://scripts/items/item_generator.gd").new()

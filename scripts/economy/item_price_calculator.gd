@@ -17,9 +17,14 @@ func get_sell_price_for_level_and_rarity(item_level: int, rarity: int) -> int:
 func get_reference_shop_value_for_item(item_instance) -> int:
 	if item_instance == null:
 		return -1
+	if item_instance.definition != null and item_instance.definition.reference_shop_value_override >= 0:
+		return item_instance.definition.reference_shop_value_override
 	return get_reference_shop_value(item_instance.item_level, item_instance.rarity)
 
 func get_sell_price_for_item(item_instance) -> int:
 	if item_instance == null:
 		return -1
-	return get_sell_price_for_level_and_rarity(item_instance.item_level, item_instance.rarity)
+	var reference_value: int = get_reference_shop_value_for_item(item_instance)
+	if reference_value < 0:
+		return -1
+	return roundi(float(reference_value) * price_table.sell_fraction)

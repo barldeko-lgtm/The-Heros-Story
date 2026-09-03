@@ -6,7 +6,7 @@ func _init() -> void:
 func run_test() -> void:
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var main_ui_script: Script = load("res://scripts/ui/main_ui.gd")
-	var rare_boots: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_boots_rare.tres")
+	var rare_boots: Resource = load("res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_boots_rare.tres")
 	assert(simulation_script != null and main_ui_script != null and rare_boots != null, "UI regression dependencies must load.")
 
 	var simulation = simulation_script.new(1)

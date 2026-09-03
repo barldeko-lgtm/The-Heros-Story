@@ -51,7 +51,7 @@ func run_test() -> void:
 	main_ui.inventory_button.pressed.emit()
 	assert(inventory_screen.visible and not main_ui.main_screen.visible, "MainUI navigation must still open the extracted InventoryScreen.")
 
-	var chest_definition: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres")
+	var chest_definition: Resource = load("res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_chestplate.tres")
 	assert(chest_definition != null, "Focused inventory item must load.")
 	main_ui.simulation.receive_item_reward(chest_definition, 1)
 	inventory_screen.refresh()

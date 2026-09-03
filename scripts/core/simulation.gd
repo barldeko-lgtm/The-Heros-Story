@@ -30,6 +30,7 @@ const QuestEvaluatorScript = preload("res://scripts/quests/quest_evaluator.gd")
 const LootGeneratorScript = preload("res://scripts/loot/loot_generator.gd")
 const EquipmentRewardSystemScript = preload("res://scripts/loot/equipment_reward_system.gd")
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
+const ItemInstanceScript = preload("res://scripts/model/runtime/item_instance.gd")
 const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
 const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
 const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluator.gd")
@@ -38,6 +39,11 @@ const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
 const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
 const DefaultStartingDungeon = preload("res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres")
+const DefaultStartingArmorDefinitions := [
+	preload("res://data/items/starting_equipment/worn_shirt.tres"),
+	preload("res://data/items/starting_equipment/worn_pants.tres"),
+	preload("res://data/items/starting_equipment/worn_boots.tres"),
+]
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
@@ -113,6 +119,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	shop_system = ShopSystemScript.new(DefaultStartingCityShop, item_generator, simulation_seed + SHOP_RNG_SEED_OFFSET)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
+	equip_starting_armor()
 	hero_state.traits = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
 	var runner_initial_quest
 	if autonomous_quest_choice:
@@ -126,6 +133,12 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
 	world_clock.tick_completed.connect(on_world_tick_completed)
+
+func equip_starting_armor() -> void:
+	for item_definition in DefaultStartingArmorDefinitions:
+		var fixed_stats := {"armor": 1.0}
+		var item_instance = ItemInstanceScript.new(item_definition, 1, 0, fixed_stats, [], 0.0, fixed_stats)
+		assert(hero_state.equipment.equip_if_empty(item_instance), "Every starting armor piece must equip into its empty approved slot.")
 
 func advance_time(delta_seconds: float) -> void:
 	var remaining_seconds := maxf(0.0, delta_seconds * time_scale)

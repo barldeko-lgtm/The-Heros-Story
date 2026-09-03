@@ -5,7 +5,7 @@
 - `project.godot` — Godot project configuration and main scene.
 - `.github/workflows/tests.yml` — GitHub Actions regression-test workflow.
 - `assets/` — supplied visual assets used by the current UI. Hero art lives under `assets/hero/`; item icons and overlays are separated under `assets/items/icons/` and `assets/items/overlays/`; the editable exact-color world layout and its Russian palette guide live under `assets/map/`.
-- `data/` — concrete game data. The current visual equipment families live under `data/items/visual_families/ironward_vanguard/` and `data/items/visual_families/ironwake_sentinel/`; the first authored world layout lives at `data/map/prototype_02_map.tres`.
+- `data/` — concrete game data. The current visual equipment families live under `data/items/visual_families/rustchain_initiate/`, `data/items/visual_families/ironwake_sentinel/`, and `data/items/visual_families/ironward_vanguard/`; the fixed three-piece new-hero outfit lives under `data/items/starting_equipment/`; the first authored world layout lives at `data/map/prototype_02_map.tres`.
 - `scenes/` — Godot scenes.
 - `scripts/` — runtime/gameplay/UI code.
 - `tests/` — regression tests.
@@ -15,7 +15,7 @@ The target Prototype 0.2 directory scaffold from the Scope is tracked with `.git
 ## Core
 
 ### `scripts/core/simulation.gd`
-Runtime coordinator. The default constructor keeps the fixed Goblin quest for regression compatibility; passing `null` as the initial quest enables autonomous selection from QuestPool.
+Runtime coordinator. It equips every newly created hero with the three fixed starting armor instances before resolving initial combat stats. The default constructor keeps the fixed Goblin quest for regression compatibility; passing `null` as the initial quest enables autonomous selection from QuestPool.
 
 Coordinates:
 - WorldClock;
@@ -165,7 +165,7 @@ Structured quest/runtime events, including death, resurrection, and city recover
 ## Dungeons
 
 ### `scripts/model/definitions/dungeon_definition.gd` / `data/dungeons/starting_region/0001_abandoned_iron_mines.tres`
-Immutable ordinary-dungeon data. The first dungeon is `Заброшенные железные шахты`: Starting Region, hill terrain, 4–7 hex steps from the Starting City center, one reserved hex. Its current authored encounter content is exactly three ordinary fights using one shared `Шахтный троглодит` definition followed by the unique boss `Глубинный пожиратель`. It also owns the first completion-reward tuning: 700 Gold, the existing ilvl 10 Ironward equipment source, and 25% Epic chance (therefore 75% Rare). The definition stores content/tuning only; it does not execute the expedition or award the reward.
+Immutable ordinary-dungeon data. The first dungeon is `Заброшенные железные шахты`: Starting Region, hill terrain, 4–7 hex steps from the Starting City center, one reserved hex. Its current authored encounter content is exactly three ordinary fights using one shared `Шахтный троглодит` definition followed by the unique boss `Глубинный пожиратель`. It also owns the first completion-reward tuning: 700 Gold, the unchanged full twelve-slot ilvl 10 equipment source (Ironwake core plus existing accessories), and 25% Epic chance (therefore 75% Rare). The definition stores content/tuning only; it does not execute the expedition or award the reward.
 
 ### `data/dungeons/starting_region/0001_mine_troglodyte.tres` / `0001_deep_devourer.tres`
 Dungeon-only `MobDefinition` resources. The Mine Troglodyte is tuned to approximately 200 shared Power and grants 150 XP; the Deep Devourer is approximately 300 shared Power and grants 185 XP. They are not ordinary city-quest mobs, grant no per-mob Gold, and have no normal equipment-drop table.
@@ -270,7 +270,7 @@ Owns the current Log/Diary tab container, subscribes to `DebugLog` and world-tic
 ## Item data
 
 ### `scripts/model/definitions/item_definition.gd`
-Immutable item card: id, display name, equipment slot, icon, hero overlay, and current stat bonuses.
+Immutable item card: id, display name, equipment slot, icon, hero overlay, current stat bonuses, and an optional authored reference-shop-value override used by the low-value starting outfit.
 
 ### `scripts/model/runtime/item_instance.gd`
 One concrete acquired item referencing its immutable definition.
@@ -303,7 +303,7 @@ Reads the central price table and returns reference shop value or resale value f
 Owns automatic ordinary-equipment liquidation from Inventory. It removes only priced unequipped instances, totals their resale values, adds Gold to `HeroState`, and returns a structured sold-items/count/Gold result. Quest turn-in schedules `VISITING_MARKET`; `Simulation` invokes the sale system on the following dedicated world tick, then enters the separate `SHOPPING` phase.
 
 ### `scripts/model/definitions/shop_definition.gd` / `scripts/model/definitions/shop_stock_band_definition.gd` / `data/shops/starting_city_shop.tres`
-Defines the Starting City shop and its immutable authored stock bands. The current shop references one ilvl 1 Ironwake Sentinel band and one ilvl 10 Ironward Vanguard band; each owns its source item definitions plus 6 White/2 Green listing counts. Neither layer duplicates generated stats, affix budgets, ItemPower, or price data.
+Defines the Starting City shop and its three immutable authored stock bands: ilvl 1 Rustchain Initiate, ilvl 10 Ironwake core plus existing accessories, and ilvl 20 Ironward Vanguard core equipment. Each owns its source item definitions plus 6 White/2 Green listing counts. Neither layer duplicates generated stats, affix budgets, ItemPower, or price data.
 
 ### `scripts/economy/shop_system.gd`
 Owns mutable shop stock, deterministic stock refresh, purchased vacancies, and equipment purchase transactions. It generates real `ItemInstance` listings through the shared `ItemGenerator`, refreshes independently of hero presence on ticks divisible by 200, deducts shop price, equips the purchased instance, and immediately converts replaced ordinary equipment into its normal resale Gold instead of routing it through Inventory.
@@ -318,13 +318,19 @@ Owns source-driven equipment rolls. Ordinary mob equipment keeps its configured 
 Owns generated-equipment reward routing after a source is resolved. It asks `LootGenerator` and `ItemGenerator` for a concrete candidate where applicable, including the new guaranteed dungeon-completion roll, evaluates that candidate through `EquipmentEvaluator`, and mutates only the hero's Equipment/Inventory routing. It returns structured result data; `Simulation` grants the authored dungeon Gold, keeps public reward entry points, refreshes resolved combat stats/HP when equipment changes, and writes the current debug-log text.
 
 ### `scripts/model/definitions/equipment_drop_table_definition.gd` / `data/loot/*.tres`
-The immutable drop tables store source item level, drop chance, and three aligned rarity pools. Five weaker mobs reference the seven-slot `ironwake_sentinel_ilvl1_drop_table.tres`; Giant Spider, the nine stronger mobs, and the first dungeon completion reward reference the twelve-slot `initial_equipment_drop_table.tres`, which remains the canonical ilvl 10 Ironward source and now covers every equipment slot. The dungeon applies its own guaranteed Rare/Epic rarity override after selecting from that source.
+The immutable drop tables store source item level, drop chance, and three aligned rarity pools. Five weaker mobs use the stable seven-slot `ironwake_sentinel_ilvl1_drop_table.tres` resource, whose content points to Rustchain Initiate. Giant Spider through Swamp Crocodile and the first dungeon completion reward use the twelve-slot `initial_equipment_drop_table.tres`, whose ilvl 10 content combines seven Ironwake core slots with five accessory slots. Young Ogre, Cave Lizard, Forest Troll, Mountain Beast, and Orc Raider use the seven-slot `ironward_vanguard_ilvl20_drop_table.tres`. The dungeon applies its own guaranteed Rare/Epic rarity override to the ilvl 10 source.
 
 ### `data/items/visual_families/ironward_vanguard/`
-Contains the seven armor/weapon/shield definitions plus ilvl 10 necklace, earrings, Ring 1, Ring 2, and Belt in Common/Uncommon/Rare variants. The two mechanical ring slots share one supplied icon. Accessory icons appear only in equipment/inventory slots and provide no hero overlay. Belt currently contributes only its inherent ilvl 10 Health and no ordinary random affixes; potion utility is deferred. Live inherent and random combat stats are generated on `ItemInstance`; the old serialized experimental stat fields are ignored by current runtime generation.
+Contains the live ilvl 20 seven-piece Ironward Vanguard core family plus the existing ilvl 10 necklace, earrings, Ring 1, Ring 2, and Belt definitions in Common/Uncommon/Rare variants. The five core armor pieces keep their supplied visuals; core sword/shield retain neutral placeholders. The core family is connected to the five strongest ordinary mobs and the third Starting City shop band, but not to the first dungeon. The two mechanical ring slots share one supplied icon. Accessory icons appear only in equipment/inventory slots and provide no hero overlay. Belt currently contributes only its inherent ilvl 10 Health and no ordinary random affixes; potion utility is deferred. Live inherent and random combat stats are generated on `ItemInstance`; old serialized experimental stat fields are ignored by current runtime generation.
 
 ### `data/items/visual_families/ironwake_sentinel/`
-Contains the seven `Страж Железного Следа` (`Ironwake Sentinel`) definitions in Common, Uncommon, and Rare variants. The five armor slots use supplied 300 × 300 icons and aligned 441 × 800 hero overlays under `assets/items/icons/ironwake_sentinel/` and `assets/items/overlays/ironwake_sentinel/`. Sword and shield currently reuse the existing neutral placeholder icons and have no hero overlays. The supplied armor artwork is integrated unchanged, including its current green edge remnants.
+Contains the seven live core ilvl 10 `Страж Железного Следа` (`Ironwake Sentinel`) definitions in Common, Uncommon, and Rare variants. They now occupy the seven armor/weapon/shield positions in the unchanged full ilvl 10 mob/shop/dungeon source. The five armor slots use supplied 300 × 300 icons and aligned 441 × 800 hero overlays under `assets/items/icons/ironwake_sentinel/` and `assets/items/overlays/ironwake_sentinel/`. Sword and shield currently reuse the existing neutral placeholder icons and have no hero overlays. The supplied armor artwork is integrated unchanged, including its current green edge remnants.
+
+### `data/items/visual_families/rustchain_initiate/`
+Contains the 21 live ilvl 1 `Посвящённый Ржавой Цепи` (`Rustchain Initiate`) definitions: five armor pieces, sword, and shield in Common/Uncommon/Rare. The supplied 300 × 300 icons and 441 × 800 armor overlays are preserved unchanged under matching `assets/items/icons/rustchain_initiate/` and `assets/items/overlays/rustchain_initiate/` paths. The family replaces only the visuals/identity of the existing seven-slot ilvl 1 source; drop chance, rarity distribution, stats, mob assignments, shop counts, and economy remain unchanged. The supplied sword and shield icons have no hero paper-doll overlays.
+
+### `data/items/starting_equipment/`
+Contains the three Common starting definitions: `Поношенная рубаха` (Chest), `Поношенные штаны` (Pants), and `Поношенные сапоги` (Boots). Their supplied unchanged 300 × 300 icons and 441 × 800 overlays live under matching `assets/items/icons/starting_equipment/` and `assets/items/overlays/starting_equipment/` directories. `Simulation` creates fixed ilvl 1 instances with exactly +1 Armor each and no affixes; their authored 10-Gold reference-value override produces a 1-Gold resale value through the normal price calculator.
 
 Every current mob references its assigned source-driven equipment table. After each defeated mob, `Simulation` delegates the equipment-reward operation to `EquipmentRewardSystem`, which preserves the seeded `LootGenerator → ItemGenerator → EquipmentEvaluator` chain. Strict improvements equip and replaced/rejected instances enter FIFO Inventory; `Simulation` then refreshes resolved stats/HP and records the result. Current quest definitions contain Gold rewards only.
 
@@ -413,3 +419,9 @@ Integration coverage for:
 - city recovery to full HP.
 
 Existing combat, quest, progression, clock, RNG, data, and narrative tests remain in place.
+
+### `tests/test_starting_armor_set.gd`
+Protects the fixed three-piece Common starting loadout, +1 Armor per item, +3 total equipment Armor, exact supplied texture canvases, Inventory/paper-doll presentation, normal replacement by stronger found gear, and 1-Gold resale.
+
+### `tests/test_equipment_visual_tier_shift.gd`
+Protects Rustchain across the unchanged ilvl 1 drops/shop, Ironwake across the seven core slots of the unchanged full ilvl 10 drops/shop/dungeon source, unchanged ilvl 10 accessories, source isolation plus explicit ilvl 20 generation for Ironward core equipment, and Rustchain inventory/paper-doll rendering.

@@ -181,10 +181,10 @@ Status:
 
 ## 11. Visual equipment content
 
-- 🟡 Visual armor families: **2 / minimum 5–6** (`Ironwake Sentinel`, `Ironward Vanguard`).
+- 🟡 Visual armor families: **3 / minimum 5–6** (`Rustchain Initiate`, `Ironwake Sentinel`, `Ironward Vanguard`; all three are live through ordinary drops and shop bands).
 - ✅ Current families provide five visible armor overlays.
 - ✅ Sword/shield icons and equipped state work for current families.
-- ⬜ Remaining 3–4+ visual families required for Prototype 0.2.
+- ⬜ Remaining 2–3+ visual families required for Prototype 0.2.
 
 ## 12. Economy and shops
 
@@ -207,10 +207,10 @@ Status:
 - 🟡 Real ilvl 10 Belt item content exists with +40 inherent Health; potion utility remains pending.
 - ⬜ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
 - ⬜ Belt-level potion eligibility.
-- ⬜ Potion tiers level 1 / 10 / 20 / 30 / 40 / 50.
+- ⬜ Potion tiers level 10 / 20 / 30 / 40 / 50; no level 1 healing potion.
 - ⬜ Potion inventory and Belt preparation.
-- ⬜ Autonomous potion purchase logic.
-- ⬜ Between-dungeon-fight potion use.
+- ⬜ Autonomous potion purchase logic at the fixed current price of 100 Gold per potion.
+- ⬜ Dungeon-only potion use; ordinary quest flow never consumes healing potions.
 
 ## 14. God influence
 
@@ -272,7 +272,7 @@ Status:
 - ✅ Base Warrior abilities: **2 / 2** at Skill Level 1.
 - ⬜ First-specialization abilities: **0 / 2**.
 - ⬜ Final personality axes: **0 / 4**; current old trait prototype is temporary.
-- 🟡 Visual armor families: **2 / minimum 5–6**.
+- 🟡 Visual armor families: **3 / minimum 5–6**.
 - 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic is now live through first-dungeon completion but remains absent from ordinary drops/shops.
 - 🟡 Main progression: leveling framework exists, but final +1 Warrior STR / +4 player allocation, starting questionnaire, and complete approximately level 1–60 content/balance are not yet implemented.
 

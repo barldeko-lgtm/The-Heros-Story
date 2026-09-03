@@ -1,9 +1,9 @@
 extends SceneTree
 
 const PRICE_CALCULATOR_PATH := "res://scripts/economy/item_price_calculator.gd"
-const COMMON_CHEST_PATH := "res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres"
-const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres"
-const RARE_SWORD_PATH := "res://data/items/visual_families/ironward_vanguard/boar_sword_rare.tres"
+const COMMON_CHEST_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_chestplate.tres"
+const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_helmet_uncommon.tres"
+const RARE_SWORD_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_sword_rare.tres"
 
 class ScriptedRng:
 	extends RefCounted

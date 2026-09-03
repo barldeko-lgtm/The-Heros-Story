@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="ShopDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="ShopDefinition" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/shop_definition.gd" id="1_shop"]
 [ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironwake_sentinel_ilvl1.tres" id="2_ilvl1_band"]
 [ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironward_vanguard_ilvl10.tres" id="3_ilvl10_band"]
+[ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironward_vanguard_ilvl20.tres" id="4_ilvl20_band"]
 
 [resource]
 script = ExtResource("1_shop")
 id = "starting_city_shop"
 city_id = "starting_city"
 refresh_interval_ticks = 200
-stock_bands = Array[Resource]([ExtResource("2_ilvl1_band"), ExtResource("3_ilvl10_band")])
+stock_bands = Array[Resource]([ExtResource("2_ilvl1_band"), ExtResource("3_ilvl10_band"), ExtResource("4_ilvl20_band")])

@@ -4,9 +4,9 @@ const GENERATOR_PATH := "res://scripts/items/item_generator.gd"
 const BUDGET_TABLE_PATH := "res://data/items/balance/item_modifier_budget_table.tres"
 const STAT_COST_TABLE_PATH := "res://data/items/balance/item_modifier_stat_costs.tres"
 const BASE_STAT_TABLE_PATH := "res://data/items/balance/item_base_stat_table.tres"
-const COMMON_HELMET_PATH := "res://data/items/visual_families/ironward_vanguard/boar_helmet.tres"
-const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironward_vanguard/boar_helmet_uncommon.tres"
-const RARE_SWORD_PATH := "res://data/items/visual_families/ironward_vanguard/boar_sword_rare.tres"
+const COMMON_HELMET_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_helmet.tres"
+const UNCOMMON_HELMET_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_helmet_uncommon.tres"
+const RARE_SWORD_PATH := "res://data/items/visual_families/ironwake_sentinel/ironwake_sentinel_sword_rare.tres"
 const GOBLIN_PATH := "res://data/mobs/0001_goblin.tres"
 
 class ScriptedRng:
@@ -83,7 +83,7 @@ func _init() -> void:
 		ScriptedRng.new([0.0, 0.70, 0.5], [0, 0])
 	)
 	var dropped_item = drop_result.get("item_instance")
-	assert(dropped_item != null and dropped_item.item_level == 1 and dropped_item.rarity == 1, "Goblin must generate an ilvl 1 Ironwake Sentinel ItemInstance.")
+	assert(dropped_item != null and dropped_item.item_level == 1 and dropped_item.rarity == 1, "Goblin must generate an ilvl 1 Rustchain Initiate ItemInstance.")
 	assert(drop_result["equipped"], "The first generated item for an empty slot must reach current equipment.")
 	assert(is_equal_approx(simulation.base_combat_stats.armor, starting_armor + 5.0), "Generated ilvl 1 inherent Armor must flow through Equipment and StatResolver.")
 	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_hp + 60.0 / 4.0), "Generated ilvl 1 Health affix must flow through Equipment and StatResolver.")

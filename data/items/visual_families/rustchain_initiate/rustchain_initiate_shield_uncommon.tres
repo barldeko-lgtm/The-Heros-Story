@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/item_definition.gd" id="1_item_definition"]
+[ext_resource type="Texture2D" path="res://assets/items/icons/rustchain_initiate/rustchain_initiate_shield.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item_definition")
+id = "rustchain_initiate_shield_uncommon"
+display_name = "Щит Посвящённого Ржавой Цепи"
+equipment_slot = "shield"
+quality = 1
+icon_texture = ExtResource("2_icon")
