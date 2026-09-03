@@ -3,6 +3,11 @@ extends RefCounted
 
 const ActivityPlacementFinderScript = preload("res://scripts/world/activity_placement_finder.gd")
 const DungeonInstanceScript = preload("res://scripts/model/runtime/dungeon_instance.gd")
+const DungeonDefinitionScript = preload("res://scripts/model/definitions/dungeon_definition.gd")
+const DEFAULT_ORDINARY_DUNGEON_DIRECTORIES := [
+	"res://data/dungeons/starting_region",
+	"res://data/dungeons/mid_region",
+]
 
 var dungeon_definitions: Array[Resource] = []
 var dungeon_instances: Array = []
@@ -12,9 +17,46 @@ var world_state
 var placement_random_number_generator: RandomNumberGenerator
 
 func _init(initial_definitions: Array = []) -> void:
-	for definition in initial_definitions:
+	if initial_definitions.is_empty():
+		reload_from_directories()
+	else:
+		set_definitions(initial_definitions)
+
+func set_definitions(definitions: Array) -> void:
+	dungeon_definitions.clear()
+	for definition in definitions:
 		if definition != null:
 			dungeon_definitions.append(definition)
+
+func reload_from_directories(dungeon_directories: Array = DEFAULT_ORDINARY_DUNGEON_DIRECTORIES) -> void:
+	dungeon_definitions.clear()
+	var resource_paths := PackedStringArray()
+	for dungeon_directory in dungeon_directories:
+		var directory := DirAccess.open(str(dungeon_directory))
+		assert(directory != null, "DungeonSystem could not open ordinary dungeon directory: %s" % dungeon_directory)
+		var directory_resource_paths := PackedStringArray()
+		directory.list_dir_begin()
+		var file_name := directory.get_next()
+		while not file_name.is_empty():
+			if not directory.current_is_dir() and file_name.get_extension().to_lower() == "tres":
+				directory_resource_paths.append("%s/%s" % [dungeon_directory, file_name])
+			file_name = directory.get_next()
+		directory.list_dir_end()
+		directory_resource_paths.sort()
+		resource_paths.append_array(directory_resource_paths)
+	var seen_ids: Dictionary = {}
+	for resource_path in resource_paths:
+		var resource: Resource = load(resource_path)
+		assert(resource != null, "DungeonSystem could not load dungeon resource: %s" % resource_path)
+		if resource.get_script() != DungeonDefinitionScript:
+			continue
+		assert(not resource.id.is_empty(), "DungeonDefinition must have a stable id: %s" % resource_path)
+		assert(not seen_ids.has(resource.id), "DungeonDefinition id must be unique: %s" % resource.id)
+		seen_ids[resource.id] = true
+		dungeon_definitions.append(resource)
+
+func get_definitions() -> Array:
+	return dungeon_definitions.duplicate()
 
 func configure_map_placement(initial_hex_map, initial_world_state, distance_origin_by_region: Dictionary, initial_rng: RandomNumberGenerator) -> bool:
 	hex_map = initial_hex_map

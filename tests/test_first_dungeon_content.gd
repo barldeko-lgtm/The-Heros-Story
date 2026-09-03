@@ -1,8 +1,17 @@
 extends SceneTree
 
 const DUNGEON_PATH := "res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres"
+const DungeonSystemScript = preload("res://scripts/dungeons/dungeon_system.gd")
 
 func _init() -> void:
+	var dungeon_system = DungeonSystemScript.new()
+	var auto_loaded_dungeon = null
+	for definition in dungeon_system.get_definitions():
+		if definition.id == "abandoned_iron_mines":
+			auto_loaded_dungeon = definition
+			break
+	assert(auto_loaded_dungeon != null, "DungeonSystem must automatically load ordinary DungeonDefinition resources from the region dungeon directories.")
+
 	var dungeon = load(DUNGEON_PATH)
 	assert(dungeon != null, "The first Starting Region dungeon definition must exist.")
 	assert(dungeon.id == "abandoned_iron_mines", "The first dungeon must keep its stable id.")
@@ -33,5 +42,5 @@ func _init() -> void:
 	assert(dungeon.completion_equipment_source.rare_items.size() == 12, "The first dungeon completion pool must cover all twelve current equipment slots including Belt.")
 	assert(is_equal_approx(dungeon.completion_epic_chance, 0.25), "The first dungeon completion reward must use 75% Rare / 25% Epic rarity odds.")
 
-	print("PASS: Abandoned Iron Mines defines 3 Mine Troglodytes, the Deep Devourer, and a 700 Gold + ilvl 10 Rare/Epic completion reward.")
+	print("PASS: DungeonSystem auto-loads ordinary dungeon definitions, and Abandoned Iron Mines defines 3 Mine Troglodytes, the Deep Devourer, and a 700 Gold + ilvl 10 Rare/Epic completion reward.")
 	quit()

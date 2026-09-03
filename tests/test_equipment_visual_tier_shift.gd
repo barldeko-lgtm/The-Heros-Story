@@ -130,8 +130,13 @@ func run_test() -> void:
 				return
 	if not require(ilvl20_source.item_level == 20 and is_equal_approx(ilvl20_source.drop_chance, 0.05), "The strongest-mob source must use ilvl 20 and the unchanged 5% drop chance."):
 		return
-	if not require(ilvl20_source.common_items == ironward_by_quality[0] and ilvl20_source.uncommon_items == ironward_by_quality[1] and ilvl20_source.rare_items == ironward_by_quality[2], "The ilvl 20 source must expose all seven Ironward core slots in every rarity."):
-		return
+	for quality in 3:
+		var ilvl20_pool: Array = [ilvl20_source.common_items, ilvl20_source.uncommon_items, ilvl20_source.rare_items][quality]
+		if not require(ilvl20_pool.size() == 12 and ilvl20_pool.slice(0, 7) == ironward_by_quality[quality], "The ilvl 20 source must expose seven Ironward core slots followed by five accessories in every rarity."):
+			return
+		for accessory in ilvl20_pool.slice(7, 12):
+			if not require(accessory.resource_path.contains("ironward_vanguard/ironward_vanguard_"), "The ilvl 20 accessory slice must use its own Ironward Vanguard definitions."):
+				return
 	if not require(dungeon.completion_equipment_source == ilvl10_source and dungeon.completion_equipment_source.item_level == 10, "The first dungeon must keep its existing ilvl 10 completion source."):
 		return
 
@@ -151,7 +156,7 @@ func run_test() -> void:
 			if not require(definition.resource_path.contains("ironward_vanguard/ironward_"), "The ilvl 10 accessory shop definitions must remain unchanged."):
 				return
 	for definition in ilvl20_shop_definitions:
-		if not require(definition.equipment_slot in SLOTS and definition.resource_path.contains("ironward_vanguard/boar_"), "The ilvl 20 shop band must use only the seven Ironward core slots."):
+		if not require(definition.resource_path.contains("ironward_vanguard/"), "The ilvl 20 shop band must use Ironward Vanguard core equipment and accessories."):
 			return
 
 	var mob_counts := {1: 0, 10: 0, 20: 0}

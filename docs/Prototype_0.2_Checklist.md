@@ -129,7 +129,7 @@ Status:
 
 ## 8. Dungeons
 
-- ✅ Runtime dungeon definition/instance foundation and real map placement for the first Starting Region dungeon.
+- ✅ Runtime dungeon definition/instance foundation, automatic ordinary-dungeon loading from the Starting/Mid region data folders, and real map placement for the current dungeon population.
 - ✅ Dungeon discovery / known-vs-unknown world knowledge for physical hex entry and Divine Vision.
 - 🟡 Starting Region ordinary dungeons: **1 / 2** (`Заброшенные железные шахты`).
 - ⬜ Mid Region ordinary dungeons: **0 / 2**.

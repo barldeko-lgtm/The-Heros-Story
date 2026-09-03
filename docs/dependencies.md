@@ -206,7 +206,7 @@ assets/map/prototype_02_hex_layout.png
 → HexMap runtime adjacency / radius / route / distance queries
 → WorldState mutable hero position + active-activity hex occupancy
 → ActivityPlacementFinder valid center queries from region / distance / terrain / tags / free footprint
-→ DungeonSystem uses a dedicated seeded placement RNG to choose/reserve the first dungeon target and owns known/unknown discovery state
+→ DungeonSystem auto-loads ordinary DungeonDefinition resources from the Starting/Mid region folders, then uses a dedicated seeded placement RNG to choose/reserve their targets and owns known/unknown discovery state
 → QuestPool uses a dedicated seeded placement RNG to choose and reserve current QuestOffer.target_hex values
 → TravelSystem owns the active adjacent-hex route and advances WorldState.hero_position by one route step per completed world tick
 → QuestRunner starts outward/return travel for the already selected QuestOffer and reacts to TravelSystem arrival
@@ -240,6 +240,8 @@ Contracts:
 - `ActivityPlacementFinder` is a read-only placement filter: the requested center must belong to the requested region, lie inside the inclusive min/max hex-step distance from the supplied origin, satisfy any allowed-terrain filter plus the center's allowed/forbidden tag filters, and have a complete footprint for the requested radius; every footprint hex must remain inside the same region and be unoccupied; allowed terrain and allowed/forbidden tags apply to the center only, a non-empty terrain list requires an exact terrain-id match, and a non-empty allowed-tag list means at least one listed tag must match;
 - current Starting City `QuestDefinition` resources already author future map placement through inclusive `placement_distance_hex_min/max`, optional `placement_allowed_terrain_ids`, optional `placement_allowed_tags`, and `placement_forbidden_tags`; every current ordinary quest forbids `city`, and the thirteen-template set is regression-tested to fit simultaneously on unique Starting Region hexes;
 - `ActivityPlacementFinder` remains a pure filter and does not choose a candidate, reserve cells, create runtime activities, or mutate Simulation; current `DungeonSystem` and `QuestPool` are separate consumers, each using its own deterministic placement RNG stream and reserving its chosen footprint through `WorldState`; future Event systems remain responsible for their own choice/lifecycle logic;
+- ordinary dungeon content under `data/dungeons/starting_region/` and `data/dungeons/mid_region/` is discovered automatically by `DungeonSystem`; only `DungeonDefinition` resources join the ordinary dungeon population, dungeon mob resources are ignored, ids must be unique, and the separate specialization folder is not part of this automatic ordinary-dungeon loading path;
+- each ordinary `DungeonDefinition` owns one `ordinary_mob_definition` plus an `ordinary_encounter_count` of 3–5, and `DungeonRunner` must use that same ordinary mob for every pre-boss room before switching to the definition's unique boss;
 - each current board `QuestOffer` owns one concrete `target_hex` plus the reservation id that protects that hex and a `map_distance_steps` value equal to the actual shortest route length from the Starting City center; live QuestScore travel estimation uses that real route distance whenever a map target exists, while legacy `distance_km_min/max` remains only for fixed compatibility offers that have no map target;
 - `TravelSystem` owns only active map-route execution: `start_travel()` builds a deterministic `HexMap` route from the current hero position to the destination, starting travel does not teleport the hero, and each `advance_one_tick()` moves `WorldState.hero_position` to exactly one adjacent route cell until arrival;
 - `QuestRunner` remains the ordinary-quest execution owner: on a map-backed selected offer it starts `TravelSystem` toward `target_hex`, enters combat only after the hero physically reaches that target, and after the final objective/recovery starts a real return route to the Starting City center; it does not calculate pathfinding itself;
@@ -302,7 +304,7 @@ Current generated-equipment flow for Rustchain Initiate, Ironwake Sentinel core 
 ```text
 defeated current mob
 → 5% equipment-drop check
-→ equal roll among 7 ilvl 1 slots for the five weakest mobs, 12 ilvl 10 slots for the middle five, or 7 ilvl 20 slots for the five strongest
+→ equal roll among 7 ilvl 1 slots for the five weakest mobs or 12 slots for both the ilvl 10 middle five and ilvl 20 strongest five
 → Common / Uncommon / Rare roll at 70% / 25% / 5%
 → mob's drop source supplies Rustchain ilvl 1, the full ilvl 10 source (Ironwake core plus jewelry/Belt), or Ironward core ilvl 20
 → EquipmentRewardSystem coordinates generated-equipment routing
@@ -363,7 +365,7 @@ Contracts:
 - each starting definition overrides its reference shop value to 10 Gold, so the shared 10% resale rule returns exactly 1 Gold without changing central ilvl 1 generated-item prices;
 - the five weakest current mobs retain the seven-slot ilvl 1 source with unchanged mechanics and Rustchain Initiate definitions;
 - Giant Spider, Bear, Rabid Elk, Bandit Veteran, and Swamp Crocodile use the twelve-slot ilvl 10 source with Ironwake Sentinel core slots and the unchanged necklace, earrings, Ring 1, Ring 2, and Belt definitions;
-- Young Ogre, Cave Lizard, Forest Troll, Mountain Beast, and Orc Raider use the seven-slot ilvl 20 Ironward Vanguard source; the same core family is available in the third shop band, while the first dungeon deliberately remains ilvl 10;
+- Young Ogre, Cave Lizard, Forest Troll, Mountain Beast, and Orc Raider use the twelve-slot ilvl 20 Ironward Vanguard source with separate necklace, earrings, Ring 1, Ring 2, and Belt definitions; the same full family is available in the third shop band, while the first dungeon deliberately remains ilvl 10;
 - Belt is part of the current generated/drop slice with inherent Health and no ordinary random affixes; Belt rarity grants Common/Uncommon/Rare/Epic capacities of 1/2/3/4 potion slots, and Belt Item Level sets the maximum legal potion level through `PotionLevel <= BeltLevel`; the first dungeon uses the same twelve-slot ilvl 10 source with its separate guaranteed Rare/Epic roll;
 - a drop roll happens only after a combat victory, never after defeat or quest turn-in;
 - the seeded roll order is drop chance, equal slot selection, then rarity selection;
@@ -391,7 +393,7 @@ Contracts:
 - among valid standard purchase candidates the current equipment slice chooses the largest real HeroPower gain; Belt-vs-Belt candidates prefer larger potential healing, then higher inherent Health, then lower price if otherwise equal;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
 - purchased shop positions remain empty until the next stock refresh;
-- the current Starting City shop exposes ilvl 1 Rustchain, ilvl 10 Ironwake-core-plus-accessories, and ilvl 20 Ironward source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1/20 bands select from seven core slots, while the ilvl 10 band selects from all twelve equipment slots; fixed Level 10 / 20 healing potions are separate from these rotating 24 equipment listings;
+- the current Starting City shop exposes ilvl 1 Rustchain, ilvl 10 Ironwake-core-plus-accessories, and ilvl 20 Ironward-core-plus-accessories source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1 band selects from seven core slots, while the ilvl 10 and ilvl 20 bands select from all twelve equipment slots; fixed Level 10 / 20 healing potions are separate from these rotating 24 equipment listings;
 - shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
 - shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
 - shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
@@ -401,7 +403,7 @@ Contracts:
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
 - Rustchain Initiate drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironwake Sentinel core drops are ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block); live Ironward Vanguard core drops are ilvl 20 (10 Armor, 17 sword Damage/+0.10 Attack Speed, 17 shield Block);
-- every ilvl 10 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at value 20, independent of rarity; the current ilvl 10 Belt instead has exactly 40 inherent Health plus rarity-driven potion capacity;
+- every ilvl 10/20 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at the central value for its Item Level, independent of rarity; each Belt instead has inherent Health plus rarity-driven potion capacity, and the new ilvl 20 Belt supports Level 20 bottles;
 - jewelry random affixes are limited to Fire/Cold/Lightning Resistance, Health, Dodge, Accuracy, Critical Chance, and Critical Damage;
 - Common/Uncommon/Rare standard equipment creates 0/1/2 unique random affixes; Belt is the explicit current exception and stays affixless because its rarity controls potion capacity instead; current ordinary drops do not generate Epic;
 

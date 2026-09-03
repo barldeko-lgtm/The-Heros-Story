@@ -61,7 +61,7 @@ func _init() -> void:
 			ilvl20_count += 1
 		assert(is_equal_approx(mob.equipment_drop_table.drop_chance, 0.05), "Every current mob must keep the 5% drop chance.")
 		assert(mob.equipment_drop_table.item_level == expected_item_level, "Each current mob must keep its assigned source-driven item level.")
-		var expected_slot_count: int = 12 if expected_item_level == 10 else 7
+		var expected_slot_count: int = 7 if expected_item_level == 1 else 12
 		assert(mob.equipment_drop_table.common_items.size() == expected_slot_count, "Each mob source must expose its approved Common slot count.")
 		assert(mob.equipment_drop_table.uncommon_items.size() == expected_slot_count, "Each mob source must expose its approved Uncommon slot count.")
 		assert(mob.equipment_drop_table.rare_items.size() == expected_slot_count, "Each mob source must expose its approved Rare slot count.")

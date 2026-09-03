@@ -1634,9 +1634,10 @@ Working structure:
 For Prototype 0.2:
 
 - each ordinary dungeon contains **3–5 ordinary combat rooms**, followed by a separate **boss room**;
-- each ordinary room represents one main combat encounter, although the authored encounter may contain one enemy or a small group;
-- the room count and encounter sequence belong to the authored dungeon definition and do **not** need to be randomized on every run;
-- exact enemy composition, room-by-room numerical difficulty, and pacing remain dungeon balance/content data.
+- each ordinary room represents one main combat encounter;
+- within one ordinary dungeon, **all ordinary rooms use the same authored ordinary mob type**; the dungeon varies through its ordinary-room count, that shared ordinary enemy, its unique boss, placement, and rewards rather than through a mixed pre-boss enemy sequence;
+- the ordinary-room count belongs to the authored dungeon definition and does **not** need to be randomized on every run;
+- exact ordinary-enemy stats, boss stats, room count, and pacing remain dungeon balance/content data.
 
 Dungeon ordinary enemies and boss continue granting normal combat XP.
 

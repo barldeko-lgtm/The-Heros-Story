@@ -84,8 +84,8 @@ func run_test() -> void:
 			assert(mob.equipment_drop_table == jewelry_table, "Every middle-tier mob must use the shared twelve-slot ilvl 10 source.")
 		else:
 			seen_ilvl20 += 1
-			assert(ILVL20_MOB_IDS.has(mob.id) and mob.equipment_drop_table.item_level == 20 and mob.equipment_drop_table.common_items.size() == 7, "Every strongest mob must use the seven-slot ilvl 20 source without ilvl 10 jewelry.")
-	assert(seen_weak == 5 and seen_jewelry == 5 and seen_ilvl20 == 5, "The current roster must split into five ilvl 1, five jewelry-enabled ilvl 10, and five ilvl 20 mobs.")
+			assert(ILVL20_MOB_IDS.has(mob.id) and mob.equipment_drop_table.item_level == 20 and mob.equipment_drop_table.common_items.size() == 12, "Every strongest mob must use the separate twelve-slot ilvl 20 source without reusing ilvl 10 jewelry.")
+	assert(seen_weak == 5 and seen_jewelry == 5 and seen_ilvl20 == 5, "The current roster must split into five ilvl 1, five jewelry-enabled ilvl 10, and five jewelry-enabled ilvl 20 mobs.")
 	assert(load("%s/ironward_ring_1.tres" % JEWELRY_DIRECTORY).icon_texture == load("%s/ironward_ring_2.tres" % JEWELRY_DIRECTORY).icon_texture, "Both ring slots must use the same supplied ring icon.")
 
 	var generator = load("res://scripts/items/item_generator.gd").new()

@@ -39,7 +39,6 @@ const PotionPreparationSystemScript = preload("res://scripts/economy/potion_prep
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
 const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
-const DefaultStartingDungeon = preload("res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres")
 const DefaultStartingArmorDefinitions := [
 	preload("res://data/items/starting_equipment/worn_shirt.tres"),
 	preload("res://data/items/starting_equipment/worn_pants.tres"),
@@ -106,7 +105,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	hex_map = HexMapScript.new(DefaultMapDefinition)
 	world_state = WorldStateScript.new(hex_map)
 	travel_system = TravelSystemScript.new(hex_map, world_state)
-	dungeon_system = DungeonSystemScript.new([DefaultStartingDungeon])
+	dungeon_system = DungeonSystemScript.new()
 	dungeon_runner = DungeonRunnerScript.new(travel_system)
 	var dungeon_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + DUNGEON_PLACEMENT_RNG_SEED_OFFSET).get_rng()
 	dungeon_vision_rng = SeededRngScript.new(simulation_seed + DUNGEON_VISION_RNG_SEED_OFFSET).get_rng()
@@ -114,7 +113,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 		hex_map.STARTING_REGION_ID: hex_map.definition.starting_city_center,
 		hex_map.MID_REGION_ID: hex_map.definition.mid_city_center,
 	}
-	assert(dungeon_system.configure_map_placement(hex_map, world_state, dungeon_origins, dungeon_placement_rng), "Starting Region dungeon must spawn on one valid reserved map hex.")
+	assert(dungeon_system.configure_map_placement(hex_map, world_state, dungeon_origins, dungeon_placement_rng), "Every automatically loaded ordinary dungeon must spawn on a valid reserved map footprint.")
 	world_state.hero_position_changed.connect(on_hero_position_changed)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)

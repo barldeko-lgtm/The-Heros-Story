@@ -52,7 +52,7 @@ func _init() -> void:
 	var ilvl10_drop_table := load(ILVL10_SOURCE_PATH)
 	var ilvl20_drop_table := load(ILVL20_SOURCE_PATH)
 	assert(ilvl10_drop_table != null, "The existing full ilvl 10 drop table must remain available.")
-	assert(ilvl20_drop_table != null, "The new seven-slot ilvl 20 drop table must be available.")
+	assert(ilvl20_drop_table != null, "The full twelve-slot ilvl 20 drop table must be available.")
 	var weak_count := 0
 	var mid_count := 0
 	var strong_count := 0
@@ -101,7 +101,7 @@ func assert_shop_band(listings: Array, item_level: int) -> void:
 		if item_level == 1:
 			assert(item_instance.definition.resource_path.contains("rustchain_initiate"), "The ilvl 1 shop band must use Rustchain Initiate.")
 		elif item_level == 20:
-			assert(item_instance.definition.resource_path.contains("ironward_vanguard/boar_"), "The ilvl 20 shop band must use Ironward Vanguard core equipment.")
+			assert(item_instance.definition.resource_path.contains("ironward_vanguard/"), "The ilvl 20 shop band must use Ironward Vanguard core equipment and accessories.")
 		elif slot in SLOTS:
 			assert(item_instance.definition.resource_path.contains("ironwake_sentinel"), "Core ilvl 10 shop slots must use Ironwake Sentinel.")
 		else:
