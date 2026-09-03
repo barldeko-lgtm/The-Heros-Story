@@ -38,12 +38,14 @@ func _init() -> void:
 	assert(rare_roll["item_definition"].equipment_slot == "belt", "The scripted last slot must resolve Belt from the twelve-slot completion pool.")
 	var rare_belt = item_generator.generate(rare_roll["item_definition"], 10, ScriptedRng.new(), 2)
 	assert(rare_belt != null and is_equal_approx(rare_belt.get_stat_bonus("max_hp"), 40.0), "Dungeon Belt rewards must use the normal ilvl 10 base Health of 40.")
-	assert(rare_belt.affixes.is_empty(), "Belt rarity must not gain ordinary random affixes before potion capacity is implemented.")
+	assert(rare_belt.affixes.is_empty(), "Belt rarity must not gain ordinary random affixes; rarity is reserved for potion capacity.")
+	var belt_rules = load("res://scripts/items/belt_potion_rules.gd").new()
+	assert(belt_rules.get_capacity(rare_belt) == 3 and is_equal_approx(belt_rules.get_potential_healing(rare_belt), 300.0), "Rare dungeon Belt must provide three ilvl 10 potion slots worth 300 potential healing.")
 
 	var epic_item = item_generator.generate(epic_roll["item_definition"], 10, ScriptedRng.new([0.5], [0, 0, 0]), 3)
 	assert(epic_item != null, "ItemGenerator must support an Epic rarity override for a dungeon reward.")
 	assert(epic_item.rarity == 3 and epic_item.affixes.size() == 3, "Epic dungeon equipment must be a real Purple ItemInstance with three affixes.")
 	assert(epic_item.get_quality_display_name() == "Эпическое", "Epic dungeon equipment must expose its real rarity through ItemInstance presentation.")
 
-	print("PASS: Dungeon completion loot rolls all twelve ilvl-10 slots at exactly 75% Rare / 25% Epic, with simple affixless Belt rewards and normal Epic equipment elsewhere.")
+	print("PASS: Dungeon completion loot rolls all twelve ilvl-10 slots at exactly 75% Rare / 25% Epic, with potion-capacity Belt rewards and normal Epic equipment elsewhere.")
 	quit()

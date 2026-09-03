@@ -110,7 +110,9 @@ func run_test() -> void:
 		assert(belt_definition.equipment_slot == "belt" and belt_definition.icon_texture != null and belt_definition.hero_overlay_texture == null, "Belt definitions must use the existing Belt slot/icon without a paper-doll overlay.")
 	var generated_belt = generator.generate(uncommon_belt, 10, ScriptedRng.new())
 	assert(generated_belt != null and is_equal_approx(generated_belt.get_stat_bonus("max_hp"), 40.0), "The current ilvl 10 Belt must grant the Scope base Health of 40.")
-	assert(generated_belt.affixes.is_empty() and is_zero_approx(generated_belt.rolled_total_modifier_budget), "Belt rarity must not use ordinary random affixes before potion capacity is implemented.")
+	assert(generated_belt.affixes.is_empty() and is_zero_approx(generated_belt.rolled_total_modifier_budget), "Belt rarity must not use ordinary random affixes because rarity controls potion slots.")
+	var belt_rules = load("res://scripts/items/belt_potion_rules.gd").new()
+	assert(belt_rules.get_capacity(generated_belt) == 2 and is_equal_approx(belt_rules.get_potential_healing(generated_belt), 200.0), "Uncommon ilvl 10 Belt must provide two 100-HP potion slots.")
 
 	var loot_generator = load("res://scripts/loot/loot_generator.gd").new()
 	var rolled_ring_2 = loot_generator.roll_mob_equipment(spider, ScriptedRng.new([0.0, 0.0], [10]))
@@ -141,5 +143,5 @@ func run_test() -> void:
 	assert(belt_icon != null and belt_icon.visible and belt_icon.texture == equipped_belt.definition.icon_texture, "Equipped Belt must appear in its existing reserved UI slot.")
 
 	inventory_screen.free()
-	print("PASS: ilvl 10 jewelry and the simple Health Belt use all twelve equipment slots through shared drop, generation, equip, and UI paths.")
+	print("PASS: ilvl 10 jewelry and the potion-capacity Belt use all twelve equipment slots through shared drop, generation, equip, and UI paths.")
 	quit()

@@ -3,6 +3,7 @@ extends RefCounted
 
 const ItemPowerCalculatorScript = preload("res://scripts/items/item_power_calculator.gd")
 const ItemPriceCalculatorScript = preload("res://scripts/economy/item_price_calculator.gd")
+const BeltPotionRulesScript = preload("res://scripts/items/belt_potion_rules.gd")
 
 var definition: Resource
 var item_level: int
@@ -61,6 +62,11 @@ func get_tooltip_text() -> String:
 		lines.append("Бюджет модификаторов: %.2f" % rolled_total_modifier_budget)
 	lines.append("")
 	append_base_stat_lines(lines)
+	if definition.equipment_slot == "belt":
+		var belt_rules = BeltPotionRulesScript.new()
+		lines.append("Слоты зелий: %d" % belt_rules.get_capacity(self))
+		lines.append("Макс. уровень зелья: %d" % belt_rules.get_max_potion_level(self))
+		lines.append("Потенциальный запас лечения: %.0f HP" % belt_rules.get_potential_healing(self))
 	if not affixes.is_empty():
 		lines.append("")
 		lines.append("Модификаторы:")

@@ -43,6 +43,7 @@ var active_quest
 var active_effects: Array[Dictionary] = []
 var equipment = EquipmentScript.new()
 var inventory = InventoryScript.new()
+var prepared_healing_potion_levels: Array = []
 
 func _init(initial_name: String) -> void:
 	hero_name = initial_name

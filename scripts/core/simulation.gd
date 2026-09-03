@@ -34,6 +34,7 @@ const ItemInstanceScript = preload("res://scripts/model/runtime/item_instance.gd
 const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
 const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
 const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluator.gd")
+const PotionPreparationSystemScript = preload("res://scripts/economy/potion_preparation_system.gd")
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
@@ -89,6 +90,7 @@ var item_generator = ItemGeneratorScript.new()
 var equipment_reward_system
 var equipment_sale_system = EquipmentSaleSystemScript.new()
 var spending_evaluator = SpendingEvaluatorScript.new()
+var potion_preparation_system = PotionPreparationSystemScript.new()
 var shop_system
 var god_state
 var god_system
@@ -452,7 +454,9 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 		return empty_result
 
 	debug_log.record_event(completed_tick, get_shop_stock_debug_text())
-	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings())
+	var equipment_gold_budget: int = get_equipment_purchase_gold_budget()
+	var purchase_listings: Array = get_equipment_purchase_listings_with_dungeon_prep_safety()
+	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, purchase_listings, equipment_gold_budget)
 	if best_purchase.is_empty():
 		debug_log.record_event(completed_tick, "%s осмотрел магазин, но достаточно выгодных покупок не нашёл." % hero_state.hero_name)
 		finish_shopping_phase(completed_tick)
@@ -469,21 +473,95 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
 	result["power_gain"] = float(best_purchase.get("power_gain", 0.0))
 	var purchased_item = result["item_instance"]
-	var log_text := "%s купил «%s» (%s, ilvl %d) за %d золота; сила героя +%.2f." % [
-		hero_state.hero_name,
-		purchased_item.definition.display_name,
-		purchased_item.get_quality_display_name(),
-		purchased_item.item_level,
-		result["price_paid"],
-		result["power_gain"],
-	]
+	var log_text: String
+	if str(best_purchase.get("comparison_mode", "")) == "belt_utility":
+		log_text = "%s купил «%s» (%s, ilvl %d) за %d золота; пояс теперь поддерживает до %.0f HP лечения." % [
+			hero_state.hero_name,
+			purchased_item.definition.display_name,
+			purchased_item.get_quality_display_name(),
+			purchased_item.item_level,
+			result["price_paid"],
+			float(best_purchase.get("candidate_belt_healing", 0.0)),
+		]
+	else:
+		log_text = "%s купил «%s» (%s, ilvl %d) за %d золота; сила героя +%.2f." % [
+			hero_state.hero_name,
+			purchased_item.definition.display_name,
+			purchased_item.get_quality_display_name(),
+			purchased_item.item_level,
+			result["price_paid"],
+			result["power_gain"],
+		]
 	if result["replaced_item"] != null:
 		log_text += " Старый предмет «%s» сразу продан за %d золота." % [result["replaced_item"].definition.display_name, result["replaced_item_sale_value"]]
 	debug_log.record_event(completed_tick, log_text)
 
-	if spending_evaluator.select_best_equipment_purchase(hero_state, shop_system.get_listings()).is_empty():
+	if spending_evaluator.select_best_equipment_purchase(
+		hero_state,
+		get_equipment_purchase_listings_with_dungeon_prep_safety(),
+		get_equipment_purchase_gold_budget()
+	).is_empty():
 		finish_shopping_phase(completed_tick)
 	return result
+
+func get_equipment_purchase_listings_with_dungeon_prep_safety() -> Array:
+	var listings: Array = shop_system.get_listings().duplicate(true)
+	if dungeon_system == null or shop_system == null:
+		return listings
+	var current_region_id: String = get_current_region_id()
+	if current_region_id.is_empty():
+		return listings
+	var current_hero_power: float = get_hero_power()
+	var has_power_ready_dungeon: bool = false
+	for candidate in dungeon_system.get_discovered_dungeons_in_region(current_region_id):
+		if bool(dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power).get("ready", false)):
+			has_power_ready_dungeon = true
+			break
+	if not has_power_ready_dungeon:
+		return listings
+
+	var potion_definitions: Array = shop_system.get_healing_potion_definitions()
+	for listing_index in listings.size():
+		var listing: Dictionary = listings[listing_index]
+		var item_instance = listing.get("item_instance")
+		if item_instance == null or item_instance.definition == null or item_instance.definition.equipment_slot != "belt":
+			continue
+		var price: int = shop_system.item_price_calculator.get_reference_shop_value_for_item(item_instance)
+		if price < 0 or price > hero_state.gold:
+			continue
+		var remaining_gold: int = hero_state.gold - price
+		var candidate_plan: Dictionary = potion_preparation_system.get_full_loadout_plan(
+			hero_state,
+			potion_definitions,
+			item_instance,
+			remaining_gold
+		)
+		if bool(candidate_plan.get("can_prepare", false)):
+			continue
+		listings[listing_index] = {"item_instance": null}
+	return listings
+
+func get_equipment_purchase_gold_budget() -> int:
+	var plan: Dictionary = get_ready_dungeon_potion_plan()
+	if plan.is_empty() or not bool(plan.get("can_prepare", false)):
+		return hero_state.gold
+	return maxi(0, hero_state.gold - int(plan.get("purchase_cost", 0)))
+
+func get_ready_dungeon_potion_plan() -> Dictionary:
+	if dungeon_system == null or shop_system == null:
+		return {}
+	var current_region_id: String = get_current_region_id()
+	if current_region_id.is_empty():
+		return {}
+	var current_hero_power: float = get_hero_power()
+	for candidate in dungeon_system.get_discovered_dungeons_in_region(current_region_id):
+		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
+		if not bool(readiness.get("ready", false)):
+			continue
+		var plan: Dictionary = potion_preparation_system.get_full_loadout_plan(hero_state, shop_system.get_healing_potion_definitions())
+		plan["dungeon"] = candidate
+		return plan
+	return {}
 
 func finish_shopping_phase(completed_tick: int) -> void:
 	if try_start_discovered_dungeon_trip(completed_tick):
@@ -502,9 +580,18 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 	var current_hero_power: float = get_hero_power()
 	var first_blocked_readiness: Dictionary = {}
 	var first_blocked_dungeon = null
+	var first_potion_blocked_plan: Dictionary = {}
+	var first_potion_blocked_dungeon = null
 	for candidate in candidates:
 		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
 		if bool(readiness.get("ready", false)):
+			var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
+			if not bool(preparation.get("can_prepare", false)):
+				if first_potion_blocked_plan.is_empty():
+					first_potion_blocked_plan = preparation
+					first_potion_blocked_dungeon = candidate
+				continue
+			debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_prepared(hero_state.hero_name, candidate.definition.display_name, preparation))
 			if not dungeon_runner.begin_trip(hero_state, candidate, current_hero_power):
 				continue
 			debug_log.record_event(completed_tick, "%s закончил дела в городе и отправился в данж «%s»." % [hero_state.hero_name, candidate.definition.display_name])
@@ -521,6 +608,16 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 				float(first_blocked_readiness.get("current_power", current_hero_power)),
 				float(first_blocked_readiness.get("required_power", 0.0))
 			)
+			)
+	elif first_potion_blocked_dungeon != null:
+		debug_log.record_event(
+			completed_tick,
+			dungeon_narrator.describe_potion_postponed(
+				hero_state.hero_name,
+				first_potion_blocked_dungeon.definition.display_name,
+				str(first_potion_blocked_plan.get("reason", "")),
+				int(first_potion_blocked_plan.get("capacity", 0))
+			)
 		)
 	return false
 
@@ -536,18 +633,27 @@ func advance_dungeon_travel_tick(completed_tick: int) -> void:
 		debug_log.record_event(completed_tick, "%s идёт к данжу «%s». Осталось гексов: %d." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, int(result.get("remaining_steps", 0))])
 
 func advance_dungeon_between_fights_tick(completed_tick: int) -> void:
+	var next_is_boss: bool = dungeon_runner.active_dungeon != null \
+		and dungeon_runner.ordinary_encounters_completed >= dungeon_runner.active_dungeon.definition.ordinary_encounter_count
+	var potion_result: Dictionary = potion_preparation_system.use_between_fight_potions(
+		hero_state,
+		combat_stats.max_hp,
+		next_is_boss,
+		shop_system.get_healing_potion_definitions()
+	)
 	var result: Dictionary = dungeon_runner.advance_between_fights(hero_state)
 	if result.is_empty():
 		debug_log.record_tick(completed_tick)
 		return
 	debug_log.record_event(
 		completed_tick,
-		dungeon_narrator.describe_between_fights(
-			hero_state.hero_name,
-			hero_state.current_hp,
-			combat_stats.max_hp,
-			bool(result.get("next_is_boss", false))
-		)
+			dungeon_narrator.describe_between_fights(
+				hero_state.hero_name,
+				hero_state.current_hp,
+				combat_stats.max_hp,
+				bool(result.get("next_is_boss", false)),
+				potion_result
+			)
 	)
 
 func advance_dungeon_return_tick(completed_tick: int) -> void:

@@ -210,9 +210,12 @@ assets/map/prototype_02_hex_layout.png
 → QuestPool uses a dedicated seeded placement RNG to choose and reserve current QuestOffer.target_hex values
 → TravelSystem owns the active adjacent-hex route and advances WorldState.hero_position by one route step per completed world tick
 → QuestRunner starts outward/return travel for the already selected QuestOffer and reacts to TravelSystem arrival
-→ after a known-dungeon post-quest city decision, DungeonRunner starts/advances the real route to the dungeon entrance through the same TravelSystem
+→ after a known-dungeon post-quest city decision, DungeonEvaluator checks first-attempt/retry Power readiness
+→ PotionPreparationSystem must produce and purchase a complete legal Belt loadout before the attempt is allowed
+→ DungeonRunner starts/advances the real route to the dungeon entrance through the same TravelSystem
 → DungeonRunner owns the authored encounter cursor / between-fight timing while Simulation uses the same shared CombatSession for each dungeon fight
-→ future potion/retry/reward logic / Event systems reuse the same placement/reservation and travel foundations
+→ Simulation applies PotionPreparationSystem healing inside the existing one-tick between-fight windows
+→ future Event systems reuse the same placement/reservation and travel foundations
 → MapTileVisuals loads 3 authored 158 × 140 sprites per normal biome + 418 × 440 town overlay + hero/quest/dungeon map sprites
 → MapScreen sprite drawing / city overlays / live quest sprites / dungeon debug/discovered sprites / live hero sprite / hover inspection / camera transform
 ```
@@ -240,19 +243,19 @@ Contracts:
 - `TravelSystem` owns only active map-route execution: `start_travel()` builds a deterministic `HexMap` route from the current hero position to the destination, starting travel does not teleport the hero, and each `advance_one_tick()` moves `WorldState.hero_position` to exactly one adjacent route cell until arrival;
 - `QuestRunner` remains the ordinary-quest execution owner: on a map-backed selected offer it starts `TravelSystem` toward `target_hex`, enters combat only after the hero physically reaches that target, and after the final objective/recovery starts a real return route to the Starting City center; it does not calculate pathfinding itself;
 - discovering a dungeon never interrupts the current activity or replaces an active quest route; after successful quest turn-in, the dedicated market tick and all current shopping decisions finish first; only when shopping has no further valid purchase does a known dungeon in the hero's current region become a candidate for dungeon readiness instead of automatically overriding `CHOOSING_QUEST`;
-- `DungeonRunner` owns the dungeon-specific route and expedition sequence: it records base HeroPower at the start of each approved attempt; after reaching the real `target_hex` the first authored encounter becomes combat-ready, every ordinary victory preserves current HP and enters exactly one `DUNGEON_BETWEEN_FIGHTS` world tick with no current free healing, then the next ordinary fight or boss becomes ready; boss victory marks the runtime dungeon completed and immediately starts the real route back to the Starting City; return travel advances one adjacent hex per world tick and arrival hands the hero to `VISITING_MARKET`; failure reports the start Power and reached progress; it does not reuse or expand `QuestRunner`;
+- `DungeonRunner` owns the dungeon-specific route and expedition sequence: it records base HeroPower at the start of each approved attempt; after reaching the real `target_hex` the first authored encounter becomes combat-ready, every ordinary victory preserves current HP and enters exactly one `DUNGEON_BETWEEN_FIGHTS` world tick, then the next ordinary fight or boss becomes ready; `PotionPreparationSystem` may consume prepared potions inside that same tick but there is never free healing; boss victory marks the runtime dungeon completed and immediately starts the real route back to the Starting City; return travel advances one adjacent hex per world tick and arrival hands the hero to `VISITING_MARKET`; failure reports the start Power and reached progress; it does not reuse or expand `QuestRunner`;
 - `DungeonEvaluator` owns the current retry Power gate and does not participate in QuestScore: first attempt has no retry threshold; a failed attempt stores its starting HeroPower and requires +25% after zero ordinary kills, +15% after ordinary progress before the boss, or +10% after reaching the boss; a later failed retry replaces the remembered baseline with that attempt's own starting HeroPower;
-- after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and permits a new attempt once the threshold is reached; potion readiness is not yet part of this gate;
+- after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and after the Power gate passes additionally requires a complete legal potion loadout for every current Belt slot; retries therefore require both remembered Power growth and full-Belt preparation;
 - dungeon fights use the same `CombatSession` / Warrior Rage / Power Strike / Battle Guard / trait damage path as quest fights; each fight starts from carried `HeroState.current_hp` rather than resetting to MaxHP;
-- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the unchanged full twelve-slot source now containing Ironwake core equipment plus existing accessories, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; standard equipment follows its normal rarity affixes, while Belt currently remains Health-only until potion-capacity rarity is implemented; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
+- current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the unchanged full twelve-slot source now containing Ironwake core equipment plus existing accessories, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; standard equipment follows its normal rarity affixes, while Belt remains affixless because its rarity instead grants 1 / 2 / 3 / 4 potion slots; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
 - dungeon death is owned by `DungeonRunner`: the hero returns to the safe city map hex, uses the normal 100-tick respawn and 1-HP resurrection/city-recovery contract, and Divine instant resurrection routes through the active respawn owner instead of pretending the death belongs to `QuestRunner`;
 - the accepted quest target stays reserved during outward travel, combat, and between-fight recovery; when the final objective is complete and return travel begins, the reservation is released; on fatal cancellation it is released immediately and the dead hero is returned to the safe city position for the resurrection timer; replacement offers acquire a new valid reservation only when their board slot is regenerated;
 - `MapTileVisuals` is presentation-only and loads exactly three `158 × 140` project PNGs each for plains, forest, and hills from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; selection is deterministic by hex coordinates, while road and city cells temporarily reuse plains art as their base terrain visual. It also resolves the hero map texture from `res://assets/map/characters/hero_map.png`; it does not own hero position;
 - `MapScreen` is observation-only presentation: it reads runtime hex data, current board QuestOffers, active dungeon map targets, and the live hero position from Simulation; it draws biome textures 1:1 at base zoom, keeps one-pixel black outlines on non-city hexes, omits internal city-hex outlines, draws `town1.png` as a native-size overlay on both seven-hex city clusters, and draws each currently placed QuestOffer with `res://assets/map/activities/quest.png` at its `target_hex`. The supplied 426 × 400 source is kept unchanged and scaled only at draw time to 65 px tall (about 69.2 × 65 px), centered on the target hex. Quest/dungeon-marker and hero-position changes trigger redraws and the sprites scale/pan with map content. Because completed dungeons lose their active map activity, their marker signature drops out automatically without MapScreen mutating gameplay state. The hero sprite follows the real tick-by-tick `WorldState.hero_position` produced by `TravelSystem`. The screen exposes current coordinates, terrain, region, and permanent semantic tags through the debug hover tooltip and owns only presentation camera state; it must not choose destinations, reserve/release activities, move the hero, calculate travel time, or otherwise modify Simulation;
-- the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one no-heal preparation tick after each ordinary encounter, including before the boss; after boss victory `DungeonSystem` releases that dungeon's map activity and the completed instance no longer appears in active discovered/marker lookup;
+- the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one preparation tick after each ordinary encounter, including before the boss; prepared potions may be consumed within that tick according to the approved ordinary/no-overheal and pre-boss/survival rules; after boss victory `DungeonSystem` releases that dungeon's map activity and the completed instance no longer appears in active discovered/marker lookup;
 - MapScreen uses `assets/map/activities/dungeon.png` at 65 px draw height; the current developer-only view deliberately shows an unknown dungeon at 40% opacity while keeping its identity out of the tooltip, then renders it fully opaque and named after discovery;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/completion reward/removal from the active map are integrated; the base Health-only Belt is integrated as equipment, while potion-capacity/eligibility, potion readiness/use, current-route presentation, travel interruption/resumption, city relocation, and events remain intentionally unintegrated.
+- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/full-Belt potion preparation/between-fight potion use/completion reward/removal from the active map are integrated; current-route presentation, travel interruption/resumption, city relocation, events, later potion tiers, and potion-specific UI remain intentionally unintegrated.
 
 ## UI boundary
 
@@ -321,15 +324,19 @@ successful HERO_TURNED_IN_QUEST
 → one debug-log sale summary
 → HeroState.SHOPPING
 → each later shopping world tick evaluates current shop stock
-→ SpendingEvaluator: affordability + 20% ItemPower threshold + virtual-equip HeroPower
-→ choose the valid candidate with the largest real HeroPower gain
+→ if a known local dungeon is Power-ready: reserve Gold needed for a complete current-Belt potion loadout
+→ SpendingEvaluator: standard equipment uses affordability + 20% ItemPower threshold + virtual-equip HeroPower; Belt uses Belt utility
+→ reject a Belt purchase if its resulting larger loadout could no longer be filled after paying for the Belt
+→ choose the valid candidate under the relevant equipment/Belt rule
 → ShopSystem buys/equips at most one item on that tick
 → immediately sell replaced equipped item at normal resale value
 → purchased listing remains empty
 → repeat on later ticks while another valid purchase exists
 → if a local dungeon is known: DungeonEvaluator checks first-attempt / remembered retry Power readiness
-→ if ready: DungeonRunner → TRAVEL_TO_DUNGEON
+→ if Power-ready: PotionPreparationSystem requires every Belt slot filled, using existing potions plus purchases of missing potions
+→ if full potion preparation succeeds: DungeonRunner → TRAVEL_TO_DUNGEON
 → if blocked by retry Power: HeroState.CHOOSING_QUEST
+→ if blocked by incomplete/unaffordable potion preparation: HeroState.CHOOSING_QUEST
 ```
 
 Starting City stock:
@@ -338,9 +345,11 @@ Starting City stock:
 ShopDefinition
 → ilvl 1 Rustchain Initiate stock band
 → ilvl 10 Ironwake-core-plus-accessory stock band
+→ ilvl 20 Ironward Vanguard stock band
 → ShopSystem
 → per band: 6 unique-slot White + 2 unique-slot Green ItemInstances
 → deterministic refresh on world ticks 200 / 400 / 600 / ...
+→ fixed consumable availability: Level 10 healing potion (100 HP / 100 Gold) + Level 20 healing potion (150 HP / 200 Gold)
 ```
 
 Contracts:
@@ -351,30 +360,31 @@ Contracts:
 - the five weakest current mobs retain the seven-slot ilvl 1 source with unchanged mechanics and Rustchain Initiate definitions;
 - Giant Spider, Bear, Rabid Elk, Bandit Veteran, and Swamp Crocodile use the twelve-slot ilvl 10 source with Ironwake Sentinel core slots and the unchanged necklace, earrings, Ring 1, Ring 2, and Belt definitions;
 - Young Ogre, Cave Lizard, Forest Troll, Mountain Beast, and Orc Raider use the seven-slot ilvl 20 Ironward Vanguard source; the same core family is available in the third shop band, while the first dungeon deliberately remains ilvl 10;
-- Belt is part of the current generated/drop slice as a simple inherent-Health item; it deliberately has no ordinary random affixes, and potion capacity/maximum potion level are not implemented yet; the first dungeon uses the same twelve-slot ilvl 10 source with its separate guaranteed Rare/Epic roll;
+- Belt is part of the current generated/drop slice with inherent Health and no ordinary random affixes; Belt rarity grants Common/Uncommon/Rare/Epic capacities of 1/2/3/4 potion slots, and Belt Item Level sets the maximum legal potion level through `PotionLevel <= BeltLevel`; the first dungeon uses the same twelve-slot ilvl 10 source with its separate guaranteed Rare/Epic roll;
 - a drop roll happens only after a combat victory, never after defeat or quest turn-in;
 - the seeded roll order is drop chance, equal slot selection, then rarity selection;
 - current ordinary quests contain Gold rewards only and no equipment reward pools;
 - `QuestRunner` does not equip the item or calculate its stats;
 - `EquipmentRewardSystem` coordinates reward rolling, item generation, virtual-equip evaluation, and replacement/inventory routing, and returns structured result data;
 - `Simulation` keeps the public reward entry points and coordinates stat refresh, HP adjustment, and logging after the reward system returns;
-- `EquipmentEvaluator` must compare full base persistent HeroPower, not rarity and not displayed reference ItemPower;
+- `EquipmentEvaluator` must compare full base persistent HeroPower for standard equipment, not rarity and not displayed reference ItemPower; Belt is the explicit exception and compares potential full-loadout healing first, then inherent Belt Health on a tie;
 - the evaluator resolves a copied candidate equipment configuration and must not mutate live Equipment during comparison;
 - temporary finite effects are excluded from both sides of equipment evaluation;
-- a candidate of any rarity, including the same rarity, equips only when candidate HeroPower is strictly greater; equal or weaker candidates enter Inventory;
+- a standard candidate of any rarity, including the same rarity, equips only when candidate HeroPower is strictly greater; Belt instead follows its approved healing-capacity/Health ordering; rejected candidates enter Inventory;
 - replaced equipment enters Inventory before the new item becomes the active stat source;
-- Inventory keeps at most 36 item instances in FIFO order; adding item 37 drops the oldest regardless of quality;
+- Inventory keeps at most 36 retained equipment item instances in FIFO order; adding equipment item 37 drops the oldest regardless of quality. Healing potions are separate persistent consumable counts owned by the same Inventory model and are not part of this equipment FIFO;
 - current ilvl 1/10/20 White reference values are 100/500/1000 Gold; Green uses ×3 and Rare uses ×9;
 - sale value is 10% of reference value; current ilvl 10 White/Green/Rare resale is 50/150/450 Gold;
 - successful turn-in does not sell immediately; it schedules exactly one `VISITING_MARKET` world tick;
 - the market tick performs sale only and then enters `SHOPPING`; buying cannot occur during the sale tick;
 - each `SHOPPING` world tick may consume at most one listing, so multiple purchases require multiple world ticks;
-- dungeon discovery never skips the market or shopping phases; only after shopping finishes may a known dungeon replace the normal transition back to `CHOOSING_QUEST`, and only when `DungeonEvaluator` says its current first-attempt/retry readiness passes;
-- a shop candidate must be affordable, at least 20% stronger by displayed ItemPower than the equipped comparison item when one exists, and a strict real HeroPower improvement through virtual equip;
-- among valid purchase candidates the current equipment slice chooses the largest real HeroPower gain;
+- dungeon discovery never skips the market or shopping phases; only after shopping finishes may a known dungeon replace the normal transition back to `CHOOSING_QUEST`, and only when its first-attempt/retry Power readiness plus mandatory complete potion preparation both pass;
+- a standard shop candidate must be affordable, at least 20% stronger by displayed ItemPower than the equipped comparison item when one exists, and a strict real HeroPower improvement through virtual equip; Belt candidates use their separate potential-healing/Health utility rule instead;
+- when a known local dungeon is already Power-ready, optional equipment spending may use only Gold left after the current full-Belt potion preparation cost is protected; a proposed Belt upgrade is also blocked if paying for it would make the complete loadout of that new Belt unaffordable;
+- among valid standard purchase candidates the current equipment slice chooses the largest real HeroPower gain; Belt-vs-Belt candidates prefer larger potential healing, then higher inherent Health, then lower price if otherwise equal;
 - replaced equipped gear is sold immediately in the purchase transaction and never enters Inventory;
 - purchased shop positions remain empty until the next stock refresh;
-- the current Starting City shop exposes ilvl 1 Rustchain, ilvl 10 Ironwake-core-plus-accessories, and ilvl 20 Ironward source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1/20 bands select from seven core slots, while the ilvl 10 band selects from all twelve equipment slots;
+- the current Starting City shop exposes ilvl 1 Rustchain, ilvl 10 Ironwake-core-plus-accessories, and ilvl 20 Ironward source bands, each with 6 distinct White listings and 2 distinct Green listings; the ilvl 1/20 bands select from seven core slots, while the ilvl 10 band selects from all twelve equipment slots; fixed Level 10 / 20 healing potions are separate from these rotating 24 equipment listings;
 - shop stock references the existing ItemDefinitions and generates each listing through the shared ItemGenerator; shop data does not own duplicate item stats, affix budgets, ItemPower, or price formulas;
 - shop stock refresh is driven by world ticks rather than hero visits and occurs every 200 completed world ticks, including while the hero is away from the city;
 - shop randomness uses a reproducible stream derived from the simulation seed so adding/refreshing stock does not perturb the existing main RNG sequence;
@@ -384,9 +394,20 @@ Contracts:
 - persistent equipment affects base HeroPower/Hard Filter and effective combat stats;
 - Armor uses `PhysicalTaken = 100 / (100 + Armor)` through `DamageResolver`;
 - Rustchain Initiate drops are ilvl 1 (5 armor Armor, 10 sword Damage/+0.10 Attack Speed, 10 shield Block); Ironwake Sentinel core drops are ilvl 10 (7 Armor, 13 sword Damage/+0.10 Attack Speed, 13 shield Block); live Ironward Vanguard core drops are ilvl 20 (10 Armor, 17 sword Damage/+0.10 Attack Speed, 17 shield Block);
-- every ilvl 10 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at value 20, independent of rarity; the current ilvl 10 Belt instead has exactly 40 inherent Health;
+- every ilvl 10 necklace, earrings, or ring has exactly one seeded inherent Fire/Cold/Lightning Resistance at value 20, independent of rarity; the current ilvl 10 Belt instead has exactly 40 inherent Health plus rarity-driven potion capacity;
 - jewelry random affixes are limited to Fire/Cold/Lightning Resistance, Health, Dodge, Accuracy, Critical Chance, and Critical Damage;
-- Common/Uncommon/Rare standard equipment creates 0/1/2 unique random affixes; Belt is the explicit current exception and stays affixless at every rarity until potion-capacity rarity is implemented; current ordinary drops do not generate Epic;
+- Common/Uncommon/Rare standard equipment creates 0/1/2 unique random affixes; Belt is the explicit current exception and stays affixless because its rarity controls potion capacity instead; current ordinary drops do not generate Epic;
+
+Potion contracts:
+- current Starting City potion definitions are Level 10 = 100 HP / 100 Gold and Level 20 = 150 HP / 200 Gold;
+- a prepared dungeon loadout must fill every current Belt slot; partial loadouts are not ready;
+- among complete affordable loadouts, preparation maximizes total healing and reuses already-owned potions before buying missing ones;
+- prepared potions remain physical Inventory counts; the Belt is not a separate storage inventory;
+- ordinary quest flow never consumes healing potions;
+- one dungeon between-fight world-tick window may consume multiple potions;
+- between ordinary rooms, the selected potion combination must maximize restored HP without any overheal, preferring fewer potions when multiple combinations heal the same amount;
+- before the boss, the hero may use multiple potions and accept overheal to reach full HP when possible;
+- every consumed potion is removed from both Inventory count and the prepared Belt loadout.
 - ilvl 10 Green affix budget is 78; each Rare affix uses 85% of that value;
 - one seeded 0.95–1.05 roll applies to total modifier budget, then budget splits equally among all affixes;
 - generated affixes use only the slot-legal secondary-stat pools and Scope 19.5 costs;

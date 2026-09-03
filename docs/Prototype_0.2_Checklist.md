@@ -137,11 +137,11 @@ Status:
 - ✅ Dungeon discovery does not interrupt the current activity; after quest turn-in → market → shopping, a known local dungeon takes priority over selecting another ordinary quest.
 - ✅ Real map travel to the known dungeon entrance through `TravelSystem`.
 - ✅ Dungeon combat preserves current HP between encounters, grants normal combat XP, and does not roll ordinary mob equipment drops.
-- ✅ Exactly 1 world tick of between-fight preparation after each ordinary encounter, including before the boss; the current no-potion slice gives no free healing.
+- ✅ Exactly 1 world tick of between-fight preparation after each ordinary encounter, including before the boss; there is still no free healing, but prepared dungeon potions may be consumed inside that same tick.
 - ✅ Dungeon death uses the normal 100-tick resurrection / city-recovery contract and Divine instant resurrection.
-- 🟡 Dungeon readiness now includes post-failure HeroPower retry gates; first-attempt/potion preparation rules are still incomplete.
-- ⬜ Potion preparation before attempts.
-- 🟡 Between-fight potion window exists, but Belt/potion selection and actual healing are not implemented yet.
+- ✅ Dungeon readiness combines the current first-attempt/post-failure Power rules with mandatory full-Belt potion preparation before travel.
+- ✅ Potion preparation before attempts: every current Belt slot must be filled; incomplete loadouts postpone the dungeon.
+- ✅ Between-fight potion use works: ordinary rooms avoid overheal, boss preparation may accept it, and multiple potions may be consumed in one preparation window.
 - ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
 - ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
 - ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
@@ -170,14 +170,14 @@ Status:
 - ✅ Virtual-equip HeroPower comparison.
 - ✅ Current five armor slots + sword + shield + necklace + earrings + two ring slots mechanically generate/equip/drop.
 - ✅ Five armor paper-doll overlays work.
-- ✅ All 12 equipment slots now generate/equip/display; Belt is currently a simple Health-only item until potion utility is added.
+- ✅ All 12 equipment slots now generate/equip/display; Belt provides inherent Health plus rarity-based potion capacity and Item-Level potion eligibility.
 - ✅ Functional ilvl 10 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the sixth mob by Power.
-- 🟡 Belt item generation/drop/shop/equip works with inherent Health; potion capacity and potion-level rules are not implemented yet.
+- ✅ Belt item generation/drop/shop/equip works with inherent Health, 1 / 2 / 3 / 4 rarity capacity, potion-level eligibility, and Belt-specific utility evaluation.
 - ⬜ Two-handed / full legal hand-configuration equipment content and evaluation.
 - 🟡 Source-driven mob drops exist for current ilvl 1 / ilvl 10 families, but the final six city quest-band ilvl sources are incomplete.
 - ⬜ `QuestLoot` temporary unsafe adventure loot.
 - ⬜ Death clears unsafe QuestLoot while preserving permanent/equipped gear.
-- 🟡 Backpack/inventory exists as a 36-item first pass; final inventory categories (QuestLoot, potions, quest/special items) are incomplete.
+- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; QuestLoot, quest/special item categories, and potion-specific UI remain incomplete.
 
 ## 11. Visual equipment content
 
@@ -194,23 +194,23 @@ Status:
 - ✅ Current +20% ItemPower shop threshold plus real virtual-equip validation.
 - ✅ Deterministic 200-world-tick shop refresh.
 - ✅ Purchased shop slots remain empty until refresh.
-- 🟡 Starting City shop currently has ilvl 1 + ilvl 10 bands (**2 / required 3**); the ilvl 10 band includes all 12 equipment slots, while the ilvl 20 band is missing.
-- 🟡 Current full stock is 16 equipment listings; final Starting City target is 24 (3 bands × 8).
+- ✅ Starting City shop has ilvl 1 / 10 / 20 equipment bands (**3 / 3**); the ilvl 10 band includes all 12 equipment slots.
+- ✅ Current full rotating equipment stock is 24 listings (3 bands × 8).
 - ⬜ Mid-Level City shop: ilvl 30 / 40 / 50 bands.
-- ⬜ Healing potion purchasing/preparation.
+- ✅ Starting City healing-potion purchasing/preparation for the current Level 10 / 20 tiers.
 - ⬜ Skill Level purchasing/training.
 - ⬜ Curious ↔ Conservative spending priority.
-- ⬜ Dungeon-preparation Gold reservation priority.
+- ✅ Dungeon-preparation Gold reservation priority protects full-Belt potion preparation from optional equipment spending, including after a Belt upgrade.
 
 ## 13. Belt and healing potions
 
-- 🟡 Real ilvl 10 Belt item content exists with +40 inherent Health; potion utility remains pending.
-- ⬜ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
-- ⬜ Belt-level potion eligibility.
-- ⬜ Potion tiers level 10 / 20 / 30 / 40 / 50; no level 1 healing potion.
-- ⬜ Potion inventory and Belt preparation.
-- ⬜ Autonomous potion purchase logic at the fixed current price of 100 Gold per potion.
-- ⬜ Dungeon-only potion use; ordinary quest flow never consumes healing potions.
+- ✅ Real ilvl 10 Belt item content exists with +40 inherent Health plus live potion utility.
+- ✅ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
+- ✅ Belt-level potion eligibility: `PotionLevel <= BeltLevel`.
+- 🟡 Potion progression is defined at Level 10 / 20 / 30 / 40 / 50 with no Level 1 potion; current live Starting City content implements Level 10 / 20 only.
+- ✅ Potion inventory counts and full-Belt preparation state.
+- ✅ Autonomous current potion purchase logic: Level 10 = 100 Gold, Level 20 = 200 Gold; complete affordable loadouts maximize total healing.
+- ✅ Dungeon-only potion use; ordinary quest flow never consumes healing potions; multiple potions may be used in one dungeon preparation window.
 
 ## 14. God influence
 
@@ -303,7 +303,7 @@ This is only a working order, not permission to implement automatically:
 3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
 4. Implement temporary events and travel interruption/resumption together with Formative / Expressive / Neutral decision roles.
 5. Replace the old trait prototype with the final four-axis hidden-value personality model and connect formative/expressive event behavior.
-6. Implement Belt/potions, then ordinary dungeons and discovery/readiness/retry.
+6. Extend the now-working Belt/potion + first-dungeon slice into the remaining ordinary dungeon content.
 7. Implement first Warrior specialization using stats + Brave/Cautious + divine guidance, then the specialization dungeon flow.
 8. Complete item/shop/content breadth, Diary, Explanatory Log and remaining UI screens.
 9. Add Save/Load and run long-duration Prototype 0.2 validation.

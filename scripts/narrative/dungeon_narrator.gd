@@ -22,9 +22,35 @@ func describe_fight_won(hero_name: String, mob_definition, experience_reward: in
 		return "%s победил босса %s, получил %d XP. HP: %.1f / %.1f." % [hero_name, mob_definition.display_name, experience_reward, current_hp, max_hp]
 	return "%s победил %s, получил %d XP. HP: %.1f / %.1f." % [hero_name, mob_definition.display_name, experience_reward, current_hp, max_hp]
 
-func describe_between_fights(hero_name: String, current_hp: float, max_hp: float, next_is_boss: bool) -> String:
+func describe_between_fights(hero_name: String, current_hp: float, max_hp: float, next_is_boss: bool, potion_result: Dictionary = {}) -> String:
 	var next_text := "Следующий бой — босс." if next_is_boss else "Готовится к следующему бою."
-	return "%s провёл 1 тик между боями без лечения: %.1f / %.1f HP. %s" % [hero_name, current_hp, max_hp, next_text]
+	var consumed_count: int = int(potion_result.get("consumed_count", 0))
+	if consumed_count <= 0:
+		return "%s провёл 1 тик между боями без зелья: %.1f / %.1f HP. %s" % [hero_name, current_hp, max_hp, next_text]
+	return "%s провёл 1 тик между боями, выпил зелий: %d и восстановил %.1f HP: %.1f / %.1f HP. %s" % [
+		hero_name,
+		consumed_count,
+		float(potion_result.get("actual_healing", 0.0)),
+		current_hp,
+		max_hp,
+		next_text,
+	]
+
+func describe_potion_prepared(hero_name: String, dungeon_name: String, preparation: Dictionary) -> String:
+	return "%s подготовился к данжу «%s»: пояс заполнен полностью (%d зелий, запас лечения %.0f HP), куплено на %d золота." % [
+		hero_name,
+		dungeon_name,
+		int(preparation.get("capacity", 0)),
+		float(preparation.get("total_healing", 0.0)),
+		int(preparation.get("purchase_cost", 0)),
+	]
+
+func describe_potion_postponed(hero_name: String, dungeon_name: String, reason: String, capacity: int) -> String:
+	if reason == "no_belt":
+		return "%s пока не идёт в данж «%s»: нет пояса, способного нести лечебные зелья." % [hero_name, dungeon_name]
+	if reason == "no_legal_potions":
+		return "%s пока не идёт в данж «%s»: для текущего пояса в городе нет подходящих лечебных зелий." % [hero_name, dungeon_name]
+	return "%s пока не идёт в данж «%s»: не может полностью заполнить все %d слотов пояса лечебными зельями." % [hero_name, dungeon_name, capacity]
 
 func describe_death(hero_name: String, dungeon_name: String, mob_definition, respawn_ticks_remaining: int) -> String:
 	return "%s погиб в данже «%s» в бою с %s. Возрождение через %d тиков." % [hero_name, dungeon_name, mob_definition.display_name, respawn_ticks_remaining]

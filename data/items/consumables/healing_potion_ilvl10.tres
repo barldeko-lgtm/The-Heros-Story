@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HealingPotionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/healing_potion_definition.gd" id="1_potion"]
+
+[resource]
+script = ExtResource("1_potion")
+id = "healing_potion_ilvl10"
+display_name = "Лечебное зелье I"
+potion_level = 10
+healing_amount = 100.0
+shop_price = 100

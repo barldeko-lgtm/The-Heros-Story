@@ -1652,9 +1652,9 @@ If the hero dies before the final boss is defeated:
 
 A known ordinary dungeon is attempted through **readiness rules**, not through ordinary QuestScore competition.
 
-Before leaving for a dungeon, the hero tries to fill all available Belt potion slots according to the potion and Belt rules in Section 26.
+Before leaving for a dungeon, the hero must fill **every available Belt potion slot** according to the potion and Belt rules in Section 26.
 
-If the hero cannot prepare an adequate potion loadout, the dungeon attempt does not begin.
+If even one current Belt slot cannot be filled with a legal healing potion, the dungeon attempt does not begin. A partial loadout does not count as adequate dungeon preparation.
 
 The hero instead continues normal progression and may reconsider the dungeon after returning to town later.
 
@@ -1670,12 +1670,14 @@ For ordinary rooms:
 
 - potions are used only between fights;
 - the hero prefers a potion whose healing can be applied fully without wasting part of its effect through overheal;
+- one between-fight preparation window may consume multiple prepared potions when each selected potion can be used efficiently;
 - if no suitable potion should be used, the hero may continue below full HP.
 
 Before the final boss:
 
 - survival takes priority;
 - the hero attempts to enter the boss fight at **full HP**;
+- the hero may consume as many prepared potions as needed in that one preparation window;
 - potion use may accept some overheal waste when necessary to reach that state as closely as possible.
 
 This uses the same Belt/potion system defined in Section 26 and must not be implemented as a separate dungeon-only inventory.
@@ -2247,6 +2249,12 @@ The hero should therefore normally avoid equipment configurations that disable t
 
 The Belt is evaluated through both permanent Health and practical potion-healing capacity rather than ordinary single-fight Item Power alone.
 
+For Belt-versus-Belt replacement, the primary comparison is the total potential healing of a fully loaded Belt using the strongest healing potion that Belt can legally support from the currently implemented potion tiers:
+
+> **`BeltPotentialHealing = PotionSlotCapacity × StrongestSupportedPotionHealing`**
+
+A candidate Belt is preferred when its `BeltPotentialHealing` is greater. If both Belts provide the same potential healing, the Belt with the greater inherent Health is preferred. Ordinary displayed ItemPower or raw HeroPower must not override this Belt-specific utility ordering.
+
 ---
 
 ### Legal Hand-Configuration Evaluation
@@ -2784,9 +2792,16 @@ If hero HP growth makes potions too weak or too strong at later levels, the heal
 
 Healing potions are ordinary consumables purchased with Gold.
 
-All current Prototype 0.2 healing-potion tiers cost:
+The currently approved prices for the implemented Starting City potion tiers are:
 
-> **100 Gold per potion**
+| Potion Level | Shop Price |
+|---:|---:|
+| 10 | 100 Gold |
+| 20 | 200 Gold |
+
+Prices for the later Level 30 / 40 / 50 potion tiers remain balance values to define when those tiers become active content.
+
+The current Starting City sells the Level 10 and Level 20 healing potions as fixed consumable availability separate from rotating equipment stock. Mid-Level City potion availability is deferred until that city economy is implemented.
 
 They physically belong to the hero's inventory.
 
@@ -2794,12 +2809,16 @@ The Belt determines how many potions are currently prepared and available for du
 
 The Belt is therefore not a separate storage inventory.
 
-Before a relevant dungeon attempt, the hero tries to fill all available Belt potion slots with the strongest useful legal healing potions they can reasonably afford, subject to:
+Before a relevant dungeon attempt, the hero must fill all available Belt potion slots with legal healing potions, subject to:
 
 - Belt level;
 - available Gold;
 - current shop potion availability;
 - required dungeon preparation rules.
+
+Among complete affordable loadouts, the hero chooses the combination with the greatest total healing. Existing carried potions count toward the loadout, so the hero buys only the missing potions. If no complete loadout is affordable, the dungeon attempt is postponed.
+
+Required potion preparation has spending priority over optional equipment. In particular, an equipment or Belt upgrade must not be purchased if doing so would leave insufficient Gold to fill every potion slot of the resulting equipped Belt for a currently Power-ready dungeon attempt.
 
 Potion purchasing remains part of the economy system, not UI logic.
 
@@ -2809,18 +2828,20 @@ Healing potions are not used anywhere in the ordinary quest flow in Prototype 0.
 
 They are reserved for dungeon preparation and dungeon expedition healing.
 
-Between normal dungeon encounters, the hero may consume a prepared healing potion.
+Between normal dungeon encounters, the hero may consume prepared healing potions. There is no one-potion-per-window limit; all potion use for that preparation stage still occurs inside the same single between-fight world-tick window.
 
 For ordinary between-fight healing:
 
-- prefer a potion whose full healing value can be used without overheal;
-- do not waste a stronger potion if a weaker legal potion restores the required amount cleanly;
+- choose the available potion or combination of prepared potions that restores the greatest amount of missing HP without any overheal;
+- when the same no-overheal healing result can be reached in different ways, prefer using fewer potions;
+- do not consume a potion whose effect would be partly wasted through overheal;
 - if no potion can be used efficiently, the hero may continue below full HP.
 
 Before the final boss:
 
 - survival takes priority over efficiency;
 - the hero attempts to reach full HP;
+- multiple prepared potions may be consumed in the same preparation window;
 - some overheal waste is acceptable when needed.
 
 Consumed potions permanently leave inventory/Belt preparation.
@@ -2831,7 +2852,21 @@ The Belt's inherent Health contributes normally to ItemPower and HeroPower.
 
 Potion-slot capacity is evaluated separately as dungeon-preparation utility.
 
-A Belt with more potion slots may therefore be strategically preferable even when its direct combat-stat ItemPower increase is modest.
+A Belt's primary replacement value is the total potential healing of a fully loaded Belt using the strongest currently implemented potion tier that its Item Level permits. If two Belts provide equal potential healing, inherent Belt Health breaks the tie.
+
+Example:
+
+```text
+Blue ilvl 10 Belt
+→ 3 slots × 100 HP = 300 potential healing
+
+White ilvl 20 Belt
+→ 1 slot × 150 HP = 150 potential healing
+
+→ keep the Blue ilvl 10 Belt
+```
+
+If a Green ilvl 20 Belt also provides `2 × 150 = 300` potential healing, it beats the Blue ilvl 10 Belt on the secondary inherent-Health comparison.
 
 The equipment/economy systems must not invent a fake flat Power value for potion capacity merely to force it into the shared Power formula.
 
@@ -4730,7 +4765,7 @@ They should be tuned after the relevant systems exist and can be tested together
 - exact Brave / Cautious first-specialization modifier;
 - final tuning of the working item-level affix budgets and secondary-stat cost table defined in Section 19;
 - exact strength / item-level ranges of the three shop progression bands;
-- potion prices;
+- final potion-price tuning beyond the currently approved Level 10 = 100 Gold / Level 20 = 200 Gold Starting City values, including later Level 30 / 40 / 50 tiers;
 - Gold income and spending balance;
 - XP / level pacing where tuning remains necessary;
 - exact temporary-event spawn frequency, replacement delay, and lifetime after the real map is testable;

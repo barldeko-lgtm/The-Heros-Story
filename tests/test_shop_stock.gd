@@ -10,6 +10,10 @@ func _init() -> void:
 	assert_shop_band(listings, 1)
 	assert_shop_band(listings, 10)
 	assert_shop_band(listings, 20)
+	var potions: Array = shop.get_healing_potion_definitions()
+	assert(potions.size() == 2, "Starting City potion stock is fixed separately from the 24 rotating equipment listings.")
+	assert(potions[0].potion_level == 10 and potions[0].shop_price == 100, "Starting City must sell the ilvl 10 / 100 HP potion for 100 Gold.")
+	assert(potions[1].potion_level == 20 and potions[1].shop_price == 200, "Starting City must sell the ilvl 20 / 150 HP potion for 200 Gold.")
 
 	simulation.hero_state.gold = 100000
 	var purchased = shop.purchase_listing(simulation.hero_state, 0)

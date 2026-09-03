@@ -5,3 +5,4 @@ extends Resource
 @export var city_id: String
 @export var refresh_interval_ticks: int = 0
 @export var stock_bands: Array[Resource] = []
+@export var healing_potion_definitions: Array[Resource] = []

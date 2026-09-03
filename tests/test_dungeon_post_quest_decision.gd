@@ -26,6 +26,7 @@ func test_discovery_does_not_interrupt_current_quest() -> void:
 
 func test_known_dungeon_starts_after_city_routine() -> void:
 	var simulation = SimulationScript.new(8202, null)
+	equip_test_belt(simulation)
 	var dungeon = simulation.dungeon_system.get_all_dungeons()[0]
 	assert(simulation.use_divine_vision(), "The post-city decision test requires a known dungeon.")
 	assert(dungeon.discovered, "Vision must make the dungeon known before the city routine ends.")
@@ -58,6 +59,8 @@ func test_known_dungeon_starts_after_city_routine() -> void:
 
 func test_full_quest_to_dungeon_priority_flow() -> void:
 	var simulation = SimulationScript.new(8203, null)
+	equip_test_belt(simulation)
+	simulation.hero_state.gold = 100
 	simulation.advance_time(10.0)
 	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_QUEST, "Full-flow test must begin with a normal autonomous quest already selected.")
 	var original_quest = simulation.hero_state.active_quest
@@ -81,3 +84,12 @@ func test_full_quest_to_dungeon_priority_flow() -> void:
 	assert(reached_dungeon_priority, "After the current quest and city routine, the known dungeon must replace another ordinary quest as the next activity.")
 	assert(simulation.hero_state.active_quest == null, "The completed ordinary quest must be cleared before dungeon travel begins.")
 	assert(simulation.dungeon_runner.active_dungeon != null, "DungeonRunner must own the expedition target after the full post-quest transition.")
+
+func equip_test_belt(simulation) -> void:
+	var belt_definition = load("res://data/items/visual_families/ironward_vanguard/ironward_belt.tres")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 8200
+	var belt = simulation.item_generator.generate(belt_definition, 10, rng)
+	simulation.hero_state.equipment.replace_item(belt)
+	simulation.refresh_combat_stats()
+	simulation.hero_state.current_hp = simulation.combat_stats.max_hp

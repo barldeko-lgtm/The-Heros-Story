@@ -19,6 +19,11 @@ func _init(initial_shop_definition: Resource, initial_item_generator, initial_se
 func get_listings() -> Array:
 	return listings
 
+func get_healing_potion_definitions() -> Array:
+	if shop_definition == null:
+		return []
+	return shop_definition.healing_potion_definitions.duplicate()
+
 func advance_world_tick(completed_tick: int) -> bool:
 	if shop_definition == null or shop_definition.refresh_interval_ticks <= 0:
 		return false
