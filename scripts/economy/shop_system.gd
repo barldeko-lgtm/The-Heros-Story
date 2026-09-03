@@ -64,13 +64,14 @@ func append_unique_listings(item_level: int, definitions: Array, count: int) -> 
 			continue
 		listings.append({"item_instance": item_instance})
 
-func purchase_listing(hero_state, listing_index: int) -> Dictionary:
+func purchase_listing(hero_state, listing_index: int, target_slot: String = "") -> Dictionary:
 	var result: Dictionary = {
 		"purchased": false,
 		"item_instance": null,
 		"price_paid": 0,
 		"replaced_item": null,
 		"replaced_item_sale_value": 0,
+		"target_slot": "",
 	}
 	if hero_state == null or listing_index < 0 or listing_index >= listings.size():
 		return result
@@ -83,7 +84,8 @@ func purchase_listing(hero_state, listing_index: int) -> Dictionary:
 		return result
 
 	hero_state.gold -= price
-	var replaced_item = hero_state.equipment.replace_item(item_instance)
+	var resolved_target_slot: String = item_instance.definition.equipment_slot if target_slot.is_empty() else target_slot
+	var replaced_item = hero_state.equipment.replace_item(item_instance, resolved_target_slot)
 	var resale_value: int = 0
 	if replaced_item != null:
 		resale_value = item_price_calculator.get_sell_price_for_item(replaced_item)
@@ -97,4 +99,5 @@ func purchase_listing(hero_state, listing_index: int) -> Dictionary:
 	result["price_paid"] = price
 	result["replaced_item"] = replaced_item
 	result["replaced_item_sale_value"] = maxi(0, resale_value)
+	result["target_slot"] = resolved_target_slot
 	return result

@@ -97,6 +97,7 @@ var god_system
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
+var pending_dungeon_preparation = null
 
 func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = []) -> void:
 	autonomous_quest_choice = initial_quest_definition == null
@@ -388,6 +389,9 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.SHOPPING:
 		advance_shop_purchase_tick(completed_tick)
 		return
+	if hero_state.loop_state == HeroState.PREPARING_DUNGEON:
+		advance_dungeon_potion_purchase_tick(completed_tick)
+		return
 	if hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON:
 		advance_dungeon_travel_tick(completed_tick)
 		return
@@ -463,7 +467,11 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 		return empty_result
 
 	var previous_max_hp: float = combat_stats.max_hp
-	var result: Dictionary = shop_system.purchase_listing(hero_state, int(best_purchase["listing_index"]))
+	var result: Dictionary = shop_system.purchase_listing(
+		hero_state,
+		int(best_purchase["listing_index"]),
+		str(best_purchase.get("target_slot", ""))
+	)
 	if not bool(result.get("purchased", false)):
 		debug_log.record_event(completed_tick, "%s не смог завершить выбранную покупку." % hero_state.hero_name)
 		finish_shopping_phase(completed_tick)
@@ -585,16 +593,27 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 	for candidate in candidates:
 		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
 		if bool(readiness.get("ready", false)):
-			var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
-			if not bool(preparation.get("can_prepare", false)):
+			var preparation_plan: Dictionary = potion_preparation_system.get_full_loadout_plan(hero_state, shop_system.get_healing_potion_definitions())
+			if not bool(preparation_plan.get("can_prepare", false)):
 				if first_potion_blocked_plan.is_empty():
-					first_potion_blocked_plan = preparation
+					first_potion_blocked_plan = preparation_plan
 					first_potion_blocked_dungeon = candidate
 				continue
-			debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_prepared(hero_state.hero_name, candidate.definition.display_name, preparation))
-			if not dungeon_runner.begin_trip(hero_state, candidate, current_hero_power):
+			if int(preparation_plan.get("purchase_cost", 0)) > 0:
+				pending_dungeon_preparation = candidate
+				hero_state.loop_state = HeroState.PREPARING_DUNGEON
+				debug_log.record_event(
+					completed_tick,
+					dungeon_narrator.describe_potion_purchase_started(
+						hero_state.hero_name,
+						candidate.definition.display_name,
+						int(preparation_plan.get("purchase_cost", 0))
+					)
+				)
+				return true
+			var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
+			if not begin_prepared_dungeon_trip(candidate, current_hero_power, preparation, completed_tick):
 				continue
-			debug_log.record_event(completed_tick, "%s закончил дела в городе и отправился в данж «%s»." % [hero_state.hero_name, candidate.definition.display_name])
 			return true
 		if first_blocked_readiness.is_empty() and str(readiness.get("reason", "")) == "retry_power_too_low":
 			first_blocked_readiness = readiness
@@ -618,8 +637,59 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 				str(first_potion_blocked_plan.get("reason", "")),
 				int(first_potion_blocked_plan.get("capacity", 0))
 			)
-		)
+			)
 	return false
+
+func advance_dungeon_potion_purchase_tick(completed_tick: int) -> Dictionary:
+	if hero_state.loop_state != HeroState.PREPARING_DUNGEON or pending_dungeon_preparation == null:
+		return {}
+	var dungeon = pending_dungeon_preparation
+	var current_hero_power: float = get_hero_power()
+	var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(dungeon, current_hero_power)
+	if not bool(readiness.get("ready", false)):
+		if str(readiness.get("reason", "")) == "retry_power_too_low":
+			debug_log.record_event(
+				completed_tick,
+				dungeon_narrator.describe_retry_postponed(
+					hero_state.hero_name,
+					dungeon.definition.display_name,
+					float(readiness.get("current_power", current_hero_power)),
+					float(readiness.get("required_power", 0.0))
+				)
+			)
+		pending_dungeon_preparation = null
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		return readiness
+
+	var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
+	if not bool(preparation.get("can_prepare", false)):
+		debug_log.record_event(
+			completed_tick,
+			dungeon_narrator.describe_potion_postponed(
+				hero_state.hero_name,
+				dungeon.definition.display_name,
+				str(preparation.get("reason", "")),
+				int(preparation.get("capacity", 0))
+			)
+		)
+		pending_dungeon_preparation = null
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		return preparation
+
+	if not begin_prepared_dungeon_trip(dungeon, current_hero_power, preparation, completed_tick):
+		pending_dungeon_preparation = null
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
+	return preparation
+
+func begin_prepared_dungeon_trip(dungeon, current_hero_power: float, preparation: Dictionary, completed_tick: int) -> bool:
+	if dungeon == null or not bool(preparation.get("can_prepare", false)):
+		return false
+	if not dungeon_runner.begin_trip(hero_state, dungeon, current_hero_power):
+		return false
+	pending_dungeon_preparation = null
+	debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_prepared(hero_state.hero_name, dungeon.definition.display_name, preparation))
+	debug_log.record_event(completed_tick, "%s закончил дела в городе и отправился в данж «%s»." % [hero_state.hero_name, dungeon.definition.display_name])
+	return true
 
 func advance_dungeon_travel_tick(completed_tick: int) -> void:
 	var result: Dictionary = dungeon_runner.advance(hero_state)

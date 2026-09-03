@@ -50,6 +50,7 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng, r
 		"equipped": false,
 		"inventory_item": null,
 		"dropped_item": null,
+		"target_slot": "",
 	}
 	if hero_state == null or item_definition == null or rng == null:
 		return result
@@ -62,7 +63,9 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng, r
 	var evaluation: Dictionary = equipment_evaluator.evaluate(hero_state, item_instance)
 	result["equipment_evaluation"] = evaluation
 	if bool(evaluation.get("should_equip", false)):
-		var replaced_item = hero_state.equipment.replace_item(item_instance)
+		var target_slot: String = str(evaluation.get("target_slot", item_instance.definition.equipment_slot))
+		var replaced_item = hero_state.equipment.replace_item(item_instance, target_slot)
+		result["target_slot"] = target_slot
 		if replaced_item != null:
 			result["inventory_item"] = replaced_item
 			result["dropped_item"] = hero_state.inventory.add_item(replaced_item)

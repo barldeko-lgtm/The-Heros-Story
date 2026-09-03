@@ -177,7 +177,7 @@ Status:
 - 🟡 Source-driven mob drops exist for current ilvl 1 / ilvl 10 families, but the final six city quest-band ilvl sources are incomplete.
 - ⬜ `QuestLoot` temporary unsafe adventure loot.
 - ⬜ Death clears unsafe QuestLoot while preserving permanent/equipped gear.
-- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; QuestLoot, quest/special item categories, and potion-specific UI remain incomplete.
+- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; current Level 10 / 20 potions are shown individually in a vertical column beside jewelry, one physical bottle per visual slot, with sprites and tooltips, while QuestLoot, quest/special item categories, and prepared-Belt-slot visualization remain incomplete.
 
 ## 11. Visual equipment content
 
@@ -197,7 +197,7 @@ Status:
 - ✅ Starting City shop has ilvl 1 / 10 / 20 equipment bands (**3 / 3**); the ilvl 10 band includes all 12 equipment slots.
 - ✅ Current full rotating equipment stock is 24 listings (3 bands × 8).
 - ⬜ Mid-Level City shop: ilvl 30 / 40 / 50 bands.
-- ✅ Starting City healing-potion purchasing/preparation for the current Level 10 / 20 tiers.
+- ✅ Starting City healing-potion purchasing/preparation for the current Level 10 / 20 tiers, including one dedicated world tick whenever missing potions must actually be bought before a dungeon.
 - ⬜ Skill Level purchasing/training.
 - ⬜ Curious ↔ Conservative spending priority.
 - ✅ Dungeon-preparation Gold reservation priority protects full-Belt potion preparation from optional equipment spending, including after a Belt upgrade.
@@ -208,7 +208,7 @@ Status:
 - ✅ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
 - ✅ Belt-level potion eligibility: `PotionLevel <= BeltLevel`.
 - 🟡 Potion progression is defined at Level 10 / 20 / 30 / 40 / 50 with no Level 1 potion; current live Starting City content implements Level 10 / 20 only.
-- ✅ Potion inventory counts and full-Belt preparation state.
+- ✅ Potion inventory counts, individual current Level 10 / 20 bottle slots, and full-Belt preparation state.
 - ✅ Autonomous current potion purchase logic: Level 10 = 100 Gold, Level 20 = 200 Gold; complete affordable loadouts maximize total healing.
 - ✅ Dungeon-only potion use; ordinary quest flow never consumes healing potions; multiple potions may be used in one dungeon preparation window.
 
@@ -237,7 +237,7 @@ Status:
 
 - 🟡 Main Screen exists as the current developer-oriented main UI, but it is not yet the finished 0.2 Main Screen.
 - ⬜ Dedicated finished Hero Screen.
-- 🟡 Inventory Screen is a strong first pass: paper doll, 12 visible slots, inventory grid and tooltips; final item categories/content remain incomplete.
+- 🟡 Inventory Screen is a strong first pass: paper doll, 12 visible equipment slots, 6 × 6 equipment grid, and a separate vertical healing-potion column immediately to the right of jewelry with one bottle per slot and tooltips; final item categories/content remain incomplete.
 - 🟡 Map Screen is functional: both cities, road, hero, quest targets, terrain inspection and camera; route display, dungeons/events/hidden-information presentation remain missing.
 - ⬜ Menu Screen.
 - 🟡 God controls exist for healing/blessing/resurrection; quest guidance UI is missing.

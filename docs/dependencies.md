@@ -211,7 +211,8 @@ assets/map/prototype_02_hex_layout.png
 → TravelSystem owns the active adjacent-hex route and advances WorldState.hero_position by one route step per completed world tick
 → QuestRunner starts outward/return travel for the already selected QuestOffer and reacts to TravelSystem arrival
 → after a known-dungeon post-quest city decision, DungeonEvaluator checks first-attempt/retry Power readiness
-→ PotionPreparationSystem must produce and purchase a complete legal Belt loadout before the attempt is allowed
+→ PotionPreparationSystem produces a complete legal Belt-loadout plan before the attempt is allowed
+→ if missing potions must be bought: HeroState.PREPARING_DUNGEON consumes one world tick and Simulation executes the complete missing purchase
 → DungeonRunner starts/advances the real route to the dungeon entrance through the same TravelSystem
 → DungeonRunner owns the authored encounter cursor / between-fight timing while Simulation uses the same shared CombatSession for each dungeon fight
 → Simulation applies PotionPreparationSystem healing inside the existing one-tick between-fight windows
@@ -245,7 +246,7 @@ Contracts:
 - discovering a dungeon never interrupts the current activity or replaces an active quest route; after successful quest turn-in, the dedicated market tick and all current shopping decisions finish first; only when shopping has no further valid purchase does a known dungeon in the hero's current region become a candidate for dungeon readiness instead of automatically overriding `CHOOSING_QUEST`;
 - `DungeonRunner` owns the dungeon-specific route and expedition sequence: it records base HeroPower at the start of each approved attempt; after reaching the real `target_hex` the first authored encounter becomes combat-ready, every ordinary victory preserves current HP and enters exactly one `DUNGEON_BETWEEN_FIGHTS` world tick, then the next ordinary fight or boss becomes ready; `PotionPreparationSystem` may consume prepared potions inside that same tick but there is never free healing; boss victory marks the runtime dungeon completed and immediately starts the real route back to the Starting City; return travel advances one adjacent hex per world tick and arrival hands the hero to `VISITING_MARKET`; failure reports the start Power and reached progress; it does not reuse or expand `QuestRunner`;
 - `DungeonEvaluator` owns the current retry Power gate and does not participate in QuestScore: first attempt has no retry threshold; a failed attempt stores its starting HeroPower and requires +25% after zero ordinary kills, +15% after ordinary progress before the boss, or +10% after reaching the boss; a later failed retry replaces the remembered baseline with that attempt's own starting HeroPower;
-- after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and after the Power gate passes additionally requires a complete legal potion loadout for every current Belt slot; retries therefore require both remembered Power growth and full-Belt preparation;
+- after a failed dungeon and normal resurrection/recovery, the hero returns to ordinary quest progression; each later post-shopping decision reevaluates the known dungeon, starts no dungeon route while current HeroPower is below the remembered threshold, and after the Power gate passes additionally requires a complete legal potion loadout for every current Belt slot; if that valid loadout requires purchases, one `PREPARING_DUNGEON` world tick buys all missing bottles before route start; retries therefore require both remembered Power growth and full-Belt preparation;
 - dungeon fights use the same `CombatSession` / Warrior Rage / Power Strike / Battle Guard / trait damage path as quest fights; each fight starts from carried `HeroState.current_hp` rather than resetting to MaxHP;
 - current dungeon ordinary enemies and boss grant their authored normal combat XP (150 / 185 for the first dungeon), but dungeon combat does not roll ordinary mob equipment drops or per-mob Gold; full completion of the first dungeon grants the authored 700 Gold plus exactly one ilvl 10 equipment reward from the unchanged full twelve-slot source now containing Ironwake core equipment plus existing accessories, with `completion_epic_chance = 0.25` producing 75% Rare/Blue and 25% Epic/Purple; standard equipment follows its normal rarity affixes, while Belt remains affixless because its rarity instead grants 1 / 2 / 3 / 4 potion slots; the item flows through `LootGenerator → ItemGenerator → ItemInstance → EquipmentEvaluator → Equipment/Inventory`;
 - dungeon death is owned by `DungeonRunner`: the hero returns to the safe city map hex, uses the normal 100-tick respawn and 1-HP resurrection/city-recovery contract, and Divine instant resurrection routes through the active respawn owner instead of pretending the death belongs to `QuestRunner`;
@@ -255,7 +256,7 @@ Contracts:
 - the first Starting Region dungeon reserves one hill hex 4–7 steps from the Starting City, begins unknown, and becomes discovered either when the hero physically enters its target hex or through Divine Vision; its live authored sequence is `3 × Mine Troglodyte (~200 Power, 150 XP) → Deep Devourer (~300 Power, 185 XP)` with one preparation tick after each ordinary encounter, including before the boss; prepared potions may be consumed within that tick according to the approved ordinary/no-overheal and pre-boss/survival rules; after boss victory `DungeonSystem` releases that dungeon's map activity and the completed instance no longer appears in active discovered/marker lookup;
 - MapScreen uses `assets/map/activities/dungeon.png` at 65 px draw height; the current developer-only view deliberately shows an unknown dungeon at 40% opacity while keeping its identity out of the tooltip, then renders it fully opaque and named after discovery;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/full-Belt potion preparation/between-fight potion use/completion reward/removal from the active map are integrated; current-route presentation, travel interruption/resumption, city relocation, events, later potion tiers, and potion-specific UI remain intentionally unintegrated.
+- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/full-Belt potion preparation/dedicated missing-potion purchase tick/between-fight potion use/completion reward/removal from the active map are integrated; current Level 10/20 potions are visible individually in a vertical Inventory column with one bottle per slot, while prepared-Belt-slot visualization, current-route presentation, travel interruption/resumption, city relocation, events, and later potion tiers remain intentionally unintegrated.
 
 ## UI boundary
 
@@ -333,8 +334,11 @@ successful HERO_TURNED_IN_QUEST
 → purchased listing remains empty
 → repeat on later ticks while another valid purchase exists
 → if a local dungeon is known: DungeonEvaluator checks first-attempt / remembered retry Power readiness
-→ if Power-ready: PotionPreparationSystem requires every Belt slot filled, using existing potions plus purchases of missing potions
+→ if Power-ready: PotionPreparationSystem requires every Belt slot filled and plans any missing potion purchases
+→ if missing potions must be bought: HeroState.PREPARING_DUNGEON
+→ next world tick: buy all missing potions for the selected complete loadout
 → if full potion preparation succeeds: DungeonRunner → TRAVEL_TO_DUNGEON
+→ if the complete loadout was already owned: no artificial purchase tick is added before DungeonRunner → TRAVEL_TO_DUNGEON
 → if blocked by retry Power: HeroState.CHOOSING_QUEST
 → if blocked by incomplete/unaffordable potion preparation: HeroState.CHOOSING_QUEST
 ```
@@ -371,6 +375,7 @@ Contracts:
 - the evaluator resolves a copied candidate equipment configuration and must not mutate live Equipment during comparison;
 - temporary finite effects are excluded from both sides of equipment evaluation;
 - a standard candidate of any rarity, including the same rarity, equips only when candidate HeroPower is strictly greater; Belt instead follows its approved healing-capacity/Health ordering; rejected candidates enter Inventory;
+- `ring_1` and `ring_2` are interchangeable placement slots for Ring evaluation: every new Ring candidate must be virtually tested in both positions, the placement with the highest resulting HeroPower becomes the transaction target, and loot/shop routing must replace that selected ring rather than blindly using the candidate definition's authored ring slot;
 - replaced equipment enters Inventory before the new item becomes the active stat source;
 - Inventory keeps at most 36 retained equipment item instances in FIFO order; adding equipment item 37 drops the oldest regardless of quality. Healing potions are separate persistent consumable counts owned by the same Inventory model and are not part of this equipment FIFO;
 - current ilvl 1/10/20 White reference values are 100/500/1000 Gold; Green uses ×3 and Rare uses ×9;
@@ -379,6 +384,8 @@ Contracts:
 - the market tick performs sale only and then enters `SHOPPING`; buying cannot occur during the sale tick;
 - each `SHOPPING` world tick may consume at most one listing, so multiple purchases require multiple world ticks;
 - dungeon discovery never skips the market or shopping phases; only after shopping finishes may a known dungeon replace the normal transition back to `CHOOSING_QUEST`, and only when its first-attempt/retry Power readiness plus mandatory complete potion preparation both pass;
+- if a Power-ready dungeon loadout needs one or more new potions, the equipment-shopping decision only schedules `PREPARING_DUNGEON`; Gold is not spent and potions are not created on that same shopping tick;
+- `PREPARING_DUNGEON` consumes exactly one completed world tick and purchases all missing bottles for that one selected complete loadout during that tick; dungeon travel begins afterward, while a fully already-owned loadout requires no such purchase tick;
 - a standard shop candidate must be affordable, at least 20% stronger by displayed ItemPower than the equipped comparison item when one exists, and a strict real HeroPower improvement through virtual equip; Belt candidates use their separate potential-healing/Health utility rule instead;
 - when a known local dungeon is already Power-ready, optional equipment spending may use only Gold left after the current full-Belt potion preparation cost is protected; a proposed Belt upgrade is also blocked if paying for it would make the complete loadout of that new Belt unaffordable;
 - among valid standard purchase candidates the current equipment slice chooses the largest real HeroPower gain; Belt-vs-Belt candidates prefer larger potential healing, then higher inherent Health, then lower price if otherwise equal;
@@ -400,6 +407,7 @@ Contracts:
 
 Potion contracts:
 - current Starting City potion definitions are Level 10 = 100 HP / 100 Gold and Level 20 = 150 HP / 200 Gold;
+- both current potion definitions reference their supplied 550 × 550 inventory sprites, and Inventory presentation exposes each owned Level 10 / 20 bottle in its own vertical visual slot without consuming any of the 36 retained-equipment cells; the column scrolls when more bottles are owned than fit in its visible height;
 - a prepared dungeon loadout must fill every current Belt slot; partial loadouts are not ready;
 - among complete affordable loadouts, preparation maximizes total healing and reuses already-owned potions before buying missing ones;
 - prepared potions remain physical Inventory counts; the Belt is not a separate storage inventory;

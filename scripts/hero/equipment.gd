@@ -12,10 +12,10 @@ func equip_if_empty(item_instance) -> bool:
 	equipped_items[slot] = item_instance
 	return true
 
-func replace_item(item_instance):
+func replace_item(item_instance, target_slot: String = ""):
 	if item_instance == null or item_instance.definition == null:
 		return null
-	var slot: String = item_instance.definition.equipment_slot
+	var slot: String = resolve_target_slot(item_instance, target_slot)
 	if slot.is_empty():
 		return null
 	var previous_item = equipped_items.get(slot)
@@ -28,12 +28,23 @@ func get_item(slot: String):
 func get_all_items() -> Array:
 	return equipped_items.values()
 
-func duplicate_with_replacement(item_instance):
+func duplicate_with_replacement(item_instance, target_slot: String = ""):
 	var equipment_copy = get_script().new()
 	equipment_copy.equipped_items = equipped_items.duplicate()
 	if item_instance != null and item_instance.definition != null:
-		equipment_copy.equipped_items[item_instance.definition.equipment_slot] = item_instance
+		var slot: String = resolve_target_slot(item_instance, target_slot)
+		if not slot.is_empty():
+			equipment_copy.equipped_items[slot] = item_instance
 	return equipment_copy
+
+func resolve_target_slot(item_instance, requested_slot: String = "") -> String:
+	if item_instance == null or item_instance.definition == null:
+		return ""
+	var authored_slot: String = item_instance.definition.equipment_slot
+	var target_slot: String = authored_slot if requested_slot.is_empty() else requested_slot
+	if authored_slot in ["ring_1", "ring_2"]:
+		return target_slot if target_slot in ["ring_1", "ring_2"] else ""
+	return target_slot if target_slot == authored_slot else ""
 
 func get_stat_bonus(stat_id: String) -> float:
 	var total: float = 0.0

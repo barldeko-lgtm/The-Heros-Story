@@ -58,8 +58,66 @@ func _init() -> void:
 	replacement_simulation.hero_state.gold = 100000
 	assert(replacement_simulation.spending_evaluator.select_best_equipment_purchase(replacement_simulation.hero_state, replacement_simulation.shop_system.get_listings()).is_empty(), "A technically equal item must not pass the 20% shop-upgrade threshold.")
 
-	print("PASS: Shopping buys one best HeroPower upgrade per tick and immediately sells replaced equipment.")
+	test_shop_ring_purchase_targets_weaker_slot(simulation_script)
+
+	print("PASS: Shopping buys one best HeroPower upgrade per tick, immediately sells replaced equipment, and targets the weaker ring slot.")
 	quit()
+
+func test_shop_ring_purchase_targets_weaker_slot(simulation_script: Script) -> void:
+	var ItemInstanceScript: Script = load("res://scripts/model/runtime/item_instance.gd")
+	var simulation = simulation_script.new(47)
+	var strong_ring_definition: Resource = load("res://data/items/visual_families/ironward_vanguard/ironward_ring_1_uncommon.tres")
+	var weak_ring_definition: Resource = load("res://data/items/visual_families/ironward_vanguard/ironward_ring_2.tres")
+	var candidate_definition: Resource = load("res://data/items/visual_families/ironward_vanguard/ironward_ring_1_uncommon.tres")
+	assert(ItemInstanceScript != null and strong_ring_definition != null and weak_ring_definition != null and candidate_definition != null, "Shop ring-pair regression inputs must load.")
+
+	var strong_ring = ItemInstanceScript.new(
+		strong_ring_definition,
+		10,
+		1,
+		{"fire_resistance": 20.0},
+		[{"stat_id": "health", "value": 50.0}],
+		78.0,
+		{"fire_resistance": 20.0, "max_hp": 50.0}
+	)
+	var weak_ring = ItemInstanceScript.new(
+		weak_ring_definition,
+		10,
+		0,
+		{"cold_resistance": 20.0},
+		[],
+		0.0,
+		{"cold_resistance": 20.0}
+	)
+	var candidate_ring = ItemInstanceScript.new(
+		candidate_definition,
+		10,
+		1,
+		{"lightning_resistance": 20.0},
+		[{"stat_id": "health", "value": 35.0}],
+		78.0,
+		{"lightning_resistance": 20.0, "max_hp": 35.0}
+	)
+
+	simulation.hero_state.equipment.replace_item(strong_ring, "ring_1")
+	simulation.hero_state.equipment.replace_item(weak_ring, "ring_2")
+	simulation.refresh_combat_stats()
+	simulation.shop_system.listings = [{"item_instance": candidate_ring}]
+	var candidate_price: int = simulation.shop_system.item_price_calculator.get_reference_shop_value_for_item(candidate_ring)
+	var weak_sell_value: int = simulation.shop_system.item_price_calculator.get_sell_price_for_item(weak_ring)
+	simulation.hero_state.gold = candidate_price + 1000
+	simulation.hero_state.loop_state = "SHOPPING"
+	var best_purchase: Dictionary = simulation.spending_evaluator.select_best_equipment_purchase(simulation.hero_state, simulation.shop_system.get_listings())
+	assert(not best_purchase.is_empty() and str(best_purchase.get("target_slot", "")) == "ring_2", "Shop evaluation must compare a ring candidate against both equipped rings and target the weaker one.")
+
+	var gold_before: int = simulation.hero_state.gold
+	var purchase_result: Dictionary = simulation.advance_shop_purchase_tick(19)
+	assert(bool(purchase_result.get("purchased", false)), "A meaningful ring upgrade must still be purchasable.")
+	assert(str(purchase_result.get("target_slot", "")) == "ring_2", "The shop transaction must preserve the evaluator's selected ring target slot.")
+	assert(simulation.hero_state.equipment.get_item("ring_1") == strong_ring, "The stronger existing ring must survive a cross-slot shop purchase.")
+	assert(simulation.hero_state.equipment.get_item("ring_2") == candidate_ring, "The purchased ring must replace the weaker ring even when its definition is authored for Ring 1.")
+	assert(purchase_result.get("replaced_item") == weak_ring and int(purchase_result.get("replaced_item_sale_value", 0)) == weak_sell_value, "The weaker displaced ring must be the item immediately resold by the shop transaction.")
+	assert(simulation.hero_state.gold == gold_before - candidate_price + weak_sell_value, "Cross-slot ring purchase must keep the normal purchase and immediate-resale economy.")
 
 func count_filled_shop_listings(listings: Array) -> int:
 	var count: int = 0
@@ -73,4 +131,3 @@ func contains_known_shop_slot_name(text: String) -> bool:
 		if text.contains(slot_name):
 			return true
 	return false
-

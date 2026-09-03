@@ -28,6 +28,8 @@ func test_potion_data_and_belt_comparison() -> void:
 	assert(potion_definitions.size() == 2, "Starting City must expose exactly the currently approved ilvl 10 and ilvl 20 healing potions.")
 	assert(potion_definitions[0].potion_level == 10 and is_equal_approx(potion_definitions[0].healing_amount, 100.0) and potion_definitions[0].shop_price == 100, "ilvl 10 potion must heal 100 HP and cost 100 Gold.")
 	assert(potion_definitions[1].potion_level == 20 and is_equal_approx(potion_definitions[1].healing_amount, 150.0) and potion_definitions[1].shop_price == 200, "ilvl 20 potion must heal 150 HP and cost 200 Gold.")
+	assert(potion_definitions[0].icon_texture != null and potion_definitions[0].icon_texture.get_size() == Vector2(550.0, 550.0), "ilvl 10 potion must use the supplied 550x550 inventory sprite.")
+	assert(potion_definitions[1].icon_texture != null and potion_definitions[1].icon_texture.get_size() == Vector2(550.0, 550.0), "ilvl 20 potion must use the supplied 550x550 inventory sprite.")
 
 	var common_definition = load("%s/ironward_belt.tres" % BELT_DIR)
 	var uncommon_definition = load("%s/ironward_belt_uncommon.tres" % BELT_DIR)
@@ -103,8 +105,16 @@ func test_dungeon_requires_full_belt() -> void:
 	assert(simulation.debug_log.get_text().contains("полностью заполнить"), "Dungeon readiness log must explain missing full Belt preparation.")
 
 	simulation.hero_state.gold = 100
-	assert(simulation.try_start_discovered_dungeon_trip(2), "The dungeon may start once the hero can buy enough potions to fill every Belt slot.")
-	assert(simulation.hero_state.gold == 0 and simulation.hero_state.prepared_healing_potion_levels == [10], "Starting the dungeon must buy and prepare the full one-slot ilvl 10 loadout for exactly 100 Gold.")
+	assert(simulation.try_start_discovered_dungeon_trip(2), "The dungeon may schedule preparation once the hero can buy enough potions to fill every Belt slot.")
+	assert(simulation.hero_state.loop_state == HeroState.PREPARING_DUNGEON, "Missing dungeon potions must schedule a dedicated preparation/purchase world tick before travel.")
+	var preparation_start_log: String = simulation.debug_log.get_text()
+	assert(preparation_start_log.contains("отправился за зельями") and not preparation_start_log.contains("выделил отдельный тик"), "The preparation-start narration must describe the hero action without exposing the internal dedicated-tick implementation wording.")
+	assert(simulation.hero_state.gold == 100 and simulation.hero_state.inventory.get_total_healing_potion_count() == 0, "Scheduling the potion-purchase tick must not spend Gold or create potions early.")
+	var purchase_tick_before: int = simulation.world_clock.world_tick
+	simulation.advance_time(10.0)
+	assert(simulation.world_clock.world_tick == purchase_tick_before + 1, "Buying the missing full-Belt loadout must consume exactly one world tick.")
+	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON, "Dungeon travel may begin only after the dedicated potion-purchase tick completes.")
+	assert(simulation.hero_state.gold == 0 and simulation.hero_state.prepared_healing_potion_levels == [10], "The dedicated potion tick must buy and prepare the full one-slot ilvl 10 loadout for exactly 100 Gold.")
 	assert(simulation.hero_state.inventory.get_healing_potion_count(10) == 1, "Prepared dungeon potion must still exist in the hero Inventory until consumed.")
 
 func test_belt_purchase_preserves_new_full_loadout_budget() -> void:
@@ -127,5 +137,10 @@ func test_belt_purchase_preserves_new_full_loadout_budget() -> void:
 	var result: Dictionary = simulation.advance_shop_purchase_tick(5)
 	assert(not bool(result.get("purchased", false)), "A Belt upgrade must not spend Gold that would make its own newly enlarged full potion loadout unaffordable.")
 	assert(simulation.hero_state.equipment.get_item("belt") == common10, "The old one-slot Belt must remain equipped when the two-slot upgrade would break dungeon preparation priority.")
-	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON, "After declining the unsafe Belt purchase, the hero must prepare the current full loadout and start the ready dungeon.")
-	assert(simulation.hero_state.gold == 1500 and simulation.hero_state.prepared_healing_potion_levels == [10], "The current one-slot Belt preparation must reserve and spend exactly 100 Gold before dungeon travel.")
+	assert(simulation.hero_state.loop_state == HeroState.PREPARING_DUNGEON, "After declining the unsafe Belt purchase, the missing current-Belt potion must be bought on a separate world tick.")
+	assert(simulation.hero_state.gold == 1600 and simulation.hero_state.prepared_healing_potion_levels.is_empty(), "The equipment-shopping tick must not also buy the dungeon potion.")
+	var purchase_tick_before: int = simulation.world_clock.world_tick
+	simulation.advance_time(10.0)
+	assert(simulation.world_clock.world_tick == purchase_tick_before + 1, "The current-Belt potion purchase must consume its own world tick.")
+	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON, "Travel must begin after the separate potion-purchase tick.")
+	assert(simulation.hero_state.gold == 1500 and simulation.hero_state.prepared_healing_potion_levels == [10], "The dedicated potion tick must spend exactly 100 Gold on the current one-slot Belt preparation.")

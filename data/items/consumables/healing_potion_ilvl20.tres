@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="HealingPotionDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="HealingPotionDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/healing_potion_definition.gd" id="1_potion"]
+[ext_resource type="Texture2D" path="res://assets/items/icons/consumables/healing_potion_ilvl20.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_potion")
@@ -9,3 +10,4 @@ display_name = "Лечебное зелье II"
 potion_level = 20
 healing_amount = 150.0
 shop_price = 200
+icon_texture = ExtResource("2_icon")

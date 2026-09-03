@@ -28,15 +28,15 @@ func select_best_equipment_purchase(hero_state, listings: Array, available_gold_
 		if price < 0 or price > available_gold:
 			continue
 
-		var current_item = hero_state.equipment.get_item(item_instance.definition.equipment_slot)
+		var equipment_evaluation: Dictionary = equipment_evaluator.evaluate(hero_state, item_instance)
+		if not bool(equipment_evaluation.get("should_equip", false)):
+			continue
+		var target_slot: String = str(equipment_evaluation.get("target_slot", item_instance.definition.equipment_slot))
+		var current_item = hero_state.equipment.get_item(target_slot)
 		var current_item_power: float = 0.0 if current_item == null else current_item.get_item_power()
 		var candidate_item_power: float = item_instance.get_item_power()
 		var is_belt: bool = item_instance.definition.equipment_slot == "belt"
 		if not is_belt and current_item != null and candidate_item_power + POWER_EPSILON < current_item_power * SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER:
-			continue
-
-		var equipment_evaluation: Dictionary = equipment_evaluator.evaluate(hero_state, item_instance)
-		if not bool(equipment_evaluation.get("should_equip", false)):
 			continue
 
 		var power_gain: float = float(equipment_evaluation.get("candidate_power", 0.0)) - float(equipment_evaluation.get("current_power", 0.0))
@@ -44,19 +44,20 @@ func select_best_equipment_purchase(hero_state, listings: Array, available_gold_
 			continue
 
 		var candidate_result: Dictionary = {
-					"listing_index": listing_index,
-					"listing": listing,
-					"item_instance": item_instance,
-				"price": price,
-				"current_item_power": current_item_power,
-				"candidate_item_power": candidate_item_power,
-				"power_gain": power_gain,
-					"current_power": float(equipment_evaluation.get("current_power", 0.0)),
-					"candidate_power": float(equipment_evaluation.get("candidate_power", 0.0)),
-					"comparison_mode": str(equipment_evaluation.get("comparison_mode", "power")),
-					"candidate_belt_healing": float(equipment_evaluation.get("candidate_belt_healing", 0.0)),
-					"candidate_belt_health": float(equipment_evaluation.get("candidate_belt_health", 0.0)),
-				}
+			"listing_index": listing_index,
+			"listing": listing,
+			"item_instance": item_instance,
+			"price": price,
+			"target_slot": target_slot,
+			"current_item_power": current_item_power,
+			"candidate_item_power": candidate_item_power,
+			"power_gain": power_gain,
+			"current_power": float(equipment_evaluation.get("current_power", 0.0)),
+			"candidate_power": float(equipment_evaluation.get("candidate_power", 0.0)),
+			"comparison_mode": str(equipment_evaluation.get("comparison_mode", "power")),
+			"candidate_belt_healing": float(equipment_evaluation.get("candidate_belt_healing", 0.0)),
+			"candidate_belt_health": float(equipment_evaluation.get("candidate_belt_health", 0.0)),
+		}
 		if best_result.is_empty() or purchase_candidate_is_better(candidate_result, best_result):
 			best_result = candidate_result
 

@@ -45,6 +45,13 @@ func describe_potion_prepared(hero_name: String, dungeon_name: String, preparati
 		int(preparation.get("purchase_cost", 0)),
 	]
 
+func describe_potion_purchase_started(hero_name: String, dungeon_name: String, purchase_cost: int) -> String:
+	return "%s закончил покупки экипировки и отправился за зельями для данжа «%s». На подготовку потребуется %d золота." % [
+		hero_name,
+		dungeon_name,
+		purchase_cost,
+	]
+
 func describe_potion_postponed(hero_name: String, dungeon_name: String, reason: String, capacity: int) -> String:
 	if reason == "no_belt":
 		return "%s пока не идёт в данж «%s»: нет пояса, способного нести лечебные зелья." % [hero_name, dungeon_name]

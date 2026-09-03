@@ -2249,6 +2249,8 @@ The hero should therefore normally avoid equipment configurations that disable t
 
 The Belt is evaluated through both permanent Health and practical potion-healing capacity rather than ordinary single-fight Item Power alone.
 
+The two Ring slots are interchangeable positions for equipment evaluation rather than two unrelated item types. When a new Ring is considered, the hero must evaluate placing it into **both Ring 1 and Ring 2** and use the placement that produces the stronger final legal Hero Power. Therefore, when both Ring slots are occupied, an upgrade replaces the weaker ring in the current build instead of blindly replacing the slot named by the candidate's authored visual definition. If neither replacement strictly improves Hero Power, the new Ring is not equipped.
+
 For Belt-versus-Belt replacement, the primary comparison is the total potential healing of a fully loaded Belt using the strongest healing potion that Belt can legally support from the currently implemented potion tiers:
 
 > **`BeltPotentialHealing = PotionSlotCapacity × StrongestSupportedPotionHealing`**
@@ -2819,6 +2821,8 @@ Before a relevant dungeon attempt, the hero must fill all available Belt potion 
 Among complete affordable loadouts, the hero chooses the combination with the greatest total healing. Existing carried potions count toward the loadout, so the hero buys only the missing potions. If no complete loadout is affordable, the dungeon attempt is postponed.
 
 Required potion preparation has spending priority over optional equipment. In particular, an equipment or Belt upgrade must not be purchased if doing so would leave insufficient Gold to fill every potion slot of the resulting equipped Belt for a currently Power-ready dungeon attempt.
+
+If missing potions must actually be purchased for that attempt, buying the complete missing set consumes **one dedicated world tick** after equipment shopping and before dungeon travel begins. All missing potions for the selected complete loadout are bought during that one purchase tick. If the hero already owns every potion needed for the complete loadout, no artificial purchase tick is added merely to mark them as prepared.
 
 Potion purchasing remains part of the economy system, not UI logic.
 

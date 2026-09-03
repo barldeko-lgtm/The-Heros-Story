@@ -4,6 +4,7 @@ extends Control
 const HeroReferenceTexture = preload("res://assets/hero/hero_reference.png")
 const ItemQualityOutlineShader = preload("res://assets/shaders/item_quality_outline.gdshader")
 const HERO_OVERLAY_DRAW_ORDER: Array[String] = ["pants", "boots", "chest", "gloves", "helmet"]
+const BASE_POTION_INVENTORY_SLOT_COUNT: int = 4
 
 var simulation
 var hero_chest_overlay: TextureRect
@@ -17,6 +18,11 @@ var inventory_item_icons: Array[TextureRect] = []
 var equipment_slot_controls: Dictionary = {}
 var equipment_item_icons: Dictionary = {}
 var quality_outline_materials: Dictionary = {}
+var potion_definitions_by_level: Dictionary = {}
+var potion_inventory_slot_controls: Array[PanelContainer] = []
+var potion_inventory_icons: Array[TextureRect] = []
+var potion_inventory_levels: Array[int] = []
+var potion_inventory_slots: VBoxContainer
 
 func setup(simulation_reference) -> void:
 	simulation = simulation_reference
@@ -138,7 +144,77 @@ func create_inventory_equipment_layout() -> void:
 		inventory_slot_controls.append(slot)
 		inventory_item_icons.append(item_icon)
 	add_child(inventory_slots)
+	create_potion_inventory_column()
 	create_inventory_item_tooltip()
+
+func create_potion_inventory_column() -> void:
+	var potion_title := Label.new()
+	potion_title.name = "PotionInventoryTitle"
+	potion_title.text = "Зелья"
+	potion_title.position = Vector2(508.4, 112.0)
+	potion_title.size = Vector2(86.0, 28.0)
+	potion_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	potion_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	potion_title.add_theme_font_size_override("font_size", 18)
+	potion_title.add_theme_color_override("font_color", Color("242a31"))
+	add_child(potion_title)
+
+	var potion_scroll := ScrollContainer.new()
+	potion_scroll.name = "PotionInventoryScroll"
+	potion_scroll.position = Vector2(508.4, 148.0)
+	potion_scroll.size = Vector2(104.0, 464.0)
+	potion_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	potion_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	add_child(potion_scroll)
+
+	potion_inventory_slots = VBoxContainer.new()
+	potion_inventory_slots.name = "PotionInventorySlots"
+	potion_inventory_slots.custom_minimum_size = Vector2(86.0, 0.0)
+	potion_inventory_slots.add_theme_constant_override("separation", 8)
+	potion_scroll.add_child(potion_inventory_slots)
+
+	var potion_definitions: Array = []
+	if simulation != null and simulation.shop_system != null:
+		potion_definitions = simulation.shop_system.get_healing_potion_definitions()
+	for potion_definition in potion_definitions:
+		if potion_definition == null:
+			continue
+		potion_definitions_by_level[int(potion_definition.potion_level)] = potion_definition
+
+	ensure_potion_inventory_slot_count(BASE_POTION_INVENTORY_SLOT_COUNT)
+
+func ensure_potion_inventory_slot_count(required_count: int) -> void:
+	if potion_inventory_slots == null:
+		return
+	while potion_inventory_slot_controls.size() < required_count:
+		var slot_index: int = potion_inventory_slot_controls.size()
+		var slot := PanelContainer.new()
+		slot.name = "PotionInventorySlot%02d" % (slot_index + 1)
+		slot.custom_minimum_size = Vector2(82.0, 82.0)
+		var slot_style := StyleBoxFlat.new()
+		slot_style.bg_color = Color("252b34")
+		slot_style.border_color = Color("8994a2")
+		slot_style.set_border_width_all(2)
+		slot_style.set_corner_radius_all(9)
+		slot_style.shadow_color = Color(0.0, 0.0, 0.0, 0.22)
+		slot_style.shadow_size = 3
+		slot_style.shadow_offset = Vector2(0.0, 2.0)
+		slot.add_theme_stylebox_override("panel", slot_style)
+		slot.mouse_entered.connect(show_healing_potion_slot_tooltip.bind(slot_index))
+		slot.mouse_exited.connect(hide_item_tooltip)
+
+		var potion_icon := TextureRect.new()
+		potion_icon.name = "HealingPotionInventoryIcon%02d" % (slot_index + 1)
+		potion_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		potion_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		potion_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		potion_icon.visible = false
+		slot.add_child(potion_icon)
+
+		potion_inventory_slots.add_child(slot)
+		potion_inventory_slot_controls.append(slot)
+		potion_inventory_icons.append(potion_icon)
+		potion_inventory_levels.append(0)
 
 func create_inventory_item_tooltip() -> void:
 	item_tooltip_panel = PanelContainer.new()
@@ -299,6 +375,36 @@ func update_inventory_equipment_display() -> void:
 		item_icon.texture = inventory_definition.icon_texture
 		item_icon.material = get_quality_outline_material(inventory_item.rarity)
 		item_icon.visible = true
+	update_potion_inventory_display()
+
+func update_potion_inventory_display() -> void:
+	if simulation == null or simulation.hero_state == null or simulation.hero_state.inventory == null:
+		return
+	var display_levels: Array[int] = []
+	var sorted_levels: Array = potion_definitions_by_level.keys()
+	sorted_levels.sort()
+	for potion_level_value in sorted_levels:
+		var potion_level: int = int(potion_level_value)
+		var potion_count: int = simulation.hero_state.inventory.get_healing_potion_count(potion_level)
+		for _potion_index in potion_count:
+			display_levels.append(potion_level)
+
+	var visible_slot_count: int = maxi(BASE_POTION_INVENTORY_SLOT_COUNT, display_levels.size())
+	ensure_potion_inventory_slot_count(visible_slot_count)
+	for slot_index in potion_inventory_slot_controls.size():
+		var slot: PanelContainer = potion_inventory_slot_controls[slot_index]
+		var potion_icon: TextureRect = potion_inventory_icons[slot_index]
+		slot.visible = slot_index < visible_slot_count
+		if slot_index >= display_levels.size():
+			potion_inventory_levels[slot_index] = 0
+			potion_icon.texture = null
+			potion_icon.visible = false
+			continue
+		var potion_level: int = display_levels[slot_index]
+		var potion_definition = potion_definitions_by_level.get(potion_level)
+		potion_inventory_levels[slot_index] = potion_level
+		potion_icon.texture = null if potion_definition == null else potion_definition.icon_texture
+		potion_icon.visible = potion_definition != null and potion_definition.icon_texture != null
 
 func get_quality_outline_material(quality: int):
 	if quality <= 0:
@@ -332,10 +438,26 @@ func show_inventory_item_tooltip(slot_index: int) -> void:
 		return
 	show_item_tooltip(inventory_items[slot_index])
 
+func show_healing_potion_slot_tooltip(slot_index: int) -> void:
+	if simulation == null or slot_index < 0 or slot_index >= potion_inventory_levels.size():
+		hide_item_tooltip()
+		return
+	var potion_level: int = potion_inventory_levels[slot_index]
+	var potion_definition = potion_definitions_by_level.get(potion_level)
+	if potion_level <= 0 or potion_definition == null:
+		hide_item_tooltip()
+		return
+	show_tooltip_text(potion_definition.get_tooltip_text())
+
 func show_item_tooltip(item_instance) -> void:
 	if item_instance == null or item_tooltip_panel == null:
 		return
-	item_tooltip_label.text = item_instance.get_tooltip_text()
+	show_tooltip_text(item_instance.get_tooltip_text())
+
+func show_tooltip_text(tooltip_text: String) -> void:
+	if item_tooltip_panel == null:
+		return
+	item_tooltip_label.text = tooltip_text
 	var tooltip_size: Vector2 = item_tooltip_panel.get_combined_minimum_size()
 	item_tooltip_panel.size = tooltip_size
 	var screen_size: Vector2 = get_viewport_rect().size
@@ -353,4 +475,3 @@ func show_item_tooltip(item_instance) -> void:
 func hide_item_tooltip() -> void:
 	if item_tooltip_panel != null:
 		item_tooltip_panel.visible = false
-

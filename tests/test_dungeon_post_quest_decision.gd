@@ -45,7 +45,11 @@ func test_known_dungeon_starts_after_city_routine() -> void:
 		simulation.advance_shop_purchase_tick(2 + shopping_ticks)
 		shopping_ticks += 1
 	assert(shopping_ticks > 0, "The normal shopping phase must be evaluated before dungeon travel begins.")
-	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON, "A known dungeon must take priority over selecting another ordinary quest after shopping finishes.")
+	assert(simulation.hero_state.loop_state == HeroState.PREPARING_DUNGEON, "A known ready dungeon with missing potions must schedule one dedicated potion-purchase tick after equipment shopping.")
+	var preparation_tick_before: int = simulation.world_clock.world_tick
+	simulation.advance_time(10.0)
+	assert(simulation.world_clock.world_tick == preparation_tick_before + 1, "Dungeon potion purchasing must consume exactly one world tick after equipment shopping.")
+	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON, "A known dungeon must take priority over selecting another ordinary quest after its separate potion-purchase tick.")
 	assert(simulation.dungeon_runner.active_dungeon == dungeon, "DungeonRunner must own the selected known dungeon expedition target.")
 	assert(simulation.travel_system.destination == dungeon.target_hex, "Dungeon travel must use the real dungeon map hex as its destination.")
 	assert(simulation.hero_state.active_quest == null, "Starting dungeon travel must not create or select another ordinary quest.")
@@ -69,6 +73,7 @@ func test_full_quest_to_dungeon_priority_flow() -> void:
 
 	var saw_market: bool = false
 	var saw_shopping: bool = false
+	var saw_potion_preparation: bool = false
 	var reached_dungeon_priority: bool = false
 	for _step in 1200:
 		simulation.advance_time(10.0)
@@ -76,11 +81,14 @@ func test_full_quest_to_dungeon_priority_flow() -> void:
 			saw_market = true
 		elif simulation.hero_state.loop_state == HeroState.SHOPPING:
 			saw_shopping = true
+		elif simulation.hero_state.loop_state == HeroState.PREPARING_DUNGEON:
+			saw_potion_preparation = true
 		elif simulation.hero_state.loop_state == HeroState.TRAVEL_TO_DUNGEON or simulation.hero_state.loop_state == HeroState.AT_DUNGEON_ENTRANCE:
 			reached_dungeon_priority = true
 			break
 	assert(saw_market, "The hero must turn in the current quest and reach the normal market phase before changing activity priority.")
 	assert(saw_shopping, "The hero must evaluate the normal shopping phase before changing activity priority.")
+	assert(saw_potion_preparation, "A full-flow dungeon attempt that needs a purchased potion must spend one dedicated preparation world tick before travel.")
 	assert(reached_dungeon_priority, "After the current quest and city routine, the known dungeon must replace another ordinary quest as the next activity.")
 	assert(simulation.hero_state.active_quest == null, "The completed ordinary quest must be cleared before dungeon travel begins.")
 	assert(simulation.dungeon_runner.active_dungeon != null, "DungeonRunner must own the expedition target after the full post-quest transition.")
