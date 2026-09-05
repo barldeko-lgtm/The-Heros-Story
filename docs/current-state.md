@@ -1,367 +1,626 @@
 # The Hero’s Story — Current Project State
 
-This document describes what is **actually implemented now**.
+This document records **what is actually implemented now** in the current Prototype 0.2 build.
+
+It is intentionally a runtime snapshot rather than a second design specification. Use it to understand the current playable systems, temporary development deviations, and major missing pieces. Exact ownership by file belongs in `project-map.md`; fragile cross-system contracts belong in `dependencies.md`; intended final behaviour belongs in the Prototype 0.2 Scope.
 
 ## Current development focus
 
-The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and both Starting Region ordinary dungeons use the shared map-backed flow, and four Starting Region temporary events now feed formative/expressive choices into the live personality axes; the second event uses real event-owned travel to a separate temporary objective and back, the third chains two separate expressive personality stages, and the fourth is a detective event with mechanically distinct WIS / DEX / CON openings. City relocation and the broader event population remain incomplete.
+The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
+
+The most recent work has started the **Hero Diary / Chronicle** as a real player-facing system. Ordinary quest selection, successful completion, and ordinary-quest death now create live diary entries. The next diary work is content/coverage expansion rather than a redesign of the simulation.
+
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, only four handcrafted temporary events exist, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
+
+## Simulation and world time
 
 Implemented:
-- one autonomous hero;
-- a three-piece Common starting outfit equipped on every new hero: `Поношенная рубаха`, `Поношенные штаны`, and `Поношенные сапоги`; each fixed ilvl 1 piece grants exactly +1 Armor, has no random affixes, uses its supplied inventory icon and aligned paper-doll overlay, and sells for 1 Gold after a normal upgrade replaces it;
-- Prototype 0.2 Warrior primary attributes with +1 fixed STR and 4 pending player-distributed primary-attribute points on every pre-specialization level-up;
-- world tick;
-- pause and developer speed controls (×0, ×1, ×2, ×5, ×10, ×20, ×100);
-- one shared seeded RNG for current simulation randomness;
-- one shared Power calculation for hero and mobs;
-- live one-on-one combat with timed strikes;
-- fight-local Warrior Rage plus the autonomous compressed Level 5 Power Strike and Level 10 Battle Guard at Skill Level 1;
-- per-mob XP and post-fight recovery;
-- death, 100-tick natural resurrection, and city recovery;
-- twenty-two Starting City mob definitions on the approved gradually widening Power curve from approximately 30 to 650, including the added Stray Dog, Experienced Goblin, Wounded Troll, Mature Wolf, Young Troll, Experienced Ogre, and Orc Veteran;
-- twenty-two matching Starting City quest templates;
-- three live seven-piece visual equipment families, each with five armor pieces plus sword and shield and Common/Uncommon/Rare definitions: ilvl 1 `Посвящённый Ржавой Цепи` (`Rustchain Initiate`), compressed ilvl 5 `Страж Железного Следа` (`Ironwake Sentinel`), and compressed ilvl 10 `Авангард Железного Оплота` (`Ironward Vanguard`), whose sword and shield still use neutral placeholders;
-- separate compressed ilvl 5 and ilvl 10 accessory sets for necklace, earrings, two mechanically separate ring slots, and Belt; both rings within each tier share the supplied tier icon, all accessories use inventory/equipment icons without hero paper-doll overlays, and Belt rarity provides 1 / 2 / 3 / 4 potion slots for Common / Uncommon / Rare / Epic while Item Level limits the strongest legal potion tier;
-- source-driven ordinary-mob equipment drops keep the same 5% chance and Common/Uncommon/Rare distribution of 70%/25%/5% with an 8/7/7 Power-band split: the eight lower-band mobs use seven-slot ilvl 1 Rustchain; the seven middle-band mobs from Giant Spider through Young Troll use the twelve-slot compressed ilvl 5 source with Ironwake core equipment plus existing accessories; the seven higher-band mobs from Young Ogre through Orc Veteran use twelve-slot compressed ilvl 10 Ironward core equipment plus the existing accessories;
-- virtual-equip comparison by real base HeroPower plus a 36-slot FIFO inventory for unequipped drops before city sale;
-- a Starting City equipment shop with compressed ilvl 1 Rustchain, ilvl 5 Ironwake-core-plus-accessory, and ilvl 10 Ironward bands; each contains 6 White unique-slot listings and 2 Green unique-slot listings for 24 total listings, deterministic 200-world-tick stock refresh, and autonomous one-purchase-per-tick upgrade buying;
-- twenty-two Starting City quest templates grouped into 8 lower / 7 middle / 7 higher bands; for current development testing the normal 3-offers-per-band board cap is temporarily disabled, so every currently eligible template may appear on the board at once;
-- autonomous choice among the current quest offers;
-- four live hidden personality axes in `HeroState` (`courage`, `morality`, `greed`, `curiosity`) on the approved −100…+100 range, with ±40 established-trait activation and ±20 return-to-neutral hysteresis;
-- seeded assignment of 1–2 starting established traits from the current rollable subset Cautious, Brave, Devious, Noble, and Greedy; each rolled trait initializes its matching hidden axis at exactly −40 or +40 and becomes the established trait on that axis;
-- current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and the existing 10% category damage for Noble/Devious now read the established traits derived from the personality axes rather than a separate legacy HeroState trait list;
-- ordinary quest Hard Filter uses the Scope Power window before QuestScore: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%;
-- temporary events use a global early-game warm-up gate plus a shared rotating population: none are placed during world ticks 0–99; the first population becomes eligible on tick 100, then the whole unengaged population rerolls every 200 ticks at 300 / 500 / 700 / ... . Each cycle selects up to five eligible definitions without replacement through the seeded event-placement RNG; with the current four authored events, all four definitions are selected whenever eligible, though a definition that cannot immediately fit remains pending for that population cycle. Available quest-board reservations yield placement priority at a new event rotation and later 50-tick board refreshes while a selected event still lacks space, while an already-active quest is never displaced. Activating an event starts a 500-world-tick cooldown for that event definition from the engagement tick; the definition is excluded from later cycle selection until the cooldown ends and may return only on a subsequent shared rotation. A currently engaged event survives a rotation and finishes normally rather than being aborted;
-- the first authored temporary event `У старой вырубки` is live after that gate opens: its formative STR / DEX / WIS decision uses primary attributes rather than personality, applies `Courage +5 / Morality +5 / Courage −5` respectively through `TraitDevelopment`, and its later expressive Brave check may alter the DEX branch without awarding additional Brave movement; the DEX route represents a resourceful rescue and therefore moves toward Noble rather than Devious;
-- the second authored temporary event `Дым над старой башней` is live: its encounter center is placed on Starting Region hills 3–5 hexes from Starting City, while a separately reserved radius-0 tower objective is placed 5–7 hexes from the city, 2–4 hexes from the event center, strictly farther from the city and never on a city hex. Its formative DEX / WIS / CON decision applies `Courage +5 / Courage −5 / Morality +5`; DEX physically travels to the tower, fights the existing ordinary `Разбойник` and can earn its normal 90 XP, WIS spends one tick studying plus three ticks observing to rescue the patrolman without combat, and CON spends two ticks helping the first wounded patrolman before arriving too late and returning the dead patrolman's token. Every branch then performs an Expressive Greedy check: established Greedy adds two search ticks and one guaranteed White/Common ilvl 10 item through the normal equipment pipeline without reinforcing Greed or adding Gold. All successful branches grant 50 Gold, travel back to the actual encounter point, and only then resume the previously interrupted quest route from that position;
-- the third authored temporary event `Чужие силки` is live on Starting Region forest terrain 4–6 hexes from Starting City under the same tick-100 gate. Its first Formative decision compares STR / DEX / WIS: STR moves Courage +5 and takes the fastest route through a shared-combat `Дикий кабан` worth its normal 75 XP, DEX moves Curiosity +5 and spends two additional ticks following suspicious tracks and discovering illegal snares, while WIS moves Courage −5 and spends three additional ticks on a safe route around the beast. At the poachers' camp every branch reveals a bound forest patrolman, then performs an Expressive Curious check: established Curious spends exactly two extra ticks searching and earns one guaranteed White/Common ilvl 5 item through the normal equipment pipeline without additional Curiosity movement. A following Expressive Noble check may spend another two ticks detaining the wounded poacher and raises the final reward from 50 to 75 Gold without reinforcing Noble. Base total durations are STR 8, DEX 10, and WIS 11 world ticks; Curious and Noble each add exactly two ticks, and a DEX formative +5 that establishes Curious at +40 may immediately unlock the Curious stage later in the same event;
-- the fourth authored temporary event `Мёртвый гонец` is live on **plains terrain 2–5 hexes from Starting City**, with both `city` and `road` forbidden on its center. Its Formative WIS / DEX / CON opening is mechanically differentiated: WIS spends two investigation ticks, moves Courage +5 toward Brave, and guarantees a no-combat resolution; DEX spends two investigation ticks, moves Curiosity +5, finds a criminal stash and guarantees one White/Common ilvl 5 equipment reward at successful completion; CON spends four ticks saving the wounded witness, moves Morality +5 toward Noble, and raises the base completion reward by 25 Gold through the witness's gratitude. A later Expressive Devious check never moves Morality: on DEX/CON it replaces the one-tick Bandit fight with a one-tick confession scene, while WIS was already safe and Devious simply adds the manipulative interrogation scene. The following Expressive Curious check adds exactly two search ticks and raises the Gold reward by 50 through recovery of the missing letter. Base successful totals including the common intro/decision are WIS 7 ticks, DEX 8 ticks, and CON 10 ticks on non-Devious/non-Curious paths; Curious adds two ticks, while Devious preserves DEX/CON base duration by replacing combat. DEX can move Curiosity from +35 to +40 and immediately trigger the later Curious search in the same event. DEX/CON non-Devious combat reuses the existing Bandit for 90 XP and never rolls an ordinary mob equipment drop;
-- temporary-event interception now also covers outbound ordinary-dungeon travel through `TRAVEL_TO_DUNGEON`, in addition to ordinary quest outbound/return travel. A successful event restores `TRAVEL_TO_DUNGEON` and rebuilds the suspended route toward the same dungeon from the hero's current hex. Events still do not activate during `DUNGEON_RETURNING_TO_CITY`, dungeon combat, or between-fight dungeon states. If the hero dies in an event while travelling to a dungeon, the current trip is abandoned without recording a failed dungeon attempt or retry-Power penalty;
-- headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, one-selection quest guidance, and Divine Vision for revealing an unknown dungeon in the current region;
-- a quest execution loop after the selected quest is assigned;
-- structured quest/death events;
-- separate quest narration;
-- debug log;
-- empty diary shell;
-- rough developer UI;
-- ordinary `DungeonDefinition` resources are loaded automatically from `data/dungeons/starting_region/` and `data/dungeons/mid_region/`; dungeon-only mob resources in those folders are ignored by the loader, while `data/dungeons/specialization/` remains separate from the ordinary population. The current population contains both required Starting Region dungeons: `Заброшенные железные шахты`, placed on one deterministic reserved hill hex 4–7 steps from the Starting City center, and `Городище Черноклыков`, placed on one reserved forest hex 5–7 steps from that center. Both begin unknown, may be discovered by Divine Vision or physical entry, and use the supplied 440×400 dungeon map sprite at 65 px draw height; the current developer map intentionally renders unknown dungeons at 40% opacity while keeping their names hidden until discovery;
-- every ordinary dungeon authors one ordinary mob type and a 3–5 room count, so that same ordinary mob is fought in every pre-boss room before the dungeon's unique boss. `Заброшенные железные шахты` authors `3 × Шахтный троглодит` (~200 Power, 150 XP) → `Глубинный пожиратель` (~300 Power, 185 XP), with 700 Gold + one compressed ilvl 5 75% Rare / 25% Epic completion item. `Городище Черноклыков` authors `3 × Гоблин-гвардеец` (~600 Power, 260 XP) → `Король гоблинов` (~750 Power, 320 XP), for 1100 total combat XP and a completion reward of 2000 Gold + one compressed ilvl 10 item rolled uniformly across the full twelve-slot Ironward source at the same 75% Rare / 25% Epic split. Discovery does not interrupt the hero's current activity, and after the current quest is turned in and the normal market/shopping routine finishes a known local dungeon is considered before another ordinary quest only if its current readiness check passes; `DungeonRunner` sends the hero along the real `TravelSystem` route and executes each authored 3+boss sequence through the same live `CombatSession` used by quests. Current HP carries between encounters, each ordinary victory creates exactly one world tick of between-fight preparation, and the potion system may consume multiple prepared potions inside that same tick when the approved ordinary-room or pre-boss healing rules call for them; ordinary-room healing never intentionally overheals, while pre-boss preparation may accept overheal to reach full HP. Ordinary/boss combat grants XP but no ordinary equipment drop or per-mob Gold. Completion rewards use the normal generated-item/equipment-evaluation pipeline; non-Belt Epic instances receive the existing three-affix Epic budget while Belt remains affixless and uses its Epic four-slot potion capacity instead. Successful completion releases that dungeon's map reservation so its marker and discovered-map entry disappear immediately, then `DungeonRunner` starts a real `TravelSystem` route back to the Starting City at one adjacent hex per world tick; arrival enters the normal `VISITING_MARKET → SHOPPING → next activity` city cycle. Dungeon death still returns the hero to the city with the normal 100-tick resurrection/city-recovery flow; every failed attempt remembers the HeroPower recorded when that attempt began and the reached progress, and later post-shopping dungeon decisions are blocked until Power reaches the current retry gate: +25% if no ordinary enemy was killed, +15% after ordinary progress before the boss, or +10% after reaching the boss; a new failed retry replaces the baseline with that retry's own starting HeroPower; every attempt additionally requires every current Belt slot to be filled with a legal potion before travel begins;
-- a 26 × 15 PNG-driven hex world foundation where all 390 logical gameplay cells become `HexDefinition` objects with logical coordinates, terrain, city-region ownership, and permanent semantic tags; the enlarged 1448 × 1086 source art contains 13 additional decorative bottom hexes that are intentionally outside the logical gameplay rectangle. Current tags are `city` on all 14 city hexes, `city_center` on the two city centers, and `road` on the authored ordered road path, with ordinary untagged cells allowed; each city region extends up to seven hex steps from its city center, overlapping candidates belong to the nearer city, and the resulting current map contains 150 Starting Region hexes, 150 Mid Region hexes, and 90 peripheral hexes with no region; `HexMap` can return complete radius areas around a center, `WorldState` can atomically reserve/release map hexes for active activities with a strict one-activity-per-hex rule, `ActivityPlacementFinder` can filter valid activity centers, and `TravelSystem` owns deterministic multi-tick hero movement along `HexMap` routes at exactly one adjacent hex per world tick; ordinary selected quests travel from the Starting City center to their real `QuestOffer.target_hex` and return to the city center after completion; plains/forest/hill cells render from three authored 158 × 140 RGBA sprite variants per biome, road cells temporarily reuse plains sprites under the existing road line, both seven-hex city clusters use the same authored 418 × 440 RGBA `town1.png` overlay at native size, and the current hero map visual uses the supplied high-resolution sprite scaled only at draw time to 120 px tall while following the live `WorldState.hero_position`; the map also has one-pixel black hex outlines on non-city cells, runtime route/distance queries, an interactive debug tooltip that shows coordinates, terrain, region, and tags, mouse-wheel zoom, and right-button drag panning;
-- automated regression tests and GitHub CI.
 
-Current next major gameplay step:
-- continue Prototype 0.2 from the now-working first-dungeon + Belt/potion vertical slice into the next approved gameplay/content block without expanding unrelated systems.
+- one autonomous Warrior hero; the player does not directly control movement, quest choice, combat actions, equipment choice, shopping, or dungeon attempts;
+- one shared world clock;
+- **1 world tick = 10 simulation seconds** at normal speed;
+- developer speed controls: ×0, ×1, ×2, ×5, ×10, ×20, ×100;
+- partial world-tick progress is preserved between updates;
+- active combat freezes ordinary world-tick progression while combat runs on its finer internal timeline;
+- one resolved fight still consumes exactly one world tick;
+- seeded/reproducible randomness is used by the current gameplay systems, with derived streams where systems must not perturb one another;
+- the same shared `PowerCalculator` is used for hero, mobs, ItemPower reference calculations, and virtual-equip comparisons.
 
-Still missing from the current build:
-- diary episodes;
-- player-facing quest-guidance selection UI;
-- later potion tiers beyond the currently live Starting City compressed Level 5 / 10 consumables, prepared-Belt-slot visualization, and the two Mid Region ordinary dungeons;
-- the remaining broader 15–20-event population, completed-dungeon return interception, and city-to-city relocation on the new map.
+There is **no offline simulation** while the application is closed.
 
-## God-system core
+## Hero progression and primary attributes
 
-`scripts/god/god_state.gd` owns 100 maximum/starting energy, +1 energy per 6 world ticks, ability cooldowns, and one pending guided quest id. `scripts/god/god_system.gd` validates and applies the current divine commands through the state owners they affect. The active five-fight blessing itself lives in `HeroState.active_effects` as a real stat source.
+The Warrior currently starts with:
 
-`Simulation` retains compatible public wrappers for the currently implemented divine commands so UI does not depend directly on God-system internals:
-- instant resurrection at `RemainingRespawnTicks × 0.5` energy;
-- divine healing for 10 energy, +50% MaxHP, 30-tick cooldown;
-- combat buff for 10 energy, +15% resolved Physical Damage for the next 5 fights, 120-tick cooldown;
-- quest guidance for 5 energy, +0.20 DivineModifier for one next selection, 360-tick cooldown;
-- Divine Vision for 80 energy and a 1500-world-tick cooldown, revealing one random existing unknown dungeon in the hero's current region.
-
-The center-top god panel now displays energy and provides working buttons for healing, combat blessing, instant resurrection, and Divine Vision. Healing can modify live CombatSession HP during a fight. Quest guidance remains headless-only until its selection UI is approved.
-
-## World time
-
-`scripts/core/world_clock.gd` owns the current world tick.
-
-Current behaviour:
-- 1 world tick = 10 simulation seconds;
-- partial tick progress is retained;
-- one update may complete multiple ticks;
-- `Simulation` applies the selected time scale before advancing the clock;
-- time scale `0` pauses world-tick progress without resetting partial progress;
-- an active combat session freezes world-tick progress; the selected time scale accelerates its internal seconds too;
-- natural resurrection uses the same world-tick timeline and therefore respects pause and developer speed controls.
-
-Current UI exposes ×0, ×1, ×2, ×5, ×10, ×20, ×100.
-
-## Hero and stats
-
-`scripts/hero/hero_state.gd` stores mutable hero state, including the current loop state.
-
-Current loop states include:
-- `CHOOSING_QUEST`;
-- `TRAVEL_TO_QUEST`;
-- `DOING_QUEST`;
-- `RECOVERING_AFTER_FIGHT`;
-- `RETURNING_TO_CITY`;
-- `TURNING_IN_QUEST`;
-- `VISITING_MARKET`;
-- `SHOPPING`;
-- `TRAVEL_TO_DUNGEON`;
-- `AT_DUNGEON_ENTRANCE`;
-- `DOING_DUNGEON`;
-- `DUNGEON_BETWEEN_FIGHTS`;
-- `DUNGEON_COMPLETED`;
-- `DUNGEON_RETURNING_TO_CITY`;
-- `EVENT_ACTIVE`;
-- `EVENT_COMBAT`;
-- `DEAD_RESPAWNING`;
-- `RECOVERING_IN_CITY`.
-
-`scripts/hero/hero_progression.gd` owns XP application and Warrior level growth.
-
-The Warrior now starts with five symmetrical primary attributes:
 - STR = 5;
 - DEX = 5;
 - INT = 5;
 - CON = 5;
 - WIS = 5.
 
-Current primary-attribute contributions are centralized in `StatResolver`:
-- 1 STR = +2 physical Damage and +5 percentage points Critical Damage;
-- 1 DEX = +10 Accuracy, +2 Dodge, and +3 percentage points Critical Chance;
-- 1 CON = +20 MaxHP and +1 Armor;
-- INT and WIS are stored as real primary attributes and still provide no generic resolved CombatStats bonus; WIS now scales Power Strike and Battle Guard through their ability-specific formulas.
+Current pre-specialization level-up growth is already the approved Prototype 0.2 model:
 
-Each pre-specialization level-up now follows the approved player-guided rule:
-- +1 STR is applied automatically as fixed Warrior class growth;
-- +4 primary-attribute points are added to `HeroState.pending_primary_attribute_points`;
-- pending points provide no stat benefit until the player explicitly spends them on STR / DEX / INT / CON / WIS;
-- unspent points accumulate across later level-ups rather than being auto-assigned or discarded.
+- +1 STR automatically from the Warrior class;
+- +4 pending player-distributed primary-attribute points;
+- pending points provide no benefit until the player spends them;
+- unspent points accumulate across levels;
+- the player may allocate them only through the Simulation command path, not directly through UI state mutation;
+- allocation is blocked during an already active combat session.
 
-`Simulation.allocate_primary_attribute()` is the gameplay command boundary for spending one pending point. It rejects allocation during an already active combat session, delegates the actual point spend to `HeroProgression`, then refreshes resolved CombatStats. A Constitution allocation updates MaxHP through the same persistent-stat refresh path rather than bypassing `StatResolver`.
+The current generic primary-stat effects are centralized through `StatResolver`:
 
-The unchanged XP rules remain:
-- the next-level requirement starts at 1000 XP and increases by 500 per current level (`1000, 1500, 2000, ...`);
-- carries excess XP forward;
+- STR contributes physical Damage and Critical Damage;
+- DEX contributes Accuracy, Dodge, and Critical Chance;
+- CON contributes MaxHP and Armor;
+- INT currently has no generic Warrior combat conversion;
+- WIS currently scales Warrior abilities through their own formulas rather than a universal combat-stat bonus.
 
-Final combat stats remain:
+XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights.
 
-```text
-HeroState + HeroProgression + Equipment
-→ StatResolver
-→ CombatStats
-```
+The lightweight starting questionnaire is **not implemented yet**. New heroes therefore still use the temporary seeded starting-trait bootstrap described below.
 
-`StatResolver` now produces:
-- stable `BaseCombatStats` for primary UI values, HeroPower, and Hard Filter;
-- effective `CombatStats` including active temporary effects for actual combat.
+## Personality and traits
 
-Persistent equipment contributes to both views. A new hero begins with three fixed Common ilvl 1 `ItemInstance` objects already equipped in Chest, Pants, and Boots; each contributes exactly +1 Armor and has no random affixes. Rustchain Initiate drops are generated as ilvl 1 `ItemInstance` objects: armor receives 5 inherent Armor, the sword receives 10 inherent Damage and +0.10 Attack Speed, and the shield receives 10 inherent Block. The former ilvl 10 tier is now compressed to ilvl 5 without changing strength: Ironwake Sentinel uses 7 Armor, 13 sword Damage/+0.10 Attack Speed, and 13 shield Block; its jewelry keeps inherent Resistance 20 and its Belt keeps 40 Health. The former ilvl 20 tier is now compressed to ilvl 10 without changing strength: Ironward Vanguard uses 10 Armor, 17 sword Damage/+0.10 Attack Speed, and 17 shield Block; its jewelry keeps inherent Resistance 25 and its Belt keeps 50 Health. The full equipment control-point scale is compressed from `1/10/20/30/40/50/60` to `1/5/10/15/20/25/30` while all corresponding stat and modifier-budget values remain unchanged. Belt uses no ordinary random-affix budget: rarity instead supplies Common/Uncommon/Rare/Epic potion capacities of 1/2/3/4 slots, while Belt Item Level limits the strongest supported potion level. Current potion labels are compressed in parallel from Level 10/20 to Level 5/10 so existing Belt compatibility, healing values, and prices remain unchanged. Belt tooltips expose both capacity and the current potential full-loadout healing. Serialized fixed stat fields on older visual definitions are not runtime stat sources.
+The final four Prototype 0.2 personality axes are live in runtime state:
 
-Common items have no random affix, Uncommon items have one, and Rare items have two unique affixes. The live compressed ilvl 1/5/10 Green affix budgets remain 60/78/101. Rare affixes each use 85% of the matching Green budget. One seeded item-wide roll varies total modifier budget from 95% to 105%, after which the result is split equally between all affixes. Affix values use the current centralized stat-cost table from Scope 19.5, including Block at 13 and each exact elemental Resistance at 5 budget per point. Jewelry rolls only Fire/Cold/Lightning Resistance, Health, Dodge, Accuracy, Critical Chance, or Critical Damage; generated equipment uses secondary stats only.
+- **Cautious ↔ Brave** (`courage`);
+- **Devious ↔ Noble** (`morality`);
+- **Greedy ↔ Generous** (`greed`);
+- **Conservative ↔ Curious** (`curiosity`).
 
-`ItemInstance` now owns Item Level, rarity, inherent stats, rolled total budget, affixes, resolved item stats, tooltip text, and dynamic ItemPower. ItemPower applies the complete generated contribution to the approved fixed reference profile and uses the shared `PowerCalculator`. `Equipment` and `StatResolver` consume the generated instance values for Health, Armor, Dodge, Accuracy, Damage, Attack Speed, Critical stats, Resistances, and Block.
+Each hidden axis currently uses:
 
-Every generated candidate is now evaluated through `EquipmentEvaluator` before routing. Standard equipment compares the hero's full base persistent HeroPower with the current loadout against a copied loadout containing the candidate and equips only on a strict HeroPower increase. Ring candidates are evaluated against both `ring_1` and `ring_2`; the target slot is whichever replacement produces the higher final HeroPower, so an authored Ring 1 item may correctly replace a weaker Ring 2 item and vice versa. Belt is the explicit utility exception: it first compares total potential healing from a fully loaded Belt using the strongest supported current potion tier, then uses the Belt's inherent Health as the tie-breaker. Temporary divine effects are excluded, displayed ItemPower is not used as the final decision rule, and evaluation does not mutate live equipment.
+- range −100…+100;
+- visible trait activation at ±40;
+- return-to-neutral hysteresis at ±20.
 
-Current equipment reference prices are centralized for compressed ilvl 1/5/10. White uses the unchanged 100/500/1000 Gold, Green uses ×3, and the currently approved Rare reference uses ×9; sale value is 10% of reference price. Current ilvl 1 White/Green/Rare generated items sell for 10/30/90 Gold, compressed ilvl 5 equivalents sell for 50/150/450 Gold, and compressed ilvl 10 equivalents sell for 100/300/900 Gold. The three authored starting pieces use a definition-level reference-value override of 10 Gold and therefore sell for exactly 1 Gold without changing ordinary ilvl 1 prices. Successful quest turn-in enters `VISITING_MARKET`. On the following dedicated world tick, every unequipped ordinary equipment item in Inventory is sold, removed, and converted into Gold, then the hero enters `SHOPPING`; healing-potion stacks are separate persistent Inventory state and are not part of this automatic sale. Each later shopping world tick can buy at most one equipment item. Standard equipment must be affordable, meet the current +20% ItemPower threshold against the equipped comparison item, and improve the hero through real virtual-equip HeroPower evaluation; Belt purchases instead use the approved Belt-utility comparison. If a known dungeon already passes its Power readiness gate, the Gold needed to complete the current full Belt potion loadout is protected from optional equipment spending, and a Belt upgrade is itself rejected when buying it would leave too little Gold to fill all slots of the newly equipped Belt. Purchased stock positions remain empty until refresh; replaced equipped gear is sold immediately for its normal resale value instead of entering Inventory. When equipment shopping finishes, a known local dungeon must pass both the first-attempt/retry Power rule and full-Belt potion preparation before travel starts. If the complete loadout requires any new potion purchase, the hero enters `PREPARING_DUNGEON` and spends exactly one separate world tick buying all missing potions; dungeon travel begins only after that tick. A complete loadout already owned in Inventory can be prepared without inventing an extra purchase tick. Dungeon discovery still never interrupts an activity already in progress. Death and other events do not trigger sale. Item tooltips show both reference shop value and sell price.
+Current temporary new-game bootstrap:
 
-The Starting City shop uses three authored stock-band resources with shared compressed ilvl 1/5/10 mechanics. Each band samples six distinct White slots and two distinct Green slots, for 24 rotating equipment listings when fully stocked. The ilvl 1 candidate pool has seven Rustchain armor/weapon/shield slots; the ilvl 5 pool has seven Ironwake core slots plus necklace, earrings, both rings, and Belt; the ilvl 10 pool likewise has seven Ironward core slots plus its own necklace, earrings, both rings, and Belt. The same shop definition also exposes fixed healing-potion availability outside the rotating equipment stock: compressed Level 5 restores 100 HP for 100 Gold and Level 10 restores 150 HP for 200 Gold; both live potion definitions reference their supplied 550 × 550 inventory sprites. Concrete equipment stats, affix budgets, rarity behavior, ItemPower, and prices still come from shared item-generation/economy data. Green listings use the normal generated-affix pipeline. The shop uses a deterministic RNG stream derived from the simulation seed so equipment rotation remains reproducible without perturbing the existing main simulation RNG sequence. Full equipment-stock refresh occurs at world ticks 200, 400, 600, and so on regardless of where the hero is. Before each shopping decision tick, the developer debug log prints one compact equipment-assortment summary by rarity and readable slot name without dumping item stats.
+- 1–2 established starting traits are rolled from Cautious, Brave, Devious, Noble, and Greedy;
+- each rolled trait initializes its matching hidden axis at exactly ±40;
+- this seeded roll is transitional and will later be replaced by the approved starting questionnaire with smaller non-visible biases.
 
-The divine `+15% resolved Physical Damage` is displayed separately and does not alter base HeroPower. Noble/Devious conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
+Personality is already used by real gameplay:
 
-After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
+- ordinary quest Hard Filter risk windows are standard 55–95% MobPower/HeroPower, Brave 60–100%, and Cautious 50–90%;
+- current QuestScore also uses established Courage, Morality, and Greed influences;
+- Noble deals the existing +10% conditional damage to Monster-category enemies;
+- Devious deals the existing +10% conditional damage to Humanoid-category enemies;
+- temporary events can perform **Formative** decisions that move hidden axes without reading general personality;
+- temporary events can perform **Expressive** decisions that read established personality without reinforcing that same general trait.
 
-## Combat
+Exact hidden values are visible only in the current developer Hero screen; the intended player-facing design still treats them as hidden.
 
-`scripts/combat/combat_session.gd` resolves one live hero-versus-mob duel using final `CombatStats`.
+## Combat and Warrior abilities
 
-Current behaviour:
-- each side attacks on its own `2 / AttackSpeed` interval;
-- the hero’s first attack has a 0.5-second opening advantage;
-- same-timestamp attacks resolve together;
-- a simultaneous death counts as hero defeat;
-- critical hits retain fractional damage internally;
-- Accuracy and Dodge use `Dodge / (Dodge + Accuracy + 100)` with a 50% DodgeChance cap;
-- a missed attack deals no damage and cannot crit or trigger Block;
-- BlockChance uses `min(Block / (Block + 200), 0.50)` and a successful Block leaves 25% of the hit before mitigation;
-- physical damage uses `100 / (100 + Armor)`;
-- Fire, Cold, and Lightning use the same resistance curve with non-negative Resistance and a 75% reduction cap;
-- current normal attacks are physical; elemental formulas are implemented but no current content deals elemental damage yet;
-- every fight starts at 0 Rage and discards it on completion; successful normal hero hits grant 5 Rage, critical normal hits grant 7 instead, received hits grant 3 even when blocked, avoided hits grant none, and Rage is capped at 100;
-- reaching hero level 5 learns Power Strike at Skill Level 1; when its 10-second cooldown is ready and at least 30 Rage is available, it automatically replaces the next normal attack opportunity, spends 30 Rage, cannot miss, can still crit, and uses the Scope-approved `1.50 + 2.0 × WisdomFactor` damage multiplier;
-- Power Strike actions carry their own structured action id and are named separately in the combat log;
-- reaching hero level 10 learns Battle Guard at Skill Level 1; after an incoming hit first leaves the hero at 75% MaxHP or lower, it activates without retroactively reducing that threshold-crossing hit, lasts 10 seconds, has a 60-second cooldown, costs no Rage, requires no shield, and multiplies subsequent already-mitigated incoming damage by `1 - (0.25 + 0.15 × WisdomFactor)`;
-- Battle Guard activation carries its own structured action id and is named separately in the combat log;
-- all current mob definitions use Dodge = 0; Accuracy remains 100 for the established roster, while the newly approved Orc Raider uses Accuracy = 105;
-- each resolved strike enters the debug log immediately while the world clock is frozen.
+Live combat is one hero versus one current enemy using resolved `CombatStats`.
 
-`PowerCalculator` now uses the one complete Prototype 0.2 formula for both hero and mobs: expected physical DPS with the reference Accuracy factor, effective survivability from the 70/10/10/10 physical/fire/cold/lightning mix, reference Dodge, expected Block mitigation, and `Power = sqrt(EffectiveHP × EffectiveDPS)`.
+Implemented combat features include:
 
-Victory grants the defeated mob's XP through `HeroProgression`, then starts normal post-fight recovery.
+- independent attack timers;
+- Accuracy/Dodge hit resolution;
+- Armor mitigation;
+- Fire/Cold/Lightning Resistance formulas;
+- Block chance and Block mitigation;
+- critical hits;
+- simultaneous-death handling;
+- live CombatSession HP;
+- per-fight Rage;
+- current Noble/Devious conditional damage bonuses;
+- temporary divine Physical Damage blessing.
+
+Current ordinary mobs mostly use physical attacks; elemental mitigation exists, but the current content still lacks real elemental-damage encounters.
+
+### Rage
+
+- each fight starts at 0 Rage;
+- successful normal hits generate Rage;
+- critical normal hits generate more;
+- receiving a hit generates Rage even when Block reduces it;
+- avoided incoming attacks generate none;
+- Rage is capped at 100 and is discarded when the fight ends.
+
+### Power Strike
+
+- learned automatically at compressed hero Level 5;
+- currently Skill Level 1 only;
+- autonomous use when its Rage/cooldown conditions are satisfied;
+- replaces the next normal attack opportunity;
+- cannot miss but may critically hit;
+- scales with WIS through its ability-specific formula.
+
+### Battle Guard
+
+- learned automatically at compressed hero Level 10;
+- currently Skill Level 1 only;
+- autonomous defensive activation after HP falls to the current threshold;
+- no Rage cost and no shield requirement;
+- lasts 10 seconds with a 60-second cooldown;
+- applies after ordinary Block/Armor/Resistance resolution;
+- scales with WIS through its own ability-specific formula.
+
+Purchasable Skill Levels 2–10 and Protector/Slayer specialization abilities are not implemented yet.
 
 ## Death and resurrection
 
-A combat defeat now closes the current quest instead of producing a developer error.
+Ordinary quest death is functional rather than a developer-error path.
 
-On death:
-- current HP is clamped to `0`;
-- the current quest is canceled immediately;
-- no XP is granted for the mob that defeated the hero;
-- no quest turn-in Gold is granted;
-- XP and levels earned before the defeat are retained;
-- the hero enters `DEAD_RESPAWNING` in the city;
-- natural resurrection takes exactly 100 world ticks;
-- the debug log reports the remaining resurrection ticks.
+On ordinary quest combat death:
 
-After the 100th respawn tick:
-- the hero resurrects with exactly **1 HP**;
-- enters `RECOVERING_IN_CITY`;
-- recovers 20% MaxHP per world tick;
-- only after reaching full HP returns to `CHOOSING_QUEST`.
+- current HP becomes 0;
+- the current quest is cancelled;
+- no XP is granted for the killing mob;
+- no quest-completion Gold is granted;
+- XP/levels already earned earlier remain;
+- the hero returns to the safe Starting City context;
+- natural resurrection waits exactly **100 world ticks**;
+- resurrection returns the hero at exactly **1 HP**;
+- city recovery restores 20% MaxHP per world tick;
+- the hero does not resume normal activity until fully recovered.
 
-Full unsafe-loot loss is still only a future hook because QuestLoot does not exist yet; current generated equipment drops become permanent immediately.
+Dungeon and temporary-event deaths reuse the same broad death/resurrection contract through their current owning runner.
 
-## Current quest content and selection
+`QuestLoot` does not exist yet, so the intended unsafe-adventure-loot loss on death is not implemented. Current generated ordinary equipment becomes permanent immediately.
 
-Concrete mob values and immutable quest templates live in `data/mobs/` and `data/quests/` and are intentionally treated as tuning data rather than duplicated here. The current Starting City mob roster follows one gradually widening Power curve with targets `30, 35, 43, 52, 61, 70, 80, 90 / 100, 120, 142, 166, 192, 220, 250 / 275, 325, 380, 440, 505, 575, 650`; individual combat identities use Health, Damage, Armor, Accuracy, Dodge, Critical Chance/Critical Damage and restrained Attack Speed rather than scaling only Health and Damage. The current quest balance pass also keeps `Банда у каменного моста` at its reduced reward band and uses varied enemy-count rolls on stronger quests. A quest template contains inclusive mob-count and gold-per-mob ranges plus authored map-placement rules: `placement_distance_hex_min/max`, optional allowed terrain ids, optional allowed semantic tags, and forbidden semantic tags. All twenty-two current Starting City templates have a 1–7-hex placement band, one terrain-or-tag placement constraint, and `city` forbidden. The old `distance_km_min/max` fields remain only as a temporary compatibility path for fixed legacy tests/offers that do not receive map targets; live autonomous quest selection and travel no longer use that abstract distance as their spatial authority. Templates do not store rolled values, a total Gold reward, concrete target hexes, or equipment rewards. Current ordinary quests reward Gold only.
+## World map and travel
 
-The developer build loads all twenty-two `.tres` Starting City quest templates from `res://data/quests` into `QuestPool`. Their explicit 8 / 7 / 7 strength-band membership follows the approved mob-Power curve: eight are lower strength, seven middle, and seven higher. For current playtesting the normal maximum of three current offers per band is temporarily disabled: every currently eligible template in each band is turned into a runtime offer, so a fresh board may expose all twenty-two templates before active-quest and completion-cooldown exclusions. Each runtime `QuestOffer` owns its rolled mob count, compatibility-only legacy abstract distance, gold per mob, concrete `target_hex`, and `map_distance_steps` equal to the actual shortest route length from the Starting City center. A separate deterministic placement RNG stream plus `ActivityPlacementFinder` chooses a valid free target inside Starting Region for each current board offer and reserves that hex through `WorldState`. `QuestEvaluator` evaluates only the currently available board offers and uses `map_distance_steps` for live travel-cost estimation whenever a real target exists.
+The current authored world map is a **26 × 15 logical hex map = 390 gameplay cells**.
 
-The Starting City quest board now has one global 50-world-tick refresh cycle. At ticks 50 / 100 / 150 / ... every still-available board offer is discarded and all currently eligible templates are instantiated again; the usual 3-per-band cap is temporarily bypassed for development testing. Taking a quest removes it from the available board immediately and leaves that vacancy empty until the next shared refresh. The active quest remains independent of the board and keeps its map target while it is being performed. Completing a quest puts its template on a 50-world-tick cooldown counted from completion; after the cooldown expires it becomes eligible for a later global board roll, but is not inserted immediately. Cooldowns remain strict.
+Implemented spatial rules:
 
-An accepted offer's existing map target remains reserved and visible while the hero walks the real route to it and performs the quest even though that offer is no longer part of the available board. `TravelSystem` advances `WorldState.hero_position` by exactly one adjacent route hex per completed world tick. After the final objective is completed and the hero starts the real route back to the Starting City center, the old target reservation is released and its map marker disappears. Fatal cancellation releases the target immediately and returns the dead hero's map position to the city for the resurrection timer. Neither success nor cancellation performs an individual slot refresh; only the shared board cycle creates replacement offers.
+- exactly two seven-hex city clusters exist geographically;
+- Starting Region and Mid Region are derived from the two city centers;
+- the two cities are connected by one authored road;
+- current ordinary terrain is plains, forest, and hills, with road/city handled through semantic tags and presentation;
+- current permanent tags are `city`, `city_center`, and `road`;
+- active world activities reserve their map footprint so one hex cannot belong to two active activities at once;
+- quests, dungeons, and temporary events use the shared placement/reservation foundation;
+- hero position is real runtime state rather than an abstract distance counter.
 
-At every `CHOOSING_QUEST` decision point:
+Travel uses the approved current scale:
 
-1. `QuestEvaluator` applies the personality-adjusted Hard Filter Power window:
-   - standard: `55% <= MobPower / HeroPower <= 95%`;
-   - Brave: `60% <= MobPower / HeroPower <= 100%`;
-   - Cautious: `50% <= MobPower / HeroPower <= 90%`;
-2. only quests inside both the lower and upper bounds participate further;
-3. the weakest allowed mob becomes the recovery baseline (`1`);
-4. for every allowed quest:
-   `RelativeRecoveryCost = MobPower / WeakestAllowedMobPower`;
-5. `EstimatedCostPerMob = 1 fight tick + RelativeRecoveryCost`;
-6. `EstimatedQuestTicks = Distance + MobCount × EstimatedCostPerMob + Distance + 1 turn-in tick`;
-7. `BaseAttractiveness = GoldReward / EstimatedQuestTicks`;
-8. Courage, Morality, and Greed modifiers are applied from the hero's current traits; if one current eligible quest is guided by the god, that offer receives `DivineModifier = +0.20` for this selection only; otherwise DivineModifier is `0`;
-9. the highest final `QuestScore` is selected with no roulette.
+- **1 traversed hex = 1 world tick**;
+- **1 hex = 3 km**;
+- `TravelSystem` moves the hero one adjacent hex per completed travel tick.
 
-The currently selected quest is then handed to `QuestRunner`, which remains responsible only for execution.
+Ordinary selected quests use real placed targets and real outbound/return routes. Temporary events can suspend a quest or outbound dungeon route, resolve their own activity/detour, and then rebuild the interrupted route from the hero's new position.
 
-`Simulation.new()` without an explicit `null` quest keeps the old fixed-Goblin default for regression compatibility. The real developer UI uses `Simulation.new(seed, null)`, which enables autonomous selection from the quest pool.
+City-to-city autonomous relocation is not implemented yet.
 
-Cumulative combat statistics remain keyed by mob id and continue to be shown in the fixed developer panel.
+## Ordinary quests and quest board
 
-## Current quest loop
+The Starting City currently has:
 
-Current successful loop:
+- **22 ordinary mob definitions** on the current approximately 30→650 Power progression;
+- **22 matching ordinary quest templates**;
+- explicit 8 lower / 7 middle / 7 higher strength-band membership;
+- authored real map-placement constraints for every current quest;
+- runtime `QuestOffer` instances with concrete rolled enemy count, reward, target hex, and real route distance.
+
+Ordinary quest selection is autonomous and uses the current dedicated flow:
+
+> Hard Filter → QuestScore → highest valid quest → `QuestRunner` execution
+
+`QuestRunner` executes only the already selected quest. Quest selection, scoring, combat resolution, item generation, diary prose, God rules, and UI remain outside it.
+
+### Current temporary quest-board development mode
+
+The intended Prototype 0.2 board target remains up to 9 offers with up to 3 per strength band, but that cap is **temporarily disabled for playtesting**.
+
+Current runtime behaviour:
+
+- every currently eligible Starting City quest template may appear simultaneously;
+- accepted offers leave the board immediately;
+- the accepted active quest keeps its real target reservation independently of later board refreshes;
+- the whole available board refreshes every **50 world ticks**;
+- successful completion starts a strict **50-world-tick template cooldown**;
+- cancellation does not start that completion cooldown;
+- an expired cooldown only restores eligibility; the quest returns only on a later shared board refresh.
+
+This 50-tick completion cooldown is the current implemented rule. A stale duplicate 100-tick note still exists near the end of the large Scope and should not be used to revert the current runtime by accident.
+
+Current ordinary quests reward Gold; they do not contain quest-specific equipment reward pools.
+
+## Current ordinary quest loop
+
+Successful ordinary life currently follows roughly:
 
 ```text
 choose quest
-→ travel
-→ fight
-→ XP / possible level-up
-→ full post-fight recovery
-→ next mob or return
-→ turn in
-→ Gold
-→ one market/sale tick
-→ one or more shopping ticks while meaningful affordable upgrades exist
-→ if no ready local dungeon: repeat ordinary quest loop
-→ if a local dungeon passes first-attempt/retry readiness but needs potion purchases: one PREPARING_DUNGEON purchase tick
-→ TRAVEL_TO_DUNGEON → AT_DUNGEON_ENTRANCE
+→ real map travel to target
+→ fight / XP / recovery until objective completes
+→ real return travel
+→ turn in for Gold
+→ dedicated market/sale tick
+→ autonomous equipment shopping, one purchase per shopping tick
+→ evaluate known local dungeon readiness
+→ prepare missing dungeon potions if needed
+→ dungeon or next ordinary activity
 ```
 
-Current defeat loop:
+Defeat follows:
 
 ```text
 fight lost
-→ quest canceled
-→ DEAD_RESPAWNING for 100 ticks
+→ quest cancelled
+→ 100-tick respawn
 → resurrect at 1 HP
-→ RECOVERING_IN_CITY
-→ full HP
-→ CHOOSING_QUEST
+→ city recovery
+→ normal autonomous activity resumes at full HP
 ```
 
-Quest selection now happens autonomously before `QuestRunner` begins execution.
+## Temporary events
 
-## Quest events and narrative
+The generic temporary-event system is live and currently has **4 authored Starting Region events**:
 
-Current chain remains:
+1. `У старой вырубки`;
+2. `Дым над старой башней`;
+3. `Чужие силки`;
+4. `Мёртвый гонец`.
 
-```text
-QuestRunner
-→ QuestEvent
-→ QuestNarrator
-→ DebugLog
-```
+The current event framework supports:
 
-Death, natural resurrection, and city recovery use structured events rather than hard-coded UI text.
+- authored SCENE / DECISION / TRAVEL / COMBAT / END style stages;
+- Formative and Expressive personality interactions;
+- stat-driven authored branch choice;
+- shared combat through the normal `CombatSession`;
+- authored Gold/equipment consequences through normal reward systems;
+- multi-tick authored stages;
+- real map detours to an event-owned secondary objective;
+- interruption and later resumption of the previous travel destination;
+- event-owned death/resurrection handling.
 
-The diary remains unimplemented and receives no gameplay events yet.
+Current shared population rules:
 
-## Debug log window
+- no temporary event is placed before world tick 100;
+- first population becomes eligible at tick 100;
+- unengaged population rerolls every 200 ticks afterward: 300 / 500 / 700 / ...;
+- current cap is 5 simultaneous temporary events;
+- activating an event starts a 500-tick cooldown for that event definition;
+- an already engaged event survives a population rotation until it finishes;
+- selected events that currently cannot fit may remain pending for that population cycle rather than displacing the hero's active objective.
 
-The debug log retains only the last 100 world ticks.
+Event interception currently works during:
 
-Retention is tick-based rather than line-based:
-- ordinary tick messages belong to their world tick;
-- all start/action/result lines from one fight belong to the single world tick consumed by that fight;
-- therefore a verbose fight still counts as exactly one tick for log retention.
+- ordinary quest outbound travel;
+- ordinary quest return travel;
+- outbound ordinary-dungeon travel.
 
-The UI keeps the debug log pinned to the newest entry without rewriting identical text on every world tick. Real text changes are pushed toward the bottom immediately and corrected again after TextEdit wrapping/layout completes, preventing the visible top-to-bottom jump while still keeping the newest wrapped entry on screen.
+It does **not** yet activate during completed-dungeon return travel, dungeon combat, or dungeon between-fight preparation.
 
-When the autonomous hero selects an ordinary quest, the developer log now prints the top three Hard-Filter-eligible offers ranked by their real `QuestScore`, marks the chosen offer, and prints the chosen score breakdown from the evaluator's existing `BaseAttractiveness + Courage + Morality + Greed + Divine` components. The log formats evaluator output only; it does not recalculate or influence quest choice.
+If an event kills the hero while travelling toward a dungeon, that trip is cancelled without recording a failed dungeon attempt or dungeon retry-Power penalty because the hero never entered the dungeon.
 
-## UI
+The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete.
 
-Current layout:
-- a persistent top menu with Hero, Inventory, Map, and Menu buttons;
-- hero panel on the left;
-- god-energy panel and three ability buttons above the center log/diary;
-- log/diary in the center;
-- opponent panel on the right;
-- developer speed controls in the bottom-right corner.
+## Ordinary dungeons
 
-`MainUI` now coordinates the main developer view, a lightweight Hero development screen, dedicated `InventoryScreen` / `MapScreen`, `GodPanel`, and `NarrativePanel`. The Hero screen displays the live pending primary-attribute pool and five `+1` allocation controls; those buttons send commands through `Simulation` and never mutate attributes directly. Allocation controls are disabled during an active combat session so the already-created `CombatSession` cannot diverge from newly resolved hero stats mid-fight. The same developer Hero screen renders the four live personality axes (`Осторожный ↔ Смелый`, `Хитрый ↔ Благородный`, `Жадный ↔ Щедрый`, `Консервативный ↔ Любопытный`) from `HeroState.personality_axis_values`. A neutral axis shows the ±40 activation thresholds; an established negative/positive trait shows only its relevant −20/+20 return-to-neutral threshold. The marker follows the real hidden value, a floating signed number above the bar shows that exact debug value, and the fixed neutral `0` marker is placed below the bar so the two labels cannot overlap at the center. This exact-number display is developer UI only and does not change the later player-facing hidden-value rule.
+The current ordinary-dungeon system loads ordinary dungeon definitions from the Starting/Mid region content folders and keeps specialization dungeon content separate.
 
-The Map button opens a dedicated `MapScreen`. `data/map/prototype_02_map.tres` owns the 26 × 15 gameplay source geometry and references the editable `assets/map/prototype_02_hex_layout.png`. `HexMapImageDecoder` samples the technical center of all 390 logical flat-top hexes, rejects unknown center colors with coordinates, derives both compact seven-hex city clusters, identifies the unique bright-red hero-start center, and reconstructs the one unbranched road between the cities. Runtime `HexMap` converts every logical cell into a `HexDefinition` containing its own coordinates, decoded terrain, `region_id`, and permanent semantic tags; the technical `hero_start` marker becomes normal `starting_city` terrain in the game-level hex data. Current tag vocabulary is deliberately small: `city` marks all city cells, `city_center` marks only the two authored centers, and `road` follows the authored ordered road path rather than relying on the temporary road-as-terrain encoding. Starting Region and Mid Region each extend up to seven adjacent-hex steps from their city center. Cells inside both radii belong to the nearer center; the current equal-distance boundary is split by the midpoint between city-center X coordinates, producing 150 hexes per city region and 90 peripheral no-region hexes. `Simulation` owns this `HexMap`, mutable `WorldState`, and `TravelSystem`; the hero begins at the Starting City center, and `HexMap` provides deterministic adjacent-hex routes, step distance, and the fixed 3 km-per-hex world distance. When a map-backed quest is selected, `TravelSystem` follows that route one adjacent hex per world tick to the offer target and later one hex per tick back to the city center; `MapScreen` continuously follows the resulting live `WorldState.hero_position`. `MapTileVisuals` supplies three real `158 × 140` PNG variants for each normal biome from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; variant selection is deterministic from hex coordinates, city cells use plains art underneath, and `MapScreen` draws both biome tiles and the town overlay 1:1 at base zoom. Both city clusters use the same town overlay, centered on the city-center hex and aligned by the overlay's bottom edge to the bottom edge of the full seven-hex cluster; internal city-hex outlines are omitted so the town art remains visually continuous. Road cells temporarily reuse plains biome art underneath the existing road line. The map hero visual uses the permanent `res://assets/map/characters/hero_map.png` source. The source remains high-resolution and `MapScreen` scales it only for display to 120 px tall at base zoom, centered horizontally on the current live hero hex and shifted 5 px upward for visual placement. Every currently placed quest-board offer is also drawn at its real `target_hex` using the supplied `res://assets/map/activities/quest.png` 426 × 400 RGBA sprite, scaled only at draw time to 65 px tall (about 69.2 × 65 px) and centered on the target hex. Hovering that quest sprite shows the concrete offer's player-facing quest name; outside the sprite, ordinary hex hover continues to show coordinates, terrain, region, and permanent tags. The hero's currently selected `active_quest` receives a brighter three-layer orange outline (`#FF8C00`) around that same sprite, following the visual principle of the existing item-rarity outline; other quest markers remain unchanged. Completed/cancelled offers disappear when their reservation is released, and replacement offers appear at their new placement. The old fixed terrain legend has been removed because the rendered map now uses authored biome/city sprites rather than matching those schematic legend swatches. `MapScreen` remains pointer-interactive for inspection only and does not change simulation state. Mouse-wheel input zooms the map between 0.6× and 2.0× around the cursor, while holding the right mouse button and dragging pans the map; the map transform applies to hexes, roads, quest sprites, hero marker, and city labels, while the screen UI and tooltip remain fixed. Panning is clamped so the map cannot be dragged completely off-screen. The shared top menu and red close button remain available, and opening the map changes only UI visibility while the existing Simulation continues running.
+Both required **Starting Region ordinary dungeons** are live:
 
-Active temporary events are now visible on `MapScreen` as a translucent dark-blue tint across their real runtime footprint. A normal radius-1 event shades seven hexes; quest, dungeon, and hero markers remain above the tint, and the area disappears automatically when the event instance is removed.
+- **Заброшенные железные шахты** — 3 Mine Troglodytes then Deep Devourer; completion grants 700 Gold + one compressed ilvl 5 Rare/Epic item;
+- **Городище Черноклыков** — 3 Blackfang Guards then Goblin King; completion grants 2000 Gold + one compressed ilvl 10 Rare/Epic item.
 
-The Inventory button opens the dedicated `InventoryScreen` scene owned by `scripts/ui/screens/inventory_screen.gd`; `MainUI` retains only screen navigation and passes the existing `Simulation` into it. The main developer content is hidden while the shared top menu remains visible; the Inventory button becomes Back, and a separate red close button provides the same return action. The screen displays the hero over a dark `256 × 464` portrait panel. Chest, Pants, and Boots begin occupied by the supplied aligned starting-clothes art, while Helmet and Gloves remain empty. Five armor slots remain in a column on the left. Main-hand and off-hand slots sit below the portrait, with the sword on the left and shield on the right. The right equipment column is accessory-only in this order: necklace, earrings, ring, ring, belt. Immediately to the right of that jewelry column, Inventory now shows a separate vertical `Зелья` column. Every physical healing potion is represented by its own `82 × 82` visual slot rather than by an `×N` stack; the column keeps at least four visible placeholders and scrolls vertically if more owned bottles need to be shown. Potion slots use the same supplied sprites, now labeled as compressed Level 5 / 10, and individual potion hover tooltips. The underlying Inventory model still stores persistent potion counts separately from the 36 retained-equipment FIFO, so this presentation does not reduce equipment capacity. All twelve equipment slots are functional for generated/equipped items and show ItemInstance-rarity quality outlines plus shared hover tooltips; necklace, earrings, both rings, and Belt use supplied unchanged icons and intentionally have no hero paper-doll overlays. Belt tooltips expose potion-slot capacity, maximum supported potion level, and potential healing; a dedicated visual distinction of which displayed bottles are specifically prepared into Belt slots is still not implemented. All five armor pieces retain their aligned `441 × 800` paper-doll overlays. Standard equipment replacements use strict real HeroPower improvement, while Belt replacement uses potential potion healing first and inherent Belt Health on a tie. Adding equipment item 37 drops the oldest retained equipment item. Manual equipping, dragging, selling, and set bonuses are not implemented. This UI-only screen switch does not pause or replace `Simulation`, so world time and autonomous gameplay continue normally.
+Both current completion item rolls use **75% Rare / 25% Epic** and may select from all twelve current equipment slots.
 
-The hero panel displays HP with one decimal place and now shows:
-- dead state with remaining resurrection ticks;
-- city-recovery state after resurrection.
+Current dungeon flow includes:
 
-The opponent panel is populated only during active combat.
+- deterministic real map placement and reservation;
+- hidden/known state;
+- discovery by physically reaching the dungeon hex or by Divine Vision;
+- dungeon discovery does not interrupt an activity already in progress;
+- post-quest market/shopping resolves before a known dungeon is considered;
+- real map travel to the dungeon;
+- the same shared live combat system used by quests/events;
+- current HP carried between dungeon encounters;
+- exactly one world tick of between-fight preparation after each ordinary victory, including before the boss;
+- no free automatic healing between encounters;
+- dungeon-only healing through prepared Belt potions;
+- ordinary dungeon mobs and bosses grant XP but no ordinary equipment drops or per-mob Gold;
+- normal death/resurrection handling;
+- successful completion reward routing through the normal item-generation/equipment-evaluation systems;
+- completed dungeon removal from the active map;
+- real return travel to Starting City after success.
 
-God-panel button availability follows gameplay state, energy, cooldowns, active buff charges, current HP, and death/respawn state. Instant resurrection is disabled until the hero dies; its button displays the current dynamic energy cost.
+### Dungeon readiness and retries
 
-Combat blessing starts its 120-tick cooldown immediately on use. While the five-fight effect remains active, the UI displays both independent counters (`Боёв` and `КД`) at the same time.
+Every current dungeon attempt requires all currently available Belt potion slots to be filled with legal potions.
 
-A separate panel in the bottom-right corner continuously shows cumulative combat count, wins, losses, and winrate for the current quest mob.
+After a failed attempt, the next attempt is additionally blocked until current base HeroPower reaches the remembered retry threshold from the failed attempt:
 
-## Tests
+- +25% after dying before killing any ordinary dungeon enemy;
+- +15% after making ordinary progress without reaching the boss;
+- +10% after reaching the boss.
 
-Current coverage includes:
-- world time and speed controls;
-- seeded RNG;
-- hero progression;
-- combat timing, crits, and simultaneous death;
-- fight-local Rage, the compressed level-5 Power Strike unlock, autonomous replacement of the next attack, cooldown/cost, guaranteed hit, critical hits, WIS scaling, blocked/avoided incoming-hit Rage rules, cap/reset, and distinct combat narration;
-- the compressed level-10 Battle Guard unlock, post-threshold activation order, 10-second duration, 60-second cooldown, no Rage cost, post-defense mitigation, WIS scaling, locked-state behavior, and distinct activation narration;
-- quest combat/XP/recovery;
-- death and quest cancellation;
-- exact 100-tick natural resurrection;
-- resurrection at 1 HP;
-- city recovery to full HP;
-- retention of earlier XP/levels and no Gold for a failed quest;
-- four-axis personality activation/hysteresis, starting-trait initialization, and the first temporary event's STR / DEX / WIS Formative movement including DEX → Morality +5 toward Noble;
-- first temporary-event content/runtime coverage including branch timings/rewards, Expressive Brave behavior, shared event combat/death, and suspended-route restoration;
-- generic validity/progression checks for the current Goblin, Wolf, and Bear tuning cards;
-- offer replacement without assuming a fixed tavern pool size;
-- god ability integration, including the `+0.20` one-selection quest guidance modifier;
-- current Starting City compressed ilvl 1 Rustchain / ilvl 5 Ironwake-core-plus-accessory / ilvl 10 Ironward shop bands, unique slots per band and rarity, reuse of shared item generation data, deterministic 200-tick refresh, persistent purchased vacancies, separate sale/shopping ticks, +20% purchase threshold, maximum real HeroPower-gain selection, and immediate resale of replaced equipment.
-- Belt/potion integration: 1/2/3/4 Belt capacities, Level-based potion eligibility, compressed Level 5/10 potion prices/healing/sprites, individual one-bottle-per-slot Inventory presentation with tooltips, Belt-specific replacement ordering, complete affordable loadout preparation, Gold reservation including Belt-upgrade capacity changes, one dedicated purchase tick when missing potions must be bought, multi-potion ordinary/pre-boss healing, and mandatory full-Belt dungeon readiness.
-- the live 8/7/7 ordinary-mob mapping across Rustchain ilvl 1, Ironwake-plus-accessories compressed ilvl 5, and Ironward core compressed ilvl 10 while the first dungeon remains on compressed ilvl 5.
-- the fixed three-piece starting armor set, its resolved +3 total Armor, paper-doll/icon presentation, ordinary upgrade routing, and 1-Gold resale.
+The failed attempt's starting HeroPower is the comparison baseline. A later failed retry replaces that baseline with the retry's own starting HeroPower.
 
-UI note: during active combat, the hero panel displays live CombatSession HP rather than only the last committed HeroState HP.
+The two Mid Region ordinary dungeons are not authored yet.
+
+## Items, equipment and inventory
+
+The current equipment model uses all **12 Prototype 0.2 slots**:
+
+- Helmet;
+- Chest;
+- Gloves;
+- Pants;
+- Boots;
+- Main Hand;
+- Off Hand;
+- Necklace;
+- Earrings;
+- Ring 1;
+- Ring 2;
+- Belt.
+
+The current build has three live core visual/progression families:
+
+- ilvl 1 `Посвящённый Ржавой Цепи` / Rustchain Initiate;
+- compressed ilvl 5 `Страж Железного Следа` / Ironwake Sentinel;
+- compressed ilvl 10 `Авангард Железного Оплота` / Ironward Vanguard.
+
+Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; later 15 / 20 / 25 / 30 content is not yet built out.
+
+Every new hero also begins with three fixed Common ilvl 1 starting-clothes items:
+
+- `Поношенная рубаха`;
+- `Поношенные штаны`;
+- `Поношенные сапоги`.
+
+Each grants exactly +1 Armor, has no random affixes, and sells for 1 Gold after being replaced.
+
+Current generated-item behaviour includes:
+
+- inherent stats by item type/item level;
+- Common / Uncommon / Rare ordinary item generation;
+- Epic generation through current dungeon completion rewards;
+- seeded modifier-budget variation and affix generation;
+- ItemPower calculated from the shared Power model;
+- virtual-equip evaluation using real resulting HeroPower rather than displayed ItemPower as the final ordinary equip decision;
+- both ring positions evaluated for a new ring so the weaker current ring may be replaced regardless of authored ring-slot label;
+- Belt evaluated by potion-healing capacity first and inherent Health as tie-breaker rather than normal HeroPower alone.
+
+Ordinary mob equipment drops currently use:
+
+- 5% drop chance;
+- 70% Common / 25% Uncommon / 5% Rare;
+- lower Starting City band → ilvl 1 source;
+- middle band → compressed ilvl 5 source;
+- higher band → compressed ilvl 10 source.
+
+The current Inventory keeps up to **36 unequipped equipment items** in FIFO order. Healing potions are stored separately from that equipment capacity.
+
+`QuestLoot` / temporary unsafe adventure loot is not implemented yet.
+
+## Economy, shop, Belt and potions
+
+Starting City has one functional equipment shop with three progression bands:
+
+- ilvl 1;
+- compressed ilvl 5;
+- compressed ilvl 10.
+
+Each band currently rolls 6 White + 2 Green distinct-slot equipment listings, for up to **24 equipment listings** when fully stocked.
+
+Current shop behaviour:
+
+- stock refreshes deterministically every **200 world ticks**;
+- purchased positions remain empty until the next refresh;
+- successful ordinary quest turn-in schedules a separate market/sale tick;
+- unequipped priced ordinary equipment is automatically sold on that market tick;
+- equipment buying happens only afterward in `SHOPPING`;
+- at most one equipment item may be bought per shopping world tick;
+- ordinary equipment must meet the current meaningful-upgrade threshold and still improve the real virtual-equip build;
+- replaced equipped gear is sold immediately during a shop purchase rather than routed back through Inventory;
+- Gold required for a Power-ready dungeon's mandatory potion loadout is protected from optional equipment spending.
+
+### Belt
+
+The Belt is a real equipment slot with:
+
+- inherent Health;
+- potion capacity from rarity: Common/Uncommon/Rare/Epic = 1/2/3/4 slots;
+- maximum legal potion level from Belt Item Level.
+
+### Healing potions
+
+Current live Starting City potion tiers are:
+
+- compressed Level 5: 100 HP for 100 Gold;
+- compressed Level 10: 150 HP for 200 Gold.
+
+Potions are currently used only for dungeon preparation/healing, not ordinary quests.
+
+Before a current dungeon attempt:
+
+- every Belt slot must be filled;
+- the preparation system chooses a complete affordable legal loadout;
+- already owned potions are reused;
+- if missing bottles must be bought, one dedicated `PREPARING_DUNGEON` world tick purchases the missing set before travel;
+- if the complete loadout is already owned, no artificial purchase tick is added.
+
+Inside the dungeon, multiple prepared potions may be consumed inside one between-fight preparation window. Ordinary-room healing avoids overheal; pre-boss preparation may accept overheal to reach full HP.
+
+Later potion tiers and prepared-Belt-slot visualization are still missing.
+
+## God influence
+
+The current God system starts/maxes at **100 Divine Energy** and restores +1 Energy every 6 world ticks while simulation time advances.
+
+Implemented abilities:
+
+- **Divine Healing** — 10 Energy, restores 50% MaxHP, 30-tick cooldown, usable during live combat;
+- **Combat Empowerment** — 10 Energy, +15% resolved Physical Damage for the next 5 fights, 120-tick cooldown;
+- **Instant Resurrection** — dynamic cost `RemainingRespawnTicks × 0.5`, no separate cooldown;
+- **ordinary quest guidance** — 5 Energy, +0.20 DivineModifier to one valid current offer for the next selection, 360-tick cooldown;
+- **Divine Vision** — 80 Energy, 1500-tick cooldown, reveals one random existing unknown dungeon in the hero's current region.
+
+The current developer God panel exposes Healing, Combat Empowerment, Instant Resurrection, and Divine Vision.
+
+Ordinary quest guidance is currently **headless-only** because the player-facing quest-guidance selection UI has not been implemented.
+
+First-specialization divine guidance is not implemented because specialization itself is still absent.
+
+## Narrative, debug log and diary
+
+Gameplay systems already emit structured facts for current quest/death behaviour rather than relying on UI text as game state.
+
+### Developer Debug Log
+
+The developer log:
+
+- retains the latest **100 world ticks** rather than a fixed line count;
+- keeps all lines produced by one combat under the single world tick consumed by that fight;
+- autoscrolls to the newest wrapped text;
+- prints detailed quest/combat/runtime information;
+- currently prints the top three Hard-Filter-eligible ordinary quest candidates and the chosen quest's existing QuestScore component breakdown without recalculating the decision in the narrative layer.
+
+The future player-facing **Explanatory Log** is not implemented yet.
+
+### Hero Diary / Chronicle
+
+The first real diary slice is live.
+
+Current diary sources are only:
+
+- ordinary quest selected;
+- ordinary quest successfully turned in;
+- hero died during an ordinary quest.
+
+Current behaviour:
+
+- structured quest facts are converted by a separate `DiaryNarrator`;
+- `Diary` stores the ready player-facing entries;
+- every entry is prefixed with the real world tick;
+- the Diary tab updates live and automatically stays scrolled to the newest wrapped entry;
+- routine travel, individual attacks/fights, recovery ticks, market noise, and QuestScore diagnostics do not create diary entries;
+- ordinary quest phrases live in an external shared narrative resource;
+- selection / completion / failure are already variant arrays, but currently contain only **one authored phrase each**;
+- an individual quest may later override the shared phrase resource with quest-specific wording;
+- phrase selection uses a dedicated narrative RNG stream so adding wording variants cannot perturb gameplay randomness.
+
+Still missing from the Diary:
+
+- episode grouping;
+- persistent save/load history;
+- additional phrase variants;
+- temporary-event entries;
+- Rare+ equipment acquisition entries;
+- level-up / trait-change / dungeon / specialization / important divine-intervention coverage;
+- the rest of the required Prototype 0.2 diary sources.
+
+## Current developer UI
+
+The present interface is a functional **developer-oriented UI**, not the finished Prototype 0.2 player-facing presentation.
+
+Current major pieces:
+
+- persistent top navigation;
+- main hero/opponent/debug panels;
+- Hero development screen;
+- Inventory screen;
+- Map screen;
+- God panel;
+- Log / Diary tabs;
+- developer simulation-speed controls.
+
+### Hero screen
+
+Currently shows:
+
+- pending primary-attribute points with five +1 allocation controls;
+- live hero combat/progression information;
+- all four personality axes;
+- developer-only exact signed hidden personality values and threshold markers.
+
+### Inventory screen
+
+Currently shows:
+
+- all 12 equipment slots;
+- hero paper doll with the five armor overlays;
+- 36-slot retained-equipment inventory;
+- separate visual potion column with one physical bottle per displayed slot;
+- item/potion tooltips and rarity outlines.
+
+Manual equipping/dragging/selling is intentionally not normal player gameplay and is not implemented.
+
+### Map screen
+
+Currently shows:
+
+- authored terrain and both city clusters;
+- road;
+- live hero position;
+- current quest targets;
+- current selected quest highlight;
+- ordinary dungeon markers with current developer hidden-location presentation;
+- active temporary-event footprints as translucent dark-blue map areas;
+- hover/debug information;
+- zoom and right-mouse panning.
+
+The final required current-route/destination presentation is still missing.
+
+Opening Inventory/Map changes UI visibility only; the same Simulation continues running.
+
+## Test status
+
+The repository has automated regression tests and GitHub CI.
+
+Current targeted coverage includes the major implemented slices:
+
+- world clock / speed / seeded randomness;
+- hero progression and stat allocation;
+- combat, Rage, Power Strike, Battle Guard, death and resurrection;
+- personality activation/hysteresis and event-driven formative/expressive behaviour;
+- quest generation/selection/refresh/travel/completion;
+- map placement/reservations/travel;
+- temporary-event population and runtime branches;
+- dungeon placement/discovery/readiness/combat/retries/rewards;
+- item generation/equipment evaluation/inventory;
+- shop/economy/Belt/potion integration;
+- God abilities;
+- current UI components;
+- developer-log and Diary behaviour.
+
+For ordinary changes, narrow deterministic tests are preferred over running the entire historical suite. Several old fixed-quest/timing tests still contain legacy expectations, so a broad suite result must be interpreted against those known stale tests rather than treated as proof that current systems are wrong.
+
+## Important current deviations / compatibility state
+
+These are intentional or transitional and should not be silently "fixed" back to older behaviour:
+
+- the Starting City quest board currently exposes all eligible templates instead of enforcing the intended 3/3/3 maximum while the no-suitable-quest problem is being evaluated;
+- the current ordinary quest completion cooldown is 50 world ticks;
+- new heroes still receive 1–2 seeded established traits instead of the future questionnaire's mild hidden biases;
+- `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;
+- abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
+- `QuestLoot` is not implemented, so ordinary generated equipment is currently permanent immediately;
+- current normal attacks/content are effectively physical even though elemental mitigation exists;
+- unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
+- the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
+
+## Major Prototype 0.2 pieces still missing
+
+The most important incomplete areas are:
+
+- starting questionnaire and removal of the temporary seeded established-trait bootstrap;
+- Mid-Level City as a complete quest/economy gameplay context;
+- autonomous city relocation;
+- Mid-Level City ordinary quests/content;
+- the remaining temporary-event population toward the 15–20 target;
+- event interception during completed-dungeon return travel;
+- two Mid Region ordinary dungeons;
+- first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;
+- later equipment/potion progression content beyond the currently live Starting City tiers;
+- two-handed / complete legal hand-configuration content breadth;
+- QuestLoot / unsafe carried adventure loot;
+- purchasable higher Skill Levels and training economy;
+- Curious/Conservative spending priority;
+- player-facing ordinary quest-guidance selection UI;
+- full Hero Diary coverage and episode grouping;
+- player-facing Explanatory Log;
+- finished player-facing screens/presentation;
+- save/load and persistent diary/history;
+- long-run Prototype 0.2 balance/soak validation through the intended approximately level-25–30 progression.
+
+When this document conflicts with current code or a more recently approved design change, verify the repository and the Prototype 0.2 Scope rather than restoring older behaviour from historical chats.

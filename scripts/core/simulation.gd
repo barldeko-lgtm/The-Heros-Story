@@ -24,6 +24,7 @@ const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd"
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
 const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
 const DiaryScript = preload("res://scripts/narrative/diary.gd")
+const DiaryNarratorScript = preload("res://scripts/narrative/diary_narrator.gd")
 const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const DungeonNarratorScript = preload("res://scripts/narrative/dungeon_narrator.gd")
 const EventNarratorScript = preload("res://scripts/narrative/event_narrator.gd")
@@ -56,6 +57,7 @@ const DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 300003
 const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
 const EVENT_PLACEMENT_RNG_SEED_OFFSET: int = 500003
 const EVENT_RESOLUTION_RNG_SEED_OFFSET: int = 600003
+const NARRATIVE_RNG_SEED_OFFSET: int = 700003
 const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
@@ -63,6 +65,7 @@ const COMBAT_CONTEXT_EVENT: String = "event"
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
+var diary_narrator
 var quest_narrator = QuestNarratorScript.new()
 var dungeon_narrator = DungeonNarratorScript.new()
 var time_scale: float = 1.0
@@ -80,6 +83,7 @@ var event_runner
 var event_narrator = EventNarratorScript.new()
 var trait_development = TraitDevelopmentScript.new()
 var event_resolution_rng: RandomNumberGenerator
+var narrative_rng: RandomNumberGenerator
 var temporary_events_enabled: bool = false
 var pending_event_instance = null
 var hero_state
@@ -117,6 +121,8 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	simulation_seed = initial_seed
 	temporary_events_enabled = enable_temporary_events
 	seeded_rng = SeededRngScript.new(simulation_seed)
+	narrative_rng = SeededRngScript.new(simulation_seed + NARRATIVE_RNG_SEED_OFFSET).get_rng()
+	diary_narrator = DiaryNarratorScript.new(narrative_rng)
 	hex_map = HexMapScript.new(DefaultMapDefinition)
 	world_state = WorldStateScript.new(hex_map)
 	travel_system = TravelSystemScript.new(hex_map, world_state)
@@ -369,20 +375,21 @@ func advance_active_combat(available_seconds: float) -> float:
 			if hero_state.level != previous_level:
 				refresh_combat_stats()
 
-		if finished_combat_context == COMBAT_CONTEXT_EVENT:
-			complete_event_combat(fought_mob_definition, combat_result, combat_world_tick)
-		elif finished_combat_context == COMBAT_CONTEXT_DUNGEON:
-			complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
-		else:
-			if combat_result.hero_won:
-				resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
-			var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
-			if event != null:
-				if event.event_type == QuestEventScript.HERO_DIED:
-					var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
-					assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
-					refresh_finished_quest_offer_if_needed(event, combat_world_tick)
-				debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
+			if finished_combat_context == COMBAT_CONTEXT_EVENT:
+				complete_event_combat(fought_mob_definition, combat_result, combat_world_tick)
+			elif finished_combat_context == COMBAT_CONTEXT_DUNGEON:
+				complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
+			else:
+				if combat_result.hero_won:
+					resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
+				var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
+				if event != null:
+					if event.event_type == QuestEventScript.HERO_DIED:
+						var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+						assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
+						refresh_finished_quest_offer_if_needed(event, combat_world_tick)
+						debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
+						record_quest_diary_event(event, combat_world_tick)
 
 		if hero_state.level != previous_level:
 			debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
@@ -551,7 +558,15 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if autonomous_quest_choice and event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
 		quest_log_text = quest_narrator.describe_quest_selection(event, last_quest_selection)
 	debug_log.record_event(completed_tick, quest_log_text)
+	record_quest_diary_event(event, completed_tick)
 	begin_pending_event_if_ready(completed_tick)
+
+func record_quest_diary_event(event, event_tick: int) -> void:
+	if diary_narrator == null:
+		return
+	var diary_text: String = diary_narrator.describe_quest_event(event)
+	if not diary_text.is_empty():
+		diary.add_entry(event_tick, diary_text)
 
 func begin_pending_event_if_ready(completed_tick: int) -> bool:
 	if not temporary_events_enabled or pending_event_instance == null or event_runner.active_event != null:

@@ -1,314 +1,204 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-05**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-05**.
 
-This file is a short working progress map, not a design authority.
+This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
-If this checklist conflicts with the current Scope, `current-state.md`, or repository code, use the newer source of truth and update this checklist.
+If it conflicts with the Scope, `current-state.md`, or current repository code, use the newer source of truth and update this checklist.
 
 Status:
 - ✅ implemented and usable in the current build;
-- 🟡 partially implemented / current prototype differs from the final 0.2 requirement;
+- 🟡 partially implemented / current build differs from the final Prototype 0.2 target;
 - ⬜ not implemented yet;
 - 🚫 explicitly outside Prototype 0.2.
 
 ---
 
-## 1. Simulation foundation
+## 1. Simulation and hero foundation
 
-- ✅ One autonomous hero; the player does not directly control movement/combat/equipment.
-- ✅ World ticks and simulation time.
-- ✅ Pause plus ×1 / ×2 / ×5 / ×10 / ×20 / ×100 developer speeds.
-- ✅ Seeded gameplay RNG and reproducible derived RNG streams for current implemented systems.
-- ✅ Shared Hero/Mob `PowerCalculator`.
-- ✅ Simulation / runtime state / stat resolution / narrative / UI remain separated.
-- 🟡 Regression coverage is broad, but several old fixed-quest timing tests still contain stale legacy expectations.
+- ✅ One autonomous Warrior hero; the player does not directly control movement, quest choice, combat, equipment choice, shopping, or dungeon attempts.
+- ✅ World ticks, pause, accelerated developer speeds, seeded gameplay RNG and reproducible derived RNG streams.
+- ✅ Shared Hero/Mob `PowerCalculator` and centralized stat-resolution path.
+- ✅ STR / DEX / INT / CON / WIS, XP, levels, excess-XP carryover and pending player-distributed primary-attribute points.
+- ✅ Before specialization, each level grants +1 fixed Warrior STR and +4 player-distributed primary-attribute points; unspent points remain pending and provide no benefit until spent.
+- ✅ Player-facing allocation of pending primary-attribute points works without directly commanding hero behaviour.
+- 🟡 Progression mechanics work, but full compressed level 1–30 content/balance is incomplete.
+- ⬜ Lightweight starting questionnaire, its small extra attribute pool and mild hidden personality biases.
+- ⬜ Post-specialization attribute growth/reward rules.
 - ⬜ Long-run Prototype 0.2 balance/soak validation.
 
-## 2. Hero progression and stats
+## 2. Combat and Warrior abilities
 
-- ✅ STR / DEX / INT / CON / WIS exist and start at 5.
-- ✅ Current STR / DEX / CON combat contributions.
-- ✅ HP, Armor, Dodge, Accuracy, Damage, Attack Speed, Crit, Crit Damage, Fire/Cold/Lightning Resistance, Block.
-- ✅ Shared Armor / Resistance / Accuracy-Dodge / Block combat formulas.
-- ✅ XP, levels, excess-XP carryover.
-- ✅ Pre-specialization level-up now grants exactly +1 fixed Warrior STR and banks 4 player-distributed primary-attribute points.
-- 🟡 Level progression framework works, but full compressed 1–30 content/balance is not complete.
-- ⬜ Lightweight starting questionnaire about the hero's past.
-- ⬜ Questionnaire grants a small additional primary-attribute pool that the player distributes among STR / DEX / INT / CON / WIS.
-- ✅ Final pre-specialization growth: +1 STR from Warrior automatically + 4 primary-attribute points distributed directly by the player per level.
-- 🟡 Unspent player-distributed primary-attribute points remain pending and provide no benefit until spent; persistence through save/load remains pending because save/load is not implemented yet.
-- ⬜ First-specialization-specific +1 primary-attribute point per later level.
-- ⬜ Immediate specialization-profile attribute reward and delayed post-20 catch-up growth.
-
-## 3. Combat and Warrior abilities
-
-- ✅ Live one-on-one combat with independent attack timers.
-- ✅ Crits, misses, Block, physical mitigation and elemental resistance formulas.
+- ✅ Live one-on-one automatic combat with Accuracy/Dodge, Armor, elemental Resistances, Block, Critical Chance/Damage and Attack Speed.
 - ✅ Fight-local Rage generation/cap/reset.
-- ✅ Level 5 Power Strike, autonomous use, Skill Level 1 and WIS scaling.
-- ✅ Level 10 Battle Guard, autonomous use, Skill Level 1 and WIS scaling.
-- ✅ Per-mob XP, post-fight recovery and level-up during a quest.
-- ✅ Death, quest failure, 100-tick resurrection and city recovery.
-- ⬜ Purchasable Power Strike Skill Levels 2–10.
-- ⬜ Purchasable Battle Guard Skill Levels 2–10.
+- ✅ Level 5 Power Strike at Skill Level 1 with autonomous use and WIS scaling.
+- ✅ Level 10 Battle Guard at Skill Level 1 with autonomous use and WIS scaling.
+- ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
+- ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
+- 🟡 Elemental mitigation exists, but current ordinary content is still effectively physical.
+- ⬜ Purchasable Skill Levels 2–10 / training economy.
 - ⬜ Protector ability: Shield Bash.
 - ⬜ Slayer ability: Crippling Blows.
 
-## 4. Personality and autonomous decisions
+## 3. Personality and autonomous behaviour
 
-- 🟡 Current prototype still rolls 1–2 starting established traits, now using the final trait vocabulary; the current rollable subset is `Cautious / Brave / Devious / Noble / Greedy`.
-- 🟡 Current QuestScore personality modifiers read established traits derived from the four personality axes; the current authored temporary events also apply live formative axis movement, while broader event-driven personality content is still incomplete.
-- ✅ Final four Prototype 0.2 personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
-- ✅ Hidden continuous personality values use −100…+100 with ±40 activation and ±20 return-to-neutral hysteresis; starting established traits initialize their matching axis at exactly ±40.
-- ⬜ Starting questionnaire applies small hidden personality shifts that remain below the visible-trait threshold by themselves.
-- 🟡 Decision-point roles Formative / Expressive / Neutral exist in the event framework; the current four authored events exercise Formative and Expressive stages, while broader content coverage remains incomplete.
-- 🟡 Authored Formative decisions do not read general personality and move the matching hidden axis by the meaning of the chosen action; current events exercise Courage, Morality, and Curiosity movement.
-- 🟡 Authored Expressive trait checks read established personality without moving the general personality axes; current content exercises Brave, Greedy, Curious, and Noble.
-- ⬜ Neutral decisions neither need to read nor modify general personality.
-- ⬜ Personality and primary-attribute development remain independent; traits do not distribute level-up stat points.
-- ✅ Ordinary quest autonomous selection uses the Scope's personality-adjusted MobPower window: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%.
+- ✅ Final four Prototype 0.2 axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
+- ✅ Hidden values use −100…+100 with ±40 trait activation and ±20 return-to-neutral hysteresis.
+- ✅ Personality and player-guided primary-attribute development are separate; traits do not distribute the player's level-up points.
+- ✅ Formative / Expressive / Neutral decision roles exist in the event framework.
+- ✅ Current authored events use real Formative movement and Expressive checks without self-reinforcing the same trait; current live content exercises Courage, Morality and Curiosity movement plus Brave, Greedy, Curious, Noble and Devious expression.
+- ✅ Ordinary quest selection uses the current personality-adjusted Power windows.
+- 🟡 New heroes still receive a temporary seeded roll of 1–2 established traits instead of beginning from questionnaire-driven mild hidden biases.
+- ⬜ Starting questionnaire personality shifts and removal of the temporary starting-trait bootstrap.
 
-## 5. World map and travel
+## 4. World map, cities and travel
 
-- ✅ Authored 26 × 15 gameplay hex map decoded from the editable PNG source.
-- ✅ Two seven-hex city clusters exist geographically.
-- ✅ One authored road between the cities.
-- ✅ Plains / forest / hills plus current temporary road/city terrain handling.
-- ✅ Starting Region and Mid Region ownership.
-- ✅ Permanent semantic tags: `city`, `city_center`, `road`.
-- ✅ Hex adjacency, radius, route and distance queries.
-- ✅ 1 hex = 3 km.
-- ✅ 1 traversed hex = 1 world tick.
-- ✅ Activity reservation: one active activity per hex; multi-hex atomic footprints supported.
-- ✅ Placement filtering by region, distance, terrain, allowed/forbidden tags and radius.
-- ✅ `TravelSystem`: real route movement one adjacent hex per world tick.
-- ✅ Hero sprite follows live map position.
-- ✅ Quest activity sprite on real target hexes.
-- ✅ Current selected quest target is marked by a brighter orange rarity-style outline.
-- ✅ Map zoom and right-mouse panning.
-- 🟡 Map Screen is functional but does not yet show the current travel route/destination line required by the final 0.2 UI.
+- ✅ Authored 26 × 15 hex map with two seven-hex city clusters, one road, regions and semantic tags.
+- ✅ Real hero map position, shared activity reservations and placement filtering.
+- ✅ Real route movement: 1 traversed hex = 1 world tick; 1 hex = 3 km.
+- ✅ Map Screen shows terrain, both city clusters, road, hero, current quest targets, dungeon markers, temporary-event footprints, zoom and panning.
+- 🟡 Travel interruption/resumption works for ordinary quest travel and outbound ordinary-dungeon travel, including event-owned detours; completed-dungeon return interception is still missing.
+- 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
 - ⬜ Full city runtime/context system.
 - ⬜ Autonomous relocation from Starting City to Mid-Level City.
-- ⬜ Mid-Level City as a complete playable economic/quest context.
-- 🟡 Travel interruption and resumption works for the current temporary events while travelling to/from an ordinary quest and while travelling to an ordinary dungeon, including one real event-owned detour; completed-dungeon return travel and city-to-city relocation travel remain incomplete.
+- ⬜ Mid-Level City as a complete gameplay/economy/quest context.
 
-## 6. Ordinary quests and quest board
+## 5. Ordinary quests and quest board
 
-- ✅ `QuestDefinition` and runtime `QuestOffer` are separate.
-- ✅ 22 current Starting City quest templates.
-- ✅ Each current quest has authored hex-distance and terrain/tag placement constraints.
-- ✅ Quest offers receive concrete unique `target_hex` positions.
-- ✅ Quest target reservation/release lifecycle.
-- ✅ Real travel to target and real travel back to Starting City.
-- ✅ Live QuestScore travel cost uses actual route length in hexes.
-- ✅ Current combat/recovery/turn-in/Gold quest loop.
-- ✅ Starting City content target: **22 / 22** ordinary quest templates.
-- ⬜ Mid-Level City content target: **0 / 15** ordinary quest templates.
-- ✅ Starting City explicit quest strength bands: 8 lower / 7 middle / 7 higher.
-- 🟡 Starting City board normally targets maximum 9 offers / 3 per band, but that cap is temporarily disabled during current playtesting so all eligible templates can appear at once.
-- ✅ Shared 50-world-tick full-board reroll; accepted offers leave vacancies until the next shared refresh.
-- ✅ 50-world-tick completed-template cooldown before it becomes eligible for a later board roll.
-- ⬜ City-local quest pools for both cities.
-- ⬜ "Hero outgrew this city" relocation trigger from the current active offers.
-- 🟡 Current development build temporarily exposes all eligible Starting City templates simultaneously; the intended 3/3/3 rotating-board cap will be revisited after the no-suitable-quest problem is redesigned.
+- ✅ 22 / 22 Starting City ordinary quest templates with real map-placement constraints and concrete runtime targets.
+- ✅ Starting City strength-band split: 8 lower / 7 middle / 7 higher.
+- ✅ Autonomous `Hard Filter → QuestScore → best valid quest` selection.
+- ✅ Real travel to quest target, combat/recovery loop, real return travel, turn-in and Gold reward.
+- ✅ Shared 50-world-tick full-board refresh and strict 50-world-tick completed-template cooldown.
+- 🟡 Intended final board remains up to 9 offers / 3 per band, but the current development build deliberately exposes all eligible templates while the no-suitable-quest problem is being evaluated.
+- ⬜ 15 Mid-Level City ordinary quest templates.
+- ⬜ City-local quest pools across both cities.
+- ⬜ "Hero outgrew this city" relocation trigger from the current active opportunities.
 
-## 7. Temporary events
+## 6. Temporary events
 
-- 🟡 Generic placement/reservation foundation already supports event-style radius footprints; radius 1 = 7 reserved hexes.
-- 🟡 `EventSystem` runtime lifecycle is implemented for the first four authored Starting Region events; the final multi-event population is incomplete.
-- ✅ Global early-game event gate: no temporary event is placed before world tick 100; the first population becomes eligible on tick 100 and retries later if an active activity temporarily blocks every valid footprint.
-- ✅ Shared temporary-event population rotation: first population at tick 100, then full unengaged rerolls every 200 ticks at 300 / 500 / 700 / ... .
-- ✅ Current population cap is **5 simultaneous temporary events**; with four authored events, all four definitions are selected whenever all are eligible, while any selected definition that cannot immediately fit remains pending for that cycle.
-- ✅ Activating an event starts a **500-world-tick definition cooldown** from engagement; the event cannot be selected again during that cooldown and may return only on a later shared rotation. An event already being resolved is never aborted by a rotation.
-- 🟡 Authored lifetime/expiry remains as a safety boundary for unengaged instances, while the normal current replacement rhythm is the shared 200-tick population rotation.
-- 🟡 Travel collision/activation with event areas works during ordinary quest outbound/return travel and ordinary dungeon outbound travel; completed-dungeon return travel remains excluded.
-- 🟡 Suspend original travel objective → resolve event → resume travel works for current ordinary-quest routes and outbound ordinary-dungeon travel.
-- ✅ Real event-owned `TRAVEL` detours are live: the second event can travel from the encounter point to a separately reserved tower objective, return to the encounter point, then resume the original quest destination without losing it.
-- 🟡 Conditional event options and autonomous reactions work for the current authored events.
-- 🟡 Event decision stages support Formative / Expressive / Neutral roles in the current framework.
-- 🟡 Formative event stages can change hidden personality according to the chosen action without reading current general personality; current content now includes WIS → Courage +5 in `Мёртвый гонец`, alongside the existing Courage / Morality / Curiosity movements in the first three events.
-- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; current content exercises Brave, Greedy, Curious, Noble, and Devious, including Devious combat avoidance and Curious follow-up investigation in `Мёртвый гонец`.
-- ⬜ Approximately 15–20 handcrafted events across both regions.
+- ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
+- ✅ Current Starting Region events: **4** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`.
+- ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
+- ✅ Events can suspend/resume an ordinary quest route or outbound dungeon route, and can use their own real travel objective.
+- 🟡 Current event framework is functional, but the final world population is still small and some travel contexts remain unsupported.
+- ⬜ Approximately **15–20 handcrafted events total** across both regions.
 
-## 8. Dungeons
+## 7. Ordinary dungeons
 
-- ✅ Runtime dungeon definition/instance foundation, automatic ordinary-dungeon loading from the Starting/Mid region data folders, and real map placement for the current dungeon population.
-- ✅ Dungeon discovery / known-vs-unknown world knowledge for physical hex entry and Divine Vision.
-- ✅ Starting Region ordinary dungeons: **2 / 2** (`Заброшенные железные шахты`, `Городище Черноклыков`).
+- ✅ Dungeon definition/instance/system/runner/evaluator foundation with real map placement and discovery.
+- ✅ Starting Region ordinary dungeons: **2 / 2** — `Заброшенные железные шахты` and `Городище Черноклыков`.
+- ✅ Full current dungeon loop: discovery → city decision → preparation → real travel → sequential shared combat → carried HP → potion use → boss → success/death → reward/retry/return.
+- ✅ Dungeon attempts require a complete legal Belt potion loadout.
+- ✅ Failure memory and current progress-based retry Power gates work.
+- ✅ Dungeon completion uses the normal item pipeline and supports Rare/Epic rewards.
+- ✅ Divine Vision can reveal one existing unknown dungeon in the current region.
 - ⬜ Mid Region ordinary dungeons: **0 / 2**.
-- ✅ First dungeon executes its authored `3 × Шахтный троглодит → Глубинный пожиратель` sequence through the shared live combat system.
-- ✅ Dungeon discovery does not interrupt the current activity; after quest turn-in → market → shopping, a known local dungeon takes priority over selecting another ordinary quest.
-- ✅ Real map travel to the known dungeon entrance through `TravelSystem`.
-- ✅ Dungeon combat preserves current HP between encounters, grants normal combat XP, and does not roll ordinary mob equipment drops.
-- ✅ Exactly 1 world tick of between-fight preparation after each ordinary encounter, including before the boss; there is still no free healing, but prepared dungeon potions may be consumed inside that same tick.
-- ✅ Dungeon death uses the normal 100-tick resurrection / city-recovery contract and Divine instant resurrection.
-- ✅ Dungeon readiness combines the current first-attempt/post-failure Power rules with mandatory full-Belt potion preparation before travel.
-- ✅ Potion preparation before attempts: every current Belt slot must be filled; incomplete loadouts postpone the dungeon.
-- ✅ Between-fight potion use works: ordinary rooms avoid overheal, boss preparation may accept it, and multiple potions may be consumed in one preparation window.
-- ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
-- ✅ First dungeon completion reward: 700 Gold + one compressed ilvl 5 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
-- ✅ Second Starting Region dungeon: forest `Городище Черноклыков`, `3 × Гоблин-гвардеец` at approximately 600 Power / 260 XP → `Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one compressed ilvl 10 item across all 12 slots at 75% Blue/Rare / 25% Purple/Epic.
-- ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
-## 9. First Warrior specialization
+## 8. Items, equipment, loot and inventory
 
-- ⬜ Protector / Slayer preference scores.
-- ⬜ Player-guided primary attributes contribute to specialization preference while mandatory Warrior STR is excluded from false Slayer bias.
-- ⬜ Brave / Cautious provides an independent soft specialization modifier; exact numerical strength remains a tuning value.
-- ⬜ One-time divine specialization guidance.
-- ⬜ Specialization decision window / lock.
-- ⬜ Specialization Quest activation.
-- ⬜ Protector specialization dungeon variant.
-- ⬜ Slayer specialization dungeon variant.
-- ⬜ Relic/objective completion and specialization granting.
-- ⬜ Protector/Slayer post-specialization +1 attribute growth and immediate profile reward.
+- ✅ All 12 equipment slots are mechanically functional and visible.
+- ✅ Item Level, rarity, inherent stats, random affixes, ItemPower and shared virtual-equip HeroPower evaluation.
+- ✅ White / Green / Blue(Rare) ordinary generation; Purple/Epic exists through dungeon rewards.
+- ✅ Ring candidates evaluate both ring positions; Belt uses its separate potion-utility comparison.
+- ✅ Current Starting City equipment progression is live at compressed ilvl 1 / 5 / 10.
+- ✅ Three current visual families: Rustchain Initiate, Ironwake Sentinel, Ironward Vanguard, including five armor paper-doll overlays.
+- ✅ Source-driven ordinary mob drops and autonomous equip/inventory routing.
+- 🟡 Inventory is a functional first pass: 36 retained equipment items plus separate persistent potion counts/visual bottle slots.
+- ⬜ `QuestLoot` / unsafe carried adventure loot and death-loss handling for it.
+- ⬜ Full legal two-handed / hand-configuration content and evaluation.
+- ⬜ Remaining 2–3+ visual armor families and later equipment tiers required for the full 0.2 content target.
 
-## 10. Items, equipment, loot and inventory
+## 9. Economy, shops, Belt and healing potions
 
-- ✅ Item Level framework and base-stat tables.
-- ✅ White / Green / Blue(Rare) affix-count/budget generation foundation.
-- 🟡 Purple/Epic generation is now live through first-dungeon completion; broader Purple reward sources remain incomplete.
-- ✅ ±5% rolled total modifier budget and stat-cost tables.
-- ✅ Generated `ItemInstance`, affixes, inherent stats, ItemPower and tooltips.
-- ✅ Shared-Power-based ItemPower calculation.
-- ✅ Virtual-equip HeroPower comparison.
-- ✅ Current five armor slots + sword + shield + necklace + earrings + two ring slots mechanically generate/equip/drop.
-- ✅ Five armor paper-doll overlays work.
-- ✅ All 12 equipment slots now generate/equip/display; Belt provides inherent Health plus rarity-based potion capacity and Item-Level potion eligibility.
-- ✅ Functional compressed ilvl 5 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the eighth mob by Power after the Starting City curve expansion.
-- ✅ Belt item generation/drop/shop/equip works with inherent Health, 1 / 2 / 3 / 4 rarity capacity, potion-level eligibility, and Belt-specific utility evaluation.
-- ⬜ Two-handed / full legal hand-configuration equipment content and evaluation.
-- 🟡 Source-driven mob drops exist for the current compressed ilvl 1 / 5 / 10 Starting City families, but the final six two-city quest-band ilvl sources are incomplete.
-- ⬜ `QuestLoot` temporary unsafe adventure loot.
-- ⬜ Death clears unsafe QuestLoot while preserving permanent/equipped gear.
-- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; current compressed Level 5 / 10 potions are shown individually in a vertical column beside jewelry, one physical bottle per visual slot, with sprites and tooltips, while QuestLoot, quest/special item categories, and prepared-Belt-slot visualization remain incomplete.
-
-## 11. Visual equipment content
-
-- 🟡 Visual armor families: **3 / minimum 5–6** (`Rustchain Initiate`, `Ironwake Sentinel`, `Ironward Vanguard`; all three are live through ordinary drops and shop bands).
-- ✅ Current families provide five visible armor overlays.
-- ✅ Sword/shield icons and equipped state work for current families.
-- ⬜ Remaining 2–3+ visual families required for Prototype 0.2.
-
-## 12. Economy and shops
-
-- ✅ Gold from current quest turn-in and sale of unwanted ordinary equipment.
-- ✅ Automatic city sale tick.
-- ✅ Autonomous equipment purchase evaluation.
-- ✅ Current +20% ItemPower shop threshold plus real virtual-equip validation.
-- ✅ Deterministic 200-world-tick shop refresh.
-- ✅ Purchased shop slots remain empty until refresh.
-- ✅ Starting City shop has compressed ilvl 1 / 5 / 10 equipment bands (**3 / 3**); the ilvl 5 band includes all 12 equipment slots.
-- ✅ Current full rotating equipment stock is 24 listings (3 bands × 8).
-- ⬜ Mid-Level City shop: compressed ilvl 15 / 20 / 25 bands.
-- ✅ Starting City healing-potion purchasing/preparation for the compressed Level 5 / 10 tiers, including one dedicated world tick whenever missing potions must actually be bought before a dungeon.
+- ✅ Quest/dungeon/event Gold can feed the current economy; unwanted ordinary equipment can be sold automatically in the city flow.
+- ✅ Starting City equipment shop has all three current ilvl 1 / 5 / 10 bands, 24 rotating equipment listings and deterministic stock refresh.
+- ✅ Autonomous equipment purchase evaluation and protected Gold for required dungeon preparation.
+- ✅ Belt is a real utility slot with rarity-based 1 / 2 / 3 / 4 potion capacity and Item-Level potion eligibility.
+- ✅ Starting City Level 5 / 10 healing potions, persistent inventory, full-Belt preparation and dungeon-only consumption are live.
+- ✅ Missing dungeon potions are bought in the current dedicated preparation tick; already-owned complete loadouts do not invent an extra purchase tick.
+- ⬜ Mid-Level City shop bands and later potion tiers.
 - ⬜ Skill Level purchasing/training.
 - ⬜ Curious ↔ Conservative spending priority.
-- ✅ Dungeon-preparation Gold reservation priority protects full-Belt potion preparation from optional equipment spending, including after a Belt upgrade.
 
-## 13. Belt and healing potions
+## 10. God influence
 
-- ✅ Real compressed ilvl 5 Belt item content exists with the unchanged +40 inherent Health plus live potion utility.
-- ✅ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
-- ✅ Belt-level potion eligibility: `PotionLevel <= BeltLevel`.
-- 🟡 Potion progression is defined at compressed Level 5 / 10 / 15 / 20 / 25 with no Level 1 potion; current live Starting City content implements Level 5 / 10 only.
-- ✅ Potion inventory counts, individual current Level 5 / 10 bottle slots, and full-Belt preparation state.
-- ✅ Autonomous current potion purchase logic: Level 5 = 100 Gold, Level 10 = 200 Gold; complete affordable loadouts maximize total healing.
-- ✅ Dungeon-only potion use; ordinary quest flow never consumes healing potions; multiple potions may be used in one dungeon preparation window.
-
-## 14. God influence
-
-- ✅ Divine Energy 0–100 and +1 per 6 world ticks.
-- ✅ Divine Healing: 10 Energy, +50% MaxHP, 30-tick cooldown.
-- ✅ Combat Empowerment: 10 Energy, +15% Physical Damage for 5 fights, 120-tick cooldown.
-- ✅ Instant Resurrection with dynamic RemainingTicks × 0.5 Energy cost.
-- 🟡 Ordinary quest guidance works in simulation, but there is no player-facing quest-guidance selection UI yet.
+- ✅ Divine Energy and passive recovery.
+- ✅ Divine Healing.
+- ✅ Temporary Combat Empowerment.
+- ✅ Instant Resurrection.
+- ✅ Divine Vision for one unknown dungeon in the current region.
+- 🟡 Ordinary quest guidance works in simulation, but its player-facing quest-selection UI is missing.
 - ⬜ First-specialization divine guidance.
-- ⬜ Vision: reveal one unknown dungeon in the current region.
 
-## 15. Narrative and logs
+## 11. Narrative, logs and Hero Diary
 
-- ✅ Structured quest/death facts and separate `QuestNarrator`.
-- ✅ Developer Debug Log with bounded recent tick history.
-- ✅ Debug log UI and automatic scrolling.
-- ⬜ Player-facing Explanatory Log with structured decision reasons.
-- ⬜ Hero Diary / Chronicle gameplay feed.
-- ⬜ Diary grouping into meaningful episodes.
-- ⬜ Persistent diary/history.
-- ⬜ Narrative phrase/data layer for the full 0.2 diary.
+- ✅ Structured quest/death facts and separate developer narration.
+- ✅ Developer Debug Log with bounded recent history and automatic newest-entry scrolling.
+- 🟡 Hero Diary is now a real live system for ordinary quest selection, successful turn-in and ordinary-quest death; entries include their real world tick.
+- 🟡 Ordinary quest Diary wording already lives in external narrative data with variant arrays and per-quest override support, but only one phrase per category is currently authored.
+- 🟡 Diary UI updates live and stays scrolled to the newest entry.
+- ⬜ Remaining required Diary sources: events, Rare+ item acquisition, levels, visible trait changes, dungeons, specialization, meaningful divine intervention and other important progression moments.
+- ⬜ Diary episode grouping and persistent history/save integration.
+- ⬜ Player-facing Explanatory Log and its UI.
 
-## 16. UI
+## 12. UI
 
-- 🟡 Main Screen exists as the current developer-oriented main UI, but it is not yet the finished 0.2 Main Screen.
-- ⬜ Dedicated finished Hero Screen.
-- 🟡 Inventory Screen is a strong first pass: paper doll, 12 visible equipment slots, 6 × 6 equipment grid, and a separate vertical healing-potion column immediately to the right of jewelry with one bottle per slot and tooltips; final item categories/content remain incomplete.
-- 🟡 Map Screen is functional: both cities, road, hero, quest targets, terrain inspection and camera; active temporary-event footprints now use translucent blue area shading, while route display and finished hidden-information presentation remain incomplete.
-- ⬜ Menu Screen.
-- 🟡 God controls exist for healing/blessing/resurrection; quest guidance UI is missing.
-- ✅ Player-facing primary-attribute allocation UI for pending stat points through the Hero screen.
-- ⬜ Starting questionnaire UI / flow.
-- ⬜ Player-facing Diary UI with real diary content.
+- 🟡 Current developer-oriented Main UI is functional but is not the finished Prototype 0.2 player-facing interface.
+- ✅ Hero development view includes live stats/personality and player primary-attribute allocation.
+- 🟡 Inventory Screen is a strong functional first pass with paper doll, all 12 equipment slots, retained gear and potion display.
+- 🟡 Map Screen is functional but still needs final route/destination and hidden-information presentation.
+- 🟡 God panel and Log/Diary presentation are functional; ordinary quest-guidance UI is still missing.
+- ⬜ Starting questionnaire UI/flow.
+- ⬜ Finished player-facing Hero/Main/Diary presentation.
 - ⬜ Player-facing Explanatory Log UI.
+- ⬜ Menu Screen.
 
-## 17. Save / load / persistence
+## 13. First Warrior specialization
 
-- ⬜ One rolling main save.
-- ⬜ Autosave approximately every 10 real minutes.
-- ⬜ Save on normal exit.
-- ⬜ Dungeon-completion milestone save.
-- ⬜ Specialization milestone save.
-- ⬜ Full simulation-state serialization.
-- ⬜ Persist pending unspent primary-attribute points and already allocated player-guided attributes.
-- ⬜ Persist questionnaire completion/state plus hidden personality values and visible traits.
-- ⬜ RNG-state/reproducible continuation after load.
-- ⬜ Save/load status in Menu Screen.
+- ⬜ Autonomous Protector / Slayer preference from player-shaped attributes plus independent Brave/Cautious influence.
+- ⬜ One-time divine specialization guidance and specialization decision window.
+- ⬜ Specialization Quest and dedicated Protector/Slayer specialization dungeon content.
+- ⬜ Specialization granting, immediate/profile progression rewards and later specialization-directed attribute growth.
+- ⬜ Protector/Slayer abilities and their later Skill Level progression.
+
+## 14. Save / load / persistence
+
+- ⬜ One rolling main save with periodic autosave and save on normal exit.
+- ⬜ Major milestone saves for dungeon completion and specialization.
+- ⬜ Full required simulation-state serialization, including hero progression/personality, equipment/inventory, world/activity state, dungeon memory, God state, Diary and reproducible RNG continuation.
+- ⬜ Save/load status through the Menu Screen.
 - 🚫 Offline simulation while the game is closed.
 
-## 18. Prototype 0.2 content targets at a glance
+## 15. Prototype 0.2 content targets at a glance
 
-- 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
-- 🟡 Ordinary quest templates: **22 / 37 current two-city target** (Starting City 22 complete; Mid-Level City currently targets 15).
-- 🟡 Simultaneous quest offers: the intended Starting City target remains **up to 9 offers, 3/3/3 by band**, but the current development build temporarily exposes all eligible templates to avoid no-suitable-quest stalls while this rule is being reconsidered.
-- 🟡 Handcrafted temporary events: **3 / 15–20**.
-- 🟡 Ordinary dungeons: **2 / 4**.
-- ⬜ First specialization paths: **0 / 2 implemented**.
-- ⬜ Specialization dungeon variants: **0 / 2**.
-- ✅ Base Warrior abilities: **2 / 2** at Skill Level 1.
-- ⬜ First-specialization abilities: **0 / 2**.
-- 🟡 Final personality axes: **4 / 4 runtime axes implemented**; starting-trait initialization and live UI are connected, while questionnaire/event-driven formative development is still incomplete.
-- 🟡 Visual armor families: **3 / minimum 5–6**.
-- 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic is now live through first-dungeon completion but remains absent from ordinary drops/shops.
-- 🟡 Main progression: +1 Warrior STR / +4 player allocation is implemented; the starting questionnaire and complete approximately compressed level 1–30 content/balance are not yet implemented.
+| Content | Current | Prototype 0.2 target |
+|---|---:|---:|
+| Normal cities | 2 on map / 1 complete | 2 complete |
+| Ordinary quest templates | 22 | 37 current target (22 + 15) |
+| Handcrafted temporary events | 4 | ~15–20 |
+| Ordinary dungeons | 2 | 4 |
+| First specialization paths | 0 | 2 |
+| Specialization dungeon variants | 0 | 2 |
+| Base Warrior abilities | 2 at Skill Level 1 | 2 + purchasable ranks |
+| First-specialization abilities | 0 | 2 |
+| Personality axes | 4 live | 4 |
+| Visual armor families | 3 | at least 5–6 |
+| Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
+| Main playable progression | early-game systems live | compressed level ~1–30 |
 
-## 19. Final integration / validation
+The intended ordinary quest board remains up to 9 offers / 3 per strength band, but the current development build temporarily exposes all eligible Starting City templates. This is a known development deviation, not a completed final-board decision.
 
-- ⬜ Full autonomous loop across both cities.
-- ⬜ Starting questionnaire creates only mild hidden personality bias rather than immediately assigning established traits.
-- ⬜ Player-guided stat allocation affects capabilities without directly commanding hero decisions.
-- 🟡 Formative decisions can create/change personality without reading the current general trait state; verified by the first authored event.
-- 🟡 Expressive decisions reflect established personality without automatically reinforcing it; verified by the first event's Brave check.
-- 🟡 Events interrupt/resume real travel correctly for the first ordinary-quest travel slice; broader travel contexts remain incomplete.
-- ⬜ Dungeons integrate travel, preparation, combat, loot, death and retry memory.
-- ⬜ Specialization combines player-shaped stats, independent Brave/Cautious character influence, and optional divine guidance.
-- ⬜ Specialization is reached through its full quest/dungeon flow rather than level alone.
-- ⬜ Diary makes recent autonomous life understandable without reading the debug log.
-- ⬜ Explanatory Log makes major decisions understandable without raw formulas.
-- ⬜ Save/load reproduces the same continuing hero life.
-- ⬜ Long-run simulation proves the economy, progression, quest rotation and city relocation remain stable.
+## 16. Major remaining Prototype 0.2 blocks
 
----
+This is a progress-oriented list, not automatic permission or a fixed implementation order:
 
-## Suggested next large blocks
-
-This is only a working order, not permission to implement automatically:
-
-1. Validate the Starting City quest-board pacing in long runs: 22 templates, 8/7/7 bands, 9-offer 3/3/3 rotation, 50-tick shared refresh and 100-tick cooldown.
-2. Add the lightweight starting questionnaire foundation and connect its initial player-distributed attribute pool.
-3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
-4. Expand the now-working temporary-event framework from the four authored events toward the broader 15–20-event population; shared replacement/pacing and real event detours are already live, while additional travel-interception contexts should be added only when explicitly approved.
-5. Replace the temporary starting established-trait roll with the approved questionnaire's mild hidden starting biases while preserving the already-live four-axis personality model and event-driven development.
-6. Extend the now-working Belt/potion + first-dungeon slice into the remaining ordinary dungeon content.
-7. Implement first Warrior specialization using stats + Brave/Cautious + divine guidance, then the specialization dungeon flow.
-8. Complete item/shop/content breadth, Diary, Explanatory Log and remaining UI screens.
-9. Add Save/Load and run long-duration Prototype 0.2 validation.
+1. Continue expanding the Hero Diary from the current ordinary-quest slice and author more phrase variation.
+2. Implement the lightweight starting questionnaire and replace the temporary seeded starting-trait bootstrap.
+3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
+4. Expand the temporary-event population from 4 toward the ~15–20 target and complete the remaining travel-interception context where needed.
+5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
+6. Implement Skill Level training and Curious/Conservative spending priority.
+7. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
+8. Complete QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
+9. Add Save/Load and run long-duration Prototype 0.2 validation through the intended compressed level range.

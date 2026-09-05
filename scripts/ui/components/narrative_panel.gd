@@ -3,7 +3,9 @@ extends TabContainer
 
 var simulation
 var log_text_edit: TextEdit
+var diary_text_edit: TextEdit
 var last_rendered_log_text: String = ""
+var last_rendered_diary_text: String = ""
 
 func setup(simulation_reference) -> void:
 	simulation = simulation_reference
@@ -24,6 +26,8 @@ func connect_sources() -> void:
 		simulation.world_clock.tick_completed.connect(on_world_tick_completed)
 	if not simulation.debug_log.text_changed.is_connected(on_debug_log_text_changed):
 		simulation.debug_log.text_changed.connect(on_debug_log_text_changed)
+	if not simulation.diary.text_changed.is_connected(on_diary_text_changed):
+		simulation.diary.text_changed.connect(on_diary_text_changed)
 
 func apply_tabs_style() -> void:
 	var tabs_panel_style := StyleBoxFlat.new()
@@ -45,23 +49,25 @@ func create_tabs() -> void:
 	log_text_edit.name = "Лог"
 	add_child(log_text_edit)
 
-	var diary_text_edit := create_read_only_text_edit()
+	diary_text_edit = create_read_only_text_edit()
 	diary_text_edit.name = "Дневник"
 	diary_text_edit.placeholder_text = "Пока записей нет."
-	if simulation != null:
-		diary_text_edit.text = simulation.diary.get_text()
 	add_child(diary_text_edit)
 
 func refresh() -> void:
-	if simulation == null or log_text_edit == null:
+	if simulation == null or log_text_edit == null or diary_text_edit == null:
 		return
 	update_debug_log(simulation.debug_log.get_text())
+	update_diary(simulation.diary.get_text())
 
 func on_world_tick_completed(_completed_tick: int) -> void:
 	refresh()
 
 func on_debug_log_text_changed(log_text: String) -> void:
 	update_debug_log(log_text)
+
+func on_diary_text_changed(diary_text: String) -> void:
+	update_diary(diary_text)
 
 func update_debug_log(log_text: String) -> void:
 	if log_text_edit == null:
@@ -74,6 +80,17 @@ func update_debug_log(log_text: String) -> void:
 	scroll_bar.value = scroll_bar.max_value
 	call_deferred("scroll_debug_log_to_bottom")
 
+func update_diary(diary_text: String) -> void:
+	if diary_text_edit == null:
+		return
+	if diary_text == last_rendered_diary_text:
+		return
+	last_rendered_diary_text = diary_text
+	diary_text_edit.text = diary_text
+	var scroll_bar: VScrollBar = diary_text_edit.get_v_scroll_bar()
+	scroll_bar.value = scroll_bar.max_value
+	call_deferred("scroll_diary_to_bottom")
+
 func scroll_debug_log_to_bottom() -> void:
 	if log_text_edit == null or not is_inside_tree():
 		return
@@ -81,6 +98,15 @@ func scroll_debug_log_to_bottom() -> void:
 	if not is_instance_valid(log_text_edit):
 		return
 	var scroll_bar: VScrollBar = log_text_edit.get_v_scroll_bar()
+	scroll_bar.value = scroll_bar.max_value
+
+func scroll_diary_to_bottom() -> void:
+	if diary_text_edit == null or not is_inside_tree():
+		return
+	await get_tree().process_frame
+	if not is_instance_valid(diary_text_edit):
+		return
+	var scroll_bar: VScrollBar = diary_text_edit.get_v_scroll_bar()
 	scroll_bar.value = scroll_bar.max_value
 
 func create_read_only_text_edit() -> TextEdit:

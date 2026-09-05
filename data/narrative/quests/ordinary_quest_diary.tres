@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="QuestDiaryTextDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_diary_text_definition.gd" id="1_quest_diary"]
+
+[resource]
+script = ExtResource("1_quest_diary")
+selected_variants = PackedStringArray("Для {hero} новым делом стало задание «{quest}».")
+completed_variants = PackedStringArray("Задание «{quest}» было завершено. {hero} вернулся за наградой в {gold} золота.")
+failed_variants = PackedStringArray("Задание «{quest}» осталось незавершённым: поход закончился смертью {hero} в бою с {mob}.")

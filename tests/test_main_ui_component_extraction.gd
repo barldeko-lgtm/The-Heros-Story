@@ -44,7 +44,18 @@ func run_test() -> void:
 	assert(god_panel.combat_buff_button.text.contains("Боёв: 5"), "Extracted GodPanel must refresh blessing status immediately.")
 
 	var log_text_edit := narrative_panel.log_text_edit as TextEdit
-	assert(log_text_edit != null and narrative_panel.find_child("Дневник", true, false) != null, "NarrativePanel must retain Log and Diary tabs.")
+	var diary_text_edit := narrative_panel.diary_text_edit as TextEdit
+	assert(log_text_edit != null and diary_text_edit != null and narrative_panel.find_child("Дневник", true, false) != null, "NarrativePanel must retain Log and Diary tabs.")
+	main_ui.simulation.diary.add_entry(42, "Тестовая запись дневника.")
+	await process_frame
+	assert(diary_text_edit.text.contains("Тик 42 — Тестовая запись дневника."), "NarrativePanel must update the visible Diary tab with the diary entry's world tick when Diary emits new text.")
+	for index in 40:
+		main_ui.simulation.diary.add_entry(43 + index, "Длинная запись дневника %d — %s" % [index, "жизнь героя продолжается ".repeat(12)])
+	await process_frame
+	await process_frame
+	var diary_scroll_bar: VScrollBar = diary_text_edit.get_v_scroll_bar()
+	var diary_bottom_value: float = maxf(diary_scroll_bar.min_value, diary_scroll_bar.max_value - diary_scroll_bar.page)
+	assert(diary_scroll_bar.value >= diary_bottom_value - 0.01, "NarrativePanel must keep the Diary pinned to the newest wrapped entry after a new diary record arrives.")
 	var lines: PackedStringArray = []
 	for index in 40:
 		lines.append("Запись %d — %s" % [index, "длинная строка журнала ".repeat(12)])

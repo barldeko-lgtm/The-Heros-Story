@@ -9,6 +9,7 @@ const STRENGTH_BAND_HIGHER: String = "higher"
 @export var display_name: String
 @export var mob_definition: Resource
 @export_enum("lower", "middle", "higher") var strength_band: String = STRENGTH_BAND_LOWER
+@export var diary_text: QuestDiaryTextDefinition
 
 # Immutable template ranges. A QuestOffer owns the concrete rolled values.
 @export var mob_count_min: int = 1
