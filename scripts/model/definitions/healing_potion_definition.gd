@@ -3,7 +3,7 @@ extends Resource
 
 @export var id: String
 @export var display_name: String
-@export var potion_level: int = 10
+@export var potion_level: int = 5
 @export var healing_amount: float = 0.0
 @export var shop_price: int = 0
 @export var icon_texture: Texture2D

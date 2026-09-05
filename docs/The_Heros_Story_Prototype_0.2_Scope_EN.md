@@ -62,7 +62,7 @@ Prototype 0.2 must include, at minimum:
 - one autonomous hero;
 - one starting class: **Warrior**;
 - a small starting questionnaire that creates a mild initial personality bias and a small pool of additional player-distributed primary-attribute points without implementing the full future biography system;
-- progression from approximately level 1 through **level 50–60**;
+- progression from approximately level 1 through **level 25–30** on the compressed progression scale;
 - five primary attributes;
 - player distribution of the free primary-attribute points gained through normal level progression;
 - the agreed secondary combat-stat framework relevant to the Warrior and current enemies;
@@ -74,8 +74,8 @@ Prototype 0.2 must include, at minimum:
 - a small authored hex map covering both cities and their surrounding areas;
 - travel between cities and to local activities;
 - changing city quest offers;
-- approximately **10–15 ordinary quest templates per city**;
-- no more than approximately **5–6 simultaneously active ordinary quest offers per city**;
+- approximately **15–22 ordinary quest templates per city**; the current Starting City uses 22 while the not-yet-authored Mid-Level City still targets 15 unless later balance testing justifies the same expansion;
+- up to **9 simultaneously active ordinary quest offers per city**;
 - quest offer expiration and replacement;
 - approximately **15–20 handcrafted temporary events total** across the two-city world;
 - a working personality system with several opposing trait axes and real trait development;
@@ -237,7 +237,7 @@ The current provisional contribution of one attribute point is:
 | CON | +20 maximum Health; +1 Armor |
 | WIS | improves learned abilities through ability-specific scaling |
 
-**These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full level-1-to-60 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
+**These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full compressed level-1-to-30 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
 
 The architectural relationship is fixed even when the numerical coefficients change:
 
@@ -292,7 +292,7 @@ Primary attributes and personality remain conceptually separate. High STR does n
 
 ## 7. Level Progression and Player-Guided Attribute Growth
 
-Prototype 0.2 should support meaningful progression through approximately level 50–60.
+Prototype 0.2 should support meaningful progression through approximately level 25–30 on the compressed progression scale.
 
 Normal primary-attribute growth deliberately separates **class identity**, **player guidance**, and **specialization identity**.
 
@@ -348,9 +348,9 @@ The specialization also grants its current working immediate profile reward when
 
 The exact size of this immediate reward remains a provisional balance value.
 
-If the hero completes the first specialization later than the normal level-40 milestone, delayed specialization-directed growth is not permanently lost. The missing post-40 specialization points are granted when the specialization becomes active.
+If the hero completes the first specialization later than the normal compressed level-20 milestone, delayed specialization-directed growth is not permanently lost. The missing post-20 specialization points are granted when the specialization becomes active.
 
-Exact XP requirements, primary-attribute coefficients, questionnaire bonuses, and level pace remain tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the level-50–60 range.
+Exact XP requirements, primary-attribute coefficients, questionnaire bonuses, and level pace remain tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the compressed level-25–30 range.
 
 ---
 
@@ -605,7 +605,7 @@ These generation values are working balance values and may be tuned after automa
 
 The Warrior receives two base abilities:
 
-### Level 10 — Power Strike
+### Level 5 — Power Strike
 
 Power Strike is a strong weapon attack that deals meaningfully more damage than a normal attack.
 
@@ -647,7 +647,7 @@ Autonomous baseline:
 
 Power Strike is therefore primarily gated by Rage generation rather than by a complex situational decision rule in the first Prototype 0.2 implementation.
 
-### Level 20 — Battle Guard
+### Level 10 — Battle Guard
 
 Battle Guard is the Warrior's base defensive cooldown.
 
@@ -733,7 +733,7 @@ Later abilities or specialization abilities may require more situational combat 
 
 The first Warrior specialization becomes available around:
 
-> **Level 40**
+> **Level 20**
 
 Prototype 0.2 includes two first-specialization directions:
 
@@ -754,7 +754,7 @@ Because Warrior receives one permanent class-directed Strength point per level, 
 
 At the first-specialization milestone, subtract the Warrior's expected mandatory class Strength contribution from current Strength:
 
-> **`PersonalSTR = max(0, STR - 40)`**
+> **`PersonalSTR = max(0, STR - 20)`**
 
 The current Prototype 0.2 first-specialization raw profiles are:
 
@@ -805,7 +805,7 @@ This preserves autonomy without double-counting one underlying automatic-develop
 
 ### 11.3. One-Time Divine Direction
 
-When the hero reaches level 40, the player gains one temporary divine opportunity to influence the first specialization direction.
+When the hero reaches compressed level 20, the player gains one temporary divine opportunity to influence the first specialization direction.
 
 The player may choose:
 
@@ -846,7 +846,7 @@ The scores do not need to sum to exactly `1.0` after modifiers are applied. They
 
 ### 11.5. Specialization Decision Window
 
-Reaching level 40 begins a specialization-decision window of:
+Reaching compressed level 20 begins a specialization-decision window of:
 
 > **180 world ticks**
 
@@ -908,7 +908,7 @@ Its current identity is:
 - intended combat setup: **one-handed weapon + shield**;
 - defensive identity built around survivability, mitigation, Block, and shield-based tools.
 
-The first Protector specialization ability is planned around level 50:
+The first Protector specialization ability is planned around compressed level 25:
 
 > **Shield Bash**
 
@@ -957,7 +957,7 @@ Its current identity is:
 - no shield for Slayer-specific combat tools;
 - offensive identity built around pressure and higher damage output.
 
-The first Slayer specialization ability is planned around level 50:
+The first Slayer specialization ability is planned around compressed level 25:
 
 > **Crippling Blows**
 
@@ -1378,11 +1378,13 @@ The player-facing explanatory log should still be able to state the important re
 
 Prototype 0.2 uses local city-based quest pools.
 
-Each normal city has:
+The current Starting City has:
 
-- **15 ordinary quest templates** in its local pool;
-- up to **6 active quest offers** at the same time;
-- rotating offers that expire and are replaced over time.
+- **22 ordinary quest templates** in its local pool;
+- up to **9 active quest offers** at the same time;
+- one shared quest-board rotation cycle that rerolls the current offers over time.
+
+The Mid-Level City is not yet authored. Its current content target remains **15 ordinary quest templates**, but it must use the same three-band rotating-board model; its final template count may be expanded later if long-run balance shows the same need.
 
 Quest templates are authored content definitions. Active offers are runtime instances generated from those templates.
 
@@ -1398,17 +1400,16 @@ A `QuestOffer` is one concrete currently available opportunity and may contain:
 - concrete location / hex;
 - concrete enemies or encounter parameters;
 - concrete reward values;
-- offer creation time;
-- expiry time;
+- the board cycle in which the offer was generated, if runtime diagnostics require it;
 - other runtime parameters required by that quest type.
 
 ### 14.1. Three Strength Bands
 
-Each city's 15 ordinary quest templates are divided into three **approximate strength bands**:
+The current Starting City's 22 ordinary quest templates are divided into three **approximate strength bands**:
 
-- **5 lower-strength quests**
-- **5 middle-strength quests**
-- **5 higher-strength quests**
+- **8 lower-strength quests**
+- **7 middle-strength quests**
+- **7 higher-strength quests**
 
 These labels are organizational and relative to that city's content.
 
@@ -1420,33 +1421,35 @@ The purpose of the three bands is to make the active board naturally contain opp
 
 ### 14.2. Active Quest Board Composition
 
-The active quest board contains up to six ordinary quest offers:
+The active quest board contains up to nine ordinary quest offers:
 
-- up to **2 lower-strength offers**;
-- up to **2 middle-strength offers**;
-- up to **2 higher-strength offers**.
+- up to **3 lower-strength offers**;
+- up to **3 middle-strength offers**;
+- up to **3 higher-strength offers**.
 
-Each band draws only from the five quest templates assigned to that band.
+Each Starting City band draws only from the seven quest templates assigned to that band. The future Mid-Level City uses the same rule against however many templates are authored for each of its three bands.
 
-If a band temporarily cannot provide two valid offers, the board may contain fewer than six total offers.
+If a band temporarily cannot provide three valid offers, the board may contain fewer than nine total offers.
 
-The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain six offers.
+The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain nine offers.
 
-This preserves the intended 2 / 2 / 2 composition and makes temporary exhaustion of appropriate content meaningful.
+This preserves the intended 3 / 3 / 3 composition and makes temporary exhaustion of appropriate content meaningful.
 
-### 14.3. Offer Lifetime and Rotation
+### 14.3. Shared Quest-Board Rotation
 
-A normal active quest offer remains available for:
+Each city's ordinary quest board uses one shared refresh interval of:
 
-> **100 world ticks**
+> **50 world ticks**
 
-If the hero does not take the offer before its lifetime expires, the offer disappears.
+At each shared refresh boundary, all ordinary offers still present on that city's board are discarded and the board is rolled again from the currently eligible templates.
 
-The corresponding slot then becomes eligible to receive another offer from the same strength band according to the quest rotation rules.
+The new roll again attempts to produce up to three lower-strength, three middle-strength, and three higher-strength offers. Missing slots are not filled from another band.
 
-A quest currently being performed by the hero is no longer an active board offer and is not removed merely because its original offer lifetime would have expired.
+When the hero accepts an offer, that offer immediately stops being an active board offer. Its vacated board slot remains empty until the next shared board refresh; accepting, completing, cancelling, or turning in one quest does **not** trigger an immediate one-slot replacement.
 
-The 100-tick value is a working Prototype 0.2 tuning value.
+A quest currently being performed by the hero remains the hero's active quest independently of board rotation. Its active world target may remain visible while the quest is being performed, but it does not count toward the board's maximum nine available offers and is never removed merely because the board refreshes.
+
+The 50-tick value is a working Prototype 0.2 tuning value.
 
 ### 14.4. Temporary Template Availability
 
@@ -1454,9 +1457,11 @@ When a quest template has recently been used and is not yet eligible to generate
 
 Prototype 0.2 must support this temporary unavailability so the board does not instantly regenerate the exact same completed quest.
 
-Therefore the number of currently available offers in a strength band can temporarily fall below two.
+Therefore the number of currently available offers in a strength band can temporarily fall below three.
 
-After an ordinary quest is completed, its template remains unavailable for **150 world ticks counted from quest completion**. When that cooldown expires, the template becomes eligible to return to its normal city / strength-band pool.
+This cooldown is strict in the current Prototype 0.2 rule: a blocked template is not allowed to return early merely to fill a missing board slot.
+
+After an ordinary quest is completed, its template remains unavailable for **50 world ticks counted from quest completion**. When that cooldown expires, the template becomes eligible to return to its normal city / strength-band pool. Eligibility does not itself create an offer; the template can return only on a later shared board refresh.
 
 ### 14.5. Hero Outgrowing a City's Current Opportunities
 
@@ -1584,7 +1589,9 @@ Prototype 0.2 content target:
 
 > **approximately 15–20 handcrafted temporary events total across both city regions**
 
-A normal event should generally contain one or two broadly available responses plus additional conditional options only where they make sense.
+A handcrafted temporary event should behave like a small authored RPG situation rather than a one-tick random popup. Different branches may contain different numbers and kinds of stages. A branch may end quickly, continue through another decision, require a temporary detour, enter normal combat, inspect an established trait, or combine several of these before reaching a final outcome.
+
+The normal content target is **2–4 meaningful final outcomes** when the event concept supports them. Not every branch must have identical depth, risk, duration, or reward, but the differences must be intentional and understandable from the fiction and mechanics.
 
 Every authored decision point that interacts with general personality must declare whether it is:
 
@@ -1592,9 +1599,11 @@ Every authored decision point that interacts with general personality must decla
 - **expressive**;
 - **neutral**.
 
-For **formative** decision points, general personality traits may not be used to unlock or score options. Conditional options may instead depend on:
+### 15.1. Formative Primary-Attribute Branching
 
-- primary attributes;
+For **formative** decision points, general personality traits may not be used to unlock, score, or break ties between responses. Conditional options may instead depend on:
+
+- relevant primary attributes;
 - class / specialization;
 - HP or other resources;
 - items;
@@ -1602,13 +1611,145 @@ For **formative** decision points, general personality traits may not be used to
 - relationships / world state where appropriate;
 - other explicit non-personality event conditions.
 
-The chosen formative response may apply authored hidden personality movement.
+When a formative event stage is resolved primarily by comparing the Warrior's primary attributes, it must use **no more than three authored relevant attributes in that stage**. The system does not compare all five attributes merely because they exist.
 
-For **expressive** decision points, established personality traits may affect option availability or attractiveness, but that decision point does not move the general personality axes.
+For the Prototype 0.2 Warrior, **INT does not participate in this ordinary primary-stat branch-selection pattern**. A Warrior event stage may therefore compare up to three relevant attributes chosen from **STR / DEX / CON / WIS**, and it should include only attributes that represent genuinely different ways of handling that particular situation.
+
+The normal stat-driven rule is:
+
+> **compare the raw values of the authored relevant attributes → highest relevant attribute selects the corresponding response**
+
+There are no absolute thresholds such as `DEX >= 16` for this ordinary pattern. The same handcrafted event should remain usable for an early Warrior with low values and a later Warrior with much higher values.
+
+If the highest relevant values are exactly tied, the tie is resolved through seeded reproducible RNG unless the event explicitly owns another deterministic tie rule.
+
+Primary attributes remain capabilities, not personality labels. STR does not inherently mean Brave, DEX does not inherently mean Cautious or Devious, WIS does not inherently mean Cautious, and CON does not inherently mean any specific trait. Personality movement belongs to the meaning of the **authored action that was actually chosen**.
+
+The chosen formative response may therefore apply authored hidden movement on one or more personality axes. That movement belongs to the action itself and may occur before a later success/failure result. For example, choosing to face an uncertain danger may move toward Brave even if a later combat stage is lost.
+
+### 15.2. Multi-Stage Branches, Combat, and Expressive Trait Checks
+
+A first formative branch does not need to end the event. Some branches should continue into a second or later stage so handcrafted events can produce richer small stories.
+
+Later stages may include:
+
+- normal combat through the shared combat system;
+- a temporary travel objective / detour;
+- a neutral objective check;
+- an expressive personality check;
+- another authored scene or consequence stage;
+- a final reward / failure outcome.
+
+Event combat must reuse the normal shared `CombatSession`, combat stats, abilities, and Hero/Mob Power rules. Temporary events do not receive a separate event-only combat engine.
+
+For an **expressive** decision point, established visible personality may affect what the hero does, but that stage must not move the general personality axes.
+
+An expressive trait check must always define what happens when the checked trait is **not** established. Do not author an implicit two-way `Brave versus Cautious` branch that leaves a neutral hero undefined.
+
+The preferred simple expressive pattern is:
+
+```text
+check one established trait
+→ trait present: special authored branch / opportunity
+→ trait absent: normal fallback outcome
+```
+
+The fallback includes a neutral hero and may also include the opposite trait unless the event explicitly needs to distinguish it.
+
+If the fiction genuinely requires both sides of one personality axis to behave differently, the event may instead author all three states explicitly:
+
+```text
+positive established trait
+neutral axis
+opposite established trait
+```
+
+In either pattern, a trait used to select an expressive response does **not** gain more of itself merely for being expressed. For example, if established Brave unlocks a risky follow-up fight, that expressive fight does not award additional Brave merely because Brave caused the hero to take it.
 
 Neutral decision points need neither personality input nor personality change.
 
-Availability, choice, and success remain separate concepts. Unlocking a special option does not force the hero to choose it, and success/failure does not automatically define the personality meaning of the chosen response.
+Availability, choice, success, and personality meaning remain separate concepts. Unlocking a special option does not force a success, and success/failure does not automatically define the personality meaning of the chosen response.
+
+### 15.3. Event Stage Time and Opportunity Cost
+
+Handcrafted events must consume meaningful world time. They are part of the hero's lived schedule and must not resolve as effectively free one-tick reward popups while ordinary quests consume many ticks.
+
+The timing baseline is:
+
+- the **initial event scene / description consumes at least 1 world tick**;
+- every subsequent authored event stage consumes **at least 1 world tick**;
+- an authored stage may deliberately cost **multiple world ticks** when the fiction requires observation, searching, waiting, careful preparation, a wide local detour, or another time-consuming action;
+- a temporary map detour additionally uses the real travel cost of **1 traversed hex = 1 world tick**;
+- a combat stage counts as at least one event/world-time stage for event pacing, while the live fight itself may still use the finer internal combat timing defined by the combat system.
+
+Event duration is therefore the sum of its authored stage costs plus any real map-travel cost created by the event.
+
+Different branches may intentionally have different durations. Time is part of event balance and should be treated as a real opportunity cost alongside danger and material reward.
+
+In particular, a safer branch with no combat may grant a somewhat better material result only when the authored fiction supports it and the branch pays for that advantage through another meaningful cost such as substantially more world ticks. A branch should not silently become superior in safety, speed, and reward at the same time without a deliberate reason.
+
+### 15.4. Rewards and Outcome Grounding
+
+Event rewards are authored and source-driven rather than granted abstractly because a particular stat won a comparison.
+
+Every material reward should have a clear fictional source inside the event, for example:
+
+- payment from a rescued or helped person;
+- recovered money or valuables;
+- loot from an appropriate humanoid opponent;
+- an item recovered from an authored cache or location;
+- another explicit event-owned source.
+
+If one branch grants more Gold than another, the event text and outcome should explain why more value was actually recovered, paid, saved, or obtained. The reward must not read as "WIS won, therefore +30 Gold."
+
+Equipment rewards must use the normal item-generation and autonomous equipment-evaluation pipeline. The event definition may specify source, item level, rarity, or an authored rarity override when appropriate, but it does not construct a separate event-only equipment model.
+
+Branch balance should consider together:
+
+- total world ticks consumed;
+- combat or other failure risk;
+- travel detour cost;
+- Gold / item value;
+- personality movement;
+- whether the branch provides an additional expressive opportunity unavailable to a neutral hero;
+- other persistent consequences owned by that event.
+
+### 15.5. Event Runtime Structure and Ownership
+
+Temporary events should use one small typed event graph specialized for this system rather than a universal quest/event scripting language.
+
+The intended runtime structure is:
+
+```text
+EventDefinition
+    ↓
+EventInstance
+    ↓
+EventSystem
+    ↓
+EventRunner
+    ↓
+existing TravelSystem / CombatSession / reward systems
+```
+
+- `EventDefinition` owns immutable authored event data: stable event id, placement/lifetime rules, start stage, stage graph, authored choices, consequences, and event-specific narrative hooks.
+- `EventInstance` owns one spawned event's mutable runtime state: location/footprint, spawn/expiry state, current stage id, local event flags, temporary objective state, and engagement state.
+- `EventSystem` owns world-event lifecycle: loading definitions, spawning the limited active population, placement/reservation, lifetime/expiry, encounter detection, and cleanup. It does not execute combat or move the hero directly.
+- `EventRunner` executes one already-engaged event: advances authored stages, resolves autonomous decisions, requests detours, requests shared combat, receives results, applies authored consequences through the owning systems, and reaches an outcome.
+
+The initial supported stage types should remain deliberately small:
+
+> **SCENE / DECISION / TRAVEL / COMBAT / END**
+
+Do not create one custom script per event and do not pre-build a generic formula/effect DSL. Stat-driven formative choices should use small named reusable rules, beginning with the approved **highest relevant primary attribute** comparison. Add another reusable decision rule only when a real authored event proves it necessary.
+
+`TRAVEL` stages request movement through `TravelSystem`. `TravelSystem` remains the owner of multi-tick movement and of suspending/resuming the hero's previous route. After an event detour, resumption should target the original destination from the hero's new current hex rather than attempting to continue stale route indices.
+
+`COMBAT` stages reuse the existing `CombatSession`, Warrior abilities, CombatStats, and shared Hero/Mob Power rules. Event combat must not duplicate combat resolution.
+
+Gold, equipment, personality movement, and other consequences are applied through their normal owning systems. Event data describes the authored consequence; it does not create separate event-only economy, item-generation, trait, or equipment logic.
+
+Entering an event activation area during a travel step should first record a pending event encounter. The simulation should begin the event only after the current travel-step / runner transition has safely finished, rather than changing the active hero state re-entrantly from inside a position-change callback.
 
 An event may create a temporary detour objective. The hero’s original objective is suspended rather than forgotten and may resume after the event resolves.
 
@@ -1751,8 +1892,8 @@ Discovery should use map knowledge rather than omniscient UI.
 
 The currently approved Starting Region pair is:
 
-- **Abandoned Iron Mines / `Заброшенные железные шахты`** — hill placement, 4–7 hexes from Starting City, `3 × Mine Troglodyte` at approximately 200 Power / 150 XP, then `Deep Devourer` at approximately 300 Power / 185 XP; completion grants 700 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
-- **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 600 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 20 item at 75% Rare / 25% Epic.
+- **Abandoned Iron Mines / `Заброшенные железные шахты`** — hill placement, 4–7 hexes from Starting City, `3 × Mine Troglodyte` at approximately 200 Power / 150 XP, then `Deep Devourer` at approximately 300 Power / 185 XP; completion grants 700 Gold + one ilvl 5 item at 75% Rare / 25% Epic.
+- **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 600 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
 
 Both completion equipment sources cover all twelve current equipment slots. These concrete Power, XP, Gold, distance, and rarity values remain balance data and may be tuned without changing the shared dungeon architecture.
 
@@ -1877,12 +2018,12 @@ The current working inherent base-stat control points are:
 | Item level / tier | Armor base Armor | Sword base Damage | Sword Attack Speed bonus | Shield base Block | Belt base Health | Jewelry base Resistance |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 | 5 | 10 | +0.10 | 10 | 30 | 15 |
-| 10 | 7 | 13 | +0.10 | 13 | 40 | 20 |
-| 20 | 10 | 17 | +0.10 | 17 | 50 | 25 |
-| 30 | 12 | 22 | +0.10 | 22 | 65 | 35 |
-| 40 | 15 | 30 | +0.10 | 30 | 85 | 45 |
-| 50 | 20 | 40 | +0.10 | 40 | 110 | 60 |
-| 60 | 25 | 50 | +0.10 | 50 | 145 | 80 |
+| 5 | 7 | 13 | +0.10 | 13 | 40 | 20 |
+| 10 | 10 | 17 | +0.10 | 17 | 50 | 25 |
+| 15 | 12 | 22 | +0.10 | 22 | 65 | 35 |
+| 20 | 15 | 30 | +0.10 | 30 | 85 | 45 |
+| 25 | 20 | 40 | +0.10 | 40 | 110 | 60 |
+| 30 | 25 | 50 | +0.10 | 50 | 145 | 80 |
 
 These are inherent base properties and therefore remain the same across all rarities of the same item type and item level.
 
@@ -1949,12 +2090,12 @@ Working Prototype 0.2 control points:
 | Item level / tier | Green affix budget |
 | ---: | ---: |
 | 1 | 60 |
-| 10 | 78 |
-| 20 | 101 |
-| 30 | 132 |
-| 40 | 171 |
-| 50 | 223 |
-| 60 | 290 |
+| 5 | 78 |
+| 10 | 101 |
+| 15 | 132 |
+| 20 | 171 |
+| 25 | 223 |
+| 30 | 290 |
 
 Intermediate or future item levels may derive their values from the same progression rule if needed.
 
@@ -2136,17 +2277,17 @@ For Prototype 0.2 ordinary quest content, the three relative-strength quest band
 | City | Quest band | Ordinary mob equipment ilvl |
 | --- | --- | ---: |
 | Starting City | Lower | 1 |
-| Starting City | Middle | 10 |
-| Starting City | Higher | 20 |
-| Mid-Level City | Lower | 30 |
-| Mid-Level City | Middle | 40 |
-| Mid-Level City | Higher | 50 |
+| Starting City | Middle | 5 |
+| Starting City | Higher | 10 |
+| Mid-Level City | Lower | 15 |
+| Mid-Level City | Middle | 20 |
+| Mid-Level City | Higher | 25 |
 
 This mapping is source-driven, not hero-scaled.
 
 A hero returning to weaker content does not cause those mobs to begin dropping higher-ilvl equipment.
 
-The level-60 equipment control point remains available for later Prototype 0.2 rewards / content where explicitly appropriate; ordinary quest mobs in the two current cities do not use ilvl 60 by default.
+The level-30 equipment control point remains available for later Prototype 0.2 rewards / content where explicitly appropriate; ordinary quest mobs in the two current cities do not use ilvl 30 by default.
 
 Working ordinary equipment-drop rarity ceiling:
 
@@ -2606,8 +2747,8 @@ Each normal city offers three equipment families / progression bands.
 The Starting City shop contains equipment from three approximate progression bands:
 
 - **Level 1**
+- **Level 5**
 - **Level 10**
-- **Level 20**
 
 These level labels represent the intended equipment-strength band of the shop family.
 
@@ -2617,9 +2758,9 @@ They are not hard minimum hero-level requirements unless a specific item definit
 
 The second normal city shop contains equipment from three stronger progression bands:
 
-- **Level 30**
-- **Level 40**
-- **Level 50**
+- **Level 15**
+- **Level 20**
+- **Level 25**
 
 This makes the second city economically stronger without dynamically scaling its inventory to the hero.
 
@@ -2728,11 +2869,11 @@ It uses the same progression-level structure as the rest of Prototype 0.2 equipm
 Belt progression bands therefore follow the same working equipment levels:
 
 - Level 1
+- Level 5
 - Level 10
+- Level 15
 - Level 20
-- Level 30
-- Level 40
-- Level 50
+- Level 25
 
 A Belt has:
 
@@ -2767,9 +2908,9 @@ Conceptually:
 
 Examples:
 
-- Level 1 Belt → no current healing potion is eligible because potion progression begins at Level 10;
-- Level 10 Belt → Level 10 potion;
-- Level 20 Belt → Level 10 or Level 20 potion;
+- Level 1 Belt → no current healing potion is eligible because potion progression begins at Level 5;
+- Level 5 Belt → Level 5 potion;
+- Level 10 Belt → Level 5 or Level 10 potion;
 - and so on.
 
 A higher-level Belt therefore improves both its normal item stats and the strength of healing consumables the hero can prepare.
@@ -2780,15 +2921,15 @@ Prototype 0.2 uses a simple starting potion progression aligned with the main eq
 
 Current working healing values:
 
-Healing potions begin at **Level 10**. Prototype 0.2 does not use a Level 1 healing potion.
+Healing potions begin at **Level 5**. Prototype 0.2 does not use a Level 1 healing potion.
 
 | Potion Level | HP Restored |
 |---:|---:|
-| 10 | 100 HP |
-| 20 | 150 HP |
-| 30 | 200 HP |
-| 40 | 250 HP |
-| 50 | 300 HP |
+| 5 | 100 HP |
+| 10 | 150 HP |
+| 15 | 200 HP |
+| 20 | 250 HP |
+| 25 | 300 HP |
 
 The initial rule is:
 
@@ -2808,12 +2949,12 @@ The currently approved prices for the implemented Starting City potion tiers are
 
 | Potion Level | Shop Price |
 |---:|---:|
-| 10 | 100 Gold |
-| 20 | 200 Gold |
+| 5 | 100 Gold |
+| 10 | 200 Gold |
 
-Prices for the later Level 30 / 40 / 50 potion tiers remain balance values to define when those tiers become active content.
+Prices for the later compressed Level 15 / 20 / 25 potion tiers remain balance values to define when those tiers become active content.
 
-The current Starting City sells the Level 10 and Level 20 healing potions as fixed consumable availability separate from rotating equipment stock. Mid-Level City potion availability is deferred until that city economy is implemented.
+The current Starting City sells the Level 5 and Level 10 healing potions as fixed consumable availability separate from rotating equipment stock. Mid-Level City potion availability is deferred until that city economy is implemented.
 
 They physically belong to the hero's inventory.
 
@@ -2871,16 +3012,16 @@ A Belt's primary replacement value is the total potential healing of a fully loa
 Example:
 
 ```text
-Blue ilvl 10 Belt
+Blue ilvl 5 Belt
 → 3 slots × 100 HP = 300 potential healing
 
-White ilvl 20 Belt
+White ilvl 10 Belt
 → 1 slot × 150 HP = 150 potential healing
 
-→ keep the Blue ilvl 10 Belt
+→ keep the Blue ilvl 5 Belt
 ```
 
-If a Green ilvl 20 Belt also provides `2 × 150 = 300` potential healing, it beats the Blue ilvl 10 Belt on the secondary inherent-Health comparison.
+If a Green ilvl 10 Belt also provides `2 × 150 = 300` potential healing, it beats the Blue ilvl 5 Belt on the secondary inherent-Health comparison.
 
 The equipment/economy systems must not invent a fake flat Power value for potion capacity merely to force it into the shared Power formula.
 
@@ -2911,7 +3052,7 @@ WIS scaling and Skill Level remain separate systems:
 
 ### 27.1. Power Strike Skill Levels
 
-Power Strike is learned at hero level 10.
+Power Strike is learned at hero level 5.
 
 Its fixed combat rules remain:
 
@@ -2954,7 +3095,7 @@ The exact intermediate displayed values may be rounded for UI readability while 
 
 ### 27.2. Battle Guard Skill Levels
 
-Battle Guard is learned at hero level 20.
+Battle Guard is learned at hero level 10.
 
 Its fixed combat rules remain:
 
@@ -2991,7 +3132,7 @@ Cooldown, duration, activation threshold, and Rage cost do not improve with Skil
 
 #### Shield Bash Skill Levels
 
-Shield Bash is the first Protector specialization ability and is planned around hero level 50 after the specialization is actually obtained.
+Shield Bash is the first Protector specialization ability and is planned around compressed hero level 25 after the specialization is actually obtained.
 
 Its fixed combat rules are:
 
@@ -3021,7 +3162,7 @@ Prototype 0.2 bosses and special enemies use the same resolved Shield Bash stun 
 
 #### Crippling Blows Skill Levels
 
-Crippling Blows is the first Slayer specialization ability and is planned around hero level 50 after the specialization is actually obtained.
+Crippling Blows is the first Slayer specialization ability and is planned around compressed hero level 25 after the specialization is actually obtained.
 
 Its fixed combat rules are:
 
@@ -3963,7 +4104,7 @@ Current Prototype 0.2 content target:
 | Personality axes | exactly 4 meaningful pairs in Prototype 0.2 |
 | Visual armor families | at least 5–6 |
 | Item rarity | White, Green, Blue, Purple |
-| Main playable progression | approximately level 1–60 |
+| Main playable progression | approximately compressed level 1–30 |
 
 These are production targets for the vertical slice, not requirements to create a unique engine subsystem for every individual content entry.
 
@@ -4306,6 +4447,8 @@ Combat, UI, quest evaluation and equipment evaluation must not independently rec
 
 There must not be separate hero and mob combat-strength formulas.
 
+**Mob tuning rule:** choose the mob's target Power from the approved progression curve first, then build a fitting combat profile using the full available stat set: Health, Damage, Armor, Accuracy, Dodge, Critical Chance and Critical Damage. Attack Speed may also shape the profile, but should normally stay in a restrained range rather than becoming the main Power lever. Final tuning is accepted only after the resulting resolved stats are checked through the shared `PowerCalculator`; do not reach target Power by scaling only Health and Damage when other stats better express the mob.
+
 #### Autonomous Decision Ownership
 
 Prototype 0.2 does **not** use a global `activity_selector.gd` or a universal cross-category activity score.
@@ -4520,7 +4663,7 @@ Preparation, uncertainty, failure, learning, and eventual success should make a 
 
 ### Specialization Feels Earned
 
-Protector or Slayer should feel like the combined result of player-guided capability development, the hero's developed character, and a completed autonomous adventure rather than a menu choice granted at level 40.
+Protector or Slayer should feel like the combined result of player-guided capability development, the hero's developed character, and a completed autonomous adventure rather than a menu choice granted at compressed level 20.
 
 ### The Diary Makes Background Play Worth Returning To
 
@@ -4644,11 +4787,11 @@ Do not expand into factions, multiple regions beyond the required prototype stru
 
 Replace the Prototype 0 single-city quest board with the approved Prototype 0.2 model:
 
-- exactly 15 ordinary quest templates per city;
-- three relative mob-strength bands: 5 lower, 5 middle, 5 higher;
-- up to 6 simultaneously active ordinary offers;
-- maximum 2 active offers from each strength band;
-- offer lifetime / depletion behaviour;
+- 22 ordinary quest templates in Starting City and a current target of 15 for the not-yet-authored Mid-Level City;
+- three relative mob-strength bands: Starting City uses 8 lower / 7 middle / 7 higher; Mid-Level City must use the same banded model when authored;
+- up to 9 simultaneously active ordinary offers;
+- maximum 3 active offers from each strength band;
+- one shared 50-world-tick full-board refresh cycle; accepted offers leave vacancies until that shared refresh;
 - temporary template unavailability after use;
 - hero evaluation of active offers only;
 - city relocation when the hero has exhausted worthwhile currently available ordinary work under the approved progression rules.
@@ -4734,7 +4877,7 @@ Implement and validate:
 - persistence of unspent player-distributed primary-attribute points;
 - no offline simulation;
 - restoration of the full required simulation state;
-- long autonomous runs through approximately levels 50–60, including runs where some free primary-attribute points remain pending until later player allocation;
+- long autonomous runs through approximately compressed levels 25–30, including runs where some free primary-attribute points remain pending until later player allocation;
 - seeded reproducibility checks;
 - economy / progression / equipment / dungeon balance observation;
 - regression testing for previously completed stages.
@@ -4745,9 +4888,9 @@ The implementation order may shift when real dependencies require it, but system
 
 After an ordinary quest is completed, its quest template becomes temporarily unavailable for:
 
-> **150 world ticks**
+> **100 world ticks**
 
-After those 150 ticks have elapsed, the template becomes eligible to return to its normal city / quest-band pool.
+After those 100 ticks have elapsed, the template becomes eligible to return to its normal city / quest-band pool.
 
 This cooldown is counted from quest completion.
 
@@ -4779,7 +4922,7 @@ They should be tuned after the relevant systems exist and can be tested together
 - exact Brave / Cautious first-specialization modifier;
 - final tuning of the working item-level affix budgets and secondary-stat cost table defined in Section 19;
 - exact strength / item-level ranges of the three shop progression bands;
-- final potion-price tuning beyond the currently approved Level 10 = 100 Gold / Level 20 = 200 Gold Starting City values, including later Level 30 / 40 / 50 tiers;
+- final potion-price tuning beyond the currently approved Level 5 = 100 Gold / Level 10 = 200 Gold Starting City values, including later Level 15 / 20 / 25 tiers;
 - Gold income and spending balance;
 - XP / level pacing where tuning remains necessary;
 - exact temporary-event spawn frequency, replacement delay, and lifetime after the real map is testable;

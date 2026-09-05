@@ -13,12 +13,12 @@ func _init() -> void:
 
 	var hero_state: RefCounted = hero_state_script.new("Тест")
 	var hero_progression: RefCounted = hero_progression_script.new()
-	hero_state.level = 19
+	hero_state.level = 9
 	hero_state.power_strike_skill_level = 1
-	hero_state.experience_to_next_level = hero_progression.get_experience_required_for_next_level(19)
+	hero_state.experience_to_next_level = hero_progression.get_experience_required_for_next_level(9)
 	hero_progression.add_experience(hero_state, hero_state.experience_to_next_level)
-	assert(hero_state.level == 20, "The setup must advance the Warrior to level 20.")
-	assert(hero_state.battle_guard_skill_level == 1, "Reaching level 20 must learn Battle Guard at Skill Level 1.")
+	assert(hero_state.level == 10, "The setup must advance the Warrior to level 10.")
+	assert(hero_state.battle_guard_skill_level == 1, "Reaching level 10 must learn Battle Guard at Skill Level 1.")
 
 	var hero_stats: RefCounted = make_stats(combat_stats_script, 1000.0, 0.0, 0.01, 0.0)
 	var mob_stats: RefCounted = make_stats(combat_stats_script, 1000.0, 100.0, 1.0, 0.0)

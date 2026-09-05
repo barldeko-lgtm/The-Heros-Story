@@ -5,8 +5,8 @@
 
 [resource]
 script = ExtResource("1_map_definition")
-width = 20
+width = 26
 height = 15
 layout_texture = ExtResource("2_layout")
-source_hex_radius = 20.0
-source_origin = Vector2(22, 22)
+source_hex_radius = 35.75
+source_origin = Vector2(70, 69)

@@ -41,7 +41,7 @@
 [resource]
 script = ExtResource("1_drop_table")
 drop_chance = 0.05
-item_level = 10
+item_level = 5
 common_items = Array[Resource]([ExtResource("2_common_helmet"), ExtResource("3_common_chest"), ExtResource("4_common_gloves"), ExtResource("5_common_pants"), ExtResource("6_common_boots"), ExtResource("7_common_weapon"), ExtResource("8_common_shield"), ExtResource("9_common_necklace"), ExtResource("10_common_earrings"), ExtResource("11_common_ring_1"), ExtResource("12_common_ring_2"), ExtResource("35_common_belt")])
 uncommon_items = Array[Resource]([ExtResource("13_uncommon_helmet"), ExtResource("14_uncommon_chest"), ExtResource("15_uncommon_gloves"), ExtResource("16_uncommon_pants"), ExtResource("17_uncommon_boots"), ExtResource("18_uncommon_weapon"), ExtResource("19_uncommon_shield"), ExtResource("20_uncommon_necklace"), ExtResource("21_uncommon_earrings"), ExtResource("22_uncommon_ring_1"), ExtResource("23_uncommon_ring_2"), ExtResource("36_uncommon_belt")])
 rare_items = Array[Resource]([ExtResource("24_rare_helmet"), ExtResource("25_rare_chest"), ExtResource("26_rare_gloves"), ExtResource("27_rare_pants"), ExtResource("28_rare_boots"), ExtResource("29_rare_weapon"), ExtResource("30_rare_shield"), ExtResource("31_rare_necklace"), ExtResource("32_rare_earrings"), ExtResource("33_rare_ring_1"), ExtResource("34_rare_ring_2"), ExtResource("37_rare_belt")])

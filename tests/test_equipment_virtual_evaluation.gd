@@ -40,12 +40,12 @@ func _init() -> void:
 	assert(simulation_script != null and uncommon_helmet != null, "Virtual-equip integration inputs must load.")
 
 	var simulation = simulation_script.new(1)
-	var weak_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 1, 10, ScriptedRng.new([0.0], [0]))
+	var weak_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 1, 5, ScriptedRng.new([0.0], [0]))
 	var weak_item = weak_result["item_instance"]
 	assert(weak_result["equipped"] and weak_item != null, "The first item for an empty slot must equip.")
 	var weak_power: float = simulation.get_hero_power()
 
-	var strong_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 2, 10, ScriptedRng.new([1.0], [0]))
+	var strong_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 2, 5, ScriptedRng.new([1.0], [0]))
 	if not strong_result["equipped"]:
 		push_error("A stronger item of the same rarity must replace the weaker equipped item through virtual equip.")
 		quit(1)
@@ -58,12 +58,12 @@ func _init() -> void:
 	assert(simulation.get_hero_power() > weak_power, "Equipping the candidate must strictly increase real base HeroPower.")
 	assert(strong_result["equipment_evaluation"]["candidate_power"] > strong_result["equipment_evaluation"]["current_power"], "The routing result must expose the real virtual-equip comparison.")
 
-	var weaker_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 3, 10, ScriptedRng.new([0.0], [0]))
+	var weaker_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 3, 5, ScriptedRng.new([0.0], [0]))
 	assert(not weaker_result["equipped"], "A weaker candidate of the same rarity must stay unequipped.")
 	assert(simulation.hero_state.equipment.get_item("helmet") == strong_item, "Rejecting a weaker candidate must not mutate equipped state.")
 	assert(simulation.hero_state.inventory.get_items().has(weaker_result["item_instance"]), "Rejected generated equipment must enter Inventory.")
 
-	var equal_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 4, 10, ScriptedRng.new([1.0], [0]))
+	var equal_result: Dictionary = simulation.receive_item_reward(uncommon_helmet, 4, 5, ScriptedRng.new([1.0], [0]))
 	assert(not equal_result["equipped"], "Equal HeroPower must keep the existing item and avoid equipment churn.")
 	assert(is_equal_approx(equal_result["equipment_evaluation"]["candidate_power"], equal_result["equipment_evaluation"]["current_power"]), "Equal generated items must produce equal virtual HeroPower.")
 	assert(simulation.hero_state.equipment.get_item("helmet") == strong_item, "An equal candidate must not replace the existing instance.")
@@ -119,7 +119,7 @@ func test_ring_candidate_replaces_weaker_of_two_slots(simulation_script: Script)
 	assert(str(evaluation.get("target_slot", "")) == "ring_2", "A Ring 1-authored candidate must target Ring 2 when Ring 2 is the weaker equipped ring.")
 
 	simulation.equipment_reward_system.item_generator = FixedItemGenerator.new(blue_ring)
-	var reward_result: Dictionary = simulation.receive_item_reward(blue_ring_definition, 100, 10, RandomNumberGenerator.new(), 2)
+	var reward_result: Dictionary = simulation.receive_item_reward(blue_ring_definition, 100, 5, RandomNumberGenerator.new(), 2)
 	assert(bool(reward_result.get("equipped", false)) and str(reward_result.get("target_slot", "")) == "ring_2", "Loot routing must equip the ring into the weaker of the two ring slots.")
 	assert(simulation.hero_state.equipment.get_item("ring_1") == green_ring, "The stronger existing Green ring must remain equipped.")
 	assert(simulation.hero_state.equipment.get_item("ring_2") == blue_ring, "The new Blue ring must replace the weaker White ring.")

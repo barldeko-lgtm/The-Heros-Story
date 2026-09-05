@@ -22,13 +22,14 @@ func find_valid_centers(
 		return result
 
 	var expected_area_size: int = get_complete_radius_cell_count(radius)
+	var distance_map: Dictionary = hex_map.get_distance_map(distance_origin)
 	for column in range(hex_map.definition.width):
 		for row in range(hex_map.definition.height):
 			var center := Vector2i(column, row)
 			var hex_definition = hex_map.get_hex(center)
 			if hex_definition == null or hex_definition.region_id != region_id:
 				continue
-			var distance: int = hex_map.get_distance_steps(distance_origin, center)
+			var distance: int = int(distance_map.get(center, -1))
 			if distance < min_distance or distance > max_distance:
 				continue
 			if not matches_allowed_terrain(hex_definition, allowed_terrain_ids):

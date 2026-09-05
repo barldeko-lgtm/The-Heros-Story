@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "roar_from_stony_slopes"
+strength_band = "higher"
 display_name = "Рёв с каменистых склонов"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 1

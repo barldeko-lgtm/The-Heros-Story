@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "hill_ogre"
+strength_band = "higher"
 display_name = "Непрошеный гость с холмов"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 1

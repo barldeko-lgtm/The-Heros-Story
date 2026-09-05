@@ -6,6 +6,9 @@ const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const ActivityPlacementFinderScript = preload("res://scripts/world/activity_placement_finder.gd")
+const BOARD_REFRESH_INTERVAL_TICKS: int = 50
+const COMPLETED_TEMPLATE_COOLDOWN_TICKS: int = 50
+const STRENGTH_BANDS: Array[String] = ["lower", "middle", "higher"]
 
 var available_quests: Array = []
 var quest_templates: Array[Resource] = []
@@ -17,7 +20,9 @@ var placement_region_id: String = ""
 var placement_distance_origin: Vector2i = Vector2i(-1, -1)
 var activity_placement_finder = ActivityPlacementFinderScript.new()
 var next_map_activity_sequence: int = 1
-var pending_cancelled_offer
+var active_taken_offer
+var template_cooldown_until_tick: Dictionary = {}
+var last_board_refresh_tick: int = 0
 
 func _init(initial_quests: Array = [], initial_rng: RandomNumberGenerator = null) -> void:
 	random_number_generator = initial_rng
@@ -51,11 +56,18 @@ func set_available_quests(quest_definitions: Array) -> void:
 			available_quests.append(quest_definition)
 
 func set_quest_templates(template_definitions: Array) -> void:
+	for existing_offer in available_quests:
+		release_offer_map_target(existing_offer)
 	quest_templates.clear()
+	available_quests.clear()
+	active_taken_offer = null
+	template_cooldown_until_tick.clear()
+	last_board_refresh_tick = 0
 	for template_definition in template_definitions:
 		if template_definition != null:
+			assert(STRENGTH_BANDS.has(str(template_definition.strength_band)), "Quest template has an invalid strength band: %s" % template_definition.id)
 			quest_templates.append(template_definition)
-	regenerate_all_offers()
+	refresh_board(0)
 
 func reload_from_directory(quest_directory: String = DEFAULT_QUEST_DIRECTORY) -> void:
 	quest_templates.clear()
@@ -79,55 +91,90 @@ func reload_from_directory(quest_directory: String = DEFAULT_QUEST_DIRECTORY) ->
 		var quest_definition: Resource = load(quest_path)
 		assert(quest_definition != null, "QuestPool could not load quest: %s" % quest_path)
 		assert(quest_definition.mob_definition != null, "Quest must reference a mob: %s" % quest_path)
+		assert(STRENGTH_BANDS.has(str(quest_definition.strength_band)), "Quest must use a valid strength band: %s" % quest_path)
 		quest_templates.append(quest_definition)
 
-	regenerate_all_offers()
+	refresh_board(0)
 
-func regenerate_all_offers() -> void:
+func refresh_board(current_tick: int) -> bool:
 	for existing_offer in available_quests:
 		release_offer_map_target(existing_offer)
 	available_quests.clear()
-	for quest_template in quest_templates:
-		available_quests.append(create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
+	for strength_band in STRENGTH_BANDS:
+		var eligible_templates: Array = get_eligible_templates_for_band(strength_band, current_tick)
+		for quest_template in eligible_templates:
+			available_quests.append(create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
 	if has_map_placement_context():
 		assert(assign_map_targets_to_current_offers(), "Current quest board could not be placed on unique valid map hexes.")
+	last_board_refresh_tick = current_tick
+	return true
 
-func replace_offer(completed_or_cancelled_offer) -> void:
-	var offer_index := available_quests.find(completed_or_cancelled_offer)
+func advance_world_tick(completed_tick: int) -> bool:
+	if quest_templates.is_empty() or completed_tick <= 0:
+		return false
+	if completed_tick % BOARD_REFRESH_INTERVAL_TICKS != 0 or completed_tick == last_board_refresh_tick:
+		return false
+	return refresh_board(completed_tick)
+
+func get_eligible_templates_for_band(strength_band: String, current_tick: int) -> Array:
+	var result: Array = []
+	for quest_template in quest_templates:
+		if str(quest_template.strength_band) != strength_band:
+			continue
+		if active_taken_offer != null and active_taken_offer.id == quest_template.id:
+			continue
+		if current_tick < int(template_cooldown_until_tick.get(quest_template.id, 0)):
+			continue
+		result.append(quest_template)
+	return result
+
+func take_offer(offer) -> bool:
+	var offer_index: int = available_quests.find(offer)
 	if offer_index < 0:
-		return
+		return false
+	available_quests.remove_at(offer_index)
+	active_taken_offer = offer
+	return true
 
-	var quest_template: Resource = get_template_by_id(completed_or_cancelled_offer.id)
-	if quest_template == null:
+func mark_template_completed(offer, completed_tick: int) -> void:
+	if offer == null:
 		return
-	var previous_target: Vector2i = QuestOfferScript.INVALID_TARGET_HEX
-	if completed_or_cancelled_offer.has_method("has_map_target") and completed_or_cancelled_offer.has_map_target():
-		previous_target = completed_or_cancelled_offer.target_hex
-	release_offer_map_target(completed_or_cancelled_offer)
-	available_quests[offer_index] = create_offer(quest_template, previous_target)
+	template_cooldown_until_tick[offer.id] = completed_tick + COMPLETED_TEMPLATE_COOLDOWN_TICKS
+	if active_taken_offer == offer:
+		active_taken_offer = null
 
-func handle_quest_event(event, hero_loop_state: String) -> void:
+func cancel_taken_offer(offer) -> void:
+	if offer == null:
+		return
+	release_offer_map_target(offer)
+	if active_taken_offer == offer:
+		active_taken_offer = null
+
+func handle_quest_event(event, hero_loop_state: String, completed_tick: int = 0) -> void:
 	if event == null:
+		return
+	if event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
+		assert(take_offer(event.quest_definition), "Selected autonomous quest must be removed from the active board until the next global refresh.")
 		return
 	if event.event_type == QuestEventScript.HERO_RECOVERED_AFTER_FIGHT and hero_loop_state == HeroStateScript.RETURNING_TO_CITY and event.completed_mob_count >= event.mob_count:
 		release_offer_map_target(event.quest_definition)
 		return
 	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST:
-		replace_offer(event.quest_definition)
+		mark_template_completed(event.quest_definition, completed_tick)
 		return
 	if event.event_type == QuestEventScript.HERO_DIED:
 		release_offer_map_target(event.quest_definition)
-		pending_cancelled_offer = event.quest_definition
-		return
-	if event.event_type == QuestEventScript.HERO_RECOVERING_IN_CITY and hero_loop_state == HeroStateScript.CHOOSING_QUEST and pending_cancelled_offer != null:
-		replace_offer(pending_cancelled_offer)
-		pending_cancelled_offer = null
+		if active_taken_offer == event.quest_definition:
+			active_taken_offer = null
 
 func get_template_by_id(quest_id: String) -> Resource:
 	for quest_template in quest_templates:
 		if quest_template.id == quest_id:
 			return quest_template
 	return null
+
+func get_template_cooldown_until_tick(quest_id: String) -> int:
+	return int(template_cooldown_until_tick.get(quest_id, 0))
 
 func create_offer(quest_template: Resource, excluded_target: Vector2i = QuestOfferScript.INVALID_TARGET_HEX, place_on_map: bool = true):
 	assert(quest_template.mob_count_min >= 1, "Quest mob count minimum must be at least one: %s" % quest_template.id)
@@ -154,16 +201,26 @@ func assign_map_targets_to_current_offers() -> bool:
 	for offer in available_quests:
 		if offer != null and offer.has_method("has_map_target") and not offer.has_map_target():
 			pending_offers.append(offer)
+	var candidates_by_offer: Dictionary = {}
+	for offer in pending_offers:
+		var candidates: Array[Vector2i] = get_offer_map_candidates(offer)
+		candidates_by_offer[offer] = candidates
 	var assigned_offers: Array = []
 	while not pending_offers.is_empty():
+		var unplaceable_offers: Array = []
+		for offer in pending_offers:
+			if candidates_by_offer[offer].is_empty():
+				unplaceable_offers.append(offer)
+		for offer in unplaceable_offers:
+			pending_offers.erase(offer)
+			candidates_by_offer.erase(offer)
+			available_quests.erase(offer)
+		if pending_offers.is_empty():
+			break
 		var selected_offer
 		var selected_candidates: Array[Vector2i] = []
 		for offer in pending_offers:
-			var candidates: Array[Vector2i] = get_offer_map_candidates(offer)
-			if candidates.is_empty():
-				for assigned_offer in assigned_offers:
-					release_offer_map_target(assigned_offer)
-				return false
+			var candidates: Array[Vector2i] = candidates_by_offer[offer]
 			if selected_offer == null or candidates.size() < selected_candidates.size():
 				selected_offer = offer
 				selected_candidates = candidates
@@ -172,8 +229,13 @@ func assign_map_targets_to_current_offers() -> bool:
 			for assigned_offer in assigned_offers:
 				release_offer_map_target(assigned_offer)
 			return false
+		var reserved_target: Vector2i = selected_candidates[selected_index]
 		assigned_offers.append(selected_offer)
 		pending_offers.erase(selected_offer)
+		candidates_by_offer.erase(selected_offer)
+		for remaining_offer in pending_offers:
+			var remaining_candidates: Array[Vector2i] = candidates_by_offer[remaining_offer]
+			remaining_candidates.erase(reserved_target)
 	return true
 
 func get_offer_map_candidates(offer, excluded_target: Vector2i = QuestOfferScript.INVALID_TARGET_HEX) -> Array[Vector2i]:

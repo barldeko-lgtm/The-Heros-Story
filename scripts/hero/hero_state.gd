@@ -19,6 +19,8 @@ const DOING_DUNGEON := "DOING_DUNGEON"
 const DUNGEON_BETWEEN_FIGHTS := "DUNGEON_BETWEEN_FIGHTS"
 const DUNGEON_COMPLETED := "DUNGEON_COMPLETED"
 const DUNGEON_RETURNING_TO_CITY := "DUNGEON_RETURNING_TO_CITY"
+const EVENT_ACTIVE := "EVENT_ACTIVE"
+const EVENT_COMBAT := "EVENT_COMBAT"
 const DEAD_RESPAWNING := "DEAD_RESPAWNING"
 const RECOVERING_IN_CITY := "RECOVERING_IN_CITY"
 
@@ -34,11 +36,24 @@ var dexterity: int = 5
 var intelligence: int = 5
 var constitution: int = 5
 var wisdom: int = 5
+var pending_primary_attribute_points: int = 0
 var power_strike_skill_level: int = 0
 var battle_guard_skill_level: int = 0
 var current_hp: float = 0.0
 var gold: int = 0
 var traits: Array[String] = []
+var personality_axis_values: Dictionary = {
+	"courage": 0,
+	"morality": 0,
+	"greed": 0,
+	"curiosity": 0,
+}
+var personality_traits_by_axis: Dictionary = {
+	"courage": "",
+	"morality": "",
+	"greed": "",
+	"curiosity": "",
+}
 var loop_state: String = CHOOSING_QUEST
 var active_quest
 var active_effects: Array[Dictionary] = []

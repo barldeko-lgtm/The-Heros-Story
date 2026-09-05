@@ -9,10 +9,12 @@ equipment_drop_table = ExtResource("2_drop_table")
 id = "giant_spider"
 display_name = "Гигантский паук"
 category = 1
-max_hp = 370.0
+max_hp = 355.0
 attack = 34.0
 attack_speed = 1.15
 accuracy = 100.0
+dodge = 16.0
+armor = 2.0
 crit_chance = 0.17
 crit_damage = 1.60
 

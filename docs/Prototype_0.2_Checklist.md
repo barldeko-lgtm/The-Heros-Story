@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-01**.
+Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-03**.
 
 This file is a short working progress map, not a design authority.
 
@@ -32,22 +32,22 @@ Status:
 - ✅ HP, Armor, Dodge, Accuracy, Damage, Attack Speed, Crit, Crit Damage, Fire/Cold/Lightning Resistance, Block.
 - ✅ Shared Armor / Resistance / Accuracy-Dodge / Block combat formulas.
 - ✅ XP, levels, excess-XP carryover.
-- 🟡 Current code still uses the legacy pre-specialization automatic growth of +2 STR / +1 DEX / +1 CON per level; this must be replaced by the final 0.2 rule.
-- 🟡 Level progression framework works, but full 1–60 content/balance is not complete.
+- ✅ Pre-specialization level-up now grants exactly +1 fixed Warrior STR and banks 4 player-distributed primary-attribute points.
+- 🟡 Level progression framework works, but full compressed 1–30 content/balance is not complete.
 - ⬜ Lightweight starting questionnaire about the hero's past.
 - ⬜ Questionnaire grants a small additional primary-attribute pool that the player distributes among STR / DEX / INT / CON / WIS.
-- ⬜ Final pre-specialization growth: +1 STR from Warrior automatically + 4 primary-attribute points distributed directly by the player per level.
-- ⬜ Unspent player-distributed primary-attribute points remain pending, provide no benefit until spent, and persist through save/load.
+- ✅ Final pre-specialization growth: +1 STR from Warrior automatically + 4 primary-attribute points distributed directly by the player per level.
+- 🟡 Unspent player-distributed primary-attribute points remain pending and provide no benefit until spent; persistence through save/load remains pending because save/load is not implemented yet.
 - ⬜ First-specialization-specific +1 primary-attribute point per later level.
-- ⬜ Immediate specialization-profile attribute reward and delayed post-40 catch-up growth.
+- ⬜ Immediate specialization-profile attribute reward and delayed post-20 catch-up growth.
 
 ## 3. Combat and Warrior abilities
 
 - ✅ Live one-on-one combat with independent attack timers.
 - ✅ Crits, misses, Block, physical mitigation and elemental resistance formulas.
 - ✅ Fight-local Rage generation/cap/reset.
-- ✅ Level 10 Power Strike, autonomous use, Skill Level 1 and WIS scaling.
-- ✅ Level 20 Battle Guard, autonomous use, Skill Level 1 and WIS scaling.
+- ✅ Level 5 Power Strike, autonomous use, Skill Level 1 and WIS scaling.
+- ✅ Level 10 Battle Guard, autonomous use, Skill Level 1 and WIS scaling.
 - ✅ Per-mob XP, post-fight recovery and level-up during a quest.
 - ✅ Death, quest failure, 100-tick resurrection and city recovery.
 - ⬜ Purchasable Power Strike Skill Levels 2–10.
@@ -71,7 +71,7 @@ Status:
 
 ## 5. World map and travel
 
-- ✅ Authored 20 × 15 exact-color hex map.
+- ✅ Authored 26 × 15 gameplay hex map decoded from the editable PNG source.
 - ✅ Two seven-hex city clusters exist geographically.
 - ✅ One authored road between the cities.
 - ✅ Plains / forest / hills plus current temporary road/city terrain handling.
@@ -96,22 +96,22 @@ Status:
 ## 6. Ordinary quests and quest board
 
 - ✅ `QuestDefinition` and runtime `QuestOffer` are separate.
-- ✅ 15 current Starting City quest templates.
+- ✅ 22 current Starting City quest templates.
 - ✅ Each current quest has authored hex-distance and terrain/tag placement constraints.
 - ✅ Quest offers receive concrete unique `target_hex` positions.
 - ✅ Quest target reservation/release lifecycle.
 - ✅ Real travel to target and real travel back to Starting City.
 - ✅ Live QuestScore travel cost uses actual route length in hexes.
 - ✅ Current combat/recovery/turn-in/Gold quest loop.
-- ✅ Starting City content target: **15 / 15** ordinary quest templates.
+- ✅ Starting City content target: **22 / 22** ordinary quest templates.
 - ⬜ Mid-Level City content target: **0 / 15** ordinary quest templates.
-- ⬜ Three explicit quest strength bands: 5 lower / 5 middle / 5 higher per city.
-- ⬜ Final active board: maximum 6 offers per city, maximum 2 from each band.
-- ⬜ 100-world-tick offer lifetime and automatic rotation.
-- ⬜ 150-world-tick template cooldown after completion.
+- ✅ Starting City explicit quest strength bands: 8 lower / 7 middle / 7 higher.
+- 🟡 Starting City board normally targets maximum 9 offers / 3 per band, but that cap is temporarily disabled during current playtesting so all eligible templates can appear at once.
+- ✅ Shared 50-world-tick full-board reroll; accepted offers leave vacancies until the next shared refresh.
+- ✅ 50-world-tick completed-template cooldown before it becomes eligible for a later board roll.
 - ⬜ City-local quest pools for both cities.
 - ⬜ "Hero outgrew this city" relocation trigger from the current active offers.
-- 🟡 Current build exposes all 15 Starting City templates simultaneously; this is a prototype state, not the final rotating-board rule.
+- 🟡 Current development build temporarily exposes all eligible Starting City templates simultaneously; the intended 3/3/3 rotating-board cap will be revisited after the no-suitable-quest problem is redesigned.
 
 ## 7. Temporary events
 
@@ -143,8 +143,8 @@ Status:
 - ✅ Potion preparation before attempts: every current Belt slot must be filled; incomplete loadouts postpone the dungeon.
 - ✅ Between-fight potion use works: ordinary rooms avoid overheal, boss preparation may accept it, and multiple potions may be consumed in one preparation window.
 - ✅ Failure memory and current +25% / +15% / +10% retry Power gates based on progress in the failed attempt.
-- ✅ First dungeon completion reward: 700 Gold + one ilvl 10 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
-- ✅ Second Starting Region dungeon: forest `Городище Черноклыков`, `3 × Гоблин-гвардеец` at approximately 600 Power / 260 XP → `Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 20 item across all 12 slots at 75% Blue/Rare / 25% Purple/Epic.
+- ✅ First dungeon completion reward: 700 Gold + one compressed ilvl 5 item rolled across all 12 equipment slots at 75% Blue/Rare / 25% Purple/Epic; the completed dungeon disappears from the active map.
+- ✅ Second Starting Region dungeon: forest `Городище Черноклыков`, `3 × Гоблин-гвардеец` at approximately 600 Power / 260 XP → `Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one compressed ilvl 10 item across all 12 slots at 75% Blue/Rare / 25% Purple/Epic.
 - ✅ Divine Vision reveal integration: 80 Energy, 1500-tick cooldown, one unknown dungeon in the current region.
 
 ## 9. First Warrior specialization
@@ -172,13 +172,13 @@ Status:
 - ✅ Current five armor slots + sword + shield + necklace + earrings + two ring slots mechanically generate/equip/drop.
 - ✅ Five armor paper-doll overlays work.
 - ✅ All 12 equipment slots now generate/equip/display; Belt provides inherent Health plus rarity-based potion capacity and Item-Level potion eligibility.
-- ✅ Functional ilvl 10 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the sixth mob by Power.
+- ✅ Functional compressed ilvl 5 jewelry: necklace, earrings and two separate ring slots with one inherent elemental Resistance plus the approved jewelry affix pool; ordinary jewelry drops begin with Giant Spider, the eighth mob by Power after the Starting City curve expansion.
 - ✅ Belt item generation/drop/shop/equip works with inherent Health, 1 / 2 / 3 / 4 rarity capacity, potion-level eligibility, and Belt-specific utility evaluation.
 - ⬜ Two-handed / full legal hand-configuration equipment content and evaluation.
-- 🟡 Source-driven mob drops exist for current ilvl 1 / ilvl 10 families, but the final six city quest-band ilvl sources are incomplete.
+- 🟡 Source-driven mob drops exist for the current compressed ilvl 1 / 5 / 10 Starting City families, but the final six two-city quest-band ilvl sources are incomplete.
 - ⬜ `QuestLoot` temporary unsafe adventure loot.
 - ⬜ Death clears unsafe QuestLoot while preserving permanent/equipped gear.
-- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; current Level 10 / 20 potions are shown individually in a vertical column beside jewelry, one physical bottle per visual slot, with sprites and tooltips, while QuestLoot, quest/special item categories, and prepared-Belt-slot visualization remain incomplete.
+- 🟡 Backpack/inventory exists as a 36-equipment-item first pass plus persistent healing-potion counts; current compressed Level 5 / 10 potions are shown individually in a vertical column beside jewelry, one physical bottle per visual slot, with sprites and tooltips, while QuestLoot, quest/special item categories, and prepared-Belt-slot visualization remain incomplete.
 
 ## 11. Visual equipment content
 
@@ -195,22 +195,22 @@ Status:
 - ✅ Current +20% ItemPower shop threshold plus real virtual-equip validation.
 - ✅ Deterministic 200-world-tick shop refresh.
 - ✅ Purchased shop slots remain empty until refresh.
-- ✅ Starting City shop has ilvl 1 / 10 / 20 equipment bands (**3 / 3**); the ilvl 10 band includes all 12 equipment slots.
+- ✅ Starting City shop has compressed ilvl 1 / 5 / 10 equipment bands (**3 / 3**); the ilvl 5 band includes all 12 equipment slots.
 - ✅ Current full rotating equipment stock is 24 listings (3 bands × 8).
-- ⬜ Mid-Level City shop: ilvl 30 / 40 / 50 bands.
-- ✅ Starting City healing-potion purchasing/preparation for the current Level 10 / 20 tiers, including one dedicated world tick whenever missing potions must actually be bought before a dungeon.
+- ⬜ Mid-Level City shop: compressed ilvl 15 / 20 / 25 bands.
+- ✅ Starting City healing-potion purchasing/preparation for the compressed Level 5 / 10 tiers, including one dedicated world tick whenever missing potions must actually be bought before a dungeon.
 - ⬜ Skill Level purchasing/training.
 - ⬜ Curious ↔ Conservative spending priority.
 - ✅ Dungeon-preparation Gold reservation priority protects full-Belt potion preparation from optional equipment spending, including after a Belt upgrade.
 
 ## 13. Belt and healing potions
 
-- ✅ Real ilvl 10 Belt item content exists with +40 inherent Health plus live potion utility.
+- ✅ Real compressed ilvl 5 Belt item content exists with the unchanged +40 inherent Health plus live potion utility.
 - ✅ Belt rarity potion capacities: 1 / 2 / 3 / 4 slots.
 - ✅ Belt-level potion eligibility: `PotionLevel <= BeltLevel`.
-- 🟡 Potion progression is defined at Level 10 / 20 / 30 / 40 / 50 with no Level 1 potion; current live Starting City content implements Level 10 / 20 only.
-- ✅ Potion inventory counts, individual current Level 10 / 20 bottle slots, and full-Belt preparation state.
-- ✅ Autonomous current potion purchase logic: Level 10 = 100 Gold, Level 20 = 200 Gold; complete affordable loadouts maximize total healing.
+- 🟡 Potion progression is defined at compressed Level 5 / 10 / 15 / 20 / 25 with no Level 1 potion; current live Starting City content implements Level 5 / 10 only.
+- ✅ Potion inventory counts, individual current Level 5 / 10 bottle slots, and full-Belt preparation state.
+- ✅ Autonomous current potion purchase logic: Level 5 = 100 Gold, Level 10 = 200 Gold; complete affordable loadouts maximize total healing.
 - ✅ Dungeon-only potion use; ordinary quest flow never consumes healing potions; multiple potions may be used in one dungeon preparation window.
 
 ## 14. God influence
@@ -239,10 +239,10 @@ Status:
 - 🟡 Main Screen exists as the current developer-oriented main UI, but it is not yet the finished 0.2 Main Screen.
 - ⬜ Dedicated finished Hero Screen.
 - 🟡 Inventory Screen is a strong first pass: paper doll, 12 visible equipment slots, 6 × 6 equipment grid, and a separate vertical healing-potion column immediately to the right of jewelry with one bottle per slot and tooltips; final item categories/content remain incomplete.
-- 🟡 Map Screen is functional: both cities, road, hero, quest targets, terrain inspection and camera; route display, dungeons/events/hidden-information presentation remain missing.
+- 🟡 Map Screen is functional: both cities, road, hero, quest targets, terrain inspection and camera; active temporary-event footprints now use translucent blue area shading, while route display and finished hidden-information presentation remain incomplete.
 - ⬜ Menu Screen.
 - 🟡 God controls exist for healing/blessing/resurrection; quest guidance UI is missing.
-- ⬜ Player-facing primary-attribute allocation UI for pending stat points.
+- ✅ Player-facing primary-attribute allocation UI for pending stat points through the Hero screen.
 - ⬜ Starting questionnaire UI / flow.
 - ⬜ Player-facing Diary UI with real diary content.
 - ⬜ Player-facing Explanatory Log UI.
@@ -264,8 +264,8 @@ Status:
 ## 18. Prototype 0.2 content targets at a glance
 
 - 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
-- 🟡 Ordinary quest templates: **15 / 30 total target**.
-- 🟡 Simultaneous quest offers: current **15 Starting City offers**, final target **up to 6 per city, 2/2/2 by band**.
+- 🟡 Ordinary quest templates: **21 / 36 current two-city target** (Starting City 21 complete; Mid-Level City currently targets 15).
+- 🟡 Simultaneous quest offers: the intended Starting City target remains **up to 9 offers, 3/3/3 by band**, but the current development build temporarily exposes all eligible templates to avoid no-suitable-quest stalls while this rule is being reconsidered.
 - ⬜ Handcrafted temporary events: **0 / 15–20**.
 - 🟡 Ordinary dungeons: **2 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
@@ -275,7 +275,7 @@ Status:
 - ⬜ Final personality axes: **0 / 4**; current old trait prototype is temporary.
 - 🟡 Visual armor families: **3 / minimum 5–6**.
 - 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic is now live through first-dungeon completion but remains absent from ordinary drops/shops.
-- 🟡 Main progression: leveling framework exists, but final +1 Warrior STR / +4 player allocation, starting questionnaire, and complete approximately level 1–60 content/balance are not yet implemented.
+- 🟡 Main progression: +1 Warrior STR / +4 player allocation is implemented; the starting questionnaire and complete approximately compressed level 1–30 content/balance are not yet implemented.
 
 ## 19. Final integration / validation
 
@@ -299,8 +299,8 @@ Status:
 
 This is only a working order, not permission to implement automatically:
 
-1. Finish the Starting City quest-board rules: 15 templates, strength bands, 6-offer 2/2/2 rotation, lifetime and cooldown.
-2. Replace legacy automatic attribute growth with +1 Warrior STR + 4 player-distributed points, pending-point storage, and the lightweight starting questionnaire foundation.
+1. Validate the Starting City quest-board pacing in long runs: 22 templates, 8/7/7 bands, 9-offer 3/3/3 rotation, 50-tick shared refresh and 100-tick cooldown.
+2. Add the lightweight starting questionnaire foundation and connect its initial player-distributed attribute pool.
 3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
 4. Implement temporary events and travel interruption/resumption together with Formative / Expressive / Neutral decision roles.
 5. Replace the old trait prototype with the final four-axis hidden-value personality model and connect formative/expressive event behavior.

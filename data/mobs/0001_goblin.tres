@@ -9,10 +9,12 @@ equipment_drop_table = ExtResource("2_drop_table")
 id = "goblin"
 display_name = "Гоблин"
 category = 0
-max_hp = 133.0
+max_hp = 130.0
 attack = 15.0
 attack_speed = 1.0
-accuracy = 100.0
+accuracy = 95.0
+dodge = 2.0
+armor = 1.0
 crit_chance = 0.05
 crit_damage = 1.5
 

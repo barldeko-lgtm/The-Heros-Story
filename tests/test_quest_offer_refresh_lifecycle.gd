@@ -6,7 +6,7 @@ func _init() -> void:
 	var simulation = SimulationScript.new(8080, null)
 	simulation.hero_state.hero_name = "Алексей"
 
-	var initial_offers: Array = simulation.quest_pool.get_available_quests()
+	var initial_offers: Array = find_suitable_current_board(simulation)
 	assert(not initial_offers.is_empty(), "The tavern must start with at least one current quest offer.")
 
 	simulation.advance_time(10.0)
@@ -14,6 +14,8 @@ func _init() -> void:
 	assert(accepted_offer != null, "Autonomous selection must accept one current tavern offer.")
 	var accepted_index := initial_offers.find(accepted_offer)
 	assert(accepted_index >= 0, "The accepted quest must be one of the offers currently in the tavern.")
+	assert(simulation.quest_pool.get_available_quests().size() == initial_offers.size() - 1, "Taking a quest must leave its board slot empty until the next global rotation.")
+	assert(not simulation.quest_pool.get_available_quests().has(accepted_offer), "The active quest must no longer count as an available board offer.")
 	assert(accepted_offer.has_map_target(), "Accepting a quest must keep its existing board target visible on the map while it is being performed.")
 	var accepted_target: Vector2i = accepted_offer.target_hex
 	var accepted_activity_id: String = accepted_offer.map_activity_id
@@ -29,7 +31,6 @@ func _init() -> void:
 	assert(simulation.hero_state.loop_state == HeroState.DOING_QUEST, "Reaching the real quest target must start quest execution.")
 	assert(simulation.world_state.hero_position == accepted_target, "Hero must physically stand on the quest target while performing it.")
 
-	var untouched_offers: Array = initial_offers.duplicate()
 	simulation.set_time_scale(100.0)
 	var guard := 0
 	while simulation.hero_state.loop_state != HeroState.RETURNING_TO_CITY and guard < 2000:
@@ -53,20 +54,22 @@ func _init() -> void:
 		simulation.advance_time(10.0)
 		guard += 1
 	assert(guard < 4000, "The selected safe quest must be turned in during the test.")
-	var refreshed_offers: Array = simulation.quest_pool.get_available_quests()
-
-	assert(refreshed_offers.size() == initial_offers.size(), "Replacing one accepted offer must not change the tavern pool size.")
-	assert(refreshed_offers[accepted_index] != accepted_offer, "Turning in an accepted quest must replace only that tavern slot with a new offer.")
-	var replacement_offer = refreshed_offers[accepted_index]
+	var offers_after_turn_in: Array = simulation.quest_pool.get_available_quests()
+	assert(not offers_after_turn_in.has(accepted_offer), "Turning in a quest must not regenerate its old runtime offer.")
 	assert(not accepted_offer.has_map_target(), "The completed QuestOffer must remain absent from the map after turn-in.")
 	assert(simulation.world_state.get_activity_id_at_hex(accepted_target) != accepted_activity_id, "The completed quest's old map reservation must remain released after turn-in.")
-	assert(replacement_offer.has_map_target(), "The replacement board offer must immediately receive a new reserved map target.")
-	assert(replacement_offer.map_activity_id != accepted_activity_id, "The replacement board offer must own a fresh map activity reservation.")
-	assert(simulation.world_state.get_activity_id_at_hex(replacement_offer.target_hex) == replacement_offer.map_activity_id, "The replacement quest marker must correspond to its own live reservation.")
+	var cooldown_until_tick: int = simulation.quest_pool.get_template_cooldown_until_tick(accepted_offer.id)
+	assert(cooldown_until_tick == simulation.world_clock.world_tick + 50, "Completed quest template must enter its 50-tick availability cooldown.")
 	assert(simulation.world_state.hero_position == city_center, "Completing the map-backed quest loop must leave the hero in Starting City.")
-	for index in refreshed_offers.size():
-		if index != accepted_index:
-			assert(refreshed_offers[index] == untouched_offers[index], "Unaccepted tavern offers must stay unchanged after another quest is turned in.")
 
-	print("PASS: Turning in a quest refreshes only its tavern offer without assuming a fixed pool size.")
+	print("PASS: Taking a quest creates a board vacancy, preserves its active map target, and completion starts template cooldown without immediate refill.")
 	quit()
+
+func find_suitable_current_board(simulation) -> Array:
+	for _roll in 10:
+		var offers: Array = simulation.quest_pool.get_available_quests()
+		var selection: Dictionary = simulation.quest_evaluator.select_quest(offers, simulation.get_hero_power(), simulation.hero_state.traits)
+		if selection.get("selected_quest") != null:
+			return offers
+		assert(simulation.quest_pool.refresh_board(simulation.world_clock.world_tick), "Test setup must be able to reroll the current board until a suitable offer exists.")
+	return []

@@ -12,7 +12,8 @@ category = 1
 max_hp = 160.0
 attack = 16.0
 attack_speed = 1.15
-accuracy = 100.0
+accuracy = 92.0
+dodge = 8.0
 crit_chance = 0.07
 crit_damage = 1.50
 

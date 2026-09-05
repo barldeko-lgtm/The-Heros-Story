@@ -43,6 +43,25 @@ func resolve_dungeon_completion_reward(hero_state, dungeon_definition: Resource,
 	result["rolled_rarity"] = int(roll["rarity"])
 	return result
 
+func resolve_authored_source_reward(hero_state, source: Resource, rng, rarity_override: int) -> Dictionary:
+	if source == null or rng == null or source.item_level <= 0:
+		return {}
+	var item_pool: Array[Resource]
+	match rarity_override:
+		0:
+			item_pool = source.common_items
+		1:
+			item_pool = source.uncommon_items
+		_:
+			item_pool = source.rare_items
+	if item_pool.is_empty():
+		return {}
+	var item_definition: Resource = item_pool[rng.randi_range(0, item_pool.size() - 1)]
+	var result: Dictionary = receive_item(hero_state, item_definition, int(source.item_level), rng, rarity_override)
+	result["item_definition"] = item_definition
+	result["rolled_rarity"] = rarity_override
+	return result
+
 func receive_item(hero_state, item_definition: Resource, item_level: int, rng, rarity_override: int = -1) -> Dictionary:
 	var result: Dictionary = {
 		"item_instance": null,

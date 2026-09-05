@@ -33,21 +33,13 @@ const DUNGEON_MARKER_STONE_COLOR: Color = Color("8d785f")
 const DUNGEON_MARKER_ENTRANCE_COLOR: Color = Color("17151a")
 const DUNGEON_MARKER_TEXT_COLOR: Color = Color("2a202f")
 const DUNGEON_UNDISCOVERED_DEBUG_ALPHA: float = 0.40
+const EVENT_AREA_COLOR: Color = Color(0.07, 0.22, 0.50, 0.34)
 const MAP_ORIGIN: Vector2 = Vector2.ZERO
 const MIN_MAP_ZOOM: float = 0.6
 const MAX_MAP_ZOOM: float = 2.0
 const MAP_ZOOM_STEP: float = 1.15
 const MIN_VISIBLE_MAP_PIXELS: float = 80.0
 const MAP_VIEW_TOP: float = 76.0
-
-const TERRAIN_COLORS: Dictionary = {
-	"plains": HexMapImageDecoderScript.PLAINS_COLOR,
-	"forest": HexMapImageDecoderScript.FOREST_COLOR,
-	"hill": HexMapImageDecoderScript.HILL_COLOR,
-	"road": HexMapImageDecoderScript.ROAD_COLOR,
-	"starting_city": HexMapImageDecoderScript.STARTING_CITY_COLOR,
-	"mid_city": HexMapImageDecoderScript.MID_CITY_COLOR,
-}
 
 const TERRAIN_DISPLAY_NAMES: Dictionary = {
 	"plains": "Равнины",
@@ -78,6 +70,7 @@ var terrain_counts: Dictionary = {}
 var last_hero_position: Vector2i = Vector2i(-1, -1)
 var last_quest_marker_signature: String = ""
 var last_dungeon_marker_signature: String = ""
+var last_event_area_signature: String = ""
 var hex_tooltip_panel: PanelContainer
 var hex_tooltip_label: Label
 var map_zoom: float = 1.0
@@ -105,6 +98,7 @@ func _ready() -> void:
 	last_hero_position = get_hero_cell()
 	last_quest_marker_signature = get_quest_marker_signature()
 	last_dungeon_marker_signature = get_dungeon_marker_signature()
+	last_event_area_signature = get_event_area_signature()
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -122,6 +116,10 @@ func _process(_delta: float) -> void:
 	var current_dungeon_marker_signature: String = get_dungeon_marker_signature()
 	if current_dungeon_marker_signature != last_dungeon_marker_signature:
 		last_dungeon_marker_signature = current_dungeon_marker_signature
+		redraw_needed = true
+	var current_event_area_signature: String = get_event_area_signature()
+	if current_event_area_signature != last_event_area_signature:
+		last_event_area_signature = current_event_area_signature
 		redraw_needed = true
 	if redraw_needed:
 		queue_redraw()
@@ -141,6 +139,10 @@ func get_quest_marker_offers() -> Array:
 		if not hex_centers.has(offer.target_hex):
 			continue
 		result.append(offer)
+	if simulation.hero_state != null:
+		var active_quest = simulation.hero_state.active_quest
+		if active_quest != null and active_quest.has_method("has_map_target") and active_quest.has_map_target() and hex_centers.has(active_quest.target_hex) and not result.has(active_quest):
+			result.append(active_quest)
 	return result
 
 func get_quest_marker_signature() -> String:
@@ -175,6 +177,30 @@ func get_dungeon_marker_signature() -> String:
 		parts.append("%s:%d:%d:%s" % [dungeon_instance.map_activity_id, dungeon_instance.target_hex.x, dungeon_instance.target_hex.y, str(dungeon_instance.discovered)])
 	parts.sort()
 	return "|".join(parts)
+
+func get_event_area_instances() -> Array:
+	if simulation == null or simulation.event_system == null:
+		return []
+	return simulation.event_system.get_active_events()
+
+func get_event_area_signature() -> String:
+	var parts := PackedStringArray()
+	for event_instance in get_event_area_instances():
+		if event_instance == null or not event_instance.has_map_target() or event_instance.definition == null:
+			continue
+		parts.append("%s:%d:%d:%d" % [
+			event_instance.map_activity_id,
+			event_instance.target_hex.x,
+			event_instance.target_hex.y,
+			int(event_instance.definition.placement_radius),
+		])
+	parts.sort()
+	return "|".join(parts)
+
+func get_event_area_cells(event_instance) -> Array[Vector2i]:
+	if event_instance == null or event_instance.definition == null or not event_instance.has_map_target() or hex_map == null:
+		return []
+	return hex_map.get_cells_within_radius(event_instance.target_hex, int(event_instance.definition.placement_radius))
 
 func get_dungeon_marker_alpha(dungeon_instance) -> float:
 	if dungeon_instance != null and dungeon_instance.discovered:
@@ -256,6 +282,13 @@ func get_hex_at_local_position(local_position: Vector2):
 		var center: Vector2 = hex_centers[cell]
 		if Geometry2D.is_point_in_polygon(map_position, get_hex_polygon(center)):
 			return hex_map.get_hex(cell)
+	return null
+
+func get_quest_offer_at_local_position(local_position: Vector2):
+	var map_position: Vector2 = screen_to_map_position(local_position)
+	for offer in get_quest_marker_offers():
+		if get_quest_marker_rect(offer).has_point(map_position):
+			return offer
 	return null
 
 func get_hex_tooltip_text(hex_definition) -> String:
@@ -367,11 +400,18 @@ func clamp_map_pan_offset() -> void:
 func update_hex_tooltip(local_position: Vector2) -> void:
 	if hex_tooltip_panel == null or hex_tooltip_label == null:
 		return
+	var quest_offer = get_quest_offer_at_local_position(local_position)
+	if quest_offer != null:
+		show_map_tooltip("Квест: %s" % quest_offer.display_name, local_position)
+		return
 	var hex_definition = get_hex_at_local_position(local_position)
 	if hex_definition == null:
 		hide_hex_tooltip()
 		return
-	hex_tooltip_label.text = get_hex_tooltip_text(hex_definition)
+	show_map_tooltip(get_hex_tooltip_text(hex_definition), local_position)
+
+func show_map_tooltip(tooltip_text: String, local_position: Vector2) -> void:
+	hex_tooltip_label.text = tooltip_text
 	var tooltip_size: Vector2 = hex_tooltip_panel.get_combined_minimum_size()
 	hex_tooltip_panel.size = tooltip_size
 	var screen_size: Vector2 = size
@@ -404,13 +444,13 @@ func _draw() -> void:
 	draw_road()
 	draw_city_overlay(map_definition.starting_city_center)
 	draw_city_overlay(map_definition.mid_city_center)
+	draw_event_areas()
 	draw_quest_markers()
 	draw_dungeon_markers()
 	draw_hero_marker()
 	draw_city_label(map_definition.starting_city_center, "СТАРТОВЫЙ ГОРОД", Color("3d2e22"), Vector2(-72.0, 68.0))
 	draw_city_label(map_definition.mid_city_center, "СРЕДНИЙ ГОРОД", Color("302a40"), Vector2(-65.0, -58.0))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	draw_legend()
 
 func draw_hex_visual(cell: Vector2i, center: Vector2, terrain_id: String) -> void:
 	var terrain_texture: Texture2D = map_tile_visuals.get_texture(terrain_id, cell)
@@ -539,6 +579,13 @@ func draw_dungeon_markers() -> void:
 		draw_rect(Rect2(center + Vector2(-10.0, 3.0), Vector2(20.0, 15.0)), Color(DUNGEON_MARKER_ENTRANCE_COLOR, marker_alpha))
 		draw_string(ThemeDB.fallback_font, center + Vector2(-27.0, 39.0), "ДАНЖ", HORIZONTAL_ALIGNMENT_CENTER, 54.0, 11, Color(DUNGEON_MARKER_TEXT_COLOR, marker_alpha))
 
+func draw_event_areas() -> void:
+	for event_instance in get_event_area_instances():
+		for cell in get_event_area_cells(event_instance):
+			if not hex_centers.has(cell):
+				continue
+			draw_colored_polygon(get_hex_polygon(hex_centers[cell]), EVENT_AREA_COLOR)
+
 func draw_selected_quest_outline(outline_mask_texture: Texture2D, marker_rect: Rect2) -> void:
 	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_OUTER_OFFSET, QUEST_SELECTED_OUTLINE_OUTER_ALPHA)
 	draw_quest_outline_layer(outline_mask_texture, marker_rect, QUEST_SELECTED_OUTLINE_MIDDLE_OFFSET, QUEST_SELECTED_OUTLINE_MIDDLE_ALPHA)
@@ -584,33 +631,3 @@ func draw_terrain_mark(center: Vector2, terrain_id: String) -> void:
 func draw_city_label(city_center: Vector2i, label_text: String, label_color: Color, offset: Vector2) -> void:
 	var position: Vector2 = hex_centers[city_center] + offset
 	draw_string(ThemeDB.fallback_font, position, label_text, HORIZONTAL_ALIGNMENT_CENTER, 145.0, 14, label_color)
-
-func draw_legend() -> void:
-	var panel_rect := Rect2(980.0, 132.0, 260.0, 292.0)
-	draw_style_box(create_legend_style(), panel_rect)
-	draw_string(ThemeDB.fallback_font, Vector2(1004.0, 168.0), "УСЛОВНЫЕ ОБОЗНАЧЕНИЯ", HORIZONTAL_ALIGNMENT_LEFT, 230.0, 15, Color("edf0f4"))
-	var entries: Array[Dictionary] = [
-		{"id": "plains", "text": "Равнины"},
-		{"id": "forest", "text": "Лес"},
-		{"id": "hill", "text": "Холмы"},
-		{"id": "road", "text": "Дорога"},
-		{"id": "starting_city", "text": "Стартовый город"},
-		{"id": "mid_city", "text": "Средний город"},
-	]
-	for index in range(entries.size()):
-		var entry: Dictionary = entries[index]
-		var entry_y: float = 198.0 + float(index) * 34.0
-		draw_rect(Rect2(1005.0, entry_y - 16.0, 26.0, 22.0), TERRAIN_COLORS[entry["id"]])
-		draw_rect(Rect2(1005.0, entry_y - 16.0, 26.0, 22.0), Color("aeb8c7"), false, 1.0)
-		draw_string(ThemeDB.fallback_font, Vector2(1043.0, entry_y + 1.0), entry["text"], HORIZONTAL_ALIGNMENT_LEFT, 170.0, 16, Color("edf0f4"))
-
-func create_legend_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("232830")
-	style.border_color = Color("7b8694")
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(12)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.30)
-	style.shadow_size = 6
-	style.shadow_offset = Vector2(0.0, 3.0)
-	return style

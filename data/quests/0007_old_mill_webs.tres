@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "old_mill_webs"
+strength_band = "middle"
 display_name = "Паутина у старой мельницы"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 3

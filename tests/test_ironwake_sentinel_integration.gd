@@ -16,8 +16,8 @@ const FILE_NAMES := {
 	"shield": "rustchain_initiate_shield",
 }
 const RARITY_SUFFIXES := ["", "_uncommon", "_rare"]
-const WEAK_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
-const MID_MOB_IDS := ["giant_spider", "bear", "rabid_elk", "bandit_veteran", "swamp_crocodile"]
+const WEAK_MOB_IDS := ["stray_dog", "goblin", "giant_rat", "wild_boar", "experienced_goblin", "wolf", "bandit", "wounded_troll"]
+const MID_MOB_IDS := ["giant_spider", "bear", "mature_wolf", "rabid_elk", "bandit_veteran", "swamp_crocodile", "young_troll"]
 
 func _init() -> void:
 	var definitions_by_quality: Array = [[], [], []]
@@ -51,8 +51,8 @@ func _init() -> void:
 
 	var ilvl10_drop_table := load(ILVL10_SOURCE_PATH)
 	var ilvl20_drop_table := load(ILVL20_SOURCE_PATH)
-	assert(ilvl10_drop_table != null, "The existing full ilvl 10 drop table must remain available.")
-	assert(ilvl20_drop_table != null, "The full twelve-slot ilvl 20 drop table must be available.")
+		assert(ilvl10_drop_table != null, "The existing full middle-tier drop table must remain available.")
+		assert(ilvl20_drop_table != null, "The full twelve-slot higher-tier drop table must be available.")
 	var weak_count := 0
 	var mid_count := 0
 	var strong_count := 0
@@ -66,28 +66,28 @@ func _init() -> void:
 			assert(mob.equipment_drop_table == drop_table, "Each selected weak mob must use the Rustchain Initiate ilvl 1 source: %s" % mob.id)
 		elif MID_MOB_IDS.has(mob.id):
 			mid_count += 1
-			assert(mob.equipment_drop_table == ilvl10_drop_table, "Each middle-tier mob must use the full ilvl 10 source: %s" % mob.id)
+				assert(mob.equipment_drop_table == ilvl10_drop_table, "Each middle-tier mob must use the full compressed ilvl 5 source: %s" % mob.id)
 		else:
 			strong_count += 1
-			assert(mob.equipment_drop_table == ilvl20_drop_table, "Each strongest mob must use the Ironward ilvl 20 source: %s" % mob.id)
-	assert(weak_count == 5 and mid_count == 5 and strong_count == 5, "The 15 mobs must split evenly across ilvl 1/10/20 equipment sources.")
+				assert(mob.equipment_drop_table == ilvl20_drop_table, "Each strongest mob must use the Ironward compressed ilvl 10 source: %s" % mob.id)
+		assert(weak_count == 8 and mid_count == 7 and strong_count == 7, "The 22 mobs must use the approved 8/7/7 split across ilvl 1/5/10 equipment sources.")
 
 	var shop_definition: Resource = load(SHOP_PATH)
 	assert(shop_definition != null, "Starting City shop definition must load.")
-	assert(shop_definition.stock_bands.size() == 3, "Starting City shop must contain separate ilvl 1, 10, and 20 stock bands.")
+		assert(shop_definition.stock_bands.size() == 3, "Starting City shop must contain separate ilvl 1, 5, and 10 stock bands.")
 	assert(shop_definition.stock_bands[0].item_level == 1, "The first shop band must retain ilvl 1 while using Rustchain Initiate.")
-	assert(shop_definition.stock_bands[1].item_level == 10, "The second shop band must retain ilvl 10 while using Ironwake core visuals.")
-	assert(shop_definition.stock_bands[2].item_level == 20, "The third shop band must use Ironward Vanguard at ilvl 20.")
+		assert(shop_definition.stock_bands[1].item_level == 5, "The second shop band must use compressed ilvl 5 while keeping Ironwake core stats/visuals.")
+		assert(shop_definition.stock_bands[2].item_level == 10, "The third shop band must use compressed ilvl 10 while keeping Ironward Vanguard stats/visuals.")
 
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var simulation = simulation_script.new(2718)
 	var listings: Array = simulation.shop_system.get_listings()
 	assert(listings.size() == 24, "Three shop bands must generate 8 listings each.")
 	assert_shop_band(listings, 1)
-	assert_shop_band(listings, 10)
-	assert_shop_band(listings, 20)
+		assert_shop_band(listings, 5)
+		assert_shop_band(listings, 10)
 
-	print("PASS: Rustchain, Ironwake, and Ironward integrate across live ilvl 1/10/20 drops and shop bands.")
+		print("PASS: Rustchain, Ironwake, and Ironward integrate across compressed ilvl 1/5/10 drops and shop bands.")
 	quit()
 
 func assert_shop_band(listings: Array, item_level: int) -> void:
@@ -100,12 +100,12 @@ func assert_shop_band(listings: Array, item_level: int) -> void:
 		var slot: String = item_instance.definition.equipment_slot
 		if item_level == 1:
 			assert(item_instance.definition.resource_path.contains("rustchain_initiate"), "The ilvl 1 shop band must use Rustchain Initiate.")
-		elif item_level == 20:
-			assert(item_instance.definition.resource_path.contains("ironward_vanguard/"), "The ilvl 20 shop band must use Ironward Vanguard core equipment and accessories.")
-		elif slot in SLOTS:
-			assert(item_instance.definition.resource_path.contains("ironwake_sentinel"), "Core ilvl 10 shop slots must use Ironwake Sentinel.")
-		else:
-			assert(item_instance.definition.resource_path.contains("ironward_vanguard/ironward_"), "Existing ilvl 10 accessory definitions must remain unchanged.")
+			elif item_level == 10:
+				assert(item_instance.definition.resource_path.contains("ironward_vanguard/"), "The compressed ilvl 10 shop band must use Ironward Vanguard core equipment and accessories.")
+			elif slot in SLOTS:
+				assert(item_instance.definition.resource_path.contains("ironwake_sentinel"), "Core compressed ilvl 5 shop slots must use Ironwake Sentinel.")
+			else:
+				assert(item_instance.definition.resource_path.contains("ironward_vanguard/ironward_"), "Existing middle-tier accessory definitions must remain unchanged apart from ilvl relabel.")
 		assert(item_instance.rarity in [0, 1], "Normal shop stock must remain White/Green only.")
 		rarity_counts[item_instance.rarity] += 1
 		assert(not slots_by_rarity[item_instance.rarity].has(slot), "Each shop band/rarity must keep unique equipment slots.")

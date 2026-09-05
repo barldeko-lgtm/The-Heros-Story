@@ -3,6 +3,7 @@ extends TabContainer
 
 var simulation
 var log_text_edit: TextEdit
+var last_rendered_log_text: String = ""
 
 func setup(simulation_reference) -> void:
 	simulation = simulation_reference
@@ -65,7 +66,12 @@ func on_debug_log_text_changed(log_text: String) -> void:
 func update_debug_log(log_text: String) -> void:
 	if log_text_edit == null:
 		return
+	if log_text == last_rendered_log_text:
+		return
+	last_rendered_log_text = log_text
 	log_text_edit.text = log_text
+	var scroll_bar: VScrollBar = log_text_edit.get_v_scroll_bar()
+	scroll_bar.value = scroll_bar.max_value
 	call_deferred("scroll_debug_log_to_bottom")
 
 func scroll_debug_log_to_bottom() -> void:

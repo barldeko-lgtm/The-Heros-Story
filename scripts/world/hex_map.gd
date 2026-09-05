@@ -9,6 +9,7 @@ const MID_REGION_ID: String = "mid_region"
 
 var definition
 var hexes_by_coordinate: Dictionary = {}
+var distance_maps_by_origin: Dictionary = {}
 
 func _init(initial_definition: Resource) -> void:
 	definition = initial_definition
@@ -19,6 +20,7 @@ func _init(initial_definition: Resource) -> void:
 
 func build_hex_definitions() -> void:
 	hexes_by_coordinate.clear()
+	distance_maps_by_origin.clear()
 	for column in range(definition.width):
 		for row in range(definition.height):
 			var coordinates := Vector2i(column, row)
@@ -81,6 +83,13 @@ func build_distance_map(origin: Vector2i) -> Dictionary:
 			frontier.append(neighbor)
 	return distances
 
+func get_distance_map(origin: Vector2i) -> Dictionary:
+	if not is_valid_cell(origin):
+		return {}
+	if not distance_maps_by_origin.has(origin):
+		distance_maps_by_origin[origin] = build_distance_map(origin)
+	return distance_maps_by_origin[origin]
+
 func get_hex(cell: Vector2i):
 	return hexes_by_coordinate.get(cell)
 
@@ -103,6 +112,8 @@ func get_cells_within_radius(center: Vector2i, radius: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	if radius < 0 or not is_valid_cell(center):
 		return result
+	if radius == 0:
+		return [center]
 	var distances: Dictionary = {center: 0}
 	var frontier: Array[Vector2i] = [center]
 	var frontier_index: int = 0
@@ -154,10 +165,9 @@ func build_path(came_from: Dictionary, start: Vector2i, destination: Vector2i) -
 	return reversed_path
 
 func get_distance_steps(start: Vector2i, destination: Vector2i) -> int:
-	var path: Array[Vector2i] = find_path(start, destination)
-	if path.is_empty():
+	if not is_valid_cell(start) or not is_valid_cell(destination):
 		return -1
-	return path.size() - 1
+	return int(get_distance_map(start).get(destination, -1))
 
 func get_distance_km(start: Vector2i, destination: Vector2i) -> float:
 	var distance_steps: int = get_distance_steps(start, destination)

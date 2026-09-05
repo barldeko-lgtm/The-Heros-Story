@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "campfires_deep_in_forest"
+strength_band = "higher"
 display_name = "Костры в глубине леса"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 1

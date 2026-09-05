@@ -9,7 +9,7 @@ func run_test() -> void:
 	assert(map_definition != null, "Prototype 0.2 authored map definition must exist.")
 	var decoded_layout: Dictionary = map_definition.reload_from_image()
 	assert(decoded_layout["succeeded"], "Editable PNG map layout must decode before the authored map is inspected.")
-	assert(map_definition.width == 20 and map_definition.height == 15, "Map must be exactly 20 by 15 hexes.")
+	assert(map_definition.width == 26 and map_definition.height == 15, "Map must be exactly 26 by 15 gameplay hexes.")
 	assert(map_definition.get_city_cells(map_definition.starting_city_center).size() == 7, "Starting City must occupy seven connected hexes.")
 	assert(map_definition.get_city_cells(map_definition.mid_city_center).size() == 7, "Mid-Level City must occupy seven connected hexes.")
 	assert(not map_definition.forest_cells.is_empty() and not map_definition.hill_cells.is_empty(), "Map must contain authored forest and hill regions around the cities.")
@@ -84,6 +84,14 @@ func run_test() -> void:
 	var board_offers: Array = main_ui.simulation.quest_pool.get_available_quests()
 	var marker_offers: Array = main_ui.map_screen.get_quest_marker_offers()
 	assert(marker_offers.size() == board_offers.size(), "Every active quest-board offer with a reserved target must have a map marker.")
+	var active_events: Array = main_ui.simulation.event_system.get_active_events()
+	assert(not active_events.is_empty(), "Developer MapScreen integration must have at least one active temporary event.")
+	var event_instance = active_events[0]
+	var event_area_cells: Array[Vector2i] = main_ui.map_screen.get_event_area_cells(event_instance)
+	assert(event_area_cells.size() == 7, "The default radius-1 temporary event must shade its seven reserved footprint hexes.")
+	assert(main_ui.map_screen.get_event_area_signature().contains(event_instance.map_activity_id), "Active temporary events must participate in the MapScreen redraw signature.")
+	assert(main_ui.map_screen.EVENT_AREA_COLOR.a > 0.0 and main_ui.map_screen.EVENT_AREA_COLOR.a < 0.5, "Temporary-event map shading must remain translucent rather than hiding the terrain.")
+	assert(main_ui.map_screen.EVENT_AREA_COLOR.b > main_ui.map_screen.EVENT_AREA_COLOR.r, "Temporary-event map shading must be visibly blue-tinted.")
 	var quest_texture: Texture2D = main_ui.map_screen.get_quest_visual_texture()
 	assert(quest_texture != null, "Quest map markers must use the supplied quest activity sprite.")
 	assert(quest_texture.resource_path == main_ui.map_screen.map_tile_visuals.QUEST_MAP_PATH, "Quest map visual must use the permanent activity asset path.")
@@ -111,11 +119,28 @@ func run_test() -> void:
 		assert(is_equal_approx(quest_rect.size.y, 65.0), "Quest sprite must render 65 pixels tall at base map zoom.")
 		assert(absf(quest_rect.size.x - 69.225) < 0.02, "Quest sprite must preserve its supplied aspect ratio at roughly half-hex size.")
 		assert(quest_rect.get_center().distance_to(main_ui.map_screen.get_hex_center(offer.target_hex)) < 0.01, "Quest sprite must remain centered on its target hex.")
+	var hover_quest = null
+	var hover_quest_screen_position := Vector2.ZERO
+	for marker_offer in marker_offers:
+		var candidate_screen_position: Vector2 = main_ui.map_screen.map_to_screen_position(main_ui.map_screen.get_quest_marker_rect(marker_offer).get_center())
+		if Rect2(Vector2.ZERO, main_ui.map_screen.size).has_point(candidate_screen_position):
+			hover_quest = marker_offer
+			hover_quest_screen_position = candidate_screen_position
+			break
+	assert(hover_quest != null, "At least one current quest marker must be visible in the initially centered map viewport for hover validation.")
+	assert(main_ui.map_screen.get_quest_offer_at_local_position(hover_quest_screen_position) == hover_quest, "Quest-marker hover lookup must resolve the concrete QuestOffer under the cursor.")
+	var quest_hover_event := InputEventMouseMotion.new()
+	quest_hover_event.position = hover_quest_screen_position
+	get_root().push_input(quest_hover_event, true)
+	await process_frame
+	assert(main_ui.map_screen.hex_tooltip_panel.visible, "Hovering a quest marker must show the map tooltip.")
+	assert(main_ui.map_screen.hex_tooltip_label.text == "Квест: %s" % hover_quest.display_name, "Quest-marker tooltip must show the hovered quest's player-facing name instead of raw hex diagnostics.")
 	var marker_signature_before_selection: String = main_ui.map_screen.get_quest_marker_signature()
 	assert(not marker_signature_before_selection.contains("selected:"), "Quest markers must start without a selected-quest highlight before the hero chooses an offer.")
-	main_ui.simulation.advance_time(10.0)
+	var selected_offer = marker_offers[0]
+	assert(main_ui.simulation.quest_pool.take_offer(selected_offer), "Map highlight test must be able to move one current board offer into the hero's active quest state.")
+	main_ui.simulation.hero_state.active_quest = selected_offer
 	await process_frame
-	var selected_offer = main_ui.simulation.hero_state.active_quest
 	assert(selected_offer != null and selected_offer.has_map_target(), "Autonomous quest selection must produce one map-backed selected offer for highlight validation.")
 	assert(main_ui.map_screen.is_selected_quest_offer(selected_offer), "The hero's active QuestOffer must qualify for the selected-quest map highlight.")
 	assert(main_ui.map_screen.get_quest_marker_signature().contains("selected:%s" % selected_offer.map_activity_id), "Selecting a quest must change the map marker signature so the highlight redraws immediately.")

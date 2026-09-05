@@ -20,7 +20,7 @@ func test_divine_healing() -> void:
 	assert(not simulation.use_divine_healing(), "Divine healing must respect its cooldown.")
 
 	var combat_simulation = SimulationScript.new(1011, null)
-	assert(combat_simulation.choose_next_quest(), "Combat-healing test requires one eligible quest offer.")
+	combat_simulation.quest_runner.quest_definition = combat_simulation.quest_pool.get_available_quests()[0]
 	combat_simulation.start_combat()
 	combat_simulation.active_combat_session.hero_remaining_hp = 10.0
 	var expected_combat_hp: float = minf(combat_simulation.combat_stats.max_hp, 10.0 + combat_simulation.combat_stats.max_hp * 0.50)
@@ -44,7 +44,15 @@ func test_combat_buff() -> void:
 	simulation.combat_stats.crit_chance = 0.0
 	var base_attack: float = simulation.base_combat_stats.attack
 	var base_power: float = simulation.get_hero_power()
-	assert(simulation.choose_next_quest(), "Combat-buff test requires one eligible quest offer.")
+	var buff_target = simulation.quest_pool.get_available_quests()[0]
+	buff_target.mob_definition = buff_target.mob_definition.duplicate(true)
+	simulation.quest_runner.quest_definition = buff_target
+	# This test isolates the divine Damage effect itself. Live ordinary mobs now use
+	# Armor/Dodge as real tuning levers, so neutralize target defenses here instead
+	# of depending on whichever board offer happens to be first for this seed.
+	simulation.quest_runner.quest_definition.mob_definition.armor = 0.0
+	simulation.quest_runner.quest_definition.mob_definition.dodge = 0.0
+	simulation.quest_runner.quest_definition.mob_definition.block = 0.0
 	assert(simulation.use_combat_buff(), "Combat buff must activate through Simulation.")
 	assert(simulation.get_combat_buff_fights_remaining() == 5, "Combat buff charges must live in HeroState.active_effects.")
 	assert(is_equal_approx(simulation.base_combat_stats.attack, base_attack), "Temporary buff must not change base Attack used by UI and HeroPower.")
@@ -64,11 +72,16 @@ func test_combat_buff() -> void:
 func test_quest_guidance() -> void:
 	var simulation = SimulationScript.new(1004, null)
 	var target_quest = null
-	var power_window: Dictionary = simulation.quest_evaluator.get_hard_filter_power_window(simulation.get_hero_power(), simulation.hero_state.traits)
-	for quest in simulation.quest_pool.get_available_quests():
-		var mob_power: float = quest.mob_definition.get_power()
-		if mob_power >= float(power_window["minimum"]) and mob_power <= float(power_window["maximum"]):
-			target_quest = quest
+	for refresh_tick in [0, 100, 200, 300, 400]:
+		if refresh_tick > 0:
+			simulation.quest_pool.refresh_board(refresh_tick)
+		var power_window: Dictionary = simulation.quest_evaluator.get_hard_filter_power_window(simulation.get_hero_power(), simulation.hero_state.traits)
+		for quest in simulation.quest_pool.get_available_quests():
+			var mob_power: float = quest.mob_definition.get_power()
+			if mob_power >= float(power_window["minimum"]) and mob_power <= float(power_window["maximum"]):
+				target_quest = quest
+				break
+		if target_quest != null:
 			break
 	assert(target_quest != null, "Guidance test requires an eligible quest.")
 	assert(simulation.guide_hero_to_quest(target_quest.id), "God must be able to guide toward one current tavern offer.")

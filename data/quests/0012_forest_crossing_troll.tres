@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "forest_crossing_troll"
+strength_band = "higher"
 display_name = "Тролль у лесной переправы"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 1

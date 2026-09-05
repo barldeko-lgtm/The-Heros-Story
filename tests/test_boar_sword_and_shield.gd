@@ -32,14 +32,14 @@ func run_test() -> void:
 	var starting_hp: float = simulation.base_combat_stats.max_hp
 	var starting_attack: float = simulation.base_combat_stats.attack
 	var starting_block: float = simulation.base_combat_stats.block
-	simulation.receive_item_reward(rare_items["weapon"], 1, 20)
-	simulation.receive_item_reward(rare_items["shield"], 2, 20)
+	simulation.receive_item_reward(rare_items["weapon"], 1, 10)
+	simulation.receive_item_reward(rare_items["shield"], 2, 10)
 	var sword_instance = simulation.hero_state.equipment.get_item("weapon")
 	var shield_instance = simulation.hero_state.equipment.get_item("shield")
-	assert(sword_instance.item_level == 20 and sword_instance.affixes.size() == 2, "Rare sword must be generated at ilvl 20 with two affixes.")
-	assert(shield_instance.item_level == 20 and shield_instance.affixes.size() == 2, "Rare shield must be generated at ilvl 20 with two affixes.")
-	assert(sword_instance.get_base_stat("attack") == 17.0 and sword_instance.get_base_stat("attack_speed") == 0.10, "ilvl 20 sword must use its current inherent stats.")
-	assert(shield_instance.get_base_stat("block") == 17.0, "ilvl 20 shield must use its current inherent Block.")
+	assert(sword_instance.item_level == 10 and sword_instance.affixes.size() == 2, "Rare sword must be generated at compressed ilvl 10 with two affixes.")
+	assert(shield_instance.item_level == 10 and shield_instance.affixes.size() == 2, "Rare shield must be generated at compressed ilvl 10 with two affixes.")
+	assert(sword_instance.get_base_stat("attack") == 17.0 and sword_instance.get_base_stat("attack_speed") == 0.10, "Compressed ilvl 10 sword must preserve the former ilvl 20 inherent stats.")
+	assert(shield_instance.get_base_stat("block") == 17.0, "Compressed ilvl 10 shield must preserve the former ilvl 20 Block.")
 	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_hp + sword_instance.get_stat_bonus("max_hp") + shield_instance.get_stat_bonus("max_hp")), "Generated Health must resolve from both items.")
 	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + sword_instance.get_stat_bonus("attack") + shield_instance.get_stat_bonus("attack")), "Generated sword Damage must resolve through Equipment.")
 	assert(is_equal_approx(simulation.base_combat_stats.block, starting_block + sword_instance.get_stat_bonus("block") + shield_instance.get_stat_bonus("block")), "Generated shield Block must resolve through Equipment.")
@@ -62,5 +62,5 @@ func run_test() -> void:
 		assert(simulation.hero_state.equipment.get_item(slot_data[2]) != null, "Each new equipment slot must contain its item.")
 
 	main_ui.free()
-	print("PASS: Boar sword and shield generate ilvl 20 instance stats and remain visible in UI.")
+	print("PASS: Boar sword and shield preserve former ilvl 20 stats at compressed ilvl 10 and remain visible in UI.")
 	quit()

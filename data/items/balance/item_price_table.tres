@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_price_table")
-item_levels = Array[int]([1, 10, 20])
+item_levels = Array[int]([1, 5, 10])
 white_reference_values = Array[int]([100, 500, 1000])
 uncommon_multiplier = 3.0
 rare_multiplier = 9.0

@@ -10,9 +10,9 @@ const ILVL10_SOURCE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
 const ILVL20_SOURCE_PATH := "res://data/loot/ironward_vanguard_ilvl20_drop_table.tres"
 const DUNGEON_PATH := "res://data/dungeons/starting_region/0001_abandoned_iron_mines.tres"
 const SHOP_PATH := "res://data/shops/starting_city_shop.tres"
-const ILVL1_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
-const ILVL10_MOB_IDS := ["giant_spider", "bear", "rabid_elk", "bandit_veteran", "swamp_crocodile"]
-const ILVL20_MOB_IDS := ["young_ogre", "cave_lizard", "forest_troll", "mountain_beast", "orc_raider"]
+const ILVL1_MOB_IDS := ["stray_dog", "goblin", "giant_rat", "wild_boar", "experienced_goblin", "wolf", "bandit", "wounded_troll"]
+const ILVL10_MOB_IDS := ["giant_spider", "bear", "mature_wolf", "rabid_elk", "bandit_veteran", "swamp_crocodile", "young_troll"]
+const ILVL20_MOB_IDS := ["young_ogre", "cave_lizard", "experienced_ogre", "forest_troll", "mountain_beast", "orc_raider", "orc_veteran"]
 
 const SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 const FILE_STEMS := {
@@ -86,7 +86,7 @@ func run_test() -> void:
 			var ironward: Resource = load(ironward_path)
 			if not require(rustchain != null, "Rustchain Initiate definition must load: %s" % rustchain_path):
 				return
-			if not require(ironwake != null and ironward != null, "Shifted ilvl 10/20 core definitions must remain available."):
+			if not require(ironwake != null and ironward != null, "Compressed middle/high core definitions must remain available."):
 				return
 			if not require(rustchain.id == "rustchain_initiate_%s%s" % [FILE_STEMS[slot], suffix], "Rustchain identity must match its file and rarity."):
 				return
@@ -117,30 +117,30 @@ func run_test() -> void:
 		return
 	if not require(ilvl1_source.common_items == rustchain_by_quality[0] and ilvl1_source.uncommon_items == rustchain_by_quality[1] and ilvl1_source.rare_items == rustchain_by_quality[2], "The unchanged ilvl 1 source must now use Rustchain Initiate in all rarities."):
 		return
-	if not require(ilvl10_source.item_level == 10 and is_equal_approx(ilvl10_source.drop_chance, 0.05), "The stronger-mob/dungeon source must remain ilvl 10 with 5% ordinary drop chance."):
+	if not require(ilvl10_source.item_level == 5 and is_equal_approx(ilvl10_source.drop_chance, 0.05), "The middle-mob/dungeon source must use compressed ilvl 5 with the unchanged 5% ordinary drop chance."):
 		return
 	for quality in 3:
 		var pool: Array = [ilvl10_source.common_items, ilvl10_source.uncommon_items, ilvl10_source.rare_items][quality]
-		if not require(pool.size() == 12, "Every ilvl 10 rarity pool must keep all twelve slots."):
+		if not require(pool.size() == 12, "Every compressed ilvl 5 rarity pool must keep all twelve slots."):
 			return
-		if not require(pool.slice(0, 7) == ironwake_by_quality[quality], "The seven core ilvl 10 slots must now use Ironwake Sentinel visuals."):
+		if not require(pool.slice(0, 7) == ironwake_by_quality[quality], "The seven core compressed ilvl 5 slots must use Ironwake Sentinel visuals."):
 			return
 		for accessory in pool.slice(7, 12):
-			if not require(accessory.resource_path.contains("ironward_vanguard/ironward_"), "Existing ilvl 10 jewelry and Belt definitions must remain unchanged."):
+			if not require(accessory.resource_path.contains("ironward_vanguard/ironward_"), "Existing middle-tier jewelry and Belt definitions must remain unchanged apart from ilvl relabel."):
 				return
-	if not require(ilvl20_source.item_level == 20 and is_equal_approx(ilvl20_source.drop_chance, 0.05), "The strongest-mob source must use ilvl 20 and the unchanged 5% drop chance."):
+	if not require(ilvl20_source.item_level == 10 and is_equal_approx(ilvl20_source.drop_chance, 0.05), "The strongest-mob source must use compressed ilvl 10 and the unchanged 5% drop chance."):
 		return
 	for quality in 3:
 		var ilvl20_pool: Array = [ilvl20_source.common_items, ilvl20_source.uncommon_items, ilvl20_source.rare_items][quality]
-		if not require(ilvl20_pool.size() == 12 and ilvl20_pool.slice(0, 7) == ironward_by_quality[quality], "The ilvl 20 source must expose seven Ironward core slots followed by five accessories in every rarity."):
+		if not require(ilvl20_pool.size() == 12 and ilvl20_pool.slice(0, 7) == ironward_by_quality[quality], "The compressed ilvl 10 source must expose seven Ironward core slots followed by five accessories in every rarity."):
 			return
 		for accessory in ilvl20_pool.slice(7, 12):
-			if not require(accessory.resource_path.contains("ironward_vanguard/ironward_vanguard_"), "The ilvl 20 accessory slice must use its own Ironward Vanguard definitions."):
+			if not require(accessory.resource_path.contains("ironward_vanguard/ironward_vanguard_"), "The compressed ilvl 10 accessory slice must use its own Ironward Vanguard definitions."):
 				return
-	if not require(dungeon.completion_equipment_source == ilvl10_source and dungeon.completion_equipment_source.item_level == 10, "The first dungeon must keep its existing ilvl 10 completion source."):
+	if not require(dungeon.completion_equipment_source == ilvl10_source and dungeon.completion_equipment_source.item_level == 5, "The first dungeon must keep the same completion source at compressed ilvl 5."):
 		return
 
-	if not require(shop.stock_bands.size() == 3 and shop.stock_bands[0].item_level == 1 and shop.stock_bands[1].item_level == 10 and shop.stock_bands[2].item_level == 20, "Starting City shop must expose ilvl 1, 10, and 20 bands."):
+	if not require(shop.stock_bands.size() == 3 and shop.stock_bands[0].item_level == 1 and shop.stock_bands[1].item_level == 5 and shop.stock_bands[2].item_level == 10, "Starting City shop must expose compressed ilvl 1, 5, and 10 bands."):
 		return
 	var ilvl1_shop_definitions: Array = shop.stock_bands[0].item_definitions
 	var ilvl10_shop_definitions: Array = shop.stock_bands[1].item_definitions
@@ -150,16 +150,16 @@ func run_test() -> void:
 			return
 	for definition in ilvl10_shop_definitions:
 		if definition.equipment_slot in SLOTS:
-			if not require(definition.resource_path.contains("ironwake_sentinel"), "The seven core ilvl 10 shop slots must use Ironwake Sentinel."):
+			if not require(definition.resource_path.contains("ironwake_sentinel"), "The seven core compressed ilvl 5 shop slots must use Ironwake Sentinel."):
 				return
 		else:
-			if not require(definition.resource_path.contains("ironward_vanguard/ironward_"), "The ilvl 10 accessory shop definitions must remain unchanged."):
+			if not require(definition.resource_path.contains("ironward_vanguard/ironward_"), "The middle-tier accessory shop definitions must remain unchanged apart from ilvl relabel."):
 				return
 	for definition in ilvl20_shop_definitions:
-		if not require(definition.resource_path.contains("ironward_vanguard/"), "The ilvl 20 shop band must use Ironward Vanguard core equipment and accessories."):
+		if not require(definition.resource_path.contains("ironward_vanguard/"), "The compressed ilvl 10 shop band must use Ironward Vanguard core equipment and accessories."):
 			return
 
-	var mob_counts := {1: 0, 10: 0, 20: 0}
+	var mob_counts := {1: 0, 5: 0, 10: 0}
 	for file_name in DirAccess.get_files_at("res://data/mobs"):
 		if not file_name.ends_with(".tres"):
 			continue
@@ -176,7 +176,7 @@ func run_test() -> void:
 		if not require(mob.equipment_drop_table == expected_source, "Mob %s must use its approved source-driven item tier." % mob.id):
 			return
 		mob_counts[expected_source.item_level] += 1
-	if not require(mob_counts == {1: 5, 10: 5, 20: 5}, "The 15 ordinary mobs must split evenly across ilvl 1/10/20 sources."):
+	if not require(mob_counts == {1: 8, 5: 7, 10: 7}, "The 22 ordinary mobs must use the approved 8/7/7 split across compressed ilvl 1/5/10 sources."):
 		return
 
 	var connected_definitions: Array = []
@@ -195,26 +195,26 @@ func run_test() -> void:
 	var item_generator = ItemGeneratorScript.new()
 	for quality in 3:
 		for ironward_definition in ironward_by_quality[quality]:
-			if not require(connected_definitions.has(ironward_definition), "Every Ironward Vanguard core definition must be connected to ilvl 20 drops or shop stock."):
+			if not require(connected_definitions.has(ironward_definition), "Every Ironward Vanguard core definition must be connected to compressed ilvl 10 drops or shop stock."):
 				return
-			var generated = item_generator.generate(ironward_definition, 20, NoRollRng.new())
-			if not require(generated != null and generated.item_level == 20 and generated.rarity == quality, "Every live Ironward Vanguard core definition must generate correctly at ilvl 20."):
+			var generated = item_generator.generate(ironward_definition, 10, NoRollRng.new())
+			if not require(generated != null and generated.item_level == 10 and generated.rarity == quality, "Every live Ironward Vanguard core definition must generate correctly at compressed ilvl 10."):
 				return
 			if ironward_definition.equipment_slot in ["weapon", "shield"]:
-				if not require(ironward_definition.icon_texture != null and ironward_definition.hero_overlay_texture == null, "The ilvl 20 sword/shield must keep their current icon placeholders and no overlays."):
+				if not require(ironward_definition.icon_texture != null and ironward_definition.hero_overlay_texture == null, "The compressed ilvl 10 sword/shield must keep their current icon placeholders and no overlays."):
 					return
 
 	var simulation = load("res://scripts/core/simulation.gd").new(2718)
-	var live_shop_counts := {1: 0, 10: 0, 20: 0}
+	var live_shop_counts := {1: 0, 5: 0, 10: 0}
 	var live_listings: Array = simulation.shop_system.get_listings()
 	if not require(live_listings.size() == 24, "The live Starting City shop must generate 24 listings across three bands."):
 		return
 	for listing in live_listings:
 		var listed_item = listing.get("item_instance")
-		if not require(listed_item != null and live_shop_counts.has(listed_item.item_level), "Every live shop listing must contain an ilvl 1, 10, or 20 ItemInstance."):
+		if not require(listed_item != null and live_shop_counts.has(listed_item.item_level), "Every live shop listing must contain an ilvl 1, 5, or 10 ItemInstance."):
 			return
 		live_shop_counts[listed_item.item_level] += 1
-	if not require(live_shop_counts == {1: 8, 10: 8, 20: 8}, "Each live shop band must generate exactly eight listings."):
+	if not require(live_shop_counts == {1: 8, 5: 8, 10: 8}, "Each live shop band must generate exactly eight listings."):
 		return
 	for definition in rustchain_by_quality[2]:
 		var result: Dictionary = simulation.receive_item_reward(definition, 1, 1)
@@ -238,5 +238,5 @@ func run_test() -> void:
 			return
 	main_ui.free()
 
-	print("PASS: Rustchain, Ironwake, and Ironward use live 5/5/5 mob tiers and ilvl 1/10/20 shop bands while the first dungeon remains ilvl 10.")
+	print("PASS: Rustchain, Ironwake, and Ironward preserve their strength across compressed ilvl 1/5/10 tiers; first dungeon now reports ilvl 5.")
 	quit()

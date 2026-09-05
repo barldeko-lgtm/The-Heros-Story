@@ -4,9 +4,9 @@ const MOB_DIRECTORY := "res://data/mobs"
 const RUSTCHAIN_SOURCE_PATH := "res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres"
 const ILVL10_SOURCE_PATH := "res://data/loot/initial_equipment_drop_table.tres"
 const ILVL20_SOURCE_PATH := "res://data/loot/ironward_vanguard_ilvl20_drop_table.tres"
-const ILVL1_MOB_IDS := ["goblin", "giant_rat", "wild_boar", "wolf", "bandit"]
-const ILVL10_MOB_IDS := ["giant_spider", "bear", "rabid_elk", "bandit_veteran", "swamp_crocodile"]
-const ILVL20_MOB_IDS := ["young_ogre", "cave_lizard", "forest_troll", "mountain_beast", "orc_raider"]
+const ILVL1_MOB_IDS := ["stray_dog", "goblin", "giant_rat", "wild_boar", "experienced_goblin", "wolf", "bandit", "wounded_troll"]
+const ILVL10_MOB_IDS := ["giant_spider", "bear", "mature_wolf", "rabid_elk", "bandit_veteran", "swamp_crocodile", "young_troll"]
+const ILVL20_MOB_IDS := ["young_ogre", "cave_lizard", "experienced_ogre", "forest_troll", "mountain_beast", "orc_raider", "orc_veteran"]
 const EXPECTED_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 
 class ScriptedRng:
@@ -41,7 +41,7 @@ func _init() -> void:
 		if file_name.ends_with(".tres"):
 			resource_files.append(file_name)
 	resource_files.sort()
-	assert(resource_files.size() == 15, "The current initial-city set must contain 15 mob definitions.")
+	assert(resource_files.size() == 22, "The current initial-city set must contain 22 mob definitions.")
 
 	var rustchain_count := 0
 	var ilvl10_count := 0
@@ -71,8 +71,8 @@ func _init() -> void:
 		var rare_shield = loot_generator.roll_mob_equipment(mob, ScriptedRng.new([0.0, 0.95], [6]))
 		assert(rare_shield != null and rare_shield.equipment_slot == EXPECTED_SLOTS[6] and rare_shield.quality == 2, "Every mob must keep the shared slot and 70/25/5 rarity rolls.")
 
-	assert(rustchain_count == 5 and ilvl10_count == 5 and ilvl20_count == 5, "Current mobs must split evenly across ilvl 1, 10, and 20 sources.")
-	print("PASS: Current mobs use the approved 5/5/5 split across ilvl 1, 10, and 20 drop tables.")
+	assert(rustchain_count == 8 and ilvl10_count == 7 and ilvl20_count == 7, "Current mobs must use the approved 8/7/7 split across compressed ilvl 1, 5, and 10 sources.")
+	print("PASS: Current mobs use the approved 8/7/7 split across compressed ilvl 1, 5, and 10 drop tables.")
 	quit()
 
 func fail(message: String) -> void:

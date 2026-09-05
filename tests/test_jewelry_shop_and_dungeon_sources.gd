@@ -37,10 +37,10 @@ func run_test() -> void:
 	var dungeon: Resource = load(DUNGEON_PATH)
 	var shop_band: Resource = load(SHOP_BAND_PATH)
 	if jewelry_source == null or dungeon == null or shop_band == null:
-		fail_test("Jewelry source, first dungeon, and ilvl 10 shop band must load.")
+		fail_test("Jewelry source, first dungeon, and compressed ilvl 5 shop band must load.")
 		return
 
-	assert(dungeon.completion_equipment_source == jewelry_source, "The first dungeon must use the shared twelve-slot ilvl 10 equipment source.")
+	assert(dungeon.completion_equipment_source == jewelry_source, "The first dungeon must use the shared twelve-slot compressed ilvl 5 equipment source.")
 	assert(dungeon.completion_equipment_source.rare_items.size() == 12, "Rare/Epic dungeon completion rewards must cover all twelve equipment slots.")
 
 	var loot_generator = load("res://scripts/loot/loot_generator.gd").new()
@@ -50,16 +50,16 @@ func run_test() -> void:
 	assert(int(rare_belt_roll["rarity"]) == 2 and rare_belt_roll["item_definition"].equipment_slot == "belt", "The dungeon's twelfth equal outcome must produce a Rare Belt.")
 	var epic_necklace_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon, ScriptedRng.new([0.249999], [7]))
 	assert(int(epic_necklace_roll["rarity"]) == 3 and epic_necklace_roll["item_definition"].equipment_slot == "necklace", "Dungeon jewelry must preserve the configured 25% Epic override.")
-	var epic_necklace = load("res://scripts/items/item_generator.gd").new().generate(epic_necklace_roll["item_definition"], 10, ScriptedRng.new([0.5], [0, 0, 0, 0]), 3)
+	var epic_necklace = load("res://scripts/items/item_generator.gd").new().generate(epic_necklace_roll["item_definition"], 5, ScriptedRng.new([0.5], [0, 0, 0, 0]), 3)
 	assert(epic_necklace != null and epic_necklace.affixes.size() == 3 and is_equal_approx(epic_necklace.get_stat_bonus("fire_resistance"), 20.0 + epic_necklace.affixes[0]["value"]), "Epic dungeon jewelry must combine its inherent Resistance with three generated affixes.")
 
-	assert(shop_band.item_level == 10 and shop_band.white_listings == 6 and shop_band.uncommon_listings == 2, "Adding Belt must not change the ilvl 10 shop's 6 White / 2 Green listing counts.")
+	assert(shop_band.item_level == 5 and shop_band.white_listings == 6 and shop_band.uncommon_listings == 2, "Adding Belt must not change the compressed ilvl 5 shop's 6 White / 2 Green listing counts.")
 	var definitions_by_rarity := {0: [], 1: []}
 	for definition in shop_band.item_definitions:
 		assert(definition != null and int(definition.quality) in [0, 1], "Normal shop pool must remain White/Green only.")
 		definitions_by_rarity[int(definition.quality)].append(definition)
 	for rarity in [0, 1]:
-		assert(definitions_by_rarity[rarity].size() == 12, "Each ilvl 10 shop rarity pool must expose all twelve equipment slots.")
+		assert(definitions_by_rarity[rarity].size() == 12, "Each ilvl 5 shop rarity pool must expose all twelve equipment slots.")
 		var slots: Array[String] = []
 		for definition in definitions_by_rarity[rarity]:
 			slots.append(definition.equipment_slot)
@@ -77,14 +77,14 @@ func run_test() -> void:
 		assert(seeded_shop.get_listings().size() == 24, "Three live item tiers must produce 24 total shop listings.")
 		for listing in seeded_shop.get_listings():
 			var item = listing.get("item_instance")
-			if item != null and item.item_level == 10 and item.definition.equipment_slot in ["necklace", "earrings", "ring_1", "ring_2"]:
+			if item != null and item.item_level == 5 and item.definition.equipment_slot in ["necklace", "earrings", "ring_1", "ring_2"]:
 				jewelry_listing_seen = true
-			if item != null and item.item_level == 10 and item.definition.equipment_slot == "belt":
+			if item != null and item.item_level == 5 and item.definition.equipment_slot == "belt":
 				belt_listing_seen = true
 		if jewelry_listing_seen and belt_listing_seen:
 			break
-	assert(jewelry_listing_seen, "Real deterministic shop generation must be able to place ilvl 10 jewelry into stock.")
-	assert(belt_listing_seen, "Real deterministic shop generation must be able to place the ilvl 10 Belt into stock.")
+	assert(jewelry_listing_seen, "Real deterministic shop generation must be able to place ilvl 5 jewelry into stock.")
+	assert(belt_listing_seen, "Real deterministic shop generation must be able to place the ilvl 5 Belt into stock.")
 
-	print("PASS: First-dungeon Rare/Epic rewards and the ilvl 10 city shop both use all twelve equipment slots.")
+	print("PASS: First-dungeon Rare/Epic rewards and the compressed ilvl 5 city shop both use all twelve equipment slots.")
 	quit()

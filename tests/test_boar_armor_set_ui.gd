@@ -32,7 +32,7 @@ func run_test() -> void:
 	for slot_id in EQUIPPED_ITEMS:
 		var definition: Resource = load(EQUIPPED_ITEMS[slot_id])
 		assert(definition != null, "Every equipped test definition must load.")
-		simulation.receive_item_reward(definition, 1, 20)
+		simulation.receive_item_reward(definition, 1, 10)
 
 	var main_ui = main_ui_script.new()
 	main_ui.simulation = simulation

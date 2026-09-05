@@ -10,7 +10,7 @@ func _init() -> void:
 	quit()
 
 func prepare_dungeon_at_entrance(simulation):
-	return prepare_specific_dungeon_at_entrance(simulation, "abandoned_iron_mines", "res://data/items/visual_families/ironward_vanguard/ironward_belt.tres", 10)
+	return prepare_specific_dungeon_at_entrance(simulation, "abandoned_iron_mines", "res://data/items/visual_families/ironward_vanguard/ironward_belt.tres", 5)
 
 func prepare_specific_dungeon_at_entrance(simulation, dungeon_id: String, belt_definition_path: String, potion_level: int):
 	var belt_definition = load(belt_definition_path)
@@ -83,7 +83,7 @@ func test_full_three_fights_and_boss_sequence() -> void:
 		assert(simulation.hero_state.loop_state == HeroState.DUNGEON_BETWEEN_FIGHTS, "Each ordinary victory must pause before the next fight.")
 		assert(simulation.dungeon_runner.ordinary_encounters_completed == ordinary_index + 1, "DungeonRunner must advance exactly one authored ordinary encounter per victory.")
 		if ordinary_index == 0:
-			# Force exactly one efficient ilvl 10 potion use to protect the new dungeon-healing integration.
+				# Force exactly one efficient compressed Level 5 potion use to protect dungeon-healing integration.
 			simulation.hero_state.current_hp = simulation.combat_stats.max_hp - 100.0
 		consume_between_fight_tick(simulation, ordinary_index == 0)
 
@@ -99,11 +99,11 @@ func test_full_three_fights_and_boss_sequence() -> void:
 	assert(final_owned_equipment.size() == starting_owned_equipment_count + 1, "Full dungeon completion must grant exactly one equipment item whether it equips or replaces the test Belt.")
 	var completion_item = null
 	for owned_item in final_owned_equipment:
-		if owned_item.item_level == 10 and (owned_item.rarity == 2 or owned_item.rarity == 3):
+		if owned_item.item_level == 5 and (owned_item.rarity == 2 or owned_item.rarity == 3):
 			completion_item = owned_item
 			break
 	assert(completion_item != null, "The guaranteed first-dungeon completion reward must exist among equipped or retained equipment.")
-	assert(completion_item.item_level == 10, "The guaranteed first-dungeon completion item must be ilvl 10.")
+	assert(completion_item.item_level == 5, "The guaranteed first-dungeon completion item must be compressed ilvl 5.")
 	assert(completion_item.rarity == 2 or completion_item.rarity == 3, "The guaranteed first-dungeon completion item must be Blue/Rare or Purple/Epic.")
 	assert(not dungeon.has_map_target(), "A completed dungeon must lose its active map target so its marker disappears immediately.")
 	assert(simulation.world_state.get_activity_id_at_hex(dungeon_hex).is_empty(), "A completed dungeon must release its reserved map hex.")
@@ -137,7 +137,7 @@ func test_blackfang_settlement_sequence() -> void:
 		simulation,
 		"blackfang_settlement",
 		"res://data/items/visual_families/ironward_vanguard/ironward_vanguard_belt.tres",
-		20
+			10
 	)
 	var starting_gold: int = simulation.hero_state.gold
 	var starting_owned_equipment_count: int = simulation.hero_state.inventory.get_items().size() + simulation.hero_state.equipment.get_all_items().size()
@@ -156,10 +156,10 @@ func test_blackfang_settlement_sequence() -> void:
 	assert(final_owned_equipment.size() == starting_owned_equipment_count + 1, "Blackfang Settlement completion must grant exactly one equipment item.")
 	var completion_item = null
 	for owned_item in final_owned_equipment:
-		if owned_item.item_level == 20 and (owned_item.rarity == 2 or owned_item.rarity == 3):
+		if owned_item.item_level == 10 and (owned_item.rarity == 2 or owned_item.rarity == 3):
 			completion_item = owned_item
 			break
-	assert(completion_item != null, "Blackfang Settlement completion reward must be an ilvl 20 Rare/Epic item.")
+	assert(completion_item != null, "Blackfang Settlement completion reward must be a compressed ilvl 10 Rare/Epic item.")
 	assert(not dungeon.has_map_target(), "Completed Blackfang Settlement must disappear from the active map immediately.")
 
 func test_dungeon_death_and_instant_resurrection() -> void:

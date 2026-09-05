@@ -8,6 +8,7 @@ var world_state
 var active_route: Array[Vector2i] = []
 var route_index: int = 0
 var destination: Vector2i = INVALID_DESTINATION
+var suspended_destination: Vector2i = INVALID_DESTINATION
 
 func _init(initial_hex_map, initial_world_state) -> void:
 	hex_map = initial_hex_map
@@ -31,6 +32,26 @@ func clear_travel() -> void:
 	active_route.clear()
 	route_index = 0
 	destination = INVALID_DESTINATION
+	suspended_destination = INVALID_DESTINATION
+
+func suspend_travel() -> bool:
+	if not is_travelling():
+		return false
+	suspended_destination = destination
+	active_route.clear()
+	route_index = 0
+	destination = INVALID_DESTINATION
+	return true
+
+func has_suspended_travel() -> bool:
+	return suspended_destination != INVALID_DESTINATION
+
+func resume_suspended_travel() -> bool:
+	if not has_suspended_travel():
+		return false
+	var target: Vector2i = suspended_destination
+	suspended_destination = INVALID_DESTINATION
+	return begin_travel(target)
 
 func has_route() -> bool:
 	return not active_route.is_empty()

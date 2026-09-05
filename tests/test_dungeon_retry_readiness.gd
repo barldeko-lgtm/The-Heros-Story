@@ -33,10 +33,10 @@ func test_failed_first_fight_blocks_immediate_retry_until_power_growth() -> void
 	var belt_definition = load("res://data/items/visual_families/ironward_vanguard/ironward_belt.tres")
 	var belt_rng := RandomNumberGenerator.new()
 	belt_rng.seed = 8302
-	var belt = simulation.item_generator.generate(belt_definition, 10, belt_rng)
+	var belt = simulation.item_generator.generate(belt_definition, 5, belt_rng)
 	simulation.hero_state.equipment.replace_item(belt)
-	simulation.hero_state.inventory.add_healing_potion(10)
-	simulation.hero_state.prepared_healing_potion_levels = [10]
+	simulation.hero_state.inventory.add_healing_potion(5)
+	simulation.hero_state.prepared_healing_potion_levels = [5]
 	simulation.refresh_combat_stats()
 	var dungeon = simulation.dungeon_system.get_all_dungeons()[0]
 	dungeon.discover("test")

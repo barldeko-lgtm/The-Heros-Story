@@ -34,10 +34,10 @@ func run_test() -> void:
 	assert(simulation_script != null and main_ui_script != null and common != null and uncommon != null and rare != null, "Quality visual dependencies must load.")
 
 	var simulation = simulation_script.new(1)
-	simulation.receive_item_reward(rare, 1, 20, ScriptedRng.new([0.5], [0, 0, 0]), 3)
-	simulation.receive_item_reward(rare, 2, 20, ScriptedRng.new([0.5], [0, 0]), 2)
-	simulation.receive_item_reward(uncommon, 3, 20, ScriptedRng.new([0.5], [0]))
-	simulation.receive_item_reward(common, 4, 20, ScriptedRng.new())
+	simulation.receive_item_reward(rare, 1, 10, ScriptedRng.new([0.5], [0, 0, 0]), 3)
+	simulation.receive_item_reward(rare, 2, 10, ScriptedRng.new([0.5], [0, 0]), 2)
+	simulation.receive_item_reward(uncommon, 3, 10, ScriptedRng.new([0.5], [0]))
+	simulation.receive_item_reward(common, 4, 10, ScriptedRng.new())
 	var main_ui = main_ui_script.new()
 	main_ui.simulation = simulation
 	get_root().add_child(main_ui)

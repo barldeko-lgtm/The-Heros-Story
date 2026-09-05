@@ -14,7 +14,7 @@ func run_test() -> void:
 
 func test_discovery_does_not_interrupt_current_quest() -> void:
 	var simulation = SimulationScript.new(8201, null)
-	simulation.advance_time(10.0)
+	assert(start_current_quest(simulation), "The test must find one suitable current board offer before Vision is tested.")
 	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_QUEST, "The autonomous hero must already be committed to the selected quest before Vision is tested.")
 	var active_quest_before = simulation.hero_state.active_quest
 	var travel_destination_before: Vector2i = simulation.travel_system.destination
@@ -65,7 +65,7 @@ func test_full_quest_to_dungeon_priority_flow() -> void:
 	var simulation = SimulationScript.new(8203, null)
 	equip_test_belt(simulation)
 	simulation.hero_state.gold = 100
-	simulation.advance_time(10.0)
+	assert(start_current_quest(simulation), "Full-flow test must find one suitable current board offer before dungeon discovery.")
 	assert(simulation.hero_state.loop_state == HeroState.TRAVEL_TO_QUEST, "Full-flow test must begin with a normal autonomous quest already selected.")
 	var original_quest = simulation.hero_state.active_quest
 	assert(original_quest != null, "Full-flow test requires a real selected quest.")
@@ -97,7 +97,16 @@ func equip_test_belt(simulation) -> void:
 	var belt_definition = load("res://data/items/visual_families/ironward_vanguard/ironward_belt.tres")
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 8200
-	var belt = simulation.item_generator.generate(belt_definition, 10, rng)
+	var belt = simulation.item_generator.generate(belt_definition, 5, rng)
 	simulation.hero_state.equipment.replace_item(belt)
 	simulation.refresh_combat_stats()
 	simulation.hero_state.current_hp = simulation.combat_stats.max_hp
+
+func start_current_quest(simulation) -> bool:
+	for _roll in 10:
+		simulation.advance_time(10.0)
+		if simulation.hero_state.loop_state == HeroState.TRAVEL_TO_QUEST and simulation.hero_state.active_quest != null:
+			return true
+		assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Failed current-board selection must leave the hero waiting for another opportunity.")
+		assert(simulation.quest_pool.refresh_board(simulation.world_clock.world_tick), "Test setup must be able to reroll the current board without changing quest execution rules.")
+	return false

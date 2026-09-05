@@ -9,12 +9,13 @@ equipment_drop_table = ExtResource("2_drop_table")
 id = "forest_troll"
 display_name = "Лесной тролль"
 category = 0
-max_hp = 2510.0
+max_hp = 2440.0
 attack = 132.0
 attack_speed = 0.80
-accuracy = 100.0
-crit_chance = 0.05
-crit_damage = 1.70
+accuracy = 95.0
+armor = 32.0
+crit_chance = 0.06
+crit_damage = 1.75
 
 experience_reward = 200
 gold_reward = 18

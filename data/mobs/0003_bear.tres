@@ -9,10 +9,12 @@ equipment_drop_table = ExtResource("2_drop_table")
 id = "bear"
 display_name = "Медведь"
 category = 1
-max_hp = 530.0
+max_hp = 485.0
 attack = 44.0
 attack_speed = 0.95
-accuracy = 100.0
+accuracy = 95.0
+dodge = 2.0
+armor = 12.0
 crit_chance = 0.1
 crit_damage = 1.9
 

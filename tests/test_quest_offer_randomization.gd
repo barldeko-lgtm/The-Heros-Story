@@ -23,15 +23,19 @@ func _init() -> void:
 	var second_offers: Array = second_pool.get_available_quests()
 	assert_offers_match(first_offers, second_offers)
 
-	var unchanged_offer = first_offers[1]
-	var previous_offer = first_offers[0]
-	first_pool.replace_offer(previous_offer)
-	var replaced_offers: Array = first_pool.get_available_quests()
-	assert(replaced_offers[0] != previous_offer, "Only the completed or cancelled offer must be regenerated.")
-	assert(replaced_offers[1] == unchanged_offer, "Unaccepted tavern offers must remain unchanged.")
-	assert_offer_is_valid(replaced_offers[0])
+	assert(not first_pool.advance_world_tick(49), "Quest board must not refresh before the shared 50-tick boundary.")
+	assert(first_pool.get_available_quests()[0] == first_offers[0] and first_pool.get_available_quests()[1] == first_offers[1], "All current offers must remain unchanged before the shared refresh boundary.")
+	assert(first_pool.advance_world_tick(50), "Quest board must refresh exactly on the shared 50-tick boundary.")
+	assert(second_pool.advance_world_tick(50), "Same seeded board must refresh on the same shared boundary.")
+	var refreshed_offers: Array = first_pool.get_available_quests()
+	var second_refreshed_offers: Array = second_pool.get_available_quests()
+	assert(refreshed_offers.size() == 2, "A two-template focused lower band must refill both available lower-band board slots.")
+	assert(refreshed_offers[0] != first_offers[0] and refreshed_offers[1] != first_offers[1], "Global board refresh must replace every runtime offer, not only one slot.")
+	for refreshed_offer in refreshed_offers:
+		assert_offer_is_valid(refreshed_offer)
+	assert_offers_match(refreshed_offers, second_refreshed_offers)
 
-	print("PASS: Seeded quest offers roll integer ranges and replace only the accepted quest.")
+	print("PASS: Seeded quest offers reroll together on the shared 50-world-tick board cycle.")
 	quit()
 
 func make_template(quest_id: String) -> Resource:

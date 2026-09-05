@@ -47,22 +47,22 @@ func run_test() -> void:
 		for slot in ACCESSORY_SLOTS:
 			var path := "%s/%s%s.tres" % [FAMILY_DIR, ACCESSORY_STEMS[slot], RARITY_SUFFIXES[quality]]
 			var definition: Resource = load(path)
-			if not require(definition != null, "Every ilvl 20 accessory definition must load: %s" % path):
+				if not require(definition != null, "Every compressed ilvl 10 accessory definition must load: %s" % path):
 				return
-			if not require(definition.equipment_slot == slot and definition.quality == quality, "Every ilvl 20 accessory must keep its mechanical slot and rarity."):
+				if not require(definition.equipment_slot == slot and definition.quality == quality, "Every compressed ilvl 10 accessory must keep its mechanical slot and rarity."):
 				return
-			if not require(definition.icon_texture != null and definition.icon_texture.get_size() == Vector2(300, 300), "Every ilvl 20 accessory must use its supplied 300x300 icon."):
+				if not require(definition.icon_texture != null and definition.icon_texture.get_size() == Vector2(300, 300), "Every compressed ilvl 10 accessory must use its supplied 300x300 icon."):
 				return
 			if not require(definition.hero_overlay_texture == null, "Jewelry and Belt must remain inventory/equipment-icon only."):
 				return
-			var generated = item_generator.generate(definition, 20, NoRollRng.new())
-			if not require(generated != null and generated.item_level == 20 and generated.rarity == quality, "Every new accessory must generate as an ilvl 20 item in its authored rarity."):
+				var generated = item_generator.generate(definition, 10, NoRollRng.new())
+				if not require(generated != null and generated.item_level == 10 and generated.rarity == quality, "Every new accessory must generate as compressed ilvl 10 in its authored rarity."):
 				return
 			if slot == "belt":
-				if not require(belt_rules.get_max_potion_level(generated) == 20, "The new ilvl 20 Belt must support ilvl 20 healing potions."):
+					if not require(belt_rules.get_max_potion_level(generated) == 10, "The compressed ilvl 10 Belt must support compressed Level 10 healing potions."):
 					return
 				var expected_healing := float(quality + 1) * 150.0
-				if not require(is_equal_approx(belt_rules.get_potential_healing(generated), expected_healing), "The new Belt must combine its rarity capacity with ilvl 20 potions."):
+					if not require(is_equal_approx(belt_rules.get_potential_healing(generated), expected_healing), "The new Belt must combine its rarity capacity with compressed Level 10 potions."):
 					return
 			accessories_by_quality[quality].append(definition)
 
@@ -76,18 +76,18 @@ func run_test() -> void:
 	for quality in 3:
 		var old_pool: Array = [ilvl10_source.common_items, ilvl10_source.uncommon_items, ilvl10_source.rare_items][quality]
 		var new_pool: Array = [ilvl20_source.common_items, ilvl20_source.uncommon_items, ilvl20_source.rare_items][quality]
-		if not require(old_pool.size() == 12, "The existing ilvl 10 twelve-slot source must remain unchanged."):
+		if not require(old_pool.size() == 12, "The compressed ilvl 5 twelve-slot source must remain unchanged apart from its label."):
 			return
-		if not require(new_pool.size() == 12, "Every ilvl 20 rarity pool must expand from seven core slots to all twelve equipment slots."):
+		if not require(new_pool.size() == 12, "Every compressed ilvl 10 rarity pool must cover all twelve equipment slots."):
 			return
-		if not require(new_pool.slice(7, 12) == accessories_by_quality[quality], "The ilvl 20 source must append necklace, earrings, both rings, and Belt in stable slot order."):
+		if not require(new_pool.slice(7, 12) == accessories_by_quality[quality], "The compressed ilvl 10 source must append necklace, earrings, both rings, and Belt in stable slot order."):
 			return
 
 	var shop: Resource = load(SHOP_PATH)
 	if not require(shop != null and shop.stock_bands.size() == 3, "Starting City must keep its three equipment bands."):
 		return
 	var ilvl20_band: Resource = shop.stock_bands[2]
-	if not require(ilvl20_band.item_level == 20 and ilvl20_band.white_listings == 6 and ilvl20_band.uncommon_listings == 2, "The ilvl 20 shop band must keep six White and two Green listings."):
+		if not require(ilvl20_band.item_level == 10 and ilvl20_band.white_listings == 6 and ilvl20_band.uncommon_listings == 2, "The compressed ilvl 10 shop band must keep six White and two Green listings."):
 		return
 	if not require(ilvl20_band.item_definitions.size() == 24, "The ilvl 20 shop candidate pool must contain all twelve slots in White and Green."):
 		return
@@ -100,18 +100,18 @@ func run_test() -> void:
 			return
 
 	var dungeon: Resource = load(DUNGEON_PATH)
-	if not require(dungeon != null and dungeon.completion_equipment_source == ilvl10_source and dungeon.completion_equipment_source.item_level == 10, "The first dungeon must remain on the unchanged ilvl 10 source."):
+		if not require(dungeon != null and dungeon.completion_equipment_source == ilvl10_source and dungeon.completion_equipment_source.item_level == 5, "The first dungeon must use the same source at compressed ilvl 5."):
 		return
 
 	var simulation = load("res://scripts/core/simulation.gd").new(2020)
-	var live_counts := {1: 0, 10: 0, 20: 0}
+	var live_counts := {1: 0, 5: 0, 10: 0}
 	for listing in simulation.shop_system.get_listings():
 		var item = listing.get("item_instance")
 		if not require(item != null and live_counts.has(item.item_level), "Every generated shop listing must contain a supported equipment level."):
 			return
 		live_counts[item.item_level] += 1
-	if not require(live_counts == {1: 8, 10: 8, 20: 8}, "The expanded candidate pool must preserve exactly eight live listings per shop band."):
+	if not require(live_counts == {1: 8, 5: 8, 10: 8}, "The compressed candidate pool must preserve exactly eight live listings per shop band."):
 		return
 
-	print("PASS: ilvl 20 jewelry and Belt use supplied icons, join drops/shop, and the Belt supports ilvl 20 potions while ilvl 10/dungeon stay unchanged.")
+	print("PASS: Former ilvl 20 jewelry/Belt preserve stats at compressed ilvl 10, with compatible compressed potion tiers.")
 	quit()

@@ -35,7 +35,7 @@ func _init() -> void:
 	var local_rng := RandomNumberGenerator.new()
 	local_rng.seed = 99
 	var old_item = replacement_simulation.item_generator.generate(old_chest_definition, 1, local_rng)
-	var replacement_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 20, local_rng)
+	var replacement_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 10, local_rng)
 	replacement_simulation.hero_state.equipment.replace_item(old_item)
 	replacement_simulation.refresh_combat_stats()
 	replacement_simulation.hero_state.current_hp = replacement_simulation.combat_stats.max_hp
@@ -53,7 +53,7 @@ func _init() -> void:
 	assert(not replacement_simulation.hero_state.inventory.get_items().has(old_item), "Immediately sold replaced gear must not enter Inventory.")
 	assert(replacement_simulation.debug_log.get_text().contains("Старый предмет") and replacement_simulation.debug_log.get_text().contains("сразу продан"), "Replacement purchase log must explain the immediate sale of old equipment.")
 
-	var equal_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 20, local_rng)
+	var equal_item = replacement_simulation.item_generator.generate(replacement_chest_definition, 10, local_rng)
 	replacement_simulation.shop_system.listings = [{"item_instance": equal_item}]
 	replacement_simulation.hero_state.gold = 100000
 	assert(replacement_simulation.spending_evaluator.select_best_equipment_purchase(replacement_simulation.hero_state, replacement_simulation.shop_system.get_listings()).is_empty(), "A technically equal item must not pass the 20% shop-upgrade threshold.")
@@ -73,7 +73,7 @@ func test_shop_ring_purchase_targets_weaker_slot(simulation_script: Script) -> v
 
 	var strong_ring = ItemInstanceScript.new(
 		strong_ring_definition,
-		10,
+		5,
 		1,
 		{"fire_resistance": 20.0},
 		[{"stat_id": "health", "value": 50.0}],
@@ -82,7 +82,7 @@ func test_shop_ring_purchase_targets_weaker_slot(simulation_script: Script) -> v
 	)
 	var weak_ring = ItemInstanceScript.new(
 		weak_ring_definition,
-		10,
+		5,
 		0,
 		{"cold_resistance": 20.0},
 		[],
@@ -91,7 +91,7 @@ func test_shop_ring_purchase_targets_weaker_slot(simulation_script: Script) -> v
 	)
 	var candidate_ring = ItemInstanceScript.new(
 		candidate_definition,
-		10,
+		5,
 		1,
 		{"lightning_resistance": 20.0},
 		[{"stat_id": "health", "value": 35.0}],

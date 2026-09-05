@@ -9,10 +9,11 @@ equipment_drop_table = ExtResource("2_drop_table")
 id = "wolf"
 display_name = "Волк"
 category = 1
-max_hp = 220.0
-attack = 25.0
-attack_speed = 1.2
+max_hp = 235.0
+attack = 26.0
+attack_speed = 1.15
 accuracy = 100.0
+dodge = 12.0
 crit_chance = 0.15
 crit_damage = 1.6
 

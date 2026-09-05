@@ -1,0 +1,207 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0006_bandit.tres" id="4_bandit"]
+[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl20_drop_table.tres" id="5_ilvl10_source"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "go_direct"
+driver_attribute = "strength"
+next_stage_id = "str_approach"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "circle_around"
+driver_attribute = "dexterity"
+next_stage_id = "dex_bypass"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "inspect_first"
+driver_attribute = "wisdom"
+next_stage_id = "wis_tracks"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На дороге героя останавливает взволнованный мужчина. Он уверяет, что неподалёку у старой вырубки перевернулась телега, а его брат оказался прижат под ней, и просит поспешить на помощь."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_approach"]
+script = ExtResource("2_stage")
+id = "str_approach"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой не тратит время на обходы и идёт прямо к вырубке. Вместо перевёрнутой телеги его встречает вооружённый разбойник, а проводник отходит назад и требует оставить кошель."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У старой вырубки героя попытались заманить в засаду под предлогом разбитой повозки. Он пошёл прямо, встретил разбойника лицом к лицу и после схватки освободил пленённого торговца. Вернув своё имущество, торговец отблагодарил героя двадцатью золотыми."
+outcome_id = "direct_rescue"
+gold_reward = 20
+
+[sub_resource type="Resource" id="Stage_wis_tracks"]
+script = ExtResource("2_stage")
+id = "wis_tracks"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Прежде чем идти за незнакомцем, герой осматривает дорогу. Свежих следов телеги нет, зато несколько пар человеческих следов регулярно уходят к вырубке и возвращаются обратно."
+next_stage_id = "wis_bypass"
+
+[sub_resource type="Resource" id="Stage_wis_bypass"]
+script = ExtResource("2_stage")
+id = "wis_bypass"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой делает широкий обход через лес, чтобы не выйти прямо к предполагаемой ловушке."
+next_stage_id = "wis_observe"
+
+[sub_resource type="Resource" id="Stage_wis_observe"]
+script = ExtResource("2_stage")
+id = "wis_observe"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "С безопасного места герой наблюдает за вырубкой и видит двух мужчин, ожидающих у дороги, а в стороне — небольшой лагерь со связанным пленником. Он ждёт, пока разбойники уйдут к месту засады."
+next_stage_id = "wis_rescue"
+
+[sub_resource type="Resource" id="Stage_wis_rescue"]
+script = ExtResource("2_stage")
+id = "wis_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой проникает в опустевший лагерь, освобождает торговца и помогает ему собрать почти всё украденное имущество. Они уходят другим путём, не вступая в бой."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Рассказ о пострадавшем брате не совпал со следами на дороге. Герой потратил время на обход и наблюдение, дождался, пока разбойники покинут лагерь, и освободил пленённого торговца без боя. Почти всё имущество удалось вернуть, и торговец отблагодарил героя тридцатью золотыми."
+outcome_id = "careful_rescue"
+gold_reward = 30
+
+[sub_resource type="Resource" id="Stage_dex_bypass"]
+script = ExtResource("2_stage")
+id = "dex_bypass"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой делает вид, что следует за проводником, затем тихо уходит с дороги и через лес обходит место засады с тыла."
+next_stage_id = "dex_rescue"
+
+[sub_resource type="Resource" id="Stage_dex_rescue"]
+script = ExtResource("2_stage")
+id = "dex_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "С тыла герой первым выходит к лагерю, находит связанного торговца и освобождает его. Вскоре становится слышно, что разбойники возвращаются."
+next_stage_id = "dex_trait_check"
+
+[sub_resource type="Resource" id="Stage_dex_trait_check"]
+script = ExtResource("2_stage")
+id = "dex_trait_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "brave"
+trait_present_stage_id = "dex_brave_prepare"
+trait_absent_stage_id = "dex_standard_end"
+
+[sub_resource type="Resource" id="Stage_dex_standard_end"]
+script = ExtResource("2_stage")
+id = "dex_standard_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Вместо того чтобы явиться в засаду с парадного входа, герой обошёл вырубку через лес и первым добрался до лагеря. Там он освободил связанного торговца и ушёл вместе с ним до возвращения разбойников. Торговец успел вернуть лишь часть денег и отдал герою пятнадцать золотых."
+outcome_id = "quiet_rescue"
+gold_reward = 15
+
+[sub_resource type="Resource" id="Stage_dex_brave_prepare"]
+script = ExtResource("2_stage")
+id = "dex_brave_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Сформировавшаяся смелость не даёт герою просто уйти. Он отправляет торговца в безопасное место, остаётся у лагеря и готовится встретить возвращающегося разбойника."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "dex_brave_end"
+
+[sub_resource type="Resource" id="Stage_dex_brave_end"]
+script = ExtResource("2_stage")
+id = "dex_brave_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Обойдя засаду через лес, герой освободил связанного торговца, но на этом останавливаться не стал. Он остался у лагеря и встретил вернувшегося разбойника в бою. После победы торговец отблагодарил героя пятнадцатью золотыми и позволил забрать одну из вещей, прежнего владельца которой уже нельзя было установить."
+outcome_id = "cleared_camp"
+gold_reward = 15
+equipment_reward_source = ExtResource("5_ilvl10_source")
+equipment_rarity_override = 1
+
+[resource]
+script = ExtResource("1_event")
+id = "old_clearing_ambush"
+display_name = "У старой вырубки"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 3
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_approach"), SubResource("Stage_str_combat"), SubResource("Stage_str_end"), SubResource("Stage_wis_tracks"), SubResource("Stage_wis_bypass"), SubResource("Stage_wis_observe"), SubResource("Stage_wis_rescue"), SubResource("Stage_wis_end"), SubResource("Stage_dex_bypass"), SubResource("Stage_dex_rescue"), SubResource("Stage_dex_trait_check"), SubResource("Stage_dex_standard_end"), SubResource("Stage_dex_brave_prepare"), SubResource("Stage_dex_combat"), SubResource("Stage_dex_brave_end")])

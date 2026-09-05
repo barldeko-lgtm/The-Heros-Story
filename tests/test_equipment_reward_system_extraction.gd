@@ -22,7 +22,7 @@ func _init() -> void:
 
 	var compatibility_simulation = simulation_script.new(1)
 	var previous_max_hp: float = compatibility_simulation.combat_stats.max_hp
-	var compatibility_result: Dictionary = compatibility_simulation.receive_item_reward(common_chest, 7, 10)
+	var compatibility_result: Dictionary = compatibility_simulation.receive_item_reward(common_chest, 7, 5)
 	assert(compatibility_result["equipped"], "Simulation.receive_item_reward must remain a compatible public wrapper.")
 	assert(compatibility_simulation.hero_state.equipment.get_item("chest") == compatibility_result["item_instance"], "The compatibility wrapper must route through the extracted reward system.")
 	assert(compatibility_simulation.combat_stats.max_hp >= previous_max_hp, "The compatibility wrapper must keep resolved combat stats synchronized.")

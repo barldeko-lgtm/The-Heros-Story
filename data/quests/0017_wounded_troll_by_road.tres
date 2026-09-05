@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/0017_wounded_troll.tres" id="2_mob"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "wounded_troll_by_road"
+strength_band = "lower"
+display_name = "Хромой тролль у дороги"
+mob_definition = ExtResource("2_mob")
+mob_count_min = 1
+mob_count_max = 2
+distance_km_min = 3
+distance_km_max = 5
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+gold_per_mob_min = 30
+gold_per_mob_max = 34

@@ -27,23 +27,25 @@ func _init() -> void:
 
 	var turned_in_offer = initial_offers[0]
 	var untouched_offer = initial_offers[1]
+	var selected_event = QuestEventScript.new(QuestEventScript.HERO_SELECTED_QUEST, "Алексей", turned_in_offer)
+	quest_pool.handle_quest_event(selected_event, "TRAVEL_TO_QUEST", 10)
+	assert(quest_pool.get_available_quests() == [untouched_offer], "Accepting a quest must remove it from the active board without filling the vacancy immediately.")
+
 	var turn_in_event = QuestEventScript.new(QuestEventScript.HERO_TURNED_IN_QUEST, "Алексей", turned_in_offer)
-	quest_pool.handle_quest_event(turn_in_event, "VISITING_MARKET")
-	var after_turn_in: Array = quest_pool.get_available_quests()
-	assert(after_turn_in[0] != turned_in_offer, "QuestPool must immediately replace a turned-in offer.")
-	assert(after_turn_in[1] == untouched_offer, "QuestPool must preserve untouched offers after turn-in.")
+	quest_pool.handle_quest_event(turn_in_event, "VISITING_MARKET", 20)
+	assert(quest_pool.get_template_cooldown_until_tick(turned_in_offer.id) == 120, "Completed template must stay unavailable for 100 world ticks counted from turn-in completion.")
+	assert(quest_pool.get_available_quests() == [untouched_offer], "Turning in a quest must not refill its board vacancy immediately.")
 
-	var cancelled_offer = after_turn_in[0]
-	var death_event = QuestEventScript.new(QuestEventScript.HERO_DIED, "Алексей", cancelled_offer)
-	quest_pool.handle_quest_event(death_event, "DEAD_RESPAWNING")
-	assert(quest_pool.get_available_quests()[0] == cancelled_offer, "QuestPool must retain a cancelled offer during resurrection.")
+	assert(quest_pool.advance_world_tick(50), "The first shared board rotation must happen at tick 50.")
+	var tick_50_offers: Array = quest_pool.get_available_quests()
+	assert(tick_50_offers.size() == 1 and tick_50_offers[0].id != turned_in_offer.id, "Completed template must be excluded from board rolls while its 100-tick cooldown is active.")
+	assert(quest_pool.advance_world_tick(100), "The second shared board rotation must happen at tick 100 while cooldown is still active.")
+	assert(quest_pool.get_eligible_templates_for_band("lower", 119).size() == 1, "Completed template must still be unavailable one tick before cooldown expiry.")
+	assert(quest_pool.get_eligible_templates_for_band("lower", 120).size() == 2, "Completed template must become eligible again exactly when its 100-tick cooldown expires.")
+	assert(quest_pool.advance_world_tick(150), "The first shared board rotation after cooldown expiry must happen at tick 150.")
+	var tick_150_offers: Array = quest_pool.get_available_quests()
+	assert(tick_150_offers.size() == 2, "Both focused templates must be able to fill the lower band again after cooldown expiry.")
+	assert(tick_150_offers.any(func(offer): return offer.id == turned_in_offer.id), "Completed template must be allowed to return on a later board roll after cooldown expiry.")
 
-	var recovery_event = QuestEventScript.new(QuestEventScript.HERO_RECOVERING_IN_CITY, "Алексей", cancelled_offer)
-	quest_pool.handle_quest_event(recovery_event, "RECOVERING_IN_CITY")
-	assert(quest_pool.get_available_quests()[0] == cancelled_offer, "QuestPool must wait until city recovery reaches quest choice.")
-	quest_pool.handle_quest_event(recovery_event, "CHOOSING_QUEST")
-	assert(quest_pool.get_available_quests()[0] != cancelled_offer, "QuestPool must replace the cancelled offer when recovery returns to quest choice.")
-	assert(quest_pool.get_available_quests()[1] == untouched_offer, "Delayed cancellation refresh must still preserve untouched offers.")
-
-	print("PASS: QuestPool owns immediate and delayed quest-offer replacement lifecycle.")
+	print("PASS: QuestPool owns accepted-offer vacancies, global 50-tick rotation, and 100-tick completion cooldowns.")
 	quit()

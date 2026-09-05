@@ -15,8 +15,8 @@ func run_test() -> void:
 	var quest_templates: Array[Resource] = simulation.quest_pool.quest_templates
 	var quest_offers: Array = simulation.quest_pool.get_available_quests()
 
-	assert(quest_templates.size() == 15, "Current Starting City content must expose exactly 15 quest templates for placement validation.")
-	assert(quest_offers.size() == quest_templates.size(), "Every current Starting City quest template must produce one active board offer.")
+	assert(quest_templates.size() == 22, "Current Starting City content must expose exactly 22 quest templates for placement validation.")
+	assert(quest_offers.size() == 9, "Starting City must place only the nine current 3/3/3 board offers, not all twenty-two templates.")
 	assert(world_state.hero_position == start, "Placing quest offers on the map must not move the hero from Starting City.")
 
 	var placed_centers: Dictionary = {}
@@ -61,12 +61,15 @@ func run_test() -> void:
 	for probe_seed in [1, 2, 7, 17, 101, 999, 4242, 12345]:
 		var probe_simulation = SimulationScript.new(probe_seed, null)
 		var probe_offers: Array = probe_simulation.quest_pool.get_available_quests()
-		assert(probe_offers.size() == 15, "Every sampled simulation seed must keep all current Starting City board offers.")
+		assert(probe_offers.size() == 9, "Every sampled simulation seed must produce the full nine-offer Starting City board.")
+		var probe_band_counts := {"lower": 0, "middle": 0, "higher": 0}
 		var probe_targets: Dictionary = {}
 		for probe_offer in probe_offers:
 			assert(probe_offer.has_map_target(), "Every sampled simulation seed must place every board offer on the map.")
 			assert(not probe_targets.has(probe_offer.target_hex), "Every sampled simulation seed must keep quest targets unique.")
+			probe_band_counts[str(probe_offer.template.strength_band)] += 1
 			probe_targets[probe_offer.target_hex] = true
+		assert(probe_band_counts == {"lower": 3, "middle": 3, "higher": 3}, "Every sampled board must preserve the 3/3/3 strength-band composition.")
 
-	print("PASS: All 15 Starting City board offers own valid unique deterministic target hexes across sampled seeds without moving the hero.")
+	print("PASS: Nine rotating Starting City board offers own valid unique deterministic target hexes with 3/3/3 composition.")
 	quit()

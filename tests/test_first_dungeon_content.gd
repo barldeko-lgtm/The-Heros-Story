@@ -39,7 +39,7 @@ func _init() -> void:
 
 	assert(dungeon.completion_gold_reward == 700, "Abandoned Iron Mines completion must grant exactly 700 Gold.")
 	assert(dungeon.completion_equipment_source != null, "Abandoned Iron Mines must define one completion equipment source.")
-	assert(dungeon.completion_equipment_source.item_level == 10, "The first dungeon completion item must be ilvl 10.")
+	assert(dungeon.completion_equipment_source.item_level == 5, "The first dungeon completion item must be ilvl 5.")
 	assert(dungeon.completion_equipment_source.rare_items.size() == 12, "The first dungeon completion pool must cover all twelve current equipment slots including Belt.")
 	assert(is_equal_approx(dungeon.completion_epic_chance, 0.25), "The first dungeon completion reward must use 75% Rare / 25% Epic rarity odds.")
 
@@ -62,8 +62,8 @@ func _init() -> void:
 	assert(second_dungeon.boss_mob_definition.experience_reward == 320, "Goblin King must grant 320 normal combat XP.")
 	assert(second_dungeon.boss_mob_definition.gold_reward == 0 and second_dungeon.boss_mob_definition.equipment_drop_table == null, "Goblin King combat must not grant per-mob Gold or ordinary equipment drops before the completion reward.")
 	assert(second_dungeon.completion_gold_reward == 2000, "Blackfang Settlement completion must grant exactly 2000 Gold.")
-	assert(second_dungeon.completion_equipment_source != null and second_dungeon.completion_equipment_source.item_level == 20, "Blackfang Settlement completion item must be ilvl 20.")
-	assert(second_dungeon.completion_equipment_source.rare_items.size() == 12, "Blackfang Settlement completion pool must cover all twelve current ilvl 20 equipment slots.")
+	assert(second_dungeon.completion_equipment_source != null and second_dungeon.completion_equipment_source.item_level == 10, "Blackfang Settlement completion item must be ilvl 10.")
+	assert(second_dungeon.completion_equipment_source.rare_items.size() == 12, "Blackfang Settlement completion pool must cover all twelve current ilvl 10 equipment slots.")
 	assert(is_equal_approx(second_dungeon.completion_epic_chance, 0.25), "Blackfang Settlement completion reward must use 75% Rare / 25% Epic rarity odds.")
 
 	print("PASS: DungeonSystem auto-loads both Starting Region dungeons with their approved mobs, bosses, Power/XP tuning, placement, and Rare/Epic completion rewards.")

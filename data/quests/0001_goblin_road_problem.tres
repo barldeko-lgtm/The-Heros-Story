@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "goblin_road_problem"
+strength_band = "lower"
 display_name = "Проблема у восточной дороги"
 mob_definition = ExtResource("2_goblin")
 mob_count_min = 4

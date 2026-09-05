@@ -146,3 +146,15 @@ func complete_fight(hero_state, combat_stats: CombatStats, combat_result):
 	var experience_reward: int = get_current_mob_experience_reward()
 	hero_state.loop_state = HeroState.RECOVERING_AFTER_FIGHT
 	return QuestEventScript.new(QuestEventScript.HERO_WON_FIGHT, hero_state.hero_name, quest_definition, 0, 0, combat_result, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp, experience_reward)
+
+func cancel_for_external_failure(hero_state):
+	if hero_state == null:
+		return null
+	var cancelled_quest = hero_state.active_quest
+	completed_mob_count = 0
+	travel_ticks_remaining = 0
+	map_travel_active = false
+	if travel_system != null:
+		travel_system.clear_travel()
+	hero_state.active_quest = null
+	return cancelled_quest

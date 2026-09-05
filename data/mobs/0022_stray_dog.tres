@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+[ext_resource type="Resource" path="res://data/loot/ironwake_sentinel_ilvl1_drop_table.tres" id="2_drop_table"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+equipment_drop_table = ExtResource("2_drop_table")
+id = "stray_dog"
+display_name = "Одичавшая собака"
+category = 1
+max_hp = 100.0
+attack = 14.0
+attack_speed = 1.05
+accuracy = 90.0
+dodge = 4.0
+crit_chance = 0.04
+crit_damage = 1.50
+experience_reward = 40
+gold_reward = 2

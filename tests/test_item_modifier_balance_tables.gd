@@ -10,7 +10,7 @@ func _init() -> void:
 	var base_stats: Resource = load(BASE_STAT_TABLE_PATH)
 	assert(budget_table != null and stat_costs != null and base_stats != null, "Current item balance resources must load.")
 
-	var expected_green_budgets := {1: 60.0, 10: 78.0, 20: 101.0, 30: 132.0, 40: 171.0, 50: 223.0, 60: 290.0}
+	var expected_green_budgets := {1: 60.0, 5: 78.0, 10: 101.0, 15: 132.0, 20: 171.0, 25: 223.0, 30: 290.0}
 	for item_level in expected_green_budgets:
 		assert(is_equal_approx(budget_table.get_green_affix_budget(item_level), expected_green_budgets[item_level]), "Green affix budget must match the current Scope.")
 	assert(is_equal_approx(budget_table.get_per_affix_multiplier(1), 1.0), "Uncommon per-affix multiplier must be 1.0.")
@@ -34,10 +34,11 @@ func _init() -> void:
 	for stat_id in expected_costs:
 		assert(is_equal_approx(stat_costs.get_stat_cost(stat_id), expected_costs[stat_id]), "Modifier cost must match the current Scope for %s." % stat_id)
 
-	assert(is_equal_approx(base_stats.get_armor(10), 7.0), "ilvl 10 armor base Armor must be 7.")
-	assert(is_equal_approx(base_stats.get_sword_damage(10), 13.0), "ilvl 10 sword base Damage must be 13.")
-	assert(is_equal_approx(base_stats.get_sword_attack_speed_bonus(10), 0.10), "Sword base Attack Speed bonus must remain +0.10.")
-	assert(is_equal_approx(base_stats.get_shield_block(10), 13.0), "ilvl 10 shield base Block must be 13.")
+	assert(is_equal_approx(base_stats.get_armor(5), 7.0), "ilvl 5 armor base Armor must preserve the former ilvl 10 value of 7.")
+	assert(is_equal_approx(base_stats.get_sword_damage(5), 13.0), "ilvl 5 sword base Damage must preserve the former ilvl 10 value of 13.")
+	assert(is_equal_approx(base_stats.get_sword_attack_speed_bonus(5), 0.10), "Sword base Attack Speed bonus must remain +0.10.")
+	assert(is_equal_approx(base_stats.get_shield_block(5), 13.0), "ilvl 5 shield base Block must preserve the former ilvl 10 value of 13.")
+	assert(is_equal_approx(base_stats.get_armor(10), 10.0), "ilvl 10 armor must preserve the former ilvl 20 value of 10.")
 
 	print("PASS: Item modifier budgets, base stats, and stat costs match the current Prototype 0.2 Scope.")
 	quit()

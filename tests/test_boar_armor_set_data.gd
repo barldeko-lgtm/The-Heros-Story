@@ -36,16 +36,16 @@ func _init() -> void:
 		starting_attack -= starting_item.get_stat_bonus("attack")
 		starting_armor -= starting_item.get_stat_bonus("armor")
 	var rare_chest: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate_rare.tres")
-	simulation.receive_item_reward(rare_chest, 1, 20)
+	simulation.receive_item_reward(rare_chest, 1, 10)
 	for slot_id in rare_definitions:
-		simulation.receive_item_reward(rare_definitions[slot_id], 2, 20)
+		simulation.receive_item_reward(rare_definitions[slot_id], 2, 10)
 	for slot_id in ["chest", "helmet", "gloves", "pants", "boots"]:
 		assert(simulation.hero_state.equipment.get_item(slot_id) != null, "Full Boar armor set must occupy all five armor slots.")
 	var expected_hp: float = starting_hp
 	var expected_attack: float = starting_attack
 	var expected_armor: float = starting_armor
 	for item_instance in simulation.hero_state.equipment.get_all_items():
-		assert(item_instance.item_level == 20 and item_instance.affixes.size() == 2, "Every current Rare Ironward armor piece must be generated at ilvl 20.")
+		assert(item_instance.item_level == 10 and item_instance.affixes.size() == 2, "Every current Rare Ironward armor piece must be generated at compressed ilvl 10.")
 		expected_hp += item_instance.get_stat_bonus("max_hp")
 		expected_attack += item_instance.get_stat_bonus("attack")
 		expected_armor += item_instance.get_stat_bonus("armor")
@@ -53,5 +53,5 @@ func _init() -> void:
 	assert(is_equal_approx(simulation.base_combat_stats.attack, expected_attack), "Generated armor Damage must resolve through Equipment.")
 	assert(is_equal_approx(simulation.base_combat_stats.armor, expected_armor), "Generated inherent and affix Armor must resolve through Equipment.")
 
-	print("PASS: Four Boar armor families keep their visuals and generate ilvl 20 instance stats.")
+	print("PASS: Four Boar armor families keep their visuals and former ilvl 20 stats at compressed ilvl 10.")
 	quit()

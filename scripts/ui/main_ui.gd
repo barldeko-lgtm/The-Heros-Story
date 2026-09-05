@@ -8,19 +8,31 @@ const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
 const HERO_TEXT_CONTENT_WIDTH: float = 288.0
+const PRIMARY_ATTRIBUTE_DISPLAY_NAMES := {
+	"strength": "Сила",
+	"dexterity": "Ловкость",
+	"intelligence": "Интеллект",
+	"constitution": "Телосложение",
+	"wisdom": "Мудрость",
+}
 var simulation_seed: int = int(Time.get_unix_time_from_system())
-var simulation = SimulationScript.new(simulation_seed, null)
+var simulation = SimulationScript.new(simulation_seed, null, [], true)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_details_label: Label
+var pending_attribute_indicator: Label
 var opponent_details_label: Label
 var combat_statistics_label: Label
+var attribute_points_label: Label
+var attribute_buttons: Dictionary = {}
 var speed_buttons: Dictionary = {}
 var god_panel: PanelContainer
 var narrative_panel: TabContainer
 var main_screen: Control
+var hero_screen: Control
 var inventory_screen: Control
 var map_screen: Control
+var hero_button: Button
 var inventory_button: Button
 var map_button: Button
 var inventory_close_button: Button
@@ -32,12 +44,16 @@ func _ready() -> void:
 	create_inventory_close_button()
 	create_speed_controls()
 	create_hero_panel()
+	create_pending_attribute_indicator()
+	create_attribute_allocation_panel()
+	create_decorative_personality_panel()
 	create_opponent_panel()
 	create_combat_statistics_panel()
 	create_god_panel()
 	create_tick_indicator()
 	create_narrative_panel()
 	update_hero_panel()
+	update_attribute_allocation_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
 	god_panel.refresh()
@@ -48,6 +64,8 @@ func _process(delta: float) -> void:
 	time_progress_bar.value = simulation.world_clock.tick_progress * 100.0
 	tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
 	update_hero_panel()
+	update_pending_attribute_indicator()
+	update_attribute_allocation_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
 	god_panel.refresh()
@@ -63,6 +81,12 @@ func create_screen_layers() -> void:
 	main_screen.name = "MainScreen"
 	main_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(main_screen)
+
+	hero_screen = Control.new()
+	hero_screen.name = "HeroScreen"
+	hero_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hero_screen.visible = false
+	add_child(hero_screen)
 
 	inventory_screen = InventoryScreenScene.instantiate()
 	inventory_screen.setup(simulation)
@@ -157,7 +181,11 @@ func create_top_menu() -> void:
 		button.add_theme_stylebox_override("pressed", create_menu_button_style(Color("202630"), Color("d8dee8"), 1))
 		button.add_theme_stylebox_override("focus", create_menu_button_style(Color("414b5c"), Color("d8dee8"), 3))
 		top_menu.add_child(button)
-		if button_text == "ИНВЕНТАРЬ":
+		if button_text == "ГЕРОЙ":
+			hero_button = button
+			hero_button.tooltip_text = "Открыть развитие героя"
+			hero_button.pressed.connect(on_hero_button_pressed)
+		elif button_text == "ИНВЕНТАРЬ":
 			inventory_button = button
 			inventory_button.tooltip_text = "Открыть инвентарь"
 			inventory_button.pressed.connect(on_inventory_button_pressed)
@@ -188,6 +216,9 @@ func create_inventory_close_button() -> void:
 func on_inventory_button_pressed() -> void:
 	set_inventory_screen_open(not inventory_screen.visible)
 
+func on_hero_button_pressed() -> void:
+	set_active_screen("main" if hero_screen.visible else "hero")
+
 func on_map_button_pressed() -> void:
 	set_map_screen_open(not map_screen.visible)
 
@@ -204,16 +235,20 @@ func set_map_screen_open(is_open: bool) -> void:
 	set_active_screen("map" if is_open else "main")
 
 func set_active_screen(screen_id: String) -> void:
+	var hero_is_open: bool = screen_id == "hero"
 	var inventory_is_open: bool = screen_id == "inventory"
 	var map_is_open: bool = screen_id == "map"
-	main_screen.visible = not inventory_is_open and not map_is_open
+	main_screen.visible = not hero_is_open and not inventory_is_open and not map_is_open
+	hero_screen.visible = hero_is_open
 	inventory_screen.visible = inventory_is_open
 	map_screen.visible = map_is_open
+	hero_button.text = "НАЗАД" if hero_is_open else "ГЕРОЙ"
+	hero_button.tooltip_text = "Вернуться на главный экран" if hero_is_open else "Открыть развитие героя"
 	inventory_button.text = "НАЗАД" if inventory_is_open else "ИНВЕНТАРЬ"
 	inventory_button.tooltip_text = "Вернуться на главный экран" if inventory_is_open else "Открыть инвентарь"
 	map_button.text = "НАЗАД" if map_is_open else "КАРТА"
 	map_button.tooltip_text = "Вернуться на главный экран" if map_is_open else "Открыть карту"
-	inventory_close_button.visible = inventory_is_open or map_is_open
+	inventory_close_button.visible = hero_is_open or inventory_is_open or map_is_open
 
 func create_speed_controls() -> void:
 	var speed_controls := HBoxContainer.new()
@@ -251,6 +286,169 @@ func create_hero_panel() -> void:
 	hero_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hero_details_label.add_theme_font_size_override("font_size", 14)
 	panel.add_child(hero_details_label)
+
+func create_pending_attribute_indicator() -> void:
+	pending_attribute_indicator = Label.new()
+	pending_attribute_indicator.name = "PendingAttributeIndicator"
+	pending_attribute_indicator.text = "+"
+	pending_attribute_indicator.tooltip_text = "Есть нераспределённые очки характеристик"
+	pending_attribute_indicator.add_theme_font_size_override("font_size", 20)
+	pending_attribute_indicator.add_theme_color_override("font_color", Color("ff3030"))
+	pending_attribute_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pending_attribute_indicator.visible = false
+	add_to_main_screen(pending_attribute_indicator)
+
+func update_pending_attribute_indicator() -> void:
+	if pending_attribute_indicator == null:
+		return
+	if simulation.hero_state.pending_primary_attribute_points <= 0:
+		pending_attribute_indicator.visible = false
+		return
+
+	pending_attribute_indicator.visible = true
+
+	var font: Font = hero_details_label.get_theme_font("font")
+	var font_size: int = hero_details_label.get_theme_font_size("font_size")
+	var line_height: float = font.get_height(font_size)
+	var bonus_line_count: int = 0
+	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(simulation.hero_state.traits)
+	if not trait_bonus_text.is_empty():
+		bonus_line_count += 1
+	if simulation.get_combat_buff_fights_remaining() > 0:
+		bonus_line_count += 1
+	var level_line_index: int = 3 + bonus_line_count
+	var hero_panel := hero_details_label.get_parent() as Control
+	pending_attribute_indicator.position = hero_panel.position + Vector2(286.0, 14.0 + line_height * level_line_index - 2.0)
+
+func create_attribute_allocation_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.name = "AttributeAllocationPanel"
+	apply_panel_style(panel)
+	panel.position = Vector2(411.0, 108.0)
+	panel.size = Vector2(544.0, 360.0)
+	hero_screen.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "Развитие героя"
+	title.add_theme_font_size_override("font_size", 24)
+	content.add_child(title)
+
+	attribute_points_label = Label.new()
+	attribute_points_label.name = "AttributePointsLabel"
+	attribute_points_label.add_theme_font_size_override("font_size", 18)
+	content.add_child(attribute_points_label)
+
+	for attribute_id in PRIMARY_ATTRIBUTE_DISPLAY_NAMES:
+		var button := Button.new()
+		button.name = "%sAttributeButton" % attribute_id.capitalize()
+		button.custom_minimum_size = Vector2(506.0, 42.0)
+		button.add_theme_font_size_override("font_size", 16)
+		apply_secondary_button_style(button)
+		button.pressed.connect(on_allocate_attribute_pressed.bind(attribute_id))
+		content.add_child(button)
+		attribute_buttons[attribute_id] = button
+
+func create_decorative_personality_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.name = "PersonalityAxesPanel"
+	apply_panel_style(panel)
+	panel.position = Vector2(411.0, 480.0)
+	panel.size = Vector2(544.0, 244.0)
+	hero_screen.add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 5)
+	panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "Черты характера"
+	title.add_theme_font_size_override("font_size", 20)
+	content.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "Скрытые шкалы: −100   ·   0   ·   +100"
+	subtitle.add_theme_font_size_override("font_size", 12)
+	subtitle.add_theme_color_override("font_color", Color("aeb6c1"))
+	content.add_child(subtitle)
+
+	create_decorative_personality_axis(content, "CouragePersonalityAxis", "Осторожный", "Смелый")
+	create_decorative_personality_axis(content, "MoralityPersonalityAxis", "Хитрый", "Благородный")
+	create_decorative_personality_axis(content, "GreedPersonalityAxis", "Жадный", "Щедрый")
+	create_decorative_personality_axis(content, "CuriosityPersonalityAxis", "Консервативный", "Любопытный")
+
+func create_decorative_personality_axis(parent: VBoxContainer, axis_name: String, negative_label: String, positive_label: String) -> void:
+	var row := VBoxContainer.new()
+	row.name = axis_name
+	row.add_theme_constant_override("separation", 1)
+	parent.add_child(row)
+
+	var labels := HBoxContainer.new()
+	labels.custom_minimum_size = Vector2(0.0, 17.0)
+	row.add_child(labels)
+
+	var negative := Label.new()
+	negative.text = negative_label
+	negative.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	negative.add_theme_font_size_override("font_size", 12)
+	labels.add_child(negative)
+
+	var neutral := Label.new()
+	neutral.text = "0"
+	neutral.custom_minimum_size = Vector2(36.0, 0.0)
+	neutral.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	neutral.add_theme_font_size_override("font_size", 12)
+	labels.add_child(neutral)
+
+	var positive := Label.new()
+	positive.text = positive_label
+	positive.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	positive.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	positive.add_theme_font_size_override("font_size", 12)
+	labels.add_child(positive)
+
+	var bar := ColorRect.new()
+	bar.name = "AxisBar"
+	bar.custom_minimum_size = Vector2(506.0, 8.0)
+	bar.color = Color("15191f")
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(bar)
+
+	for axis_value in [-40, 40]:
+		var threshold := ColorRect.new()
+		threshold.name = "Threshold%s" % str(axis_value).replace("-", "Minus")
+		threshold.position = Vector2(506.0 * (float(axis_value) + 100.0) / 200.0 - 1.0, 0.0)
+		threshold.size = Vector2(2.0, 8.0)
+		threshold.color = Color("d0a95b")
+		threshold.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bar.add_child(threshold)
+
+	var neutral_marker := ColorRect.new()
+	neutral_marker.name = "NeutralMarker"
+	neutral_marker.position = Vector2(251.0, -2.0)
+	neutral_marker.size = Vector2(4.0, 12.0)
+	neutral_marker.color = Color("edf0f4")
+	neutral_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(neutral_marker)
+
+func on_allocate_attribute_pressed(attribute_id: String) -> void:
+	if simulation.allocate_primary_attribute(attribute_id):
+		update_hero_panel()
+		update_attribute_allocation_panel()
+
+func update_attribute_allocation_panel() -> void:
+	if attribute_points_label == null:
+		return
+	var pending_points: int = simulation.hero_state.pending_primary_attribute_points
+	var in_combat: bool = simulation.active_combat_session != null
+	attribute_points_label.text = "Нераспределённые очки: %d%s" % [pending_points, " (после боя)" if in_combat and pending_points > 0 else ""]
+	for attribute_id in attribute_buttons:
+		var current_value: int = int(simulation.hero_state.get(attribute_id))
+		attribute_buttons[attribute_id].text = "+1 %s   (сейчас %d)" % [PRIMARY_ATTRIBUTE_DISPLAY_NAMES[attribute_id], current_value]
+		attribute_buttons[attribute_id].disabled = pending_points <= 0 or in_combat
 
 func create_opponent_panel() -> void:
 	var panel := PanelContainer.new()

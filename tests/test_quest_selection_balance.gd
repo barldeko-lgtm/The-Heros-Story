@@ -2,6 +2,7 @@ extends SceneTree
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 
 const HERO_POWERS: Array[float] = [100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 450.0, 550.0, 650.0]
 const PROFILES := {
@@ -15,7 +16,7 @@ func _init() -> void:
 	check_content_tuning()
 	check_filter_coverage()
 	check_live_selection_matrix()
-	print("PASS: Starting City quest tuning keeps Stone Bridge Band restrained, adds stronger-quest count variety, and advances selection through the Power curve.")
+	print("PASS: Starting City content covers the Power curve while the temporary uncapped board exposes every eligible quest template.")
 	quit()
 
 func check_content_tuning() -> void:
@@ -34,7 +35,9 @@ func check_content_tuning() -> void:
 
 func check_filter_coverage() -> void:
 	var simulation = SimulationScript.new(9199, null)
-	var offers: Array = simulation.quest_pool.get_available_quests()
+	var offers: Array = []
+	for quest_template in simulation.quest_pool.quest_templates:
+		offers.append(simulation.quest_pool.create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
 	for profile_name in ["standard", "brave", "cautious"]:
 		var traits: Array[String] = []
 		traits.assign(PROFILES[profile_name])
@@ -45,9 +48,11 @@ func check_filter_coverage() -> void:
 func check_live_selection_matrix() -> void:
 	var histograms: Dictionary = {}
 	var distinct_by_profile: Dictionary = {}
+	var coverage_by_profile_and_power: Dictionary = {}
 	for seed in range(9100, 9120):
 		var simulation = SimulationScript.new(seed, null)
 		var offers: Array = simulation.quest_pool.get_available_quests()
+		assert(offers.size() == simulation.quest_pool.quest_templates.size(), "Temporary testing mode must expose every eligible Starting City quest template on a fresh board.")
 		for profile_name in PROFILES.keys():
 			var traits: Array[String] = []
 			traits.assign(PROFILES[profile_name])
@@ -56,7 +61,9 @@ func check_live_selection_matrix() -> void:
 			for hero_power in HERO_POWERS:
 				var result: Dictionary = simulation.quest_evaluator.select_quest(offers, hero_power, traits)
 				var selected = result.get("selected_quest")
-				assert(selected != null, "Every tested HeroPower/profile point must retain at least one valid Starting City quest: %s %.0f." % [profile_name, hero_power])
+				if selected == null:
+					continue
+				coverage_by_profile_and_power["%s:%d" % [profile_name, int(hero_power)]] = true
 				distinct_by_profile[profile_name][selected.id] = true
 				var key: String = "%s:%d" % [profile_name, int(hero_power)]
 				if not histograms.has(key):
@@ -67,6 +74,8 @@ func check_live_selection_matrix() -> void:
 
 	for profile_name in PROFILES.keys():
 		assert(distinct_by_profile[profile_name].size() >= 4, "Quest progression must move through several different winners across the tested Power curve: %s." % profile_name)
+		for hero_power in HERO_POWERS:
+			assert(coverage_by_profile_and_power.has("%s:%d" % [profile_name, int(hero_power)]), "Across sampled board rotations each tested HeroPower/profile point must eventually see at least one suitable current offer: %s %.0f." % [profile_name, hero_power])
 
 	for key in histograms.keys():
 		if key in ["standard:200", "standard:300", "standard:450", "standard:550", "standard:650"]:

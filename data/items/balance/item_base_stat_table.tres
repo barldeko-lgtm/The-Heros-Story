@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_base_stats")
-item_levels = Array[int]([1, 10, 20, 30, 40, 50, 60])
+item_levels = Array[int]([1, 5, 10, 15, 20, 25, 30])
 armor_values = Array[float]([5.0, 7.0, 10.0, 12.0, 15.0, 20.0, 25.0])
 sword_damage_values = Array[float]([10.0, 13.0, 17.0, 22.0, 30.0, 40.0, 50.0])
 sword_attack_speed_bonus = 0.10

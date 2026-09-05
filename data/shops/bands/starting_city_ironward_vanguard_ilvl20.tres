@@ -28,7 +28,7 @@
 
 [resource]
 script = ExtResource("1_band")
-item_level = 20
+item_level = 10
 white_listings = 6
 uncommon_listings = 2
 item_definitions = Array[Resource]([ExtResource("item_00"), ExtResource("item_01"), ExtResource("item_02"), ExtResource("item_03"), ExtResource("item_04"), ExtResource("item_05"), ExtResource("item_06"), ExtResource("item_14"), ExtResource("item_15"), ExtResource("item_16"), ExtResource("item_17"), ExtResource("item_18"), ExtResource("item_07"), ExtResource("item_08"), ExtResource("item_09"), ExtResource("item_10"), ExtResource("item_11"), ExtResource("item_12"), ExtResource("item_13"), ExtResource("item_19"), ExtResource("item_20"), ExtResource("item_21"), ExtResource("item_22"), ExtResource("item_23")])
