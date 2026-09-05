@@ -13,6 +13,16 @@ const EventStageDefinitionScript = preload("res://scripts/model/definitions/even
 @export var placement_forbidden_tags: PackedStringArray = PackedStringArray()
 @export var placement_radius: int = 1
 @export var activation_radius: int = 1
+@export var secondary_target_enabled: bool = false
+@export var secondary_target_distance_hex_min: int = 0
+@export var secondary_target_distance_hex_max: int = 0
+@export var secondary_target_distance_from_event_hex_min: int = 0
+@export var secondary_target_distance_from_event_hex_max: int = 0
+@export var secondary_target_allowed_terrain_ids: PackedStringArray = PackedStringArray()
+@export var secondary_target_allowed_tags: PackedStringArray = PackedStringArray()
+@export var secondary_target_forbidden_tags: PackedStringArray = PackedStringArray()
+@export var secondary_target_radius: int = 0
+@export var secondary_target_must_be_farther_from_region_origin: bool = false
 @export var lifetime_ticks: int = 200
 @export var start_stage_id: String = ""
 @export var stages: Array[Resource] = []
@@ -30,6 +40,13 @@ func validate_definition() -> bool:
 		return false
 	if placement_radius < 0 or activation_radius < 0 or lifetime_ticks < 1:
 		return false
+	if secondary_target_enabled:
+		if secondary_target_distance_hex_min < 0 or secondary_target_distance_hex_max < secondary_target_distance_hex_min:
+			return false
+		if secondary_target_distance_from_event_hex_min < 0 or secondary_target_distance_from_event_hex_max < secondary_target_distance_from_event_hex_min:
+			return false
+		if secondary_target_radius < 0:
+			return false
 
 	var stage_ids: Dictionary = {}
 	for stage in stages:
@@ -43,7 +60,12 @@ func validate_definition() -> bool:
 		if stage.stage_type == EventStageDefinitionScript.StageType.SCENE and not stage.next_stage_id.is_empty() and not stage_ids.has(stage.next_stage_id):
 			return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.TRAVEL:
-			return false
+			if stage.next_stage_id.is_empty() or not stage_ids.has(stage.next_stage_id):
+				return false
+			if stage.travel_target == EventStageDefinitionScript.TravelTarget.NONE:
+				return false
+			if stage.travel_target == EventStageDefinitionScript.TravelTarget.SECONDARY_TARGET and not secondary_target_enabled:
+				return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.DECISION:
 			if stage.selection_rule == EventStageDefinitionScript.RULE_HIGHEST_PRIMARY_ATTRIBUTE:
 				if stage.options.is_empty() or stage.options.size() > 3:

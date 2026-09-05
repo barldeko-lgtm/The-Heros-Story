@@ -116,16 +116,17 @@ Status:
 ## 7. Temporary events
 
 - 🟡 Generic placement/reservation foundation already supports event-style radius footprints; radius 1 = 7 reserved hexes.
-- 🟡 `EventSystem` runtime lifecycle is implemented for the first authored Starting Region event; the final multi-event population is incomplete.
+- 🟡 `EventSystem` runtime lifecycle is implemented for the first two authored Starting Region events; the final multi-event population is incomplete.
 - ✅ Global early-game event gate: no temporary event is placed before world tick 100; the first population becomes eligible on tick 100 and retries later if an active activity temporarily blocks every valid footprint.
 - ⬜ 2–4 simultaneous active temporary events.
 - 🟡 Event lifetime/expiry works for unengaged events; automatic replacement/population maintenance after removal is not implemented yet.
-- 🟡 Travel collision/activation with event areas works for the first authored event.
-- 🟡 Suspend original travel objective → resolve event → resume travel works for the first authored event.
-- 🟡 Conditional event options and autonomous reactions work for the first authored event.
+- 🟡 Travel collision/activation with event areas works for the current authored events.
+- 🟡 Suspend original travel objective → resolve event → resume travel works for the current ordinary-quest travel slice.
+- ✅ Real event-owned `TRAVEL` detours are live: the second event can travel from the encounter point to a separately reserved tower objective, return to the encounter point, then resume the original quest destination without losing it.
+- 🟡 Conditional event options and autonomous reactions work for the current authored events.
 - 🟡 Event decision stages support Formative / Expressive / Neutral roles in the current framework.
 - 🟡 Formative event stages can change hidden personality according to the chosen action without reading current general personality; the first event uses STR → Courage +5, DEX → Morality +5 toward Noble, WIS → Courage −5.
-- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; the first event's later Brave check does this.
+- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; the first event uses Brave and the second uses Greedy, including a two-tick Common ilvl 10 stash reward branch.
 - ⬜ Approximately 15–20 handcrafted events across both regions.
 
 ## 8. Dungeons
@@ -267,7 +268,7 @@ Status:
 - 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
 - 🟡 Ordinary quest templates: **22 / 37 current two-city target** (Starting City 22 complete; Mid-Level City currently targets 15).
 - 🟡 Simultaneous quest offers: the intended Starting City target remains **up to 9 offers, 3/3/3 by band**, but the current development build temporarily exposes all eligible templates to avoid no-suitable-quest stalls while this rule is being reconsidered.
-- 🟡 Handcrafted temporary events: **1 / 15–20**.
+- 🟡 Handcrafted temporary events: **2 / 15–20**.
 - 🟡 Ordinary dungeons: **2 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
 - ⬜ Specialization dungeon variants: **0 / 2**.

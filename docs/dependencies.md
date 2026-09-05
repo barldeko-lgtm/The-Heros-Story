@@ -27,7 +27,8 @@ world tick 100 and later 50-tick board refreshes while initial events remain uns
 WorldState.hero_position_changed
 → EventSystem encounter lookup / pending activation
 → EventRunner suspends TravelSystem
-→ authored SCENE / DECISION / COMBAT / END stages
+→ authored SCENE / DECISION / TRAVEL / COMBAT / END stages
+→ optional event detour uses TravelSystem.begin_detour() while preserving the suspended original destination
 → Formative movement through TraitDevelopment or Expressive trait read
 → EventNarrator / DebugLog
 → EventSystem cleanup
@@ -38,6 +39,9 @@ Temporary-event warm-up / placement contracts:
 - temporary-event definitions may be loaded/configured from game start, but `EventSystem` must not place any event footprint before world tick 100;
 - when the gate opens, Simulation releases only the currently available quest-board map reservations before EventSystem tries to place the initial population; an already taken active quest target is not part of that release and is never displaced to force an event;
 - if an active activity still blocks every valid event footprint, the unspawned definition remains eligible; EventSystem keeps ordinary per-tick eligibility checks, and each later 50-tick quest-board refresh again gives pending initial events placement priority before rebuilding the board around successful event reservations.
+- a definition may own one optional secondary objective in the current event framework; EventSystem must choose and reserve it atomically with the primary event placement and release both reservations together on completion, expiry, or failure;
+- `TravelSystem.begin_detour()` may replace the current event-owned route but must preserve `suspended_destination`; only final event success resumes that original destination from the hero's then-current map hex;
+- the actual hex where the hero engaged the event is recorded in `EventInstance.encounter_hex`, so a later event `TRAVEL` stage may explicitly return there even when activation happened on a neighboring radius cell rather than the event center.
 
 Live combat:
 
@@ -145,6 +149,7 @@ Contracts:
 - current rollable starting traits are Cautious / Brave / Devious / Noble / Greedy; Generous / Curious / Conservative already exist in the final vocabulary but are not yet rolled at creation;
 - the first temporary event already applies authored Formative movement through `TraitDevelopment.apply_movement()`: STR → Courage +5, DEX → Morality +5, WIS → Courage −5; the DEX rescue branch therefore moves toward Noble, while crossing ±40 establishes the corresponding trait and later movement follows the same ±20 hysteresis;
 - its later Brave check is Expressive: it reads the established trait through `TraitDevelopment.has_trait()` and does not award additional Brave movement;
+- the second temporary event uses DEX → Courage +5, WIS → Courage −5, and CON → Morality +5; its later Greedy check is Expressive and therefore leaves the Greed axis unchanged even when it spends two extra ticks searching and awards the authored Common ilvl 10 stash item;
 - `Simulation.get_hero_traits()` is the compatibility boundary consumed by quest/combat/UI systems;
 - UI may display axis values and threshold state but must not own personality-transition rules.
 

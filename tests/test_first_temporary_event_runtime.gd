@@ -21,15 +21,17 @@ func test_event_spawn_gate() -> void:
 	assert(simulation.event_system.get_active_events().is_empty(), "Temporary events must remain unavailable through world tick 99.")
 	simulation.on_world_tick_completed(100)
 	var active_events: Array = simulation.event_system.get_active_events()
-	assert(active_events.size() == 1, "When a valid footprint is free, the first temporary-event population must spawn on world tick 100.")
-	assert(active_events[0].spawn_tick == 100, "The first event instance must record world tick 100 as its spawn tick.")
+	var old_clearing = find_event_by_id(active_events, "old_clearing_ambush")
+	assert(old_clearing != null, "When a valid footprint is free, Old Clearing must spawn once the temporary-event population opens on world tick 100.")
+	assert(old_clearing.spawn_tick == 100, "The first event instance must record world tick 100 as its spawn tick.")
 
 func create_started_event_simulation(seed: int):
 	var simulation = SimulationScript.new(seed, null, [], true)
 	assert(simulation.event_system.get_active_events().is_empty(), "Temporary events must not spawn before the global world-tick gate.")
 	simulation.quest_pool.release_available_offer_map_targets()
 	var spawned_events: Array = simulation.event_system.spawn_initial_population_if_ready(100)
-	assert(spawned_events.size() == 1, "First slice must spawn the authored Old Clearing event once world tick 100 is eligible.")
+	var old_clearing = find_event_by_id(spawned_events, "old_clearing_ambush")
+	assert(old_clearing != null, "First slice must spawn the authored Old Clearing event once world tick 100 is eligible.")
 	assert(simulation.quest_pool.assign_map_targets_to_current_offers(), "Quest offers must be placeable around the newly spawned event footprint.")
 	var available_quests: Array = simulation.quest_pool.get_available_quests()
 	assert(not available_quests.is_empty())
@@ -37,7 +39,7 @@ func create_started_event_simulation(seed: int):
 	var selection_event = simulation.quest_runner.advance(simulation.hero_state, simulation.combat_stats)
 	assert(selection_event != null)
 	assert(simulation.travel_system.is_travelling(), "Selected map quest must have active travel before event interruption.")
-	simulation.pending_event_instance = simulation.event_system.get_active_events()[0]
+	simulation.pending_event_instance = old_clearing
 	assert(simulation.begin_pending_event_if_ready(100))
 	assert(simulation.event_runner.active_event != null)
 	assert(simulation.travel_system.has_suspended_travel())
@@ -55,7 +57,7 @@ func test_wisdom_branch() -> void:
 		simulation.advance_event_tick(tick)
 
 	assert(simulation.event_runner.active_event == null)
-	assert(simulation.event_system.get_active_events().is_empty())
+	assert(find_event_by_id(simulation.event_system.get_active_events(), "old_clearing_ambush") == null)
 	assert(simulation.hero_state.gold == starting_gold + 30)
 	assert(simulation.hero_state.personality_axis_values["courage"] == -5)
 	assert(simulation.hero_state.loop_state == simulation.hero_state.TRAVEL_TO_QUEST)
@@ -161,7 +163,7 @@ func test_event_combat_death_cancels_quest() -> void:
 
 	assert(simulation.hero_state.loop_state == simulation.hero_state.DEAD_RESPAWNING)
 	assert(simulation.hero_state.active_quest == null, "Event death must cancel the interrupted ordinary quest.")
-	assert(simulation.event_system.get_active_events().is_empty())
+	assert(find_event_by_id(simulation.event_system.get_active_events(), "old_clearing_ambush") == null)
 	assert(simulation.event_runner.owns_respawn_state())
 	assert(simulation.hero_state.personality_axis_values["courage"] == 5, "Formative Brave movement must survive later combat failure.")
 	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center)
@@ -175,4 +177,10 @@ func find_new_green_ilvl10_item(simulation):
 	for item in simulation.hero_state.equipment.get_all_items():
 		if item != null and item.item_level == 10 and item.rarity == 1:
 			return item
+	return null
+
+func find_event_by_id(events: Array, event_id: String):
+	for event_instance in events:
+		if event_instance != null and event_instance.definition != null and event_instance.definition.id == event_id:
+			return event_instance
 	return null

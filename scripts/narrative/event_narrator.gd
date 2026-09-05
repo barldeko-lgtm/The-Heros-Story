@@ -43,6 +43,14 @@ func describe_trait_check(result: Dictionary) -> String:
 		"особая ветка" if bool(result["trait_present"]) else "стандартная ветка",
 	]
 
+func describe_travel(result: Dictionary) -> String:
+	var event_instance = result["event_instance"]
+	var stage = result["stage"]
+	var action_text: String = stage.scene_text if not stage.scene_text.is_empty() else "Герой следует к временной цели события."
+	if str(result.get("type", "")) == "travel_completed":
+		return "СОБЫТИЕ «%s»: %s Герой прибыл; путь события завершён." % [event_instance.definition.display_name, action_text]
+	return "СОБЫТИЕ «%s»: %s Осталось гексов: %d." % [event_instance.definition.display_name, action_text, int(result.get("remaining_steps", 0))]
+
 func describe_combat_started(hero_name: String, event_name: String, mob_definition) -> String:
 	return "СОБЫТИЕ «%s»: %s начинает бой с %s." % [event_name, hero_name, mob_definition.display_name]
 

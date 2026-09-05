@@ -1581,6 +1581,8 @@ Temporary events use a placement radius measured in hex steps. The current norma
 
 Radius 0 means only the central hex. A specific authored event may later use another explicitly approved footprint, but radius 1 is the ordinary Prototype 0.2 default. Placement tags apply to the central hex; the surrounding footprint does not need to share those tags, but every reserved hex must be valid, free, and remain inside the event's region.
 
+An authored event may also reserve a **secondary temporary objective hex** when its story requires the hero to travel away from the encounter location. That secondary location is part of the same event instance, must obey its own authored placement constraints, and must not overlap another active world activity. It does not become a second independent event. A radius-0 secondary objective reserves only its single destination hex.
+
 An event exists independently of the hero. The hero may travel through its area and encounter it, may alter route because of world circumstances, or may never enter the affected hexes before the event expires.
 
 Exact event spawn frequency, replacement delay, and lifetime values remain balance/tuning questions to be finalized after the real map and long-run simulation pacing can be observed.
@@ -1751,6 +1753,8 @@ Do not create one custom script per event and do not pre-build a generic formula
 
 `TRAVEL` stages request movement through `TravelSystem`. `TravelSystem` remains the owner of multi-tick movement and of suspending/resuming the hero's previous route. After an event detour, resumption should target the original destination from the hero's new current hex rather than attempting to continue stale route indices.
 
+An event may chain more than one real `TRAVEL` stage. For example, the hero may suspend an ordinary quest route, travel from the encounter location to a temporary objective, later travel back to the actual encounter hex, finish the event there, and only then rebuild the interrupted quest route. Internal event travel must never erase the suspended original destination.
+
 `COMBAT` stages reuse the existing `CombatSession`, Warrior abilities, CombatStats, and shared Hero/Mob Power rules. Event combat must not duplicate combat resolution.
 
 Gold, equipment, personality movement, and other consequences are applied through their normal owning systems. Event data describes the authored consequence; it does not create separate event-only economy, item-generation, trait, or equipment logic.
@@ -1762,6 +1766,17 @@ An event may create a temporary detour objective. The hero’s original objectiv
 Formative event decisions should be a major source of meaningful personality development in Prototype 0.2, while expressive event decisions should make already-established personality visible in play.
 
 Events should remain uncommon enough that ordinary adventuring still exists as the stable rhythm of life.
+
+### 15.6. Current Authored Event Reference — Smoke Over the Old Tower
+
+The approved second Starting Region event, `smoke_over_old_tower` / **«Дым над старой башней»**, is the first concrete event that exercises real event-owned map detours.
+
+- the encounter footprint is centered on **hill terrain 3–5 hexes from Starting City** and remains subject to the global tick-100 event gate;
+- the old tower is one radius-0 secondary objective in Starting Region, **5–7 hexes from Starting City**, **2–4 hexes from the event center**, strictly farther from the city than the encounter center, and never on a `city` hex;
+- the first Formative decision compares **DEX / WIS / CON**: DEX rushes toward danger and moves Courage `+5`, WIS studies the situation and moves Courage `−5`, while CON first helps the wounded patrolman and moves Morality `+5` toward Noble;
+- DEX reaches the second patrolman alive and fights the existing ordinary **Bandit** through shared `CombatSession`; WIS spends one tick studying tracks plus three ticks observing the tower and rescues the patrolman without combat; CON spends two ticks helping the already-wounded patrolman, reaches the tower too late, finds the second patrolman dead, and takes his patrol token back as proof;
+- after the tower outcome, every branch performs an **Expressive Greedy** check. Established Greedy adds exactly two authored search ticks and yields one guaranteed **Common / White ilvl 10** equipment item from the normal authored equipment source, without moving the Greed axis and without adding extra Gold;
+- every successful branch returns by real map travel to the encounter location and grants **50 Gold**. The DEX combat branch additionally receives the Bandit's normal combat XP. Only after that return and event completion may the previously interrupted route resume.
 
 ---
 

@@ -15,6 +15,12 @@ enum DecisionRole {
 	EXPRESSIVE,
 }
 
+enum TravelTarget {
+	NONE,
+	ENCOUNTER_HEX,
+	SECONDARY_TARGET,
+}
+
 const RULE_NONE := ""
 const RULE_HIGHEST_PRIMARY_ATTRIBUTE := "highest_primary_attribute"
 const RULE_TRAIT_PRESENT := "trait_present"
@@ -26,6 +32,7 @@ const RULE_TRAIT_PRESENT := "trait_present"
 @export_multiline var scene_text: String = ""
 @export_multiline var diary_text: String = ""
 @export var next_stage_id: String = ""
+@export var travel_target: TravelTarget = TravelTarget.NONE
 
 @export var selection_rule: String = RULE_NONE
 @export var options: Array[Resource] = []

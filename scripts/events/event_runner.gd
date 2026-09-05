@@ -14,6 +14,7 @@ var resolution_rng: RandomNumberGenerator
 var decision_resolver = EventDecisionResolverScript.new()
 var active_event
 var current_stage_ticks_remaining: int = 0
+var current_travel_stage_started: bool = false
 var interrupted_loop_state: String = ""
 var had_suspended_travel: bool = false
 var respawn_ticks_remaining: int = 0
@@ -34,6 +35,7 @@ func begin(hero_state, event_instance) -> Dictionary:
 	active_event = event_instance
 	interrupted_loop_state = hero_state.loop_state
 	had_suspended_travel = travel_system.suspend_travel()
+	event_instance.record_encounter_hex(travel_system.world_state.hero_position)
 	enter_stage(hero_state, event_instance.definition.start_stage_id)
 	return {
 		"type": "event_started",
@@ -60,6 +62,11 @@ func enter_stage(hero_state, stage_id: String) -> void:
 	assert(stage != null, "Event stage id must exist: %s" % stage_id)
 	active_event.current_stage_id = stage_id
 	current_stage_ticks_remaining = maxi(1, int(stage.duration_ticks))
+	current_travel_stage_started = false
+	if stage.stage_type == EventStageDefinitionScript.StageType.TRAVEL:
+		var travel_target: Vector2i = get_travel_target(stage)
+		assert(travel_target != active_event.INVALID_TARGET_HEX, "Event TRAVEL stage requires a valid authored destination.")
+		assert(travel_system.begin_detour(travel_target), "Event TRAVEL stage must start a real map detour.")
 	if stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
 		hero_state.loop_state = HeroState.EVENT_COMBAT
 	else:
@@ -71,6 +78,8 @@ func advance(hero_state) -> Dictionary:
 	var stage = get_current_stage()
 	if stage == null or stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
 		return {}
+	if stage.stage_type == EventStageDefinitionScript.StageType.TRAVEL:
+		return advance_travel_stage(hero_state, stage)
 
 	var stage_started: bool = current_stage_ticks_remaining == maxi(1, int(stage.duration_ticks))
 	current_stage_ticks_remaining = maxi(0, current_stage_ticks_remaining - 1)
@@ -167,6 +176,34 @@ func complete_combat(hero_state, combat_stats: CombatStats, combat_result) -> Di
 		"max_hp": combat_stats.max_hp,
 	}
 
+func get_travel_target(stage) -> Vector2i:
+	if active_event == null or stage == null:
+		return active_event.INVALID_TARGET_HEX if active_event != null else Vector2i(-1, -1)
+	match stage.travel_target:
+		EventStageDefinitionScript.TravelTarget.ENCOUNTER_HEX:
+			return active_event.encounter_hex
+		EventStageDefinitionScript.TravelTarget.SECONDARY_TARGET:
+			return active_event.secondary_target_hex
+	return active_event.INVALID_TARGET_HEX
+
+func advance_travel_stage(hero_state, stage) -> Dictionary:
+	var stage_started: bool = not current_travel_stage_started
+	current_travel_stage_started = true
+	var travel_result: Dictionary = travel_system.advance_one_tick()
+	assert(bool(travel_result.get("moved", false)) or bool(travel_result.get("arrived", false)), "Event TRAVEL stage must own an active route until arrival.")
+	var completed_stage = stage
+	if bool(travel_result.get("arrived", false)):
+		enter_stage(hero_state, stage.next_stage_id)
+	return {
+		"type": "travel_completed" if bool(travel_result.get("arrived", false)) else "travel_progress",
+		"event_instance": active_event,
+		"stage": completed_stage,
+		"stage_started": stage_started,
+		"position": travel_result.get("position"),
+		"remaining_steps": int(travel_result.get("remaining_steps", 0)),
+		"next_stage": get_current_stage() if bool(travel_result.get("arrived", false)) else null,
+	}
+
 func finish_success(hero_state) -> bool:
 	if hero_state == null or active_event == null:
 		return false
@@ -174,6 +211,7 @@ func finish_success(hero_state) -> bool:
 	var should_resume_travel: bool = had_suspended_travel
 	active_event = null
 	current_stage_ticks_remaining = 0
+	current_travel_stage_started = false
 	interrupted_loop_state = ""
 	had_suspended_travel = false
 	if should_resume_travel:
@@ -184,6 +222,7 @@ func finish_success(hero_state) -> bool:
 func finalize_failure() -> void:
 	active_event = null
 	current_stage_ticks_remaining = 0
+	current_travel_stage_started = false
 	interrupted_loop_state = ""
 	had_suspended_travel = false
 

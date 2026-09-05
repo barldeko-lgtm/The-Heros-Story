@@ -18,6 +18,13 @@ func _init(initial_hex_map, initial_world_state) -> void:
 
 func begin_travel(target: Vector2i) -> bool:
 	clear_travel()
+	return begin_active_route(target)
+
+func begin_detour(target: Vector2i) -> bool:
+	clear_active_route()
+	return begin_active_route(target)
+
+func begin_active_route(target: Vector2i) -> bool:
 	if not hex_map.is_valid_cell(target):
 		return false
 	var route: Array[Vector2i] = hex_map.find_path(world_state.hero_position, target)
@@ -28,19 +35,20 @@ func begin_travel(target: Vector2i) -> bool:
 	destination = target
 	return true
 
-func clear_travel() -> void:
+func clear_active_route() -> void:
 	active_route.clear()
 	route_index = 0
 	destination = INVALID_DESTINATION
+
+func clear_travel() -> void:
+	clear_active_route()
 	suspended_destination = INVALID_DESTINATION
 
 func suspend_travel() -> bool:
 	if not is_travelling():
 		return false
 	suspended_destination = destination
-	active_route.clear()
-	route_index = 0
-	destination = INVALID_DESTINATION
+	clear_active_route()
 	return true
 
 func has_suspended_travel() -> bool:

@@ -4,7 +4,7 @@ This document describes what is **actually implemented now**.
 
 ## Current development focus
 
-The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and both Starting Region ordinary dungeons use the shared map-backed flow, and the first Starting Region temporary event now interrupts/resumes travel and feeds formative choices into the live personality axes; city relocation and the broader event population remain incomplete.
+The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and both Starting Region ordinary dungeons use the shared map-backed flow, and two Starting Region temporary events now feed formative/expressive choices into the live personality axes; the second event also uses real event-owned travel to a separate temporary objective and back. City relocation and the broader event population remain incomplete.
 
 Implemented:
 - one autonomous hero;
@@ -33,6 +33,7 @@ Implemented:
 - ordinary quest Hard Filter uses the Scope Power window before QuestScore: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%;
 - temporary events use a global early-game warm-up gate: none are placed on the map during world ticks 0–99, and the first event population becomes eligible on world tick 100 so the hero has an initial stretch of ordinary development before stat-driven event choices; available quest-board reservations yield placement priority to still-unspawned initial events at tick 100 and later 50-tick board refreshes, while an already-active quest is never displaced and may delay placement until a later valid opportunity;
 - the first authored temporary event `У старой вырубки` is live after that gate opens: its formative STR / DEX / WIS decision uses primary attributes rather than personality, applies `Courage +5 / Morality +5 / Courage −5` respectively through `TraitDevelopment`, and its later expressive Brave check may alter the DEX branch without awarding additional Brave movement; the DEX route represents a resourceful rescue and therefore moves toward Noble rather than Devious;
+- the second authored temporary event `Дым над старой башней` is live: its encounter center is placed on Starting Region hills 3–5 hexes from Starting City, while a separately reserved radius-0 tower objective is placed 5–7 hexes from the city, 2–4 hexes from the event center, strictly farther from the city and never on a city hex. Its formative DEX / WIS / CON decision applies `Courage +5 / Courage −5 / Morality +5`; DEX physically travels to the tower, fights the existing ordinary `Разбойник` and can earn its normal 90 XP, WIS spends one tick studying plus three ticks observing to rescue the patrolman without combat, and CON spends two ticks helping the first wounded patrolman before arriving too late and returning the dead patrolman's token. Every branch then performs an Expressive Greedy check: established Greedy adds two search ticks and one guaranteed White/Common ilvl 10 item through the normal equipment pipeline without reinforcing Greed or adding Gold. All successful branches grant 50 Gold, travel back to the actual encounter point, and only then resume the previously interrupted quest route from that position;
 - headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, one-selection quest guidance, and Divine Vision for revealing an unknown dungeon in the current region;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
@@ -52,7 +53,7 @@ Still missing from the current build:
 - diary episodes;
 - player-facing quest-guidance selection UI;
 - later potion tiers beyond the currently live Starting City compressed Level 5 / 10 consumables, prepared-Belt-slot visualization, and the two Mid Region ordinary dungeons;
-- the broader 15–20-event population, multi-event pacing, and city-to-city relocation on the new map.
+- the remaining broader 15–20-event population, replacement/multi-event pacing, and city-to-city relocation on the new map.
 
 ## God-system core
 

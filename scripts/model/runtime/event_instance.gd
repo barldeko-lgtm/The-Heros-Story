@@ -6,6 +6,9 @@ const INVALID_TARGET_HEX := Vector2i(-1, -1)
 var definition: Resource
 var target_hex: Vector2i = INVALID_TARGET_HEX
 var map_activity_id: String = ""
+var secondary_target_hex: Vector2i = INVALID_TARGET_HEX
+var secondary_map_activity_id: String = ""
+var encounter_hex: Vector2i = INVALID_TARGET_HEX
 var spawn_tick: int = 0
 var expire_tick: int = 0
 var current_stage_id: String = ""
@@ -14,16 +17,24 @@ var completed: bool = false
 var outcome_id: String = ""
 var local_flags: Dictionary = {}
 
-func _init(initial_definition: Resource, initial_target_hex: Vector2i, initial_map_activity_id: String, initial_spawn_tick: int) -> void:
+func _init(initial_definition: Resource, initial_target_hex: Vector2i, initial_map_activity_id: String, initial_spawn_tick: int, initial_secondary_target_hex: Vector2i = INVALID_TARGET_HEX, initial_secondary_map_activity_id: String = "") -> void:
 	definition = initial_definition
 	target_hex = initial_target_hex
 	map_activity_id = initial_map_activity_id
+	secondary_target_hex = initial_secondary_target_hex
+	secondary_map_activity_id = initial_secondary_map_activity_id
 	spawn_tick = initial_spawn_tick
 	expire_tick = initial_spawn_tick + maxi(1, int(definition.lifetime_ticks))
 	current_stage_id = definition.start_stage_id
 
 func has_map_target() -> bool:
 	return target_hex != INVALID_TARGET_HEX and not map_activity_id.is_empty()
+
+func has_secondary_target() -> bool:
+	return secondary_target_hex != INVALID_TARGET_HEX and not secondary_map_activity_id.is_empty()
+
+func record_encounter_hex(cell: Vector2i) -> void:
+	encounter_hex = cell
 
 func is_expired(world_tick: int) -> bool:
 	return not engaged and not completed and world_tick >= expire_tick
@@ -40,3 +51,6 @@ func mark_completed(final_outcome_id: String) -> void:
 
 func clear_map_activity() -> void:
 	map_activity_id = ""
+
+func clear_secondary_map_activity() -> void:
+	secondary_map_activity_id = ""

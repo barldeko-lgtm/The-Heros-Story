@@ -114,20 +114,86 @@ func spawn_definition(definition: Resource, distance_origin: Vector2i, spawn_tic
 	)
 	if valid_centers.is_empty():
 		return false
-	var target_hex: Vector2i = valid_centers[placement_random_number_generator.randi_range(0, valid_centers.size() - 1)]
-	var activity_id := "event:%s" % definition.id
+	while not valid_centers.is_empty():
+		var target_index: int = placement_random_number_generator.randi_range(0, valid_centers.size() - 1)
+		var target_hex: Vector2i = valid_centers[target_index]
+		valid_centers.remove_at(target_index)
+		if try_spawn_definition_at(definition, target_hex, distance_origin, spawn_tick):
+			return true
+	return false
+
+func try_spawn_definition_at(definition: Resource, target_hex: Vector2i, distance_origin: Vector2i, spawn_tick: int) -> bool:
 	var footprint: Array[Vector2i] = hex_map.get_cells_within_radius(target_hex, definition.placement_radius)
+	var secondary_target_hex: Vector2i = EventInstanceScript.INVALID_TARGET_HEX
+	var secondary_activity_id: String = ""
+	if definition.secondary_target_enabled:
+		secondary_target_hex = choose_secondary_target(definition, target_hex, distance_origin, footprint)
+		if secondary_target_hex == EventInstanceScript.INVALID_TARGET_HEX:
+			return false
+
+	var activity_id := "event:%s" % definition.id
 	if not world_state.reserve_activity(activity_id, footprint):
 		return false
-	active_events.append(EventInstanceScript.new(definition, target_hex, activity_id, spawn_tick))
+	if definition.secondary_target_enabled:
+		secondary_activity_id = "event:%s:secondary" % definition.id
+		var secondary_footprint: Array[Vector2i] = hex_map.get_cells_within_radius(secondary_target_hex, definition.secondary_target_radius)
+		if not world_state.reserve_activity(secondary_activity_id, secondary_footprint):
+			world_state.release_activity(activity_id)
+			return false
+
+	active_events.append(EventInstanceScript.new(definition, target_hex, activity_id, spawn_tick, secondary_target_hex, secondary_activity_id))
 	return true
+
+func choose_secondary_target(definition: Resource, event_target_hex: Vector2i, distance_origin: Vector2i, event_footprint: Array[Vector2i]) -> Vector2i:
+	var candidates: Array[Vector2i] = placement_finder.find_valid_centers(
+		hex_map,
+		world_state,
+		definition.region_id,
+		distance_origin,
+		definition.secondary_target_distance_hex_min,
+		definition.secondary_target_distance_hex_max,
+		definition.secondary_target_allowed_terrain_ids,
+		definition.secondary_target_allowed_tags,
+		definition.secondary_target_forbidden_tags,
+		definition.secondary_target_radius
+	)
+	var event_distance_from_region_origin: int = hex_map.get_distance_steps(distance_origin, event_target_hex)
+	var filtered_candidates: Array[Vector2i] = []
+	for candidate in candidates:
+		var distance_from_event: int = hex_map.get_distance_steps(event_target_hex, candidate)
+		if distance_from_event < definition.secondary_target_distance_from_event_hex_min or distance_from_event > definition.secondary_target_distance_from_event_hex_max:
+			continue
+		if definition.secondary_target_must_be_farther_from_region_origin:
+			var candidate_distance_from_region_origin: int = hex_map.get_distance_steps(distance_origin, candidate)
+			if candidate_distance_from_region_origin <= event_distance_from_region_origin:
+				continue
+		var overlaps_event: bool = false
+		for secondary_cell in hex_map.get_cells_within_radius(candidate, definition.secondary_target_radius):
+			if event_footprint.has(secondary_cell):
+				overlaps_event = true
+				break
+		if overlaps_event:
+			continue
+		filtered_candidates.append(candidate)
+	if filtered_candidates.is_empty():
+		return EventInstanceScript.INVALID_TARGET_HEX
+	return filtered_candidates[placement_random_number_generator.randi_range(0, filtered_candidates.size() - 1)]
 
 func clear_instances() -> void:
 	if world_state != null:
 		for instance in active_events:
-			if instance != null and not instance.map_activity_id.is_empty():
-				world_state.release_activity(instance.map_activity_id)
+			release_instance_reservations(instance)
 	active_events.clear()
+
+func release_instance_reservations(instance) -> void:
+	if instance == null or world_state == null:
+		return
+	if not instance.map_activity_id.is_empty():
+		world_state.release_activity(instance.map_activity_id)
+		instance.clear_map_activity()
+	if not instance.secondary_map_activity_id.is_empty():
+		world_state.release_activity(instance.secondary_map_activity_id)
+		instance.clear_secondary_map_activity()
 
 func get_active_events() -> Array:
 	return active_events.duplicate()
@@ -150,9 +216,7 @@ func complete_instance(instance, outcome_id: String) -> bool:
 	if instance == null or not active_events.has(instance):
 		return false
 	instance.mark_completed(outcome_id)
-	if world_state != null and not instance.map_activity_id.is_empty():
-		world_state.release_activity(instance.map_activity_id)
-	instance.clear_map_activity()
+	release_instance_reservations(instance)
 	active_events.erase(instance)
 	return true
 
@@ -161,9 +225,7 @@ func advance_world_tick(world_tick: int) -> Array:
 	for instance in active_events.duplicate():
 		if instance == null or not instance.is_expired(world_tick):
 			continue
-		if world_state != null and not instance.map_activity_id.is_empty():
-			world_state.release_activity(instance.map_activity_id)
-		instance.clear_map_activity()
+		release_instance_reservations(instance)
 		active_events.erase(instance)
 		expired.append(instance)
 	return expired

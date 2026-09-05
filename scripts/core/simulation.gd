@@ -569,6 +569,12 @@ func advance_event_tick(completed_tick: int) -> void:
 	if result_type == "expressive_trait_check":
 		debug_log.record_event(completed_tick, event_narrator.describe_trait_check(result))
 		return
+	if result_type == "travel_progress" or result_type == "travel_completed":
+		if bool(result.get("stage_started", false)) or result_type == "travel_completed":
+			debug_log.record_event(completed_tick, event_narrator.describe_travel(result))
+		else:
+			debug_log.record_tick(completed_tick)
+		return
 	if result_type != "event_completed":
 		debug_log.record_tick(completed_tick)
 		return

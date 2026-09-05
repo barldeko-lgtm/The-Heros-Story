@@ -1,0 +1,360 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=40 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0006_bandit.tres" id="4_bandit"]
+[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl20_drop_table.tres" id="5_ilvl10_source"]
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "rush_to_tower"
+driver_attribute = "dexterity"
+next_stage_id = "dex_travel_out"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "study_tracks_first"
+driver_attribute = "wisdom"
+next_stage_id = "wis_tracks"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "help_wounded_first"
+driver_attribute = "constitution"
+next_stage_id = "con_help"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В холмах герой встречает раненого дозорного. Тот выбрался к дороге после нападения и рассказывает, что его напарник ушёл проверить странный дым над давно заброшенной сторожевой башней, но так и не вернулся."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_DEX"), SubResource("Option_WIS"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_dex_travel_out"]
+script = ExtResource("2_stage")
+id = "dex_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Не желая терять ни минуты, герой сразу направляется от раненого дозорного к старой башне."
+next_stage_id = "dex_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_arrival"]
+script = ExtResource("2_stage")
+id = "dex_arrival"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой успевает вовремя: второй дозорный ещё жив и связан у башни, а рядом остаётся вооружённый разбойник. Быстро освободить пленника без схватки уже не получится."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "dex_rescue"
+
+[sub_resource type="Resource" id="Stage_dex_rescue"]
+script = ExtResource("2_stage")
+id = "dex_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "После победы герой перерезает верёвки и освобождает дозорного. В башне остаются брошенные разбойником вещи и старые ящики."
+next_stage_id = "dex_greedy_check"
+
+[sub_resource type="Resource" id="Stage_dex_greedy_check"]
+script = ExtResource("2_stage")
+id = "dex_greedy_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "greedy"
+trait_present_stage_id = "dex_search"
+trait_absent_stage_id = "dex_return"
+
+[sub_resource type="Resource" id="Stage_dex_search"]
+script = ExtResource("2_stage")
+id = "dex_search"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Жадность не позволяет герою уйти сразу. Он два тика тщательно обыскивает башню и находит в тайнике разбойника добротную вещь."
+next_stage_id = "dex_return_greedy"
+
+[sub_resource type="Resource" id="Stage_dex_return"]
+script = ExtResource("2_stage")
+id = "dex_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Освобождённый дозорный вместе с героем возвращается к раненому товарищу."
+next_stage_id = "dex_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_dex_return_greedy"]
+script = ExtResource("2_stage")
+id = "dex_return_greedy"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Забрав найденную вещь, герой вместе с освобождённым дозорным возвращается к раненому товарищу."
+next_stage_id = "dex_greedy_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "В холмах герой встретил раненого дозорного и без промедления отправился к старой сторожевой башне. Он успел застать второго дозорного живым, победил охранявшего пленника разбойника и вернулся к месту встречи. За спасение патруль отблагодарил героя пятьюдесятью золотыми."
+outcome_id = "fast_rescue"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_dex_greedy_end"]
+script = ExtResource("2_stage")
+id = "dex_greedy_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "В холмах герой поспешил к старой башне, победил разбойника и освободил пленённого дозорного. Перед возвращением жадность заставила его задержаться и обыскать логово; в тайнике нашлась добротная вещь. За спасение патруль также заплатил пятьдесят золотых."
+outcome_id = "fast_rescue_greedy"
+gold_reward = 50
+equipment_reward_source = ExtResource("5_ilvl10_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_wis_tracks"]
+script = ExtResource("2_stage")
+id = "wis_tracks"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой сначала изучает кровь и следы вокруг места нападения. Он замечает признаки одного преследователя и понимает, с какой стороны к башне безопаснее подходить."
+next_stage_id = "wis_travel_out"
+
+[sub_resource type="Resource" id="Stage_wis_travel_out"]
+script = ExtResource("2_stage")
+id = "wis_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Разобравшись со следами, герой осторожно направляется к старой башне."
+next_stage_id = "wis_observe"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_observe"]
+script = ExtResource("2_stage")
+id = "wis_observe"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Подойдя с безопасной стороны, герой три тика наблюдает за башней. Он видит связанного дозорного и ждёт, пока единственный разбойник покинет своё временное логово."
+next_stage_id = "wis_rescue"
+
+[sub_resource type="Resource" id="Stage_wis_rescue"]
+script = ExtResource("2_stage")
+id = "wis_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Когда разбойник скрывается в холмах, герой входит в башню и освобождает дозорного без боя. Среди брошенных вещей видны ящики, которые можно было бы тщательно обыскать."
+next_stage_id = "wis_greedy_check"
+
+[sub_resource type="Resource" id="Stage_wis_greedy_check"]
+script = ExtResource("2_stage")
+id = "wis_greedy_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "greedy"
+trait_present_stage_id = "wis_search"
+trait_absent_stage_id = "wis_return"
+
+[sub_resource type="Resource" id="Stage_wis_search"]
+script = ExtResource("2_stage")
+id = "wis_search"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Жадность заставляет героя потратить ещё два тика на обыск башни. В спрятанном ящике он находит добротную вещь, оставленную разбойником."
+next_stage_id = "wis_return_greedy"
+
+[sub_resource type="Resource" id="Stage_wis_return"]
+script = ExtResource("2_stage")
+id = "wis_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Освобождённый дозорный вместе с героем возвращается к раненому товарищу."
+next_stage_id = "wis_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_wis_return_greedy"]
+script = ExtResource("2_stage")
+id = "wis_return_greedy"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Забрав найденную вещь, герой вместе с освобождённым дозорным возвращается к раненому товарищу."
+next_stage_id = "wis_greedy_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Встретив раненого дозорного, герой сначала изучил следы, затем добрался до старой башни и долго наблюдал за ней. Дождавшись ухода разбойника, он освободил пленника без боя и вернулся к месту встречи. Патруль заплатил герою пятьдесят золотых."
+outcome_id = "careful_rescue"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_wis_greedy_end"]
+script = ExtResource("2_stage")
+id = "wis_greedy_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой осторожно изучил следы и дождался ухода разбойника от старой башни, после чего освободил дозорного без боя. Жадность заставила его задержаться ещё на два тика ради обыска, и в тайнике нашлась добротная вещь. Патруль также заплатил пятьдесят золотых."
+outcome_id = "careful_rescue_greedy"
+gold_reward = 50
+equipment_reward_source = ExtResource("5_ilvl10_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_con_help"]
+script = ExtResource("2_stage")
+id = "con_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой не бросает раненого ради погони. Два тика он перевязывает его, помогает укрыться в безопасном месте и только после этого отправляется к башне один."
+next_stage_id = "con_travel_out"
+
+[sub_resource type="Resource" id="Stage_con_travel_out"]
+script = ExtResource("2_stage")
+id = "con_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Оставив раненого в безопасности, герой в одиночку направляется к старой башне."
+next_stage_id = "con_dead"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_dead"]
+script = ExtResource("2_stage")
+id = "con_dead"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "У башни уже тихо. Разбойник ушёл, а второго дозорного герой находит мёртвым. Он снимает с погибшего патрульный знак, чтобы вернуть его товарищу и подтвердить случившееся. Среди вещей разбойника ещё можно поискать что-нибудь ценное."
+next_stage_id = "con_greedy_check"
+
+[sub_resource type="Resource" id="Stage_con_greedy_check"]
+script = ExtResource("2_stage")
+id = "con_greedy_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "greedy"
+trait_present_stage_id = "con_search"
+trait_absent_stage_id = "con_return"
+
+[sub_resource type="Resource" id="Stage_con_search"]
+script = ExtResource("2_stage")
+id = "con_search"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Даже рядом с погибшим дозорным жадность берёт верх: герой тратит ещё два тика на обыск башни и находит спрятанную разбойником добротную вещь."
+next_stage_id = "con_return_greedy"
+
+[sub_resource type="Resource" id="Stage_con_return"]
+script = ExtResource("2_stage")
+id = "con_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С патрульным знаком погибшего герой возвращается к раненому дозорному, чтобы сообщить ему о смерти товарища."
+next_stage_id = "con_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_con_return_greedy"]
+script = ExtResource("2_stage")
+id = "con_return_greedy"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Забрав найденную вещь и знак погибшего, герой возвращается к раненому дозорному, чтобы сообщить ему о смерти товарища."
+next_stage_id = "con_greedy_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "В холмах герой сначала потратил время на помощь тяжело раненому дозорному и лишь затем отправился к старой башне. Там он нашёл второго дозорного уже мёртвым, забрал его патрульный знак и вернулся сообщить товарищу о случившемся. За помощь и возвращённый знак герой получил пятьдесят золотых."
+outcome_id = "returned_patrol_token"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_con_greedy_end"]
+script = ExtResource("2_stage")
+id = "con_greedy_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой сперва спас раненого дозорного, но из-за задержки нашёл его товарища у башни уже мёртвым. Перед возвращением жадность заставила героя обыскать логово разбойника, где нашлась добротная вещь. Он вернул патрульный знак погибшего и получил пятьдесят золотых за помощь."
+outcome_id = "returned_patrol_token_greedy"
+gold_reward = 50
+equipment_reward_source = ExtResource("5_ilvl10_source")
+equipment_rarity_override = 0
+
+[resource]
+script = ExtResource("1_event")
+id = "smoke_over_old_tower"
+display_name = "Дым над старой башней"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_dex_travel_out"), SubResource("Stage_dex_arrival"), SubResource("Stage_dex_combat"), SubResource("Stage_dex_rescue"), SubResource("Stage_dex_greedy_check"), SubResource("Stage_dex_search"), SubResource("Stage_dex_return"), SubResource("Stage_dex_return_greedy"), SubResource("Stage_dex_end"), SubResource("Stage_dex_greedy_end"), SubResource("Stage_wis_tracks"), SubResource("Stage_wis_travel_out"), SubResource("Stage_wis_observe"), SubResource("Stage_wis_rescue"), SubResource("Stage_wis_greedy_check"), SubResource("Stage_wis_search"), SubResource("Stage_wis_return"), SubResource("Stage_wis_return_greedy"), SubResource("Stage_wis_end"), SubResource("Stage_wis_greedy_end"), SubResource("Stage_con_help"), SubResource("Stage_con_travel_out"), SubResource("Stage_con_dead"), SubResource("Stage_con_greedy_check"), SubResource("Stage_con_search"), SubResource("Stage_con_return"), SubResource("Stage_con_return_greedy"), SubResource("Stage_con_end"), SubResource("Stage_con_greedy_end")])
