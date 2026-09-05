@@ -1,131 +1,74 @@
 # The Hero’s Story — AGENTS.md
 
-This file contains **working rules for Hermes Agent**.
+This file contains the working rules for AI agents operating on The Hero’s Story.
+It is not a design document.
 
-It is not a design document. Do not duplicate the full game design here.
-
-## Project snapshot
+## Project
 
 The Hero’s Story is a Godot 4.x autonomous single-player RPG/simulation about one self-directed hero.
 
-The player does not directly control the hero. The player acts as a god/patron: observes, softly influences decisions, and occasionally intervenes through limited divine abilities.
+The player acts as a god/patron and does not directly control the hero.
 
 Core principle:
 
 > **The hero lives. The world creates circumstances. The player guides.**
 
-Preserve the simulation-first direction and real hero autonomy. Do not turn the project into a standard directly controlled RPG or RTS.
+Preserve the simulation-first direction and real hero autonomy. Do not turn the project into a directly controlled RPG, RTS, or management game.
 
-## Required reading before code work
+## Sources of truth and required reading
 
-Read in this order:
+The Prototype 0.2 Scope is the design authority for intended behaviour. `current-state.md` and the current repository are authoritative for what is implemented now, including documented temporary deviations.
 
-1. `docs/Prototype_0.2_Checklist.md` — short working progress map; never overrides the sources of truth below.
-2. `docs/current-state.md`
-3. `docs/project-map.md`
-4. `docs/dependencies.md`
-5. `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md`
+Before ordinary code work, read:
 
-The latest project documents and current repository are the source of truth.
+1. `docs/current-state.md` — what is implemented now and current temporary deviations;
+2. `docs/project-map.md` — file locations and system ownership;
+3. `docs/dependencies.md` — runtime flows, invariants, and fragile cross-system contracts;
+4. the relevant section(s) of `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md` — intended design.
 
-Do not restore old decisions from chats, attachments, or previous document versions when they conflict with the current project.
+Do not read the full Scope by default for a narrow task. Read it fully only for broad/prototype-wide work, architecture review, or when the required design cannot be determined safely from relevant sections.
+
+Do not restore older decisions from chats, attachments, old documents, or legacy code when they conflict with the current sources of truth.
+
+If code and documents disagree and the discrepancy is not a documented temporary deviation, report it before making a change that depends on resolving it.
 
 ## Working rules
 
-- Prefer small, safe, targeted changes.
-- Modify the fewest files necessary.
-- Preserve unrelated code, scenes, settings, stats, data, and tests.
-- Discussion is not implementation authorization.
-- Do not silently expand the task into adjacent systems.
-- Do not refactor working systems unless the current task requires it.
-- Do not create generic managers, service locators, universal event buses, factories, or abstraction layers without a current concrete need.
-- Do not import Dyna / Dyna Genesis architecture, scripts, mechanics, or assumptions unless Sasha explicitly asks for a comparison.
-- Do not create a git commit, push, PR, or release without Sasha’s explicit separate command.
+- Prefer small, safe, targeted changes and modify the fewest files necessary.
+- Preserve unrelated systems, data, scenes, settings, tests, and behaviour.
+- Discussion or design exploration is not authorization to implement.
+- Do not silently expand the task, refactor unrelated working code, or pre-build future systems.
+- Do not introduce generic managers, service locators, universal event buses, factories, or abstraction layers without a concrete current need.
+- Respect ownership and boundaries documented in `project-map.md` and `dependencies.md`.
+- Keep gameplay logic out of UI and narrative; narrative describes simulation facts, UI presents state and sends approved requests.
+- Keep final hero stats through `StatResolver` and keep one shared Hero/Mob `PowerCalculator`.
+- Do not commit, push, create a PR/release, or make a delivery archive unless Sasha explicitly asks.
 
-When a requirement is ambiguous, prefer the smallest interpretation that satisfies the task without blocking the next approved Prototype 0 step.
+When a requirement is ambiguous, prefer the smallest interpretation that satisfies the approved task. If the ambiguity would require a design or architectural decision, report it instead of guessing.
 
-## Architecture rules
+## Delegation
 
-Keep these responsibilities separate:
+The primary agent remains responsible for architecture, integration, and final verification.
 
-- data/definitions;
-- mutable runtime state;
-- stat calculation;
-- simulation/gameplay;
-- narrative;
-- UI.
+Use subagents only when they provide clear value for substantial search/research, bounded implementation, or independent verification. Do not delegate trivial work; normally use no more than two subagents at once.
 
-Final hero combat stats must flow through:
+Give each subagent one narrow self-contained task with the goal, relevant project rules, allowed/expected file area, constraints, and expected result.
 
-```text
-Hero state / stat sources
-→ StatResolver
-→ CombatStats
-```
+Distinguish the allowed write scope from the read scope. Narrow reading of related callers and contracts is allowed when needed; expanding the write scope requires parent approval within Sasha’s approved task.
 
-Hero and mobs must use one shared Power calculation:
+A subagent must not repeat full project onboarding by default. The parent should provide the needed context; the subagent should read only the files and document/Scope sections genuinely required for its task. For read-only investigation, do not reread the full Scope or all project docs unless the task truly requires them.
 
-```text
-CombatStats
-→ PowerCalculator
-→ Power
-```
+If required design or architecture is missing, the subagent should report the blocker to the parent instead of guessing or broadening into a full-project review.
 
-Do not create separate HeroPower and MobPower formulas.
+Prefer **one task → autonomous work → one concise result**. Avoid repeated parent/subagent back-and-forth unless a real blocker or wrong direction requires another pass.
 
-`QuestRunner` executes an already selected quest. Do not turn it into a container for quest pool logic, QuestScore, combat, diary text, loot, god logic, or UI.
+Do not let two subagents modify the same files concurrently. Subagents must not commit/push or recursively delegate unless the primary agent explicitly requires it.
 
-Gameplay reports facts/state changes. Narrative describes them.
+## Tests and documentation
 
-UI displays state and sends commands; it must not own gameplay rules.
+Run only the narrow tests relevant to the change unless dependencies or risk justify wider validation. Preserve relevant tests and add/update targeted regression coverage when behaviour changes. Never claim a test passed unless it was actually run.
 
-The simulation must remain testable without player-facing UI.
-
-## Scope discipline
-
-The project is building Prototype 0.2. Treat `docs/The_Heros_Story_Prototype_0.2_Scope_EN.md` as the primary design authority and `docs/current-state.md` as the record of what is implemented now.
-
-Implement only the current approved Prototype 0.2 slice. Do not use the larger 0.2 target as permission to silently add later stages or adjacent systems.
-
-Do not expand Prototype 0.2 into systems explicitly outside its Scope, including additional starting classes, final specialization tiers, factions/reputation/wars, NPC heroes, parties/raids, more than two normal cities, procedural world generation, crafting, repair, equipment set bonuses, Legendary equipment, deity progression, endgame, retirement, or offline progression.
-
-Preserve the approved path where relevant:
-
-```text
-loot
-→ QuestLoot / Inventory
-→ Equipment decision
-→ Equipment
-→ StatResolver
-→ CombatStats
-→ Combat / Power
-```
-
-Do not pre-create later systems before the current approved stage requires them.
-
-## Tests
-
-Every gameplay/code change needs narrow validation appropriate to the changed behaviour.
-
-- Preserve existing relevant tests.
-- Add or update targeted regression coverage when behaviour changes.
-- Prefer deterministic simulation tests where possible.
-- Do not rely only on visual/manual testing.
-- Do not rewrite unrelated tests just to make a broken change pass.
-- Do not claim tests passed unless they were actually run.
-
-## Documentation
-
-Use the working docs for their intended purpose:
-
-- `docs/Prototype_0.2_Checklist.md` — short progress checklist; update statuses when implementation truth changes;
-- `docs/current-state.md` — what is implemented now;
-- `docs/project-map.md` — where files and responsibilities live;
-- `docs/dependencies.md` — runtime flows, boundaries, and fragile contracts.
-
-Update them only when their documented truth changes.
-
-Do not update all three files for ordinary tuning-only edits.
+Update `current-state.md`, `project-map.md`, `dependencies.md`, or the Scope only when the truth owned by that document actually changes.
 
 ## Delivery to Sasha
 
@@ -133,12 +76,10 @@ Sasha is not a programmer.
 
 After code work:
 
-- explain changes in plain Russian;
-- list every touched file with its exact project path;
-- briefly say what changed in each file;
-- give simple test steps;
-- mention anything not tested or any known limitation.
+- explain the result in plain Russian;
+- list every touched file with its exact project path and briefly say what changed;
+- report which tests were actually run and their result;
+- give simple manual test steps when useful;
+- mention anything not tested, unresolved, or intentionally left unchanged.
 
-Do not create a delivery ZIP unless Sasha explicitly asks for one.
-
-Do not claim GitHub was updated unless Sasha explicitly requested the commit/push and it was actually done.
+Do not claim GitHub was updated unless commit/push was explicitly requested and actually completed.

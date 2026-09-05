@@ -592,7 +592,7 @@ Contracts:
 - UI sends divine requests through Simulation rather than mutating GodState or hero/combat state directly;
 - divine healing during active combat must update live CombatSession HP rather than stale stored HP;
 - a combat blessing enters the normal effective-stat path through `HeroState.active_effects` / `StatResolver` rather than adding a special extra damage parameter to CombatSession;
-- blessing duration/remaining-fight charges live with the hero effect state; after a finished fight `Simulation` coordinates charge consumption and any required stat refresh rather than making `CombatSession` own persistent blessing lifetime;
+- blessing duration/remaining-fight charges live with the hero effect state; after a finished fight `Simulation` coordinates charge consumption and any required stat refresh rather than making `CombatSession` own persistent blessing lifetime; only fights that started with the blessing consume a charge, so activation during combat applies from the next fight;
 - temporary blessing effects remain excluded from base HeroPower/Hard Filter;
 - guidance only modifies an eligible current offer through the existing QuestEvaluator decision path and cannot bypass Hard Filter;
 - Divine Vision reveals an already-existing unknown dungeon through `DungeonSystem`; it does not create a dungeon or command travel;

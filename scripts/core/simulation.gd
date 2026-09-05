@@ -115,6 +115,8 @@ var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
 var pending_dungeon_preparation = null
+# Only fights that started with the blessing consume its charges.
+var active_combat_uses_blessing: bool = false
 
 func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = [], enable_temporary_events: bool = false) -> void:
 	autonomous_quest_choice = initial_quest_definition == null
@@ -335,6 +337,7 @@ func start_event_combat() -> void:
 	)
 
 func start_combat_session(mob_definition: Resource, combat_context: String, starting_hero_hp: float) -> void:
+	active_combat_uses_blessing = get_combat_buff_fights_remaining() > 0
 	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(get_hero_traits(), mob_definition.category)
 	active_combat_session = combat_simulator.create_session(
 		combat_stats,
@@ -365,7 +368,9 @@ func advance_active_combat(available_seconds: float) -> float:
 		var fought_mob_definition: Resource = active_combat_mob_definition
 		var finished_combat_context: String = active_combat_context
 		var dungeon_was_boss: bool = finished_combat_context == COMBAT_CONTEXT_DUNGEON and dungeon_runner.current_encounter_is_boss()
-		consume_combat_buff_fight()
+		if active_combat_uses_blessing:
+			consume_combat_buff_fight()
+		active_combat_uses_blessing = false
 		active_combat_session = null
 		record_combat_result(fought_mob_definition, combat_result.hero_won)
 		var combat_world_tick: int = get_active_combat_world_tick()
@@ -380,9 +385,9 @@ func advance_active_combat(available_seconds: float) -> float:
 			elif finished_combat_context == COMBAT_CONTEXT_DUNGEON:
 				complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
 			else:
+				var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 				if combat_result.hero_won:
 					resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
-				var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 				if event != null:
 					if event.event_type == QuestEventScript.HERO_DIED:
 						var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
