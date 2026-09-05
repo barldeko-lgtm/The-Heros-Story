@@ -1557,9 +1557,13 @@ Travel occurs through map hexes.
 
 Temporary travel events may activate while the hero travels:
 
-- city → quest/activity;
+- city → quest/activity, including an ordinary dungeon entrance;
 - quest/activity → city;
 - city → city.
+
+Temporary events may therefore interrupt ordinary open-world travel **to an ordinary dungeon**. The current Prototype 0.2 implementation does not yet activate events during the return trip from a completed dungeon. Events also do not activate while the hero is inside `DOING_DUNGEON`, during dungeon combat, or during between-fight preparation.
+
+If the hero dies inside a temporary event encountered while travelling **to** an ordinary dungeon, that road-event death cancels the current trip but does **not** count as a failed dungeon attempt and does not create a dungeon retry-Power penalty, because the hero never entered the dungeon.
 
 A temporary event exists in the world before the hero encounters it. It is not created solely because the hero stepped into a random hex.
 
@@ -1571,9 +1575,9 @@ Each event has:
 - importance / urgency where relevant;
 - one or more authored decision points and outcomes.
 
-For Prototype 0.2, the normal working target is:
+For Prototype 0.2, the current working population cap is:
 
-> **2–4 active temporary travel events on the map at the same time**
+> **up to 5 active temporary travel events on the map at the same time**
 
 Temporary events use a placement radius measured in hex steps. The current normal event footprint is:
 
@@ -1585,13 +1589,21 @@ An authored event may also reserve a **secondary temporary objective hex** when 
 
 An event exists independently of the hero. The hero may travel through its area and encounter it, may alter route because of world circumstances, or may never enter the affected hexes before the event expires.
 
-Exact event spawn frequency, replacement delay, and lifetime values remain balance/tuning questions to be finalized after the real map and long-run simulation pacing can be observed.
+The current event population uses one shared rotation cadence rather than allowing each ordinary event to drift on an unrelated replacement timer:
+
+> **first population at world tick 100 → full unengaged population reroll every 200 world ticks: 300 / 500 / 700 / ...**
+
+At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current four authored events, all four definitions should therefore be selected whenever none is on cooldown; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
+
+If a selected definition cannot fit because an already-active world activity occupies every valid footprint, that definition remains selected for the current cycle and may appear at the first later valid placement opportunity. The system must not cancel or move an already-active hero objective to force event placement.
+
+Engaging a temporary event starts a definition-level cooldown of **500 world ticks counted from the engagement tick**. That definition is excluded from later population selection while the cooldown is active. Ending the cooldown only makes it eligible again; actual return waits for a later shared 200-tick event rotation. An event already being resolved is never aborted by a population rotation. Unengaged authored lifetime/expiry remains a safety boundary, but the normal ordinary-event replacement rhythm is the shared population rotation.
 
 Prototype 0.2 uses one global early-game warm-up gate for temporary events:
 
 > **no temporary event may spawn before world tick 100; the first event population becomes eligible on world tick 100**
 
-This is a world-pacing rule rather than a hero-level requirement. Its purpose is to let the hero live through an initial stretch of ordinary quests and begin differentiating primary attributes before stat-driven formative events can occur. If no valid free footprint exists exactly on tick 100 because an already-active world activity occupies the required area, event placement may wait until the first later valid opportunity; the gate must never cancel or displace the hero's current activity merely to force an event onto the map. Ordinary available quest-board offers may be re-placed around an event at their normal refresh boundary, but an already accepted active quest keeps its real target reservation.
+This is a world-pacing rule rather than a hero-level requirement. Its purpose is to let the hero live through an initial stretch of ordinary quests and begin differentiating primary attributes before stat-driven formative events can occur. If no valid free footprint exists for a selected event because an already-active world activity occupies the required area, placement may wait until the first later valid opportunity inside that population cycle; the gate and later rotations must never cancel or displace the hero's current activity merely to force an event onto the map. Ordinary available quest-board offers may be re-placed around an event at their normal refresh boundary, but an already accepted active quest keeps its real target reservation.
 
 Prototype 0.2 content target:
 
@@ -1777,6 +1789,31 @@ The approved second Starting Region event, `smoke_over_old_tower` / **«Дым �
 - DEX reaches the second patrolman alive and fights the existing ordinary **Bandit** through shared `CombatSession`; WIS spends one tick studying tracks plus three ticks observing the tower and rescues the patrolman without combat; CON spends two ticks helping the already-wounded patrolman, reaches the tower too late, finds the second patrolman dead, and takes his patrol token back as proof;
 - after the tower outcome, every branch performs an **Expressive Greedy** check. Established Greedy adds exactly two authored search ticks and yields one guaranteed **Common / White ilvl 10** equipment item from the normal authored equipment source, without moving the Greed axis and without adding extra Gold;
 - every successful branch returns by real map travel to the encounter location and grants **50 Gold**. The DEX combat branch additionally receives the Bandit's normal combat XP. Only after that return and event completion may the previously interrupted route resume.
+
+### 15.7. Current Authored Event Reference — Poachers' Snares
+
+The approved third Starting Region event, `poachers_snares` / **«Чужие силки»**, is the first concrete three-stage personality story in which one Formative opening is followed by two separate Expressive checks.
+
+- the event uses a normal radius-1 footprint centered on **forest terrain 4–6 hexes from Starting City**, forbids `city`, and remains subject to the same global tick-100 event gate;
+- Stage 1 is a Formative **STR / DEX / WIS** comparison. STR pushes directly through the forest and moves Courage `+5`; DEX follows suspicious tracks and illegal snares and moves Curiosity `+5`; WIS studies the beast signs and chooses a safer route, moving Courage `−5`;
+- STR takes the fastest route but must fight the existing ordinary **Wild Boar** through shared `CombatSession`, receiving its normal 75 combat XP on victory and no ordinary event-equipment drop. DEX avoids combat but spends exactly two more world ticks than the STR base route; WIS avoids combat but spends exactly three more world ticks than STR;
+- at the poachers' camp every branch discovers the bound forest patrolman and the deception. Stage 2 performs an **Expressive Curious** check. Established Curious spends exactly two extra authored search ticks and yields one guaranteed **Common / White ilvl 5** equipment item from the normal authored equipment source, without moving Curiosity;
+- Stage 3 performs an **Expressive Noble** check. Established Noble spends exactly two extra authored ticks helping the patrolman detain the wounded poacher and changes the final Gold reward from **50 Gold to 75 Gold**, without moving Morality;
+- the base total event durations are **STR 8 ticks / DEX 10 ticks / WIS 11 ticks**. Curious adds exactly `+2` ticks and Noble adds exactly `+2` ticks, so the maximum current branch duration is 15 ticks on WIS with both traits;
+- Formative movement is resolved before later Expressive stages. Therefore a DEX choice that raises Curiosity from `+35` to the `+40` activation threshold establishes Curious immediately and the same event's later Stage 2 Curious check must see that newly established trait.
+
+### 15.8. Current Authored Event Reference — Dead Courier
+
+The approved fourth Starting Region event, `dead_courier` / **«Мёртвый гонец»**, is a detective-style event whose Formative opening produces three mechanically different investigation advantages before later personality expression.
+
+- the event uses a normal radius-1 footprint centered on **plains terrain 2–5 hexes from Starting City**; the center forbids both `city` and `road`, so the overturned courier wagon appears away from the main road;
+- the initial Formative decision compares **WIS / DEX / CON**. WIS spends two investigation ticks, recognizes that the supposed bandit attack is false, knowingly remains near the likely killer, and moves Courage `+5` toward Brave. This route guarantees that the culprit is resolved without combat;
+- DEX spends two investigation ticks tracing the mercenary's movements, moves Curiosity `+5`, and finds the criminal's stash. Successful completion of any DEX route grants one guaranteed **Common / White ilvl 5** equipment item through the normal authored source and equipment pipeline;
+- CON spends four investigation ticks stabilizing the badly wounded merchant, moves Morality `+5` toward Noble, and preserves a living witness. Successful completion of any CON route grants **+25 Gold** above the ordinary case reward, explicitly sourced from the merchant's gratitude;
+- Stage 2 performs an **Expressive Devious** check without moving Morality. On DEX and CON, established Devious replaces the otherwise required one-tick shared-combat **Bandit** confrontation with a one-tick manipulative confession scene; without Devious, DEX/CON fight the existing Bandit and receive its normal 90 combat XP on victory. WIS already guarantees safety, so Devious there only adds the authored interrogation scene and never creates combat;
+- Stage 3 performs an **Expressive Curious** check without moving Curiosity. Established Curious adds exactly two search ticks, recovers the missing letter, and raises final Gold by **+50**. Because the Formative DEX movement happens first, DEX may move Curiosity from `+35` to `+40` and immediately unlock this same-event Curious search;
+- successful base rewards are **WIS 75 Gold**, **DEX 75 Gold + one Common ilvl 5 item**, and **CON 100 Gold**. With Curious they become **WIS 125 Gold**, **DEX 125 Gold + the same Common ilvl 5 item**, and **CON 150 Gold**;
+- including the common one-tick intro and one-tick Formative decision, non-Devious/non-Curious successful totals are **WIS 7 ticks / DEX 8 ticks / CON 10 ticks**. Curious adds exactly `+2` ticks. On DEX/CON, Devious replaces the one-tick combat with a one-tick confession scene and therefore preserves the same base duration while removing combat risk.
 
 ---
 
@@ -4946,7 +4983,7 @@ They should be tuned after the relevant systems exist and can be tested together
 - final potion-price tuning beyond the currently approved Level 5 = 100 Gold / Level 10 = 200 Gold Starting City values, including later Level 15 / 20 / 25 tiers;
 - Gold income and spending balance;
 - XP / level pacing where tuning remains necessary;
-- exact temporary-event spawn frequency, replacement delay, and lifetime after the real map is testable;
+- later tuning of the currently implemented temporary-event values if long-run pacing requires it: tick-100 opening, 200-tick shared rotation, five-event cap, and 500-tick post-engagement cooldown;
 - final numerical tuning of ordinary-quest `QuestScore` personality modifiers after long-run simulation and debug-log inspection;
 - normal-dungeon numerical balance;
 - specialization-dungeon encounter composition and final numerical balance;

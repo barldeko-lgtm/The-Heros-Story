@@ -128,13 +128,15 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 		hex_map.STARTING_REGION_ID: hex_map.definition.starting_city_center,
 		hex_map.MID_REGION_ID: hex_map.definition.mid_city_center,
 	}
-	assert(dungeon_system.configure_map_placement(hex_map, world_state, dungeon_origins, dungeon_placement_rng), "Every automatically loaded ordinary dungeon must spawn on a valid reserved map footprint.")
+	var _assert_configure_map_placement_ok_1: bool = dungeon_system.configure_map_placement(hex_map, world_state, dungeon_origins, dungeon_placement_rng)
+	assert(_assert_configure_map_placement_ok_1, "Every automatically loaded ordinary dungeon must spawn on a valid reserved map footprint.")
 	event_system = EventSystemScript.new()
 	event_resolution_rng = SeededRngScript.new(simulation_seed + EVENT_RESOLUTION_RNG_SEED_OFFSET).get_rng()
 	event_runner = EventRunnerScript.new(travel_system, trait_development, event_resolution_rng)
 	if temporary_events_enabled:
 		var event_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + EVENT_PLACEMENT_RNG_SEED_OFFSET).get_rng()
-		assert(event_system.configure_map_placement(hex_map, world_state, dungeon_origins, event_placement_rng, world_clock.world_tick), "Enabled temporary events must configure their map placement before their world-time spawn gate opens.")
+		var _assert_configure_map_placement_ok_2: bool = event_system.configure_map_placement(hex_map, world_state, dungeon_origins, event_placement_rng, world_clock.world_tick)
+		assert(_assert_configure_map_placement_ok_2, "Enabled temporary events must configure their map placement before their world-time spawn gate opens.")
 	world_state.hero_position_changed.connect(on_hero_position_changed)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
@@ -150,7 +152,8 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	if autonomous_quest_choice:
 		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())
 		var quest_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + QUEST_PLACEMENT_RNG_SEED_OFFSET).get_rng()
-		assert(quest_pool.configure_map_placement(hex_map, world_state, hex_map.STARTING_REGION_ID, hex_map.definition.starting_city_center, quest_placement_rng), "Starting City quest board must fit on valid unique map hexes.")
+		var _assert_configure_map_placement_ok_3: bool = quest_pool.configure_map_placement(hex_map, world_state, hex_map.STARTING_REGION_ID, hex_map.definition.starting_city_center, quest_placement_rng)
+		assert(_assert_configure_map_placement_ok_3, "Starting City quest board must fit on valid unique map hexes.")
 	else:
 		var fixed_quest_pool = QuestPoolScript.new([initial_quest_definition], seeded_rng.get_rng())
 		runner_initial_quest = fixed_quest_pool.create_offer(initial_quest_definition)
@@ -163,7 +166,8 @@ func equip_starting_armor() -> void:
 	for item_definition in DefaultStartingArmorDefinitions:
 		var fixed_stats := {"armor": 1.0}
 		var item_instance = ItemInstanceScript.new(item_definition, 1, 0, fixed_stats, [], 0.0, fixed_stats)
-		assert(hero_state.equipment.equip_if_empty(item_instance), "Every starting armor piece must equip into its empty approved slot.")
+		var _assert_equip_if_empty_ok_4: bool = hero_state.equipment.equip_if_empty(item_instance)
+		assert(_assert_equip_if_empty_ok_4, "Every starting armor piece must equip into its empty approved slot.")
 
 func advance_time(delta_seconds: float) -> void:
 	var remaining_seconds := maxf(0.0, delta_seconds * time_scale)
@@ -375,7 +379,8 @@ func advance_active_combat(available_seconds: float) -> float:
 			var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 			if event != null:
 				if event.event_type == QuestEventScript.HERO_DIED:
-					assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead hero must return to the current city map position for resurrection.")
+					var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+					assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
 					refresh_finished_quest_offer_if_needed(event, combat_world_tick)
 				debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
 
@@ -391,6 +396,7 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 	var event_instance = event_runner.active_event
 	assert(event_instance != null, "Finished event combat must still belong to its active event.")
 	var event_name: String = event_instance.definition.display_name
+	var interrupted_loop_state: String = event_runner.get_interrupted_loop_state()
 	var result: Dictionary = event_runner.complete_combat(hero_state, combat_stats, combat_result)
 	if combat_result.hero_won:
 		debug_log.record_combat_event(
@@ -402,9 +408,13 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 	var cancelled_quest = quest_runner.cancel_for_external_failure(hero_state)
 	if autonomous_quest_choice and quest_pool != null and cancelled_quest != null:
 		quest_pool.cancel_taken_offer(cancelled_quest)
-	assert(event_system.complete_instance(event_instance, "combat_failure"), "Failed event must release its world activity.")
+	if interrupted_loop_state == HeroState.TRAVEL_TO_DUNGEON:
+		dungeon_runner.cancel_for_external_failure()
+	var _assert_complete_instance_ok_6: bool = event_system.complete_instance(event_instance, "combat_failure")
+	assert(_assert_complete_instance_ok_6, "Failed event must release its world activity.")
 	event_runner.finalize_failure()
-	assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead event hero must return to the current city map position for resurrection.")
+	var _assert_set_hero_position_ok_7: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+	assert(_assert_set_hero_position_ok_7, "Dead event hero must return to the current city map position for resurrection.")
 	debug_log.record_combat_event(
 		event_narrator.describe_death(hero_state.hero_name, event_name, fought_mob_definition, int(result.get("respawn_ticks_remaining", 0))),
 		combat_world_tick
@@ -427,7 +437,8 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		var retry_growth: float = dungeon_evaluator.get_retry_growth(ordinary_encounters_completed, reached_boss)
 		var required_retry_power: float = dungeon_evaluator.get_required_retry_power(attempt_start_power, ordinary_encounters_completed, reached_boss)
 		dungeon_runner.active_dungeon.record_failed_attempt(attempt_start_power, ordinary_encounters_completed, reached_boss)
-		assert(world_state.set_hero_position(hex_map.definition.starting_city_center), "Dead dungeon hero must return to the current city map position for resurrection.")
+		var _assert_set_hero_position_ok_8: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+		assert(_assert_set_hero_position_ok_8, "Dead dungeon hero must return to the current city map position for resurrection.")
 		debug_log.record_combat_event(
 			dungeon_narrator.describe_death(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, fought_mob_definition, dungeon_runner.respawn_ticks_remaining),
 			combat_world_tick
@@ -447,8 +458,10 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		assert(reward_item != null, "Completed dungeon must produce its guaranteed equipment reward.")
 		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
 		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp)
-		assert(dungeon_system.remove_completed_dungeon_from_map(completed_dungeon), "Completed dungeon must release its map activity and disappear from the map.")
-		assert(dungeon_runner.begin_return_to_city(hero_state, hex_map.definition.starting_city_center), "Completed dungeon must start a real return route to the city.")
+		var _assert_remove_completed_dungeon_from_map_ok_9: bool = dungeon_system.remove_completed_dungeon_from_map(completed_dungeon)
+		assert(_assert_remove_completed_dungeon_from_map_ok_9, "Completed dungeon must release its map activity and disappear from the map.")
+		var _assert_begin_return_to_city_ok_10: bool = dungeon_runner.begin_return_to_city(hero_state, hex_map.definition.starting_city_center)
+		assert(_assert_begin_return_to_city_ok_10, "Completed dungeon must start a real return route to the city.")
 		debug_log.record_combat_event(dungeon_narrator.describe_return_started(hero_state.hero_name, dungeon_definition.display_name, travel_system.get_remaining_steps()), combat_world_tick)
 
 func on_world_tick_completed(completed_tick: int) -> void:
@@ -457,10 +470,15 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		var event_priority_refresh: bool = autonomous_quest_choice \
 			and completed_tick >= EventSystemScript.FIRST_EVENT_SPAWN_TICK \
 			and completed_tick % QuestPoolScript.BOARD_REFRESH_INTERVAL_TICKS == 0 \
-			and event_system.has_unspawned_initial_population()
+			and event_system.needs_population_placement_priority(completed_tick)
 		if event_priority_refresh:
 			quest_pool.release_available_offer_map_targets()
-		for spawned_event in event_system.spawn_initial_population_if_ready(completed_tick):
+		var population_result: Dictionary = event_system.advance_population(completed_tick)
+		for rotated_event in population_result["rotated_out"]:
+			if pending_event_instance == rotated_event:
+				pending_event_instance = null
+			debug_log.record_event(completed_tick, event_narrator.describe_rotated_out(rotated_event))
+		for spawned_event in population_result["spawned"]:
 			debug_log.record_event(completed_tick, event_narrator.describe_spawn(spawned_event))
 		for expired_event in event_system.advance_world_tick(completed_tick):
 			if pending_event_instance == expired_event:
@@ -540,7 +558,7 @@ func begin_pending_event_if_ready(completed_tick: int) -> bool:
 		return false
 	var event_instance = pending_event_instance
 	pending_event_instance = null
-	if not event_system.get_active_events().has(event_instance) or not event_system.engage(event_instance):
+	if not event_system.get_active_events().has(event_instance) or not event_system.engage(event_instance, completed_tick):
 		return false
 	var result: Dictionary = event_runner.begin(hero_state, event_instance)
 	if result.is_empty():
@@ -595,8 +613,10 @@ func advance_event_tick(completed_tick: int) -> void:
 		assert(reward_result.get("item_instance") != null, "Authored event equipment reward must produce one item.")
 		finalize_item_reward(reward_result, completed_tick, previous_max_hp)
 	debug_log.record_event(completed_tick, event_narrator.describe_completed(hero_state.hero_name, event_name, end_stage))
-	assert(event_system.complete_instance(event_instance, end_stage.outcome_id), "Completed event must release its world activity.")
-	assert(event_runner.finish_success(hero_state), "Completed event must restore the interrupted hero activity.")
+	var _assert_complete_instance_ok_11: bool = event_system.complete_instance(event_instance, end_stage.outcome_id)
+	assert(_assert_complete_instance_ok_11, "Completed event must release its world activity.")
+	var _assert_finish_success_ok_12: bool = event_runner.finish_success(hero_state)
+	assert(_assert_finish_success_ok_12, "Completed event must restore the interrupted hero activity.")
 
 func advance_event_respawn_tick(completed_tick: int) -> void:
 	var result: Dictionary = event_runner.advance_respawn(hero_state, combat_stats)
@@ -884,9 +904,12 @@ func advance_dungeon_travel_tick(completed_tick: int) -> void:
 		return
 	if hero_state.loop_state == HeroState.AT_DUNGEON_ENTRANCE:
 		debug_log.record_event(completed_tick, "%s прибыл ко входу в данж «%s»." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name])
-		assert(dungeon_runner.enter(hero_state), "Arrival at a valid active dungeon must begin the expedition without an extra world-tick delay.")
+		var _assert_enter_ok_13: bool = dungeon_runner.enter(hero_state)
+		assert(_assert_enter_ok_13, "Arrival at a valid active dungeon must begin the expedition without an extra world-tick delay.")
+		pending_event_instance = null
 	else:
 		debug_log.record_event(completed_tick, "%s идёт к данжу «%s». Осталось гексов: %d." % [hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, int(result.get("remaining_steps", 0))])
+		begin_pending_event_if_ready(completed_tick)
 
 func advance_dungeon_between_fights_tick(completed_tick: int) -> void:
 	var next_is_boss: bool = dungeon_runner.active_dungeon != null \
@@ -1082,7 +1105,11 @@ func on_hero_position_changed(cell: Vector2i) -> void:
 		return
 	if pending_event_instance != null or event_runner.active_event != null:
 		return
-	if hero_state.loop_state != HeroState.TRAVEL_TO_QUEST and hero_state.loop_state != HeroState.RETURNING_TO_CITY:
+	if not [
+		HeroState.TRAVEL_TO_QUEST,
+		HeroState.RETURNING_TO_CITY,
+		HeroState.TRAVEL_TO_DUNGEON,
+	].has(hero_state.loop_state):
 		return
 	pending_event_instance = event_system.find_encounter_at_hex(cell)
 

@@ -58,13 +58,13 @@ Status:
 ## 4. Personality and autonomous decisions
 
 - 🟡 Current prototype still rolls 1–2 starting established traits, now using the final trait vocabulary; the current rollable subset is `Cautious / Brave / Devious / Noble / Greedy`.
-- 🟡 Current QuestScore personality modifiers read established traits derived from the four personality axes; the first authored temporary event now also applies live formative axis movement, while broader event-driven personality content is still incomplete.
+- 🟡 Current QuestScore personality modifiers read established traits derived from the four personality axes; the current authored temporary events also apply live formative axis movement, while broader event-driven personality content is still incomplete.
 - ✅ Final four Prototype 0.2 personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
 - ✅ Hidden continuous personality values use −100…+100 with ±40 activation and ±20 return-to-neutral hysteresis; starting established traits initialize their matching axis at exactly ±40.
 - ⬜ Starting questionnaire applies small hidden personality shifts that remain below the visible-trait threshold by themselves.
-- 🟡 Decision-point roles Formative / Expressive / Neutral exist in the event framework and are exercised by the first authored event; broader content coverage remains incomplete.
-- 🟡 The first authored Formative decision does not read general personality and moves the matching hidden axis by its authored action meaning; broader content coverage remains incomplete.
-- 🟡 The first authored Expressive trait check reads established Brave without moving the general personality axes; broader content coverage remains incomplete.
+- 🟡 Decision-point roles Formative / Expressive / Neutral exist in the event framework; the current four authored events exercise Formative and Expressive stages, while broader content coverage remains incomplete.
+- 🟡 Authored Formative decisions do not read general personality and move the matching hidden axis by the meaning of the chosen action; current events exercise Courage, Morality, and Curiosity movement.
+- 🟡 Authored Expressive trait checks read established personality without moving the general personality axes; current content exercises Brave, Greedy, Curious, and Noble.
 - ⬜ Neutral decisions neither need to read nor modify general personality.
 - ⬜ Personality and primary-attribute development remain independent; traits do not distribute level-up stat points.
 - ✅ Ordinary quest autonomous selection uses the Scope's personality-adjusted MobPower window: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%.
@@ -91,7 +91,7 @@ Status:
 - ⬜ Full city runtime/context system.
 - ⬜ Autonomous relocation from Starting City to Mid-Level City.
 - ⬜ Mid-Level City as a complete playable economic/quest context.
-- 🟡 Travel interruption and resumption works for the first temporary event while travelling to/from an ordinary quest; broader route contexts and authored event detours remain incomplete.
+- 🟡 Travel interruption and resumption works for the current temporary events while travelling to/from an ordinary quest and while travelling to an ordinary dungeon, including one real event-owned detour; completed-dungeon return travel and city-to-city relocation travel remain incomplete.
 
 ## 6. Ordinary quests and quest board
 
@@ -116,17 +116,19 @@ Status:
 ## 7. Temporary events
 
 - 🟡 Generic placement/reservation foundation already supports event-style radius footprints; radius 1 = 7 reserved hexes.
-- 🟡 `EventSystem` runtime lifecycle is implemented for the first two authored Starting Region events; the final multi-event population is incomplete.
+- 🟡 `EventSystem` runtime lifecycle is implemented for the first four authored Starting Region events; the final multi-event population is incomplete.
 - ✅ Global early-game event gate: no temporary event is placed before world tick 100; the first population becomes eligible on tick 100 and retries later if an active activity temporarily blocks every valid footprint.
-- ⬜ 2–4 simultaneous active temporary events.
-- 🟡 Event lifetime/expiry works for unengaged events; automatic replacement/population maintenance after removal is not implemented yet.
-- 🟡 Travel collision/activation with event areas works for the current authored events.
-- 🟡 Suspend original travel objective → resolve event → resume travel works for the current ordinary-quest travel slice.
+- ✅ Shared temporary-event population rotation: first population at tick 100, then full unengaged rerolls every 200 ticks at 300 / 500 / 700 / ... .
+- ✅ Current population cap is **5 simultaneous temporary events**; with four authored events, all four definitions are selected whenever all are eligible, while any selected definition that cannot immediately fit remains pending for that cycle.
+- ✅ Activating an event starts a **500-world-tick definition cooldown** from engagement; the event cannot be selected again during that cooldown and may return only on a later shared rotation. An event already being resolved is never aborted by a rotation.
+- 🟡 Authored lifetime/expiry remains as a safety boundary for unengaged instances, while the normal current replacement rhythm is the shared 200-tick population rotation.
+- 🟡 Travel collision/activation with event areas works during ordinary quest outbound/return travel and ordinary dungeon outbound travel; completed-dungeon return travel remains excluded.
+- 🟡 Suspend original travel objective → resolve event → resume travel works for current ordinary-quest routes and outbound ordinary-dungeon travel.
 - ✅ Real event-owned `TRAVEL` detours are live: the second event can travel from the encounter point to a separately reserved tower objective, return to the encounter point, then resume the original quest destination without losing it.
 - 🟡 Conditional event options and autonomous reactions work for the current authored events.
 - 🟡 Event decision stages support Formative / Expressive / Neutral roles in the current framework.
-- 🟡 Formative event stages can change hidden personality according to the chosen action without reading current general personality; the first event uses STR → Courage +5, DEX → Morality +5 toward Noble, WIS → Courage −5.
-- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; the first event uses Brave and the second uses Greedy, including a two-tick Common ilvl 10 stash reward branch.
+- 🟡 Formative event stages can change hidden personality according to the chosen action without reading current general personality; current content now includes WIS → Courage +5 in `Мёртвый гонец`, alongside the existing Courage / Morality / Curiosity movements in the first three events.
+- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; current content exercises Brave, Greedy, Curious, Noble, and Devious, including Devious combat avoidance and Curious follow-up investigation in `Мёртвый гонец`.
 - ⬜ Approximately 15–20 handcrafted events across both regions.
 
 ## 8. Dungeons
@@ -268,7 +270,7 @@ Status:
 - 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
 - 🟡 Ordinary quest templates: **22 / 37 current two-city target** (Starting City 22 complete; Mid-Level City currently targets 15).
 - 🟡 Simultaneous quest offers: the intended Starting City target remains **up to 9 offers, 3/3/3 by band**, but the current development build temporarily exposes all eligible templates to avoid no-suitable-quest stalls while this rule is being reconsidered.
-- 🟡 Handcrafted temporary events: **2 / 15–20**.
+- 🟡 Handcrafted temporary events: **3 / 15–20**.
 - 🟡 Ordinary dungeons: **2 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
 - ⬜ Specialization dungeon variants: **0 / 2**.
@@ -304,7 +306,7 @@ This is only a working order, not permission to implement automatically:
 1. Validate the Starting City quest-board pacing in long runs: 22 templates, 8/7/7 bands, 9-offer 3/3/3 rotation, 50-tick shared refresh and 100-tick cooldown.
 2. Add the lightweight starting questionnaire foundation and connect its initial player-distributed attribute pool.
 3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
-4. Expand the now-working temporary-event framework from the first authored event toward the broader 15–20-event population, adding multi-event replacement/pacing and real event detours only as concrete events require them.
+4. Expand the now-working temporary-event framework from the four authored events toward the broader 15–20-event population; shared replacement/pacing and real event detours are already live, while additional travel-interception contexts should be added only when explicitly approved.
 5. Replace the temporary starting established-trait roll with the approved questionnaire's mild hidden starting biases while preserving the already-live four-axis personality model and event-driven development.
 6. Extend the now-working Belt/potion + first-dungeon slice into the remaining ordinary dungeon content.
 7. Implement first Warrior specialization using stats + Brave/Cautious + divine guidance, then the specialization dungeon flow.

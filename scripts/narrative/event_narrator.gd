@@ -2,15 +2,17 @@ class_name EventNarrator
 extends RefCounted
 
 func describe_spawn(event_instance) -> String:
-	return "Событие мира «%s» появилось около гекса (%d, %d), срок до тика %d." % [
+	return "Событие мира «%s» появилось около гекса (%d, %d)." % [
 		event_instance.definition.display_name,
 		event_instance.target_hex.x,
 		event_instance.target_hex.y,
-		event_instance.expire_tick,
 	]
 
 func describe_expired(event_instance) -> String:
 	return "Событие мира «%s» исчезло, так и не встретившись герою." % event_instance.definition.display_name
+
+func describe_rotated_out(event_instance) -> String:
+	return "Событие мира «%s» ушло с карты при плановой смене событий." % event_instance.definition.display_name
 
 func describe_started(event_instance) -> String:
 	return "СОБЫТИЕ «%s»: герой попал в область события; прежний маршрут временно приостановлен." % event_instance.definition.display_name

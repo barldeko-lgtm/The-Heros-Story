@@ -214,6 +214,11 @@ func advance_city_recovery(hero_state, combat_stats: CombatStats) -> Dictionary:
 func owns_respawn_state() -> bool:
 	return failure_recovery_active
 
+func cancel_for_external_failure():
+	var cancelled_dungeon = active_dungeon
+	clear()
+	return cancelled_dungeon
+
 func clear() -> void:
 	active_dungeon = null
 	ordinary_encounters_completed = 0

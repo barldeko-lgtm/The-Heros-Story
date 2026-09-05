@@ -1,0 +1,214 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0005_wild_boar.tres" id="4_boar"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="5_ilvl5_source"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "push_straight_through"
+driver_attribute = "strength"
+next_stage_id = "str_approach"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "follow_hidden_tracks"
+driver_attribute = "dexterity"
+next_stage_id = "dex_tracks"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "study_beast_signs"
+driver_attribute = "wisdom"
+next_stage_id = "wis_detour"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В лесу герой находит у тропы раненого охотника. Тот уверяет, что на него напал дикий зверь, а его товарищ остался один в небольшом лагере глубже в чаще. Он просит проверить лагерь и помочь товарищу, если тот ещё жив."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_approach"]
+script = ExtResource("2_stage")
+id = "str_approach"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой не тратит время на поиски обхода и пробирается к лагерю напрямик. В густом подлеске дорогу ему преграждает разъярённый дикий кабан."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_boar")
+combat_victory_stage_id = "camp_revelation"
+
+[sub_resource type="Resource" id="Stage_dex_tracks"]
+script = ExtResource("2_stage")
+id = "dex_tracks"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой замечает рядом со следами раненого ещё одну цепочку отпечатков, о которой тот умолчал. Потратив время на осторожное движение по ним, герой обнаруживает в лесу несколько запрещённых силков и выходит к лагерю, не столкнувшись со зверем."
+next_stage_id = "camp_revelation"
+
+[sub_resource type="Resource" id="Stage_wis_detour"]
+script = ExtResource("2_stage")
+id = "wis_detour"
+stage_type = 0
+decision_role = 0
+duration_ticks = 5
+scene_text = "Герой внимательно изучает кровь, следы зверя и примятую растительность. Поняв, где держится разъярённый кабан, он выбирает длинный безопасный обход и добирается до лагеря, не вступая в бой."
+next_stage_id = "camp_revelation"
+
+[sub_resource type="Resource" id="Stage_camp_revelation"]
+script = ExtResource("2_stage")
+id = "camp_revelation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В лагере вместо раненого товарища герой находит связанного лесного дозорного. Рядом лежат запрещённые капканы, свежие шкуры и вещи патруля. Освобождённый дозорный объясняет: человек у тропы — браконьер, а его напарник связал дозорного и уже сбежал после неудачной охоты."
+next_stage_id = "curious_check"
+
+[sub_resource type="Resource" id="Stage_curious_check"]
+script = ExtResource("2_stage")
+id = "curious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "curious_search"
+trait_absent_stage_id = "noble_check_standard"
+
+[sub_resource type="Resource" id="Stage_curious_search"]
+script = ExtResource("2_stage")
+id = "curious_search"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Любопытство заставляет героя не ограничиваться очевидными уликами. Два тика он тщательно осматривает лагерь и в спрятанном свёртке находит добротную вещь, оставленную браконьерами."
+next_stage_id = "noble_check_curious"
+
+[sub_resource type="Resource" id="Stage_noble_check_standard"]
+script = ExtResource("2_stage")
+id = "noble_check_standard"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "noble"
+trait_present_stage_id = "noble_detain_standard"
+trait_absent_stage_id = "standard_end"
+
+[sub_resource type="Resource" id="Stage_noble_check_curious"]
+script = ExtResource("2_stage")
+id = "noble_check_curious"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "noble"
+trait_present_stage_id = "noble_detain_curious"
+trait_absent_stage_id = "curious_end"
+
+[sub_resource type="Resource" id="Stage_noble_detain_standard"]
+script = ExtResource("2_stage")
+id = "noble_detain_standard"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Освободить дозорного для благородного героя недостаточно. Вместе они возвращаются к раненому браконьеру и тратят ещё два тика, чтобы задержать его и передать патрулю."
+next_stage_id = "noble_end"
+
+[sub_resource type="Resource" id="Stage_noble_detain_curious"]
+script = ExtResource("2_stage")
+id = "noble_detain_curious"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "После осмотра лагеря благородный герой не хочет оставлять дело незаконченным. Вместе с дозорным он возвращается к раненому браконьеру и тратит ещё два тика, чтобы задержать его и передать патрулю."
+next_stage_id = "curious_noble_end"
+
+[sub_resource type="Resource" id="Stage_standard_end"]
+script = ExtResource("2_stage")
+id = "standard_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Раненый охотник в лесу оказался браконьером. В его лагере герой освободил связанного дозорного и узнал правду о незаконной охоте, после чего оставил дальнейшую погоню патрулю. За спасение дозорный отблагодарил героя пятьюдесятью золотыми."
+outcome_id = "ranger_freed"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_noble_end"]
+script = ExtResource("2_stage")
+id = "noble_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "В лесном лагере герой раскрыл обман браконьеров и освободил связанного дозорного. Благородство не позволило ему остановиться на этом: вместе с дозорным герой вернулся к раненому браконьеру и помог задержать его. Патруль выплатил семьдесят пять золотых."
+outcome_id = "poacher_detained"
+gold_reward = 75
+
+[sub_resource type="Resource" id="Stage_curious_end"]
+script = ExtResource("2_stage")
+id = "curious_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "В лагере браконьеров герой освободил связанного дозорного и узнал правду. Любопытство заставило его тщательно осмотреть укрытие, где нашлась спрятанная добротная вещь. Дальнейшую погоню герой оставил патрулю и получил пятьдесят золотых за спасение."
+outcome_id = "ranger_freed_curious"
+gold_reward = 50
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_curious_noble_end"]
+script = ExtResource("2_stage")
+id = "curious_noble_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой освободил лесного дозорного, тщательно обыскал лагерь браконьеров и нашёл спрятанную вещь. Затем благородство заставило его вернуться вместе с дозорным к раненому браконьеру и помочь задержать преступника. Патруль выплатил семьдесят пять золотых."
+outcome_id = "poacher_detained_curious"
+gold_reward = 75
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[resource]
+script = ExtResource("1_event")
+id = "poachers_snares"
+display_name = "Чужие силки"
+region_id = "starting_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_approach"), SubResource("Stage_str_combat"), SubResource("Stage_dex_tracks"), SubResource("Stage_wis_detour"), SubResource("Stage_camp_revelation"), SubResource("Stage_curious_check"), SubResource("Stage_curious_search"), SubResource("Stage_noble_check_standard"), SubResource("Stage_noble_check_curious"), SubResource("Stage_noble_detain_standard"), SubResource("Stage_noble_detain_curious"), SubResource("Stage_standard_end"), SubResource("Stage_noble_end"), SubResource("Stage_curious_end"), SubResource("Stage_curious_noble_end")])
+

@@ -31,6 +31,15 @@ func create_started_event_simulation(seed: int):
 	simulation.quest_pool.release_available_offer_map_targets()
 	var spawned_events: Array = simulation.event_system.spawn_initial_population_if_ready(100)
 	var old_clearing = find_event_by_id(spawned_events, "old_clearing_ambush")
+	if old_clearing == null:
+		# The global pool may place another radius-1 event first and leave this definition
+		# pending on a particular seed. This test isolates Old Clearing behaviour rather
+		# than testing multi-event packing, which has its own regression coverage.
+		simulation.event_system.clear_instances()
+		var old_clearing_definition = simulation.event_system.get_definition_by_id("old_clearing_ambush")
+		assert(old_clearing_definition != null)
+		assert(simulation.event_system.spawn_definition(old_clearing_definition, simulation.hex_map.definition.starting_city_center, 100))
+		old_clearing = find_event_by_id(simulation.event_system.get_active_events(), "old_clearing_ambush")
 	assert(old_clearing != null, "First slice must spawn the authored Old Clearing event once world tick 100 is eligible.")
 	assert(simulation.quest_pool.assign_map_targets_to_current_offers(), "Quest offers must be placeable around the newly spawned event footprint.")
 	var available_quests: Array = simulation.quest_pool.get_available_quests()

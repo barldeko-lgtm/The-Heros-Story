@@ -26,7 +26,8 @@ func advance(hero_state, combat_stats: CombatStats = null):
 			hero_state.active_quest = quest_definition
 			map_travel_active = can_use_map_travel()
 			if map_travel_active:
-				assert(travel_system.begin_travel(quest_definition.target_hex), "Selected map-backed quest must have a valid route to its target.")
+				var _assert_begin_travel_ok_1: bool = travel_system.begin_travel(quest_definition.target_hex)
+				assert(_assert_begin_travel_ok_1, "Selected map-backed quest must have a valid route to its target.")
 				travel_ticks_remaining = travel_system.get_remaining_steps()
 			else:
 				travel_ticks_remaining = ceili(quest_definition.distance_km)
@@ -48,7 +49,8 @@ func advance(hero_state, combat_stats: CombatStats = null):
 				if completed_mob_count >= quest_definition.mob_count:
 					hero_state.loop_state = HeroState.RETURNING_TO_CITY
 					if map_travel_active:
-						assert(travel_system.begin_travel(city_center), "Completed map-backed quest must have a valid route back to its city.")
+						var _assert_begin_travel_ok_2: bool = travel_system.begin_travel(city_center)
+						assert(_assert_begin_travel_ok_2, "Completed map-backed quest must have a valid route back to its city.")
 						travel_ticks_remaining = travel_system.get_remaining_steps()
 					else:
 						travel_ticks_remaining = ceili(quest_definition.distance_km)

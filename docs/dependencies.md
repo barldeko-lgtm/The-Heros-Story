@@ -19,13 +19,16 @@ Current temporary-event branch:
 
 ```text
 world ticks 0–99 → EventSystem configured, no temporary-event placement
-world tick 100 and later 50-tick board refreshes while initial events remain unspawned
+world tick 100, then shared event rotations at 300 / 500 / 700 / ...
 → available quest-board map reservations are released
-→ initial event population gets placement priority
+→ EventSystem removes the previous cycle's unengaged events
+→ selects up to 5 eligible definitions not active / not on engagement cooldown
+→ selected event population gets placement priority
 → quest board is rebuilt around successful event footprints
 →
 WorldState.hero_position_changed
 → EventSystem encounter lookup / pending activation
+→ engagement starts a 500-world-tick cooldown for that event definition
 → EventRunner suspends TravelSystem
 → authored SCENE / DECISION / TRAVEL / COMBAT / END stages
 → optional event detour uses TravelSystem.begin_detour() while preserving the suspended original destination
@@ -37,11 +40,18 @@ WorldState.hero_position_changed
 
 Temporary-event warm-up / placement contracts:
 - temporary-event definitions may be loaded/configured from game start, but `EventSystem` must not place any event footprint before world tick 100;
-- when the gate opens, Simulation releases only the currently available quest-board map reservations before EventSystem tries to place the initial population; an already taken active quest target is not part of that release and is never displaced to force an event;
-- if an active activity still blocks every valid event footprint, the unspawned definition remains eligible; EventSystem keeps ordinary per-tick eligibility checks, and each later 50-tick quest-board refresh again gives pending initial events placement priority before rebuilding the board around successful event reservations.
+- when the gate opens on tick 100 and at each later 200-tick population rotation (300 / 500 / 700 / ...), Simulation releases only the currently available quest-board map reservations before EventSystem rerolls the event population; an already taken active quest target is not part of that release and is never displaced to force an event;
+- each population cycle selects no more than five eligible event definitions without replacement through the seeded event-placement RNG. A definition is ineligible while the same definition is already active or while its 500-tick engagement cooldown is still running;
+- if an active activity still blocks every valid footprint for a definition selected into the current cycle, that definition remains pending for the same cycle; EventSystem retries placement on later ticks, and each later 50-tick quest-board refresh again gives the pending selected event placement priority before rebuilding available quest markers;
+- the 500-tick cooldown begins when `EventSystem.engage()` succeeds, not when the event later completes. A definition becomes eligible when that cooldown reaches zero but can only re-enter the map when selected by a later shared population rotation;
+- a shared population rotation removes and releases every unengaged event from the preceding cycle but never aborts an instance already engaged by the hero; that instance remains active until its normal success/failure cleanup;
 - a definition may own one optional secondary objective in the current event framework; EventSystem must choose and reserve it atomically with the primary event placement and release both reservations together on completion, expiry, or failure;
 - `TravelSystem.begin_detour()` may replace the current event-owned route but must preserve `suspended_destination`; only final event success resumes that original destination from the hero's then-current map hex;
 - the actual hex where the hero engaged the event is recorded in `EventInstance.encounter_hex`, so a later event `TRAVEL` stage may explicitly return there even when activation happened on a neighboring radius cell rather than the event center.
+- `Simulation.on_hero_position_changed()` checks temporary-event encounters during `TRAVEL_TO_QUEST`, `RETURNING_TO_CITY`, and outbound `TRAVEL_TO_DUNGEON`; `DUNGEON_RETURNING_TO_CITY` and dungeon execution/combat/between-fight states remain excluded;
+- the outbound dungeon runner finishes its current one-hex movement transition before `Simulation.begin_pending_event_if_ready()` begins a newly encountered event, preserving the no-reentrant-state-change contract used by quest travel;
+- successful event completion restores `TRAVEL_TO_DUNGEON` and resumes the suspended dungeon destination from the hero's current hex;
+- if event combat kills the hero while the interrupted state was `TRAVEL_TO_DUNGEON`, `DungeonRunner.cancel_for_external_failure()` clears expedition runtime without calling `DungeonInstance.record_failed_attempt()`, so no retry-Power penalty is created before actual dungeon entry.
 
 Live combat:
 
@@ -150,6 +160,8 @@ Contracts:
 - the first temporary event already applies authored Formative movement through `TraitDevelopment.apply_movement()`: STR → Courage +5, DEX → Morality +5, WIS → Courage −5; the DEX rescue branch therefore moves toward Noble, while crossing ±40 establishes the corresponding trait and later movement follows the same ±20 hysteresis;
 - its later Brave check is Expressive: it reads the established trait through `TraitDevelopment.has_trait()` and does not award additional Brave movement;
 - the second temporary event uses DEX → Courage +5, WIS → Courage −5, and CON → Morality +5; its later Greedy check is Expressive and therefore leaves the Greed axis unchanged even when it spends two extra ticks searching and awards the authored Common ilvl 10 stash item;
+- the third temporary event uses STR → Courage +5, DEX → Curiosity +5, and WIS → Courage −5, then chains Expressive Curious and Noble checks. Expressive Curious may add two search ticks plus an authored Common ilvl 5 item, while Expressive Noble may add two detention ticks and increase final Gold from 50 to 75; neither Expressive check moves its axis. Because Formative movement is applied before later stages, a DEX choice that moves Curiosity from +35 to +40 establishes Curious in time for that same event's later Curious check;
+- the fourth temporary event uses WIS → Courage +5, DEX → Curiosity +5, and CON → Morality +5. Its first branches must remain mechanically distinct: WIS guarantees no Bandit combat, DEX guarantees one authored Common ilvl 5 equipment reward on successful completion, and CON raises successful completion Gold by 25 through the rescued witness. Later Devious and Curious checks are Expressive and never move their axes; Devious replaces the DEX/CON Bandit fight with confession, while Curious adds two letter-search ticks and +50 Gold. A DEX formative +5 may establish Curious in time for that same event's later Curious check;
 - `Simulation.get_hero_traits()` is the compatibility boundary consumed by quest/combat/UI systems;
 - UI may display axis values and threshold state but must not own personality-transition rules.
 

@@ -1,0 +1,417 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=46 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0006_bandit.tres" id="4_bandit"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="5_ilvl5_source"]
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "read_the_scene"
+driver_attribute = "wisdom"
+next_stage_id = "wis_investigation"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "follow_the_tracks"
+driver_attribute = "dexterity"
+next_stage_id = "dex_investigation"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "save_the_witness"
+driver_attribute = "constitution"
+next_stage_id = "con_investigation"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На равнине вдали от большой дороги герой замечает перевёрнутую почтовую повозку. Рядом лежит мёртвый городской гонец. Неподалёку находятся двое живых: тяжело раненый торговец и молодой наёмник. Оба говорят, что на них напала банда разбойников, но детали их рассказов не сходятся."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_WIS"), SubResource("Option_DEX"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_wis_investigation"]
+script = ExtResource("2_stage")
+id = "wis_investigation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой два тика спокойно разбирает картину происшествия. Следов большой банды нет, кровь и положение тела показывают, что гонца убили уже после остановки повозки. Понимая, что убийца почти наверняка всё ещё рядом, герой всё равно остаётся и продолжает расследование."
+next_stage_id = "wis_devious_check"
+
+[sub_resource type="Resource" id="Stage_dex_investigation"]
+script = ExtResource("2_stage")
+id = "dex_investigation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой два тика восстанавливает цепочку следов вокруг повозки. Он видит, что наёмник после смерти гонца возвращался к телу, а затем отходил к обочине. Там находится небольшой тайник с вещами преступника и одной добротной вещью, которую герой сможет забрать после развязки."
+next_stage_id = "dex_devious_check"
+
+[sub_resource type="Resource" id="Stage_con_investigation"]
+script = ExtResource("2_stage")
+id = "con_investigation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой не бросает тяжело раненого торговца ради улик. Четыре тика уходят на остановку крови, перевязку и возвращение свидетеля в сознание. Торговец подтверждает, что наёмник ударил его, когда он попытался помешать тому обыскивать тело гонца."
+next_stage_id = "con_devious_check"
+
+[sub_resource type="Resource" id="Stage_wis_devious_check"]
+script = ExtResource("2_stage")
+id = "wis_devious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "devious"
+trait_present_stage_id = "wis_devious_interrogation"
+trait_absent_stage_id = "wis_curious_check_direct"
+
+[sub_resource type="Resource" id="Stage_dex_devious_check"]
+script = ExtResource("2_stage")
+id = "dex_devious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "devious"
+trait_present_stage_id = "dex_devious_interrogation"
+trait_absent_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_con_devious_check"]
+script = ExtResource("2_stage")
+id = "con_devious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "devious"
+trait_present_stage_id = "con_devious_interrogation"
+trait_absent_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_wis_devious_interrogation"]
+script = ExtResource("2_stage")
+id = "wis_devious_interrogation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Хитрый герой не выкладывает свои выводы сразу. Он врёт наёмнику, будто уже знает заказчика и судьбу пропавшего письма. Наёмник путается, выдаёт подробности, которых посторонний знать не мог, и понимает, что дальше отрицать бессмысленно."
+next_stage_id = "wis_curious_check_devious"
+
+[sub_resource type="Resource" id="Stage_dex_devious_interrogation"]
+script = ExtResource("2_stage")
+id = "dex_devious_interrogation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой блефует, будто уже нашёл спрятанное письмо вместе с тайником. Наёмник принимает ложь за правду, срывается и признаётся: его наняли перехватить письмо, гонца он убил, а торговца ранил как свидетеля."
+next_stage_id = "dex_curious_check_devious"
+
+[sub_resource type="Resource" id="Stage_con_devious_interrogation"]
+script = ExtResource("2_stage")
+id = "con_devious_interrogation"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой преувеличивает показания спасённого торговца и уверяет наёмника, что тот уже рассказал всё до последней детали. Подозреваемый ломается и признаётся в убийстве гонца и попытке перехватить важное письмо."
+next_stage_id = "con_curious_check_devious"
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "dex_curious_check_fight"
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "con_curious_check_fight"
+
+[sub_resource type="Resource" id="Stage_wis_curious_check_direct"]
+script = ExtResource("2_stage")
+id = "wis_curious_check_direct"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "wis_search_direct"
+trait_absent_stage_id = "wis_end_direct"
+
+[sub_resource type="Resource" id="Stage_wis_curious_check_devious"]
+script = ExtResource("2_stage")
+id = "wis_curious_check_devious"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "wis_search_devious"
+trait_absent_stage_id = "wis_end_devious"
+
+[sub_resource type="Resource" id="Stage_dex_curious_check_fight"]
+script = ExtResource("2_stage")
+id = "dex_curious_check_fight"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "dex_search_fight"
+trait_absent_stage_id = "dex_end_fight"
+
+[sub_resource type="Resource" id="Stage_dex_curious_check_devious"]
+script = ExtResource("2_stage")
+id = "dex_curious_check_devious"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "dex_search_devious"
+trait_absent_stage_id = "dex_end_devious"
+
+[sub_resource type="Resource" id="Stage_con_curious_check_fight"]
+script = ExtResource("2_stage")
+id = "con_curious_check_fight"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "con_search_fight"
+trait_absent_stage_id = "con_end_fight"
+
+[sub_resource type="Resource" id="Stage_con_curious_check_devious"]
+script = ExtResource("2_stage")
+id = "con_curious_check_devious"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "con_search_devious"
+trait_absent_stage_id = "con_end_devious"
+
+[sub_resource type="Resource" id="Stage_wis_search_direct"]
+script = ExtResource("2_stage")
+id = "wis_search_direct"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Раскрыть убийство любопытному герою недостаточно. Ещё два тика он обыскивает место происшествия и находит спрятанное письмо, из-за которого погиб гонец."
+next_stage_id = "wis_end_direct_curious"
+
+[sub_resource type="Resource" id="Stage_wis_search_devious"]
+script = ExtResource("2_stage")
+id = "wis_search_devious"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "После признания любопытство не позволяет герою закончить дело. Ещё два тика он ищет спрятанное письмо и находит его неподалёку от повозки."
+next_stage_id = "wis_end_devious_curious"
+
+[sub_resource type="Resource" id="Stage_dex_search_fight"]
+script = ExtResource("2_stage")
+id = "dex_search_fight"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "После схватки герой продолжает расследование. Любопытство заставляет его ещё два тика искать главный предмет преступления, и рядом с тайником обнаруживается спрятанное письмо."
+next_stage_id = "dex_end_fight_curious"
+
+[sub_resource type="Resource" id="Stage_dex_search_devious"]
+script = ExtResource("2_stage")
+id = "dex_search_devious"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Получив признание, герой всё равно не останавливается. Ещё два тика он проверяет окрестности найденного тайника и обнаруживает спрятанное письмо."
+next_stage_id = "dex_end_devious_curious"
+
+[sub_resource type="Resource" id="Stage_con_search_fight"]
+script = ExtResource("2_stage")
+id = "con_search_fight"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Наёмник побеждён, но любопытный герой хочет понять причину убийства до конца. Ещё два тика поиска приводят его к спрятанному письму."
+next_stage_id = "con_end_fight_curious"
+
+[sub_resource type="Resource" id="Stage_con_search_devious"]
+script = ExtResource("2_stage")
+id = "con_search_devious"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "После признания преступника герой ещё два тика ищет то, ради чего погиб гонец, и находит спрятанное письмо."
+next_stage_id = "con_end_devious_curious"
+
+[sub_resource type="Resource" id="Stage_wis_end_direct"]
+script = ExtResource("2_stage")
+id = "wis_end_direct"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "На равнине герой нашёл убитого гонца и понял, что рассказ о нападении банды был ложью. Он остался рядом с вероятным убийцей, разобрал противоречия и безопасно добился развязки без боя. За раскрытое убийство городские власти выплатили семьдесят пять золотых."
+outcome_id = "wis_case_solved"
+gold_reward = 75
+
+[sub_resource type="Resource" id="Stage_wis_end_direct_curious"]
+script = ExtResource("2_stage")
+id = "wis_end_direct_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой раскрыл убийство гонца без боя, а затем из любопытства продолжил поиски и нашёл пропавшее письмо. За раскрытое преступление и возвращённую корреспонденцию город выплатил сто двадцать пять золотых."
+outcome_id = "wis_case_solved_letter"
+gold_reward = 125
+
+[sub_resource type="Resource" id="Stage_wis_end_devious"]
+script = ExtResource("2_stage")
+id = "wis_end_devious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Разобрав картину убийства гонца, герой хитростью заставил наёмника выдать себя и признаться. Дело закончилось без боя, а городские власти выплатили семьдесят пять золотых."
+outcome_id = "wis_confession"
+gold_reward = 75
+
+[sub_resource type="Resource" id="Stage_wis_end_devious_curious"]
+script = ExtResource("2_stage")
+id = "wis_end_devious_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой раскрыл убийство гонца, хитростью добился признания наёмника и затем нашёл спрятанное письмо. За убийцу и возвращённую корреспонденцию город выплатил сто двадцать пять золотых."
+outcome_id = "wis_confession_letter"
+gold_reward = 125
+
+[sub_resource type="Resource" id="Stage_dex_end_fight"]
+script = ExtResource("2_stage")
+id = "dex_end_fight"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Следы у мёртвого гонца вывели героя к тайнику наёмника и доказали, что тот обыскивал тело. Преступник попытался прорваться силой и был побеждён. За раскрытое убийство герой получил семьдесят пять золотых и забрал найденную в тайнике добротную вещь."
+outcome_id = "dex_fight_case_solved"
+gold_reward = 75
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_dex_end_fight_curious"]
+script = ExtResource("2_stage")
+id = "dex_end_fight_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Проследив путь наёмника, герой нашёл его тайник, затем победил преступника в бою и продолжил поиски до обнаружения пропавшего письма. Город выплатил сто двадцать пять золотых, а найденная в тайнике добротная вещь осталась у героя."
+outcome_id = "dex_fight_case_solved_letter"
+gold_reward = 125
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_dex_end_devious"]
+script = ExtResource("2_stage")
+id = "dex_end_devious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Следы привели героя к тайнику наёмника. Хитрым блефом герой заставил преступника признаться и избежал драки. За раскрытое убийство он получил семьдесят пять золотых и забрал добротную вещь из тайника."
+outcome_id = "dex_confession"
+gold_reward = 75
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_dex_end_devious_curious"]
+script = ExtResource("2_stage")
+id = "dex_end_devious_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой по следам нашёл тайник наёмника, блефом добился признания, а затем из любопытства отыскал и пропавшее письмо. Город выплатил сто двадцать пять золотых, а добротная вещь из тайника осталась у героя."
+outcome_id = "dex_confession_letter"
+gold_reward = 125
+equipment_reward_source = ExtResource("5_ilvl5_source")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_con_end_fight"]
+script = ExtResource("2_stage")
+id = "con_end_fight"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой прежде всего спас тяжело раненого торговца, и его показания разоблачили наёмника. Преступник попытался прорваться и был побеждён. Город выплатил семьдесят пять золотых, а спасённый торговец добавил ещё двадцать пять в благодарность."
+outcome_id = "con_fight_witness_saved"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_con_end_fight_curious"]
+script = ExtResource("2_stage")
+id = "con_end_fight_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Спасённый торговец помог герою разоблачить убийцу гонца. После победы над наёмником герой нашёл пропавшее письмо. Город и благодарный торговец вместе выплатили сто пятьдесят золотых."
+outcome_id = "con_fight_witness_saved_letter"
+gold_reward = 150
+
+[sub_resource type="Resource" id="Stage_con_end_devious"]
+script = ExtResource("2_stage")
+id = "con_end_devious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой спас тяжело раненого торговца, а затем использовал его показания и хитрый блеф, чтобы заставить наёмника признаться без боя. Город выплатил семьдесят пять золотых, торговец добавил ещё двадцать пять."
+outcome_id = "con_confession_witness_saved"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_con_end_devious_curious"]
+script = ExtResource("2_stage")
+id = "con_end_devious_curious"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой спас торговца, хитростью добился признания убийцы и затем нашёл пропавшее письмо. За раскрытое дело, возвращённую корреспонденцию и спасённую жизнь он получил в общей сложности сто пятьдесят золотых."
+outcome_id = "con_confession_witness_saved_letter"
+gold_reward = 150
+
+[resource]
+script = ExtResource("1_event")
+id = "dead_courier"
+display_name = "Мёртвый гонец"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city", "road")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_wis_investigation"), SubResource("Stage_dex_investigation"), SubResource("Stage_con_investigation"), SubResource("Stage_wis_devious_check"), SubResource("Stage_dex_devious_check"), SubResource("Stage_con_devious_check"), SubResource("Stage_wis_devious_interrogation"), SubResource("Stage_dex_devious_interrogation"), SubResource("Stage_con_devious_interrogation"), SubResource("Stage_dex_combat"), SubResource("Stage_con_combat"), SubResource("Stage_wis_curious_check_direct"), SubResource("Stage_wis_curious_check_devious"), SubResource("Stage_dex_curious_check_fight"), SubResource("Stage_dex_curious_check_devious"), SubResource("Stage_con_curious_check_fight"), SubResource("Stage_con_curious_check_devious"), SubResource("Stage_wis_search_direct"), SubResource("Stage_wis_search_devious"), SubResource("Stage_dex_search_fight"), SubResource("Stage_dex_search_devious"), SubResource("Stage_con_search_fight"), SubResource("Stage_con_search_devious"), SubResource("Stage_wis_end_direct"), SubResource("Stage_wis_end_direct_curious"), SubResource("Stage_wis_end_devious"), SubResource("Stage_wis_end_devious_curious"), SubResource("Stage_dex_end_fight"), SubResource("Stage_dex_end_fight_curious"), SubResource("Stage_dex_end_devious"), SubResource("Stage_dex_end_devious_curious"), SubResource("Stage_con_end_fight"), SubResource("Stage_con_end_fight_curious"), SubResource("Stage_con_end_devious"), SubResource("Stage_con_end_devious_curious")])

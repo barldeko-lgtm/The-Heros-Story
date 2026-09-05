@@ -8,8 +8,10 @@ const DEFAULT_EVENT_DIRECTORIES := [
 	"res://data/events/starting_region",
 	"res://data/events/mid_region",
 ]
-const MAX_ACTIVE_EVENTS: int = 4
+const MAX_ACTIVE_EVENTS: int = 5
 const FIRST_EVENT_SPAWN_TICK: int = 100
+const EVENT_ROTATION_INTERVAL_TICKS: int = 200
+const EVENT_COOLDOWN_AFTER_ENGAGE_TICKS: int = 500
 
 var event_definitions: Array[Resource] = []
 var active_events: Array = []
@@ -18,7 +20,9 @@ var hex_map
 var world_state
 var placement_random_number_generator: RandomNumberGenerator
 var distance_origin_by_region: Dictionary = {}
-var spawned_definition_ids: Dictionary = {}
+var current_rotation_tick: int = -1
+var current_cycle_definition_ids: Array[String] = []
+var cooldown_until_tick_by_definition: Dictionary = {}
 
 func _init(initial_definitions: Array = []) -> void:
 	if initial_definitions.is_empty():
@@ -70,34 +74,126 @@ func configure_map_placement(initial_hex_map, initial_world_state, initial_dista
 	if hex_map == null or world_state == null or placement_random_number_generator == null:
 		return false
 	clear_instances()
-	spawned_definition_ids.clear()
+	current_rotation_tick = -1
+	current_cycle_definition_ids.clear()
+	cooldown_until_tick_by_definition.clear()
 	spawn_initial_population_if_ready(spawn_tick)
 	return true
 
 func spawn_initial_population_if_ready(world_tick: int) -> Array:
-	var spawned_events: Array = []
+	return advance_population(world_tick)["spawned"]
+
+func has_unspawned_initial_population() -> bool:
+	if current_rotation_tick < FIRST_EVENT_SPAWN_TICK:
+		return not event_definitions.is_empty()
+	return has_pending_current_population(current_rotation_tick)
+
+func is_population_rotation_tick(world_tick: int) -> bool:
+	return world_tick >= FIRST_EVENT_SPAWN_TICK and (world_tick - FIRST_EVENT_SPAWN_TICK) % EVENT_ROTATION_INTERVAL_TICKS == 0
+
+func get_latest_population_rotation_tick(world_tick: int) -> int:
 	if world_tick < FIRST_EVENT_SPAWN_TICK:
-		return spawned_events
+		return -1
+	var elapsed_ticks: int = world_tick - FIRST_EVENT_SPAWN_TICK
+	return FIRST_EVENT_SPAWN_TICK + (elapsed_ticks / EVENT_ROTATION_INTERVAL_TICKS) * EVENT_ROTATION_INTERVAL_TICKS
+
+func needs_population_placement_priority(world_tick: int) -> bool:
+	if world_tick < FIRST_EVENT_SPAWN_TICK:
+		return false
+	var latest_rotation_tick: int = get_latest_population_rotation_tick(world_tick)
+	if current_rotation_tick < latest_rotation_tick:
+		return true
+	return has_pending_current_population(world_tick)
+
+func advance_population(world_tick: int) -> Dictionary:
+	var result := {
+		"rotated_out": [],
+		"spawned": [],
+	}
+	if world_tick < FIRST_EVENT_SPAWN_TICK:
+		return result
 	if hex_map == null or world_state == null or placement_random_number_generator == null:
-		return spawned_events
+		return result
+
+	var latest_rotation_tick: int = get_latest_population_rotation_tick(world_tick)
+	if current_rotation_tick < latest_rotation_tick:
+		result["rotated_out"] = begin_population_rotation(latest_rotation_tick)
+	result["spawned"] = spawn_current_population_if_ready(world_tick)
+	return result
+
+func begin_population_rotation(rotation_tick: int) -> Array:
+	var rotated_out: Array = []
+	for instance in active_events.duplicate():
+		if instance == null or instance.engaged:
+			continue
+		release_instance_reservations(instance)
+		active_events.erase(instance)
+		rotated_out.append(instance)
+
+	current_rotation_tick = rotation_tick
+	current_cycle_definition_ids.clear()
+	var occupied_definition_ids: Dictionary = {}
+	for instance in active_events:
+		if instance != null and instance.definition != null:
+			occupied_definition_ids[instance.definition.id] = true
+
+	var candidates: Array[Resource] = []
 	for definition in event_definitions:
+		if not distance_origin_by_region.has(definition.region_id):
+			continue
+		if occupied_definition_ids.has(definition.id):
+			continue
+		if is_definition_on_cooldown(definition.id, rotation_tick):
+			continue
+		candidates.append(definition)
+
+	var available_slots: int = maxi(0, MAX_ACTIVE_EVENTS - active_events.size())
+	while current_cycle_definition_ids.size() < available_slots and not candidates.is_empty():
+		var candidate_index: int = placement_random_number_generator.randi_range(0, candidates.size() - 1)
+		var definition: Resource = candidates[candidate_index]
+		candidates.remove_at(candidate_index)
+		current_cycle_definition_ids.append(definition.id)
+	return rotated_out
+
+func spawn_current_population_if_ready(world_tick: int) -> Array:
+	var spawned_events: Array = []
+	for definition_id in current_cycle_definition_ids:
 		if active_events.size() >= MAX_ACTIVE_EVENTS:
 			break
-		if spawned_definition_ids.has(definition.id):
+		if is_definition_active(definition_id) or is_definition_on_cooldown(definition_id, world_tick):
 			continue
-		if not distance_origin_by_region.has(definition.region_id):
+		var definition = get_definition_by_id(definition_id)
+		if definition == null or not distance_origin_by_region.has(definition.region_id):
 			continue
 		if not spawn_definition(definition, distance_origin_by_region[definition.region_id], world_tick):
 			continue
-		spawned_definition_ids[definition.id] = true
 		spawned_events.append(active_events[active_events.size() - 1])
 	return spawned_events
 
-func has_unspawned_initial_population() -> bool:
+func has_pending_current_population(world_tick: int) -> bool:
+	for definition_id in current_cycle_definition_ids:
+		if is_definition_active(definition_id) or is_definition_on_cooldown(definition_id, world_tick):
+			continue
+		return true
+	return false
+
+func get_definition_by_id(definition_id: String):
 	for definition in event_definitions:
-		if distance_origin_by_region.has(definition.region_id) and not spawned_definition_ids.has(definition.id):
+		if definition != null and definition.id == definition_id:
+			return definition
+	return null
+
+func is_definition_active(definition_id: String) -> bool:
+	for instance in active_events:
+		if instance != null and instance.definition != null and instance.definition.id == definition_id:
 			return true
 	return false
+
+func is_definition_on_cooldown(definition_id: String, world_tick: int) -> bool:
+	return world_tick < int(cooldown_until_tick_by_definition.get(definition_id, 0))
+
+func get_definition_cooldown_until_tick(definition_id: String) -> int:
+	return int(cooldown_until_tick_by_definition.get(definition_id, 0))
 
 func spawn_definition(definition: Resource, distance_origin: Vector2i, spawn_tick: int) -> bool:
 	var valid_centers: Array[Vector2i] = placement_finder.find_valid_centers(
@@ -209,8 +305,15 @@ func find_encounter_at_hex(cell: Vector2i):
 			return instance
 	return null
 
-func engage(instance) -> bool:
-	return instance != null and active_events.has(instance) and instance.engage()
+func engage(instance, world_tick: int = 0) -> bool:
+	if instance == null or not active_events.has(instance) or not instance.engage():
+		return false
+	var cooldown_until_tick: int = world_tick + EVENT_COOLDOWN_AFTER_ENGAGE_TICKS
+	cooldown_until_tick_by_definition[instance.definition.id] = maxi(
+		get_definition_cooldown_until_tick(instance.definition.id),
+		cooldown_until_tick
+	)
+	return true
 
 func complete_instance(instance, outcome_id: String) -> bool:
 	if instance == null or not active_events.has(instance):

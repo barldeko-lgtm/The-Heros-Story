@@ -56,6 +56,9 @@ func get_current_mob_definition():
 		return null
 	return stage.mob_definition
 
+func get_interrupted_loop_state() -> String:
+	return interrupted_loop_state
+
 func enter_stage(hero_state, stage_id: String) -> void:
 	assert(active_event != null and active_event.definition != null, "EventRunner requires an active event before entering a stage.")
 	var stage = active_event.definition.get_stage(stage_id)
@@ -66,7 +69,8 @@ func enter_stage(hero_state, stage_id: String) -> void:
 	if stage.stage_type == EventStageDefinitionScript.StageType.TRAVEL:
 		var travel_target: Vector2i = get_travel_target(stage)
 		assert(travel_target != active_event.INVALID_TARGET_HEX, "Event TRAVEL stage requires a valid authored destination.")
-		assert(travel_system.begin_detour(travel_target), "Event TRAVEL stage must start a real map detour.")
+		var _assert_begin_detour_ok_1: bool = travel_system.begin_detour(travel_target)
+		assert(_assert_begin_detour_ok_1, "Event TRAVEL stage must start a real map detour.")
 	if stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
 		hero_state.loop_state = HeroState.EVENT_COMBAT
 	else:
@@ -215,7 +219,8 @@ func finish_success(hero_state) -> bool:
 	interrupted_loop_state = ""
 	had_suspended_travel = false
 	if should_resume_travel:
-		assert(travel_system.resume_suspended_travel(), "Interrupted event travel must resume toward the original destination.")
+		var _assert_resume_suspended_travel_ok_2: bool = travel_system.resume_suspended_travel()
+		assert(_assert_resume_suspended_travel_ok_2, "Interrupted event travel must resume toward the original destination.")
 	hero_state.loop_state = restored_state
 	return true
 

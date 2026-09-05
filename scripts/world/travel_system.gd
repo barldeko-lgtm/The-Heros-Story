@@ -93,7 +93,8 @@ func advance_one_tick() -> Dictionary:
 
 	route_index += 1
 	var next_position: Vector2i = active_route[route_index]
-	assert(world_state.set_hero_position(next_position), "TravelSystem route must contain only valid map cells.")
+	var _assert_set_hero_position_ok_1: bool = world_state.set_hero_position(next_position)
+	assert(_assert_set_hero_position_ok_1, "TravelSystem route must contain only valid map cells.")
 	var arrived: bool = route_index >= active_route.size() - 1
 	return {
 		"moved": true,

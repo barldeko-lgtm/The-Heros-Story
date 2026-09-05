@@ -14,7 +14,8 @@ var distance_maps_by_origin: Dictionary = {}
 func _init(initial_definition: Resource) -> void:
 	definition = initial_definition
 	assert(definition != null, "HexMap requires an authored map definition.")
-	assert(definition.ensure_layout_loaded(), "HexMap requires a decodable authored map layout.")
+	var _assert_ensure_layout_loaded_ok_1: bool = definition.ensure_layout_loaded()
+	assert(_assert_ensure_layout_loaded_ok_1, "HexMap requires a decodable authored map layout.")
 	assert(definition.validate_layout(), "HexMap requires a structurally valid authored map layout.")
 	build_hex_definitions()
 

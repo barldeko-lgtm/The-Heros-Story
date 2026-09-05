@@ -104,7 +104,8 @@ func refresh_board(current_tick: int) -> bool:
 		for quest_template in eligible_templates:
 			available_quests.append(create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
 	if has_map_placement_context():
-		assert(assign_map_targets_to_current_offers(), "Current quest board could not be placed on unique valid map hexes.")
+		var _assert_assign_map_targets_to_current_offers_ok_1: bool = assign_map_targets_to_current_offers()
+		assert(_assert_assign_map_targets_to_current_offers_ok_1, "Current quest board could not be placed on unique valid map hexes.")
 	last_board_refresh_tick = current_tick
 	return true
 
@@ -157,7 +158,8 @@ func handle_quest_event(event, hero_loop_state: String, completed_tick: int = 0)
 	if event == null:
 		return
 	if event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
-		assert(take_offer(event.quest_definition), "Selected autonomous quest must be removed from the active board until the next global refresh.")
+		var _assert_take_offer_ok_2: bool = take_offer(event.quest_definition)
+		assert(_assert_take_offer_ok_2, "Selected autonomous quest must be removed from the active board until the next global refresh.")
 		return
 	if event.event_type == QuestEventScript.HERO_RECOVERED_AFTER_FIGHT and hero_loop_state == HeroStateScript.RETURNING_TO_CITY and event.completed_mob_count >= event.mob_count:
 		release_offer_map_target(event.quest_definition)
@@ -194,7 +196,8 @@ func create_offer(quest_template: Resource, excluded_target: Vector2i = QuestOff
 		random_number_generator.randi_range(quest_template.gold_per_mob_min, quest_template.gold_per_mob_max),
 	)
 	if place_on_map and has_map_placement_context():
-		assert(place_offer_on_map(offer, excluded_target), "Quest offer could not be placed on the current map: %s" % quest_template.id)
+		var _assert_place_offer_on_map_ok_3: bool = place_offer_on_map(offer, excluded_target)
+		assert(_assert_place_offer_on_map_ok_3, "Quest offer could not be placed on the current map: %s" % quest_template.id)
 	return offer
 
 func assign_map_targets_to_current_offers() -> bool:
