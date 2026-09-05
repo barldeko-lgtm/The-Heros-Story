@@ -41,7 +41,6 @@ var power_strike_skill_level: int = 0
 var battle_guard_skill_level: int = 0
 var current_hp: float = 0.0
 var gold: int = 0
-var traits: Array[String] = []
 var personality_axis_values: Dictionary = {
 	"courage": 0,
 	"morality": 0,

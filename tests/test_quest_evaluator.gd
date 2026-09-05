@@ -33,6 +33,8 @@ func _init() -> void:
 	assert(is_equal_approx(by_id["power_60"]["estimated_cost_per_mob"], 2.0), "Weakest mob must cost 1 fight tick + 1 recovery unit.")
 	assert(is_equal_approx(by_id["power_80"]["estimated_cost_per_mob"], 1.0 + 80.0 / 60.0), "Stronger mob estimated cost must include normalized recovery.")
 	assert(result["selected_quest"].id == "power_80", "Highest valid QuestScore must win while both lower- and upper-filtered quests stay excluded.")
+	assert(result["ranked_evaluations"].size() == result["evaluations"].size(), "QuestEvaluator must expose the same eligible evaluations in ranked debug order.")
+	assert(result["ranked_evaluations"][0]["quest"].id == result["selected_quest"].id, "Ranked evaluations must put the strict QuestScore winner first.")
 
 	var map_backed_quest = make_quest("map_backed", 60.0, 100, 99.0, 2)
 	map_backed_quest.assign_map_target(Vector2i(5, 5), "test_map_target", 3)

@@ -134,7 +134,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	event_runner = EventRunnerScript.new(travel_system, trait_development, event_resolution_rng)
 	if temporary_events_enabled:
 		var event_placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + EVENT_PLACEMENT_RNG_SEED_OFFSET).get_rng()
-		assert(event_system.configure_map_placement(hex_map, world_state, dungeon_origins, event_placement_rng, world_clock.world_tick), "Every enabled temporary event must spawn on a valid reserved map footprint.")
+		assert(event_system.configure_map_placement(hex_map, world_state, dungeon_origins, event_placement_rng, world_clock.world_tick), "Enabled temporary events must configure their map placement before their world-time spawn gate opens.")
 	world_state.hero_position_changed.connect(on_hero_position_changed)
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
@@ -144,7 +144,8 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	trait_development.ensure_state(hero_state)
 	equip_starting_armor()
-	hero_state.traits = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
+	var starting_traits: Array[String] = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
+	trait_development.apply_starting_traits(hero_state, starting_traits)
 	var runner_initial_quest
 	if autonomous_quest_choice:
 		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())
@@ -156,9 +157,6 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	quest_runner = QuestRunnerScript.new(runner_initial_quest, travel_system, hex_map.definition.starting_city_center)
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
-	if temporary_events_enabled:
-		for event_instance in event_system.get_active_events():
-			debug_log.record_event(world_clock.world_tick, event_narrator.describe_spawn(event_instance))
 	world_clock.tick_completed.connect(on_world_tick_completed)
 
 func equip_starting_armor() -> void:
@@ -201,6 +199,9 @@ func refresh_combat_stats() -> void:
 
 func get_hero_power() -> float:
 	return power_calculator.calculate(base_combat_stats)
+
+func get_hero_traits() -> Array[String]:
+	return trait_development.get_established_traits(hero_state)
 
 func get_current_hero_hp() -> float:
 	if active_combat_session != null:
@@ -282,7 +283,7 @@ func choose_next_quest() -> bool:
 		return true
 
 	var guided_quest_id: String = god_state.consume_quest_guidance()
-	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power(), hero_state.traits, guided_quest_id, GodStateScript.QUEST_GUIDANCE_MODIFIER)
+	last_quest_selection = quest_evaluator.select_quest(quest_pool.get_available_quests(), get_hero_power(), get_hero_traits(), guided_quest_id, GodStateScript.QUEST_GUIDANCE_MODIFIER)
 	var selected_quest = last_quest_selection.get("selected_quest")
 	if selected_quest == null:
 		return false
@@ -324,7 +325,7 @@ func start_event_combat() -> void:
 	)
 
 func start_combat_session(mob_definition: Resource, combat_context: String, starting_hero_hp: float) -> void:
-	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(hero_state.traits, mob_definition.category)
+	var hero_damage_multiplier: float = HeroTraitsScript.get_damage_multiplier(get_hero_traits(), mob_definition.category)
 	active_combat_session = combat_simulator.create_session(
 		combat_stats,
 		mob_definition.get_combat_stats(),
@@ -453,6 +454,14 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
 	if temporary_events_enabled:
+		var event_priority_refresh: bool = autonomous_quest_choice \
+			and completed_tick >= EventSystemScript.FIRST_EVENT_SPAWN_TICK \
+			and completed_tick % QuestPoolScript.BOARD_REFRESH_INTERVAL_TICKS == 0 \
+			and event_system.has_unspawned_initial_population()
+		if event_priority_refresh:
+			quest_pool.release_available_offer_map_targets()
+		for spawned_event in event_system.spawn_initial_population_if_ready(completed_tick):
+			debug_log.record_event(completed_tick, event_narrator.describe_spawn(spawned_event))
 		for expired_event in event_system.advance_world_tick(completed_tick):
 			if pending_event_instance == expired_event:
 				pending_event_instance = null
@@ -520,7 +529,10 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		begin_pending_event_if_ready(completed_tick)
 		return
 	refresh_finished_quest_offer_if_needed(event, completed_tick)
-	debug_log.record_event(completed_tick, quest_narrator.describe(event))
+	var quest_log_text: String = quest_narrator.describe(event)
+	if autonomous_quest_choice and event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
+		quest_log_text = quest_narrator.describe_quest_selection(event, last_quest_selection)
+	debug_log.record_event(completed_tick, quest_log_text)
 	begin_pending_event_if_ready(completed_tick)
 
 func begin_pending_event_if_ready(completed_tick: int) -> bool:

@@ -2,6 +2,7 @@ extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
 const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.tscn")
 const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
@@ -25,6 +26,9 @@ var opponent_details_label: Label
 var combat_statistics_label: Label
 var attribute_points_label: Label
 var attribute_buttons: Dictionary = {}
+var personality_axis_bars: Dictionary = {}
+var personality_axis_markers: Dictionary = {}
+var personality_axis_value_labels: Dictionary = {}
 var speed_buttons: Dictionary = {}
 var god_panel: PanelContainer
 var narrative_panel: TabContainer
@@ -46,7 +50,7 @@ func _ready() -> void:
 	create_hero_panel()
 	create_pending_attribute_indicator()
 	create_attribute_allocation_panel()
-	create_decorative_personality_panel()
+	create_personality_panel()
 	create_opponent_panel()
 	create_combat_statistics_panel()
 	create_god_panel()
@@ -54,6 +58,7 @@ func _ready() -> void:
 	create_narrative_panel()
 	update_hero_panel()
 	update_attribute_allocation_panel()
+	update_personality_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
 	god_panel.refresh()
@@ -66,6 +71,7 @@ func _process(delta: float) -> void:
 	update_hero_panel()
 	update_pending_attribute_indicator()
 	update_attribute_allocation_panel()
+	update_personality_panel()
 	update_opponent_panel()
 	update_combat_statistics_panel()
 	god_panel.refresh()
@@ -311,7 +317,7 @@ func update_pending_attribute_indicator() -> void:
 	var font_size: int = hero_details_label.get_theme_font_size("font_size")
 	var line_height: float = font.get_height(font_size)
 	var bonus_line_count: int = 0
-	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(simulation.hero_state.traits)
+	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(simulation.get_hero_traits())
 	if not trait_bonus_text.is_empty():
 		bonus_line_count += 1
 	if simulation.get_combat_buff_fights_remaining() > 0:
@@ -352,35 +358,41 @@ func create_attribute_allocation_panel() -> void:
 		content.add_child(button)
 		attribute_buttons[attribute_id] = button
 
-func create_decorative_personality_panel() -> void:
+func create_personality_panel() -> void:
 	var panel := PanelContainer.new()
 	panel.name = "PersonalityAxesPanel"
 	apply_panel_style(panel)
-	panel.position = Vector2(411.0, 480.0)
-	panel.size = Vector2(544.0, 244.0)
+	panel.position = Vector2(411.0, 472.0)
+	panel.size = Vector2(544.0, 280.0)
 	hero_screen.add_child(panel)
 
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 5)
+	content.add_theme_constant_override("separation", 2)
 	panel.add_child(content)
+
+	var header := HBoxContainer.new()
+	header.custom_minimum_size = Vector2(0.0, 26.0)
+	content.add_child(header)
 
 	var title := Label.new()
 	title.text = "Черты характера"
 	title.add_theme_font_size_override("font_size", 20)
-	content.add_child(title)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
 
-	var subtitle := Label.new()
-	subtitle.text = "Скрытые шкалы: −100   ·   0   ·   +100"
-	subtitle.add_theme_font_size_override("font_size", 12)
-	subtitle.add_theme_color_override("font_color", Color("aeb6c1"))
-	content.add_child(subtitle)
+	var range_label := Label.new()
+	range_label.text = "−100 … +100"
+	range_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	range_label.add_theme_font_size_override("font_size", 12)
+	range_label.add_theme_color_override("font_color", Color("aeb6c1"))
+	header.add_child(range_label)
 
-	create_decorative_personality_axis(content, "CouragePersonalityAxis", "Осторожный", "Смелый")
-	create_decorative_personality_axis(content, "MoralityPersonalityAxis", "Хитрый", "Благородный")
-	create_decorative_personality_axis(content, "GreedPersonalityAxis", "Жадный", "Щедрый")
-	create_decorative_personality_axis(content, "CuriosityPersonalityAxis", "Консервативный", "Любопытный")
+	create_personality_axis(content, TraitDevelopmentScript.AXIS_COURAGE, "CouragePersonalityAxis", "Осторожный", "Смелый")
+	create_personality_axis(content, TraitDevelopmentScript.AXIS_MORALITY, "MoralityPersonalityAxis", "Хитрый", "Благородный")
+	create_personality_axis(content, TraitDevelopmentScript.AXIS_GREED, "GreedPersonalityAxis", "Жадный", "Щедрый")
+	create_personality_axis(content, TraitDevelopmentScript.AXIS_CURIOSITY, "CuriosityPersonalityAxis", "Консервативный", "Любопытный")
 
-func create_decorative_personality_axis(parent: VBoxContainer, axis_name: String, negative_label: String, positive_label: String) -> void:
+func create_personality_axis(parent: VBoxContainer, axis_id: String, axis_name: String, negative_label: String, positive_label: String) -> void:
 	var row := VBoxContainer.new()
 	row.name = axis_name
 	row.add_theme_constant_override("separation", 1)
@@ -393,46 +405,95 @@ func create_decorative_personality_axis(parent: VBoxContainer, axis_name: String
 	var negative := Label.new()
 	negative.text = negative_label
 	negative.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	negative.add_theme_font_size_override("font_size", 12)
+	negative.add_theme_font_size_override("font_size", 11)
 	labels.add_child(negative)
-
-	var neutral := Label.new()
-	neutral.text = "0"
-	neutral.custom_minimum_size = Vector2(36.0, 0.0)
-	neutral.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	neutral.add_theme_font_size_override("font_size", 12)
-	labels.add_child(neutral)
 
 	var positive := Label.new()
 	positive.text = positive_label
 	positive.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	positive.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	positive.add_theme_font_size_override("font_size", 12)
+	positive.add_theme_font_size_override("font_size", 11)
 	labels.add_child(positive)
+
+	var track := Control.new()
+	track.name = "AxisTrack"
+	track.custom_minimum_size = Vector2(506.0, 35.0)
+	row.add_child(track)
+
+	var value_label := Label.new()
+	value_label.name = "CurrentValueLabel"
+	value_label.position = Vector2(231.0, 0.0)
+	value_label.size = Vector2(44.0, 14.0)
+	value_label.text = "0"
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value_label.add_theme_font_size_override("font_size", 10)
+	value_label.add_theme_color_override("font_color", Color("edf0f4"))
+	value_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	track.add_child(value_label)
 
 	var bar := ColorRect.new()
 	bar.name = "AxisBar"
-	bar.custom_minimum_size = Vector2(506.0, 8.0)
+	bar.position = Vector2(0.0, 14.0)
+	bar.size = Vector2(506.0, 8.0)
 	bar.color = Color("15191f")
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(bar)
+	track.add_child(bar)
 
-	for axis_value in [-40, 40]:
+	for axis_value in [-40, 40, -20, 20]:
 		var threshold := ColorRect.new()
 		threshold.name = "Threshold%s" % str(axis_value).replace("-", "Minus")
 		threshold.position = Vector2(506.0 * (float(axis_value) + 100.0) / 200.0 - 1.0, 0.0)
 		threshold.size = Vector2(2.0, 8.0)
 		threshold.color = Color("d0a95b")
 		threshold.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		threshold.visible = abs(axis_value) == TraitDevelopmentScript.ACTIVATION_THRESHOLD
 		bar.add_child(threshold)
 
-	var neutral_marker := ColorRect.new()
-	neutral_marker.name = "NeutralMarker"
-	neutral_marker.position = Vector2(251.0, -2.0)
-	neutral_marker.size = Vector2(4.0, 12.0)
-	neutral_marker.color = Color("edf0f4")
-	neutral_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bar.add_child(neutral_marker)
+	var value_marker := ColorRect.new()
+	value_marker.name = "ValueMarker"
+	value_marker.position = Vector2(251.0, -2.0)
+	value_marker.size = Vector2(4.0, 12.0)
+	value_marker.color = Color("edf0f4")
+	value_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(value_marker)
+
+	var center_zero := Label.new()
+	center_zero.name = "CenterZeroLabel"
+	center_zero.position = Vector2(235.0, 22.0)
+	center_zero.size = Vector2(36.0, 13.0)
+	center_zero.text = "0"
+	center_zero.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	center_zero.add_theme_font_size_override("font_size", 10)
+	center_zero.add_theme_color_override("font_color", Color("aeb6c1"))
+	center_zero.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	track.add_child(center_zero)
+
+	personality_axis_bars[axis_id] = bar
+	personality_axis_markers[axis_id] = value_marker
+	personality_axis_value_labels[axis_id] = value_label
+
+func update_personality_panel() -> void:
+	for axis_id in personality_axis_bars:
+		var bar := personality_axis_bars[axis_id] as ColorRect
+		var marker := personality_axis_markers[axis_id] as ColorRect
+		var value_label := personality_axis_value_labels[axis_id] as Label
+		if bar == null or marker == null or value_label == null:
+			continue
+		var axis_value: int = clampi(int(simulation.hero_state.personality_axis_values.get(axis_id, 0)), TraitDevelopmentScript.MIN_AXIS_VALUE, TraitDevelopmentScript.MAX_AXIS_VALUE)
+		var axis_value_x: float = 506.0 * (float(axis_value) + 100.0) / 200.0
+		marker.position.x = axis_value_x - marker.size.x * 0.5
+		value_label.text = "0" if axis_value == 0 else "%+d" % axis_value
+		value_label.position.x = clampf(axis_value_x - value_label.size.x * 0.5, 0.0, 506.0 - value_label.size.x)
+		var active_trait: String = str(simulation.hero_state.personality_traits_by_axis.get(axis_id, ""))
+		var threshold_minus_40 := bar.get_node("ThresholdMinus40") as ColorRect
+		var threshold_40 := bar.get_node("Threshold40") as ColorRect
+		var threshold_minus_20 := bar.get_node("ThresholdMinus20") as ColorRect
+		var threshold_20 := bar.get_node("Threshold20") as ColorRect
+		var is_neutral: bool = active_trait.is_empty()
+		threshold_minus_40.visible = is_neutral
+		threshold_40.visible = is_neutral
+		threshold_minus_20.visible = not is_neutral and axis_value < 0
+		threshold_20.visible = not is_neutral and axis_value > 0
 
 func on_allocate_attribute_pressed(attribute_id: String) -> void:
 	if simulation.allocate_primary_attribute(attribute_id):
@@ -518,9 +579,10 @@ func update_hero_panel() -> void:
 	var active_quest_name: String = "—"
 	if hero.active_quest != null:
 		active_quest_name = hero.active_quest.display_name
-	var trait_names: String = HeroTraitsScript.get_display_names(hero.traits)
+	var current_traits: Array[String] = simulation.get_hero_traits()
+	var trait_names: String = HeroTraitsScript.get_display_names(current_traits)
 	var bonus_lines: PackedStringArray = []
-	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(hero.traits)
+	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(current_traits)
 	if not trait_bonus_text.is_empty():
 		bonus_lines.append("Бонус черты: %s" % trait_bonus_text)
 	var buff_fights: int = simulation.get_combat_buff_fights_remaining()

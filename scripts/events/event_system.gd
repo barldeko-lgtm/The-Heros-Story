@@ -9,6 +9,7 @@ const DEFAULT_EVENT_DIRECTORIES := [
 	"res://data/events/mid_region",
 ]
 const MAX_ACTIVE_EVENTS: int = 4
+const FIRST_EVENT_SPAWN_TICK: int = 100
 
 var event_definitions: Array[Resource] = []
 var active_events: Array = []
@@ -16,6 +17,8 @@ var placement_finder = ActivityPlacementFinderScript.new()
 var hex_map
 var world_state
 var placement_random_number_generator: RandomNumberGenerator
+var distance_origin_by_region: Dictionary = {}
+var spawned_definition_ids: Dictionary = {}
 
 func _init(initial_definitions: Array = []) -> void:
 	if initial_definitions.is_empty():
@@ -59,21 +62,42 @@ func reload_from_directories(event_directories: Array = DEFAULT_EVENT_DIRECTORIE
 		seen_ids[resource.id] = true
 		event_definitions.append(resource)
 
-func configure_map_placement(initial_hex_map, initial_world_state, distance_origin_by_region: Dictionary, initial_rng: RandomNumberGenerator, spawn_tick: int = 0) -> bool:
+func configure_map_placement(initial_hex_map, initial_world_state, initial_distance_origin_by_region: Dictionary, initial_rng: RandomNumberGenerator, spawn_tick: int = 0) -> bool:
 	hex_map = initial_hex_map
 	world_state = initial_world_state
 	placement_random_number_generator = initial_rng
+	distance_origin_by_region = initial_distance_origin_by_region.duplicate()
 	if hex_map == null or world_state == null or placement_random_number_generator == null:
 		return false
 	clear_instances()
+	spawned_definition_ids.clear()
+	spawn_initial_population_if_ready(spawn_tick)
+	return true
+
+func spawn_initial_population_if_ready(world_tick: int) -> Array:
+	var spawned_events: Array = []
+	if world_tick < FIRST_EVENT_SPAWN_TICK:
+		return spawned_events
+	if hex_map == null or world_state == null or placement_random_number_generator == null:
+		return spawned_events
 	for definition in event_definitions:
 		if active_events.size() >= MAX_ACTIVE_EVENTS:
 			break
+		if spawned_definition_ids.has(definition.id):
+			continue
 		if not distance_origin_by_region.has(definition.region_id):
 			continue
-		if not spawn_definition(definition, distance_origin_by_region[definition.region_id], spawn_tick):
-			return false
-	return true
+		if not spawn_definition(definition, distance_origin_by_region[definition.region_id], world_tick):
+			continue
+		spawned_definition_ids[definition.id] = true
+		spawned_events.append(active_events[active_events.size() - 1])
+	return spawned_events
+
+func has_unspawned_initial_population() -> bool:
+	for definition in event_definitions:
+		if distance_origin_by_region.has(definition.region_id) and not spawned_definition_ids.has(definition.id):
+			return true
+	return false
 
 func spawn_definition(definition: Resource, distance_origin: Vector2i, spawn_tick: int) -> bool:
 	var valid_centers: Array[Vector2i] = placement_finder.find_valid_centers(

@@ -31,6 +31,56 @@ func describe(event) -> String:
 			return describe_city_recovery(event)
 	return ""
 
+func describe_quest_selection(event, selection_result: Dictionary) -> String:
+	if event == null or event.quest_definition == null:
+		return ""
+	var ranked_evaluations: Array = selection_result.get("ranked_evaluations", [])
+	if ranked_evaluations.is_empty():
+		return describe(event)
+
+	var selected_quest_id: String = str(event.quest_definition.id)
+	var lines := PackedStringArray()
+	lines.append("%s выбрал квест «%s»." % [event.hero_name, event.quest_definition.display_name])
+	var top_count: int = mini(3, ranked_evaluations.size())
+	lines.append("Топ-%d из %d подходящих:" % [top_count, int(selection_result.get("eligible_count", ranked_evaluations.size()))])
+
+	var selected_evaluation: Dictionary = {}
+	for index in range(top_count):
+		var evaluation: Dictionary = ranked_evaluations[index]
+		var quest = evaluation.get("quest")
+		if quest == null:
+			continue
+		var is_selected: bool = str(quest.id) == selected_quest_id
+		var selected_suffix: String = " ← выбран" if is_selected else ""
+		lines.append("%d. «%s» — QuestScore %.2f%s" % [index + 1, quest.display_name, float(evaluation.get("quest_score", 0.0)), selected_suffix])
+		if is_selected:
+			selected_evaluation = evaluation
+
+	if selected_evaluation.is_empty():
+		for evaluation in ranked_evaluations:
+			var quest = evaluation.get("quest")
+			if quest != null and str(quest.id) == selected_quest_id:
+				selected_evaluation = evaluation
+				break
+
+	if not selected_evaluation.is_empty():
+		lines.append(
+			"Расчёт выбранного: база %.2f | Смелость/Осторожность %s | Хитрость/Благородство %s | Жадность %s | Бог %s | итог %.2f." % [
+				float(selected_evaluation.get("base_attractiveness", 0.0)),
+				format_signed_modifier(float(selected_evaluation.get("courage_modifier", 0.0))),
+				format_signed_modifier(float(selected_evaluation.get("morality_modifier", 0.0))),
+				format_signed_modifier(float(selected_evaluation.get("greed_modifier", 0.0))),
+				format_signed_modifier(float(selected_evaluation.get("divine_modifier", 0.0))),
+				float(selected_evaluation.get("quest_score", 0.0)),
+			]
+		)
+	return "\n".join(lines)
+
+func format_signed_modifier(value: float) -> String:
+	if value >= 0.0:
+		return "+%.2f" % value
+	return "-%.2f" % absf(value)
+
 func describe_combat_started(hero_name: String, quest_definition, mob_number: int, mob_count: int) -> String:
 	return "%s начинает бой с %s (%d/%d)." % [hero_name, quest_definition.mob_definition.display_name, mob_number, mob_count]
 

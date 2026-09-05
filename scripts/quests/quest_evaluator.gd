@@ -39,6 +39,7 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			"hard_filter_limit": hard_filter_limit,
 			"weakest_allowed_mob_power": 0.0,
 			"evaluations": [],
+			"ranked_evaluations": [],
 		}
 
 	var weakest_allowed_mob_power: float = eligible_quests[0]["mob_power"]
@@ -81,11 +82,11 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			var power_normalized: float = (mob_power - weakest_allowed_mob_power) / (strongest_allowed_mob_power - weakest_allowed_mob_power)
 			if hero_traits.has(HeroTraitsScript.BRAVE):
 				courage_modifier = -HeroTraitsScript.COURAGE_EXTREME_MODIFIER + 2.0 * HeroTraitsScript.COURAGE_EXTREME_MODIFIER * power_normalized
-			elif hero_traits.has(HeroTraitsScript.COWARD):
+			elif hero_traits.has(HeroTraitsScript.CAUTIOUS):
 				courage_modifier = HeroTraitsScript.COURAGE_EXTREME_MODIFIER - 2.0 * HeroTraitsScript.COURAGE_EXTREME_MODIFIER * power_normalized
 
 		var morality_modifier: float = 0.0
-		if hero_traits.has(HeroTraitsScript.DISHONORABLE) and quest_definition.mob_definition.category == MobDefinition.Category.HUMANOID:
+		if hero_traits.has(HeroTraitsScript.DEVIOUS) and quest_definition.mob_definition.category == MobDefinition.Category.HUMANOID:
 			morality_modifier = HeroTraitsScript.MORALITY_QUEST_MODIFIER
 		elif hero_traits.has(HeroTraitsScript.NOBLE) and quest_definition.mob_definition.category == MobDefinition.Category.MONSTER:
 			morality_modifier = HeroTraitsScript.MORALITY_QUEST_MODIFIER
@@ -108,6 +109,7 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 
 		var evaluation := {
 			"quest": quest_definition,
+			"evaluation_order": evaluations.size(),
 			"mob_power": mob_power,
 			"relative_recovery_cost": relative_recovery_cost,
 			"estimated_cost_per_mob": estimated_cost_per_mob,
@@ -128,6 +130,11 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			selected_quest = quest_definition
 			selected_score = quest_score
 
+	var ranked_evaluations: Array[Dictionary] = []
+	for evaluation in evaluations:
+		ranked_evaluations.append(evaluation)
+	ranked_evaluations.sort_custom(_evaluation_ranks_before)
+
 	return {
 		"selected_quest": selected_quest,
 		"total_count": available_quests.size(),
@@ -136,7 +143,15 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 		"hard_filter_limit": hard_filter_limit,
 		"weakest_allowed_mob_power": weakest_allowed_mob_power,
 		"evaluations": evaluations,
+		"ranked_evaluations": ranked_evaluations,
 	}
+
+func _evaluation_ranks_before(left: Dictionary, right: Dictionary) -> bool:
+	var left_score: float = float(left.get("quest_score", -INF))
+	var right_score: float = float(right.get("quest_score", -INF))
+	if absf(left_score - right_score) <= SCORE_EPSILON:
+		return int(left.get("evaluation_order", 0)) < int(right.get("evaluation_order", 0))
+	return left_score > right_score
 
 func get_hard_filter_power_window(hero_power: float, hero_traits: Array[String]) -> Dictionary:
 	var minimum_ratio: float = STANDARD_MIN_POWER_RATIO
@@ -144,7 +159,7 @@ func get_hard_filter_power_window(hero_power: float, hero_traits: Array[String])
 	if hero_traits.has(HeroTraitsScript.BRAVE):
 		minimum_ratio = BRAVE_MIN_POWER_RATIO
 		maximum_ratio = BRAVE_MAX_POWER_RATIO
-	elif hero_traits.has(HeroTraitsScript.COWARD):
+	elif hero_traits.has(HeroTraitsScript.CAUTIOUS):
 		minimum_ratio = CAUTIOUS_MIN_POWER_RATIO
 		maximum_ratio = CAUTIOUS_MAX_POWER_RATIO
 	var safe_hero_power: float = maxf(0.0, hero_power)

@@ -81,11 +81,17 @@ func run_test() -> void:
 	assert(main_ui.map_screen.visible and not main_ui.main_screen.visible, "Map button must open MapScreen and hide main developer content.")
 	assert(main_ui.map_button.text == "НАЗАД", "Map button must become Back while the map is open.")
 	assert(main_ui.inventory_close_button.visible, "Shared red close button must be available on MapScreen.")
+	assert(main_ui.simulation.event_system.get_active_events().is_empty(), "Temporary-event map shading must not appear before world tick 100.")
+	assert(main_ui.map_screen.get_event_area_signature().is_empty(), "MapScreen must have no temporary-event area signature before the spawn gate opens.")
+	main_ui.simulation.quest_pool.release_available_offer_map_targets()
+	var spawned_events: Array = main_ui.simulation.event_system.spawn_initial_population_if_ready(100)
+	assert(spawned_events.size() == 1, "MapScreen integration test must be able to open the first event population at world tick 100.")
+	assert(main_ui.simulation.quest_pool.assign_map_targets_to_current_offers(), "Quest markers must be placeable around the new event footprint.")
+	await process_frame
 	var board_offers: Array = main_ui.simulation.quest_pool.get_available_quests()
 	var marker_offers: Array = main_ui.map_screen.get_quest_marker_offers()
 	assert(marker_offers.size() == board_offers.size(), "Every active quest-board offer with a reserved target must have a map marker.")
 	var active_events: Array = main_ui.simulation.event_system.get_active_events()
-	assert(not active_events.is_empty(), "Developer MapScreen integration must have at least one active temporary event.")
 	var event_instance = active_events[0]
 	var event_area_cells: Array[Vector2i] = main_ui.map_screen.get_event_area_cells(event_instance)
 	assert(event_area_cells.size() == 7, "The default radius-1 temporary event must shade its seven reserved footprint hexes.")

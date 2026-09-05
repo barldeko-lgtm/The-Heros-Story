@@ -15,11 +15,16 @@ func _init() -> void:
 	var first_decision = definition.get_stage("first_decision")
 	assert(first_decision.options.size() == 3, "Warrior formative stat branching must use no more than three relevant stats.")
 	var drivers := PackedStringArray()
+	var options_by_driver: Dictionary = {}
 	for option in first_decision.options:
 		drivers.append(option.driver_attribute)
+		options_by_driver[option.driver_attribute] = option
 	drivers.sort()
 	assert(drivers == PackedStringArray(["dexterity", "strength", "wisdom"]), "The first event must compare STR / DEX / WIS only.")
 	assert(not drivers.has("intelligence"))
+	assert(options_by_driver["strength"].personality_axis_id == "courage" and options_by_driver["strength"].personality_delta == 5, "Going directly must move Courage +5 toward Brave.")
+	assert(options_by_driver["dexterity"].personality_axis_id == "morality" and options_by_driver["dexterity"].personality_delta == 5, "Flanking the ambush to rescue the merchant must move Morality +5 toward Noble.")
+	assert(options_by_driver["wisdom"].personality_axis_id == "courage" and options_by_driver["wisdom"].personality_delta == -5, "Inspecting and avoiding the trap must move Courage -5 toward Cautious.")
 
 	assert(branch_ticks(definition, ["intro", "first_decision", "str_approach", "str_combat", "str_end"]) == 5)
 	assert(branch_ticks(definition, ["intro", "first_decision", "wis_tracks", "wis_bypass", "wis_observe", "wis_rescue", "wis_end"]) == 8)

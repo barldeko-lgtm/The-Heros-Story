@@ -4,7 +4,7 @@ This document describes what is **actually implemented now**.
 
 ## Current development focus
 
-The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and both Starting Region ordinary dungeons now use the shared map-backed placement/discovery/travel/combat/retry-readiness/potion-preparation/completion-reward flow; temporary travel events and city relocation remain unintegrated.
+The project is building the first authored Prototype 0.2 world-map slice. Ordinary quest-board placement/travel and both Starting Region ordinary dungeons use the shared map-backed flow, and the first Starting Region temporary event now interrupts/resumes travel and feeds formative choices into the live personality axes; city relocation and the broader event population remain incomplete.
 
 Implemented:
 - one autonomous hero;
@@ -27,9 +27,12 @@ Implemented:
 - a Starting City equipment shop with compressed ilvl 1 Rustchain, ilvl 5 Ironwake-core-plus-accessory, and ilvl 10 Ironward bands; each contains 6 White unique-slot listings and 2 Green unique-slot listings for 24 total listings, deterministic 200-world-tick stock refresh, and autonomous one-purchase-per-tick upgrade buying;
 - twenty-two Starting City quest templates grouped into 8 lower / 7 middle / 7 higher bands; for current development testing the normal 3-offers-per-band board cap is temporarily disabled, so every currently eligible template may appear on the board at once;
 - autonomous choice among the current quest offers;
-- seeded assignment of 1–2 starting personality traits from Coward, Brave, Dishonorable, Noble, and Greedy;
-- current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and 10% category damage for Noble/Dishonorable;
-- ordinary quest Hard Filter now uses the Scope Power window before QuestScore: standard 55–95% of HeroPower, Brave 60–100%, and the current legacy Coward trait as the temporary Cautious equivalent at 50–90%;
+- four live hidden personality axes in `HeroState` (`courage`, `morality`, `greed`, `curiosity`) on the approved −100…+100 range, with ±40 established-trait activation and ±20 return-to-neutral hysteresis;
+- seeded assignment of 1–2 starting established traits from the current rollable subset Cautious, Brave, Devious, Noble, and Greedy; each rolled trait initializes its matching hidden axis at exactly −40 or +40 and becomes the established trait on that axis;
+- current personality modifiers in QuestScore (Courage up to ±0.30, Greed up to +0.30, Morality +0.20) and the existing 10% category damage for Noble/Devious now read the established traits derived from the personality axes rather than a separate legacy HeroState trait list;
+- ordinary quest Hard Filter uses the Scope Power window before QuestScore: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%;
+- temporary events use a global early-game warm-up gate: none are placed on the map during world ticks 0–99, and the first event population becomes eligible on world tick 100 so the hero has an initial stretch of ordinary development before stat-driven event choices; available quest-board reservations yield placement priority to still-unspawned initial events at tick 100 and later 50-tick board refreshes, while an already-active quest is never displaced and may delay placement until a later valid opportunity;
+- the first authored temporary event `У старой вырубки` is live after that gate opens: its formative STR / DEX / WIS decision uses primary attributes rather than personality, applies `Courage +5 / Morality +5 / Courage −5` respectively through `TraitDevelopment`, and its later expressive Brave check may alter the DEX branch without awarding additional Brave movement; the DEX route represents a resourceful rescue and therefore moves toward Noble rather than Devious;
 - headless god-system core with 100 starting energy, world-tick recovery, cooldowns, instant resurrection, divine healing, five-fight Attack buff, one-selection quest guidance, and Divine Vision for revealing an unknown dungeon in the current region;
 - a quest execution loop after the selected quest is assigned;
 - structured quest/death events;
@@ -49,7 +52,7 @@ Still missing from the current build:
 - diary episodes;
 - player-facing quest-guidance selection UI;
 - later potion tiers beyond the currently live Starting City compressed Level 5 / 10 consumables, prepared-Belt-slot visualization, and the two Mid Region ordinary dungeons;
-- travel interruption/resumption, temporary events, and city-to-city relocation on the new map.
+- the broader 15–20-event population, multi-event pacing, and city-to-city relocation on the new map.
 
 ## God-system core
 
@@ -98,6 +101,8 @@ Current loop states include:
 - `DUNGEON_BETWEEN_FIGHTS`;
 - `DUNGEON_COMPLETED`;
 - `DUNGEON_RETURNING_TO_CITY`;
+- `EVENT_ACTIVE`;
+- `EVENT_COMBAT`;
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
@@ -152,7 +157,7 @@ Current equipment reference prices are centralized for compressed ilvl 1/5/10. W
 
 The Starting City shop uses three authored stock-band resources with shared compressed ilvl 1/5/10 mechanics. Each band samples six distinct White slots and two distinct Green slots, for 24 rotating equipment listings when fully stocked. The ilvl 1 candidate pool has seven Rustchain armor/weapon/shield slots; the ilvl 5 pool has seven Ironwake core slots plus necklace, earrings, both rings, and Belt; the ilvl 10 pool likewise has seven Ironward core slots plus its own necklace, earrings, both rings, and Belt. The same shop definition also exposes fixed healing-potion availability outside the rotating equipment stock: compressed Level 5 restores 100 HP for 100 Gold and Level 10 restores 150 HP for 200 Gold; both live potion definitions reference their supplied 550 × 550 inventory sprites. Concrete equipment stats, affix budgets, rarity behavior, ItemPower, and prices still come from shared item-generation/economy data. Green listings use the normal generated-affix pipeline. The shop uses a deterministic RNG stream derived from the simulation seed so equipment rotation remains reproducible without perturbing the existing main simulation RNG sequence. Full equipment-stock refresh occurs at world ticks 200, 400, 600, and so on regardless of where the hero is. Before each shopping decision tick, the developer debug log prints one compact equipment-assortment summary by rarity and readable slot name without dumping item stats.
 
-The divine `+15% resolved Physical Damage` is displayed separately and does not alter base HeroPower. Noble/Dishonorable conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
+The divine `+15% resolved Physical Damage` is displayed separately and does not alter base HeroPower. Noble/Devious conditional +10% damage is also displayed separately and remains excluded from HeroPower because quest preference already has its own MoralityModifier.
 
 After a mid-quest level-up, `Simulation` refreshes `CombatStats` before recovery and the next fight.
 
@@ -221,7 +226,7 @@ At every `CHOOSING_QUEST` decision point:
 1. `QuestEvaluator` applies the personality-adjusted Hard Filter Power window:
    - standard: `55% <= MobPower / HeroPower <= 95%`;
    - Brave: `60% <= MobPower / HeroPower <= 100%`;
-   - current legacy Coward trait as temporary Cautious: `50% <= MobPower / HeroPower <= 90%`;
+   - Cautious: `50% <= MobPower / HeroPower <= 90%`;
 2. only quests inside both the lower and upper bounds participate further;
 3. the weakest allowed mob becomes the recovery baseline (`1`);
 4. for every allowed quest:
@@ -298,6 +303,8 @@ Retention is tick-based rather than line-based:
 
 The UI keeps the debug log pinned to the newest entry without rewriting identical text on every world tick. Real text changes are pushed toward the bottom immediately and corrected again after TextEdit wrapping/layout completes, preventing the visible top-to-bottom jump while still keeping the newest wrapped entry on screen.
 
+When the autonomous hero selects an ordinary quest, the developer log now prints the top three Hard-Filter-eligible offers ranked by their real `QuestScore`, marks the chosen offer, and prints the chosen score breakdown from the evaluator's existing `BaseAttractiveness + Courage + Morality + Greed + Divine` components. The log formats evaluator output only; it does not recalculate or influence quest choice.
+
 ## UI
 
 Current layout:
@@ -308,7 +315,7 @@ Current layout:
 - opponent panel on the right;
 - developer speed controls in the bottom-right corner.
 
-`MainUI` now coordinates the main developer view, a lightweight Hero development screen, dedicated `InventoryScreen` / `MapScreen`, `GodPanel`, and `NarrativePanel`. The Hero screen displays the live pending primary-attribute pool and five `+1` allocation controls; those buttons send commands through `Simulation` and never mutate attributes directly. Allocation controls are disabled during an active combat session so the already-created `CombatSession` cannot diverge from newly resolved hero stats mid-fight. The same Hero screen also shows four decorative personality-axis previews (`Осторожный ↔ Смелый`, `Хитрый ↔ Благородный`, `Жадный ↔ Щедрый`, `Консервативный ↔ Любопытный`) on the intended −100…0…+100 scale. While these previews are neutral they show only the ±40 visible-trait activation thresholds; the future ±20 return-to-neutral thresholds are intentionally not shown until real trait state exists. The previews are currently fixed at neutral `0` and are presentation-only; hidden personality runtime values and trait development are not implemented yet.
+`MainUI` now coordinates the main developer view, a lightweight Hero development screen, dedicated `InventoryScreen` / `MapScreen`, `GodPanel`, and `NarrativePanel`. The Hero screen displays the live pending primary-attribute pool and five `+1` allocation controls; those buttons send commands through `Simulation` and never mutate attributes directly. Allocation controls are disabled during an active combat session so the already-created `CombatSession` cannot diverge from newly resolved hero stats mid-fight. The same developer Hero screen renders the four live personality axes (`Осторожный ↔ Смелый`, `Хитрый ↔ Благородный`, `Жадный ↔ Щедрый`, `Консервативный ↔ Любопытный`) from `HeroState.personality_axis_values`. A neutral axis shows the ±40 activation thresholds; an established negative/positive trait shows only its relevant −20/+20 return-to-neutral threshold. The marker follows the real hidden value, a floating signed number above the bar shows that exact debug value, and the fixed neutral `0` marker is placed below the bar so the two labels cannot overlap at the center. This exact-number display is developer UI only and does not change the later player-facing hidden-value rule.
 
 The Map button opens a dedicated `MapScreen`. `data/map/prototype_02_map.tres` owns the 26 × 15 gameplay source geometry and references the editable `assets/map/prototype_02_hex_layout.png`. `HexMapImageDecoder` samples the technical center of all 390 logical flat-top hexes, rejects unknown center colors with coordinates, derives both compact seven-hex city clusters, identifies the unique bright-red hero-start center, and reconstructs the one unbranched road between the cities. Runtime `HexMap` converts every logical cell into a `HexDefinition` containing its own coordinates, decoded terrain, `region_id`, and permanent semantic tags; the technical `hero_start` marker becomes normal `starting_city` terrain in the game-level hex data. Current tag vocabulary is deliberately small: `city` marks all city cells, `city_center` marks only the two authored centers, and `road` follows the authored ordered road path rather than relying on the temporary road-as-terrain encoding. Starting Region and Mid Region each extend up to seven adjacent-hex steps from their city center. Cells inside both radii belong to the nearer center; the current equal-distance boundary is split by the midpoint between city-center X coordinates, producing 150 hexes per city region and 90 peripheral no-region hexes. `Simulation` owns this `HexMap`, mutable `WorldState`, and `TravelSystem`; the hero begins at the Starting City center, and `HexMap` provides deterministic adjacent-hex routes, step distance, and the fixed 3 km-per-hex world distance. When a map-backed quest is selected, `TravelSystem` follows that route one adjacent hex per world tick to the offer target and later one hex per tick back to the city center; `MapScreen` continuously follows the resulting live `WorldState.hero_position`. `MapTileVisuals` supplies three real `158 × 140` PNG variants for each normal biome from `res://assets/map/biomes/` plus the authored `418 × 440` `town1.png`; variant selection is deterministic from hex coordinates, city cells use plains art underneath, and `MapScreen` draws both biome tiles and the town overlay 1:1 at base zoom. Both city clusters use the same town overlay, centered on the city-center hex and aligned by the overlay's bottom edge to the bottom edge of the full seven-hex cluster; internal city-hex outlines are omitted so the town art remains visually continuous. Road cells temporarily reuse plains biome art underneath the existing road line. The map hero visual uses the permanent `res://assets/map/characters/hero_map.png` source. The source remains high-resolution and `MapScreen` scales it only for display to 120 px tall at base zoom, centered horizontally on the current live hero hex and shifted 5 px upward for visual placement. Every currently placed quest-board offer is also drawn at its real `target_hex` using the supplied `res://assets/map/activities/quest.png` 426 × 400 RGBA sprite, scaled only at draw time to 65 px tall (about 69.2 × 65 px) and centered on the target hex. Hovering that quest sprite shows the concrete offer's player-facing quest name; outside the sprite, ordinary hex hover continues to show coordinates, terrain, region, and permanent tags. The hero's currently selected `active_quest` receives a brighter three-layer orange outline (`#FF8C00`) around that same sprite, following the visual principle of the existing item-rarity outline; other quest markers remain unchanged. Completed/cancelled offers disappear when their reservation is released, and replacement offers appear at their new placement. The old fixed terrain legend has been removed because the rendered map now uses authored biome/city sprites rather than matching those schematic legend swatches. `MapScreen` remains pointer-interactive for inspection only and does not change simulation state. Mouse-wheel input zooms the map between 0.6× and 2.0× around the cursor, while holding the right mouse button and dragging pans the map; the map transform applies to hexes, roads, quest sprites, hero marker, and city labels, while the screen UI and tooltip remain fixed. Panning is clamped so the map cannot be dragged completely off-screen. The shared top menu and red close button remain available, and opening the map changes only UI visibility while the existing Simulation continues running.
 
@@ -343,6 +350,8 @@ Current coverage includes:
 - resurrection at 1 HP;
 - city recovery to full HP;
 - retention of earlier XP/levels and no Gold for a failed quest;
+- four-axis personality activation/hysteresis, starting-trait initialization, and the first temporary event's STR / DEX / WIS Formative movement including DEX → Morality +5 toward Noble;
+- first temporary-event content/runtime coverage including branch timings/rewards, Expressive Brave behavior, shared event combat/death, and suspended-route restoration;
 - generic validity/progression checks for the current Goblin, Wolf, and Bear tuning cards;
 - offer replacement without assuming a fixed tavern pool size;
 - god ability integration, including the `+0.20` one-selection quest guidance modifier;

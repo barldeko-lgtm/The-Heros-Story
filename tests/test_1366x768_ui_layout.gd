@@ -1,5 +1,7 @@
 extends SceneTree
 
+const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
+
 const TARGET_SIZE := Vector2i(1366, 768)
 const SIDE_MARGIN := 32.0
 const PANEL_GAP := 24.0
@@ -48,18 +50,56 @@ func run_test() -> void:
 		return
 	if not require(attribute_panel != null and attribute_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Primary-attribute allocation controls must fit inside the dedicated Hero screen at 1366x768."):
 		return
-	if not require(personality_panel != null and personality_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Decorative personality axes must fit inside the dedicated Hero screen at 1366x768."):
-		return
-	for axis_name in ["CouragePersonalityAxis", "MoralityPersonalityAxis", "GreedPersonalityAxis", "CuriosityPersonalityAxis"]:
-		var axis := personality_panel.find_child(axis_name, true, false)
-		if not require(axis != null and axis.find_child("NeutralMarker", true, false) != null, "Each decorative personality axis must exist and remain centered at neutral zero."):
+		if not require(personality_panel != null and personality_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Live personality axes must fit inside the dedicated Hero screen at 1366x768."):
 			return
-		if not require(axis.find_child("ThresholdMinus40", true, false) != null and axis.find_child("Threshold40", true, false) != null, "Neutral decorative personality axes must show the ±40 trait-activation thresholds."):
+		var personality_axes := {
+			"CouragePersonalityAxis": TraitDevelopmentScript.AXIS_COURAGE,
+			"MoralityPersonalityAxis": TraitDevelopmentScript.AXIS_MORALITY,
+			"GreedPersonalityAxis": TraitDevelopmentScript.AXIS_GREED,
+			"CuriosityPersonalityAxis": TraitDevelopmentScript.AXIS_CURIOSITY,
+		}
+		for axis_name in personality_axes:
+			var axis := personality_panel.find_child(axis_name, true, false)
+			var marker := axis.find_child("ValueMarker", true, false) as ColorRect if axis != null else null
+			var bar := axis.find_child("AxisBar", true, false) as ColorRect if axis != null else null
+			var value_label := axis.find_child("CurrentValueLabel", true, false) as Label if axis != null else null
+			var center_zero := axis.find_child("CenterZeroLabel", true, false) as Label if axis != null else null
+			if not require(axis != null and marker != null and bar != null and value_label != null and center_zero != null, "Each live personality axis must expose its marker, floating current value, bar, and fixed center zero."):
+				return
+			var axis_id: String = personality_axes[axis_name]
+			var axis_value: int = int(main_ui.simulation.hero_state.personality_axis_values[axis_id])
+			var expected_marker_x: float = 506.0 * (float(axis_value) + 100.0) / 200.0 - 2.0
+			if not require(is_equal_approx(marker.position.x, expected_marker_x), "Each personality marker must reflect the live hidden axis value."):
+				return
+			var expected_value_text: String = "0" if axis_value == 0 else "%+d" % axis_value
+			var expected_value_x: float = clampf(506.0 * (float(axis_value) + 100.0) / 200.0 - value_label.size.x * 0.5, 0.0, 506.0 - value_label.size.x)
+			if not require(value_label.text == expected_value_text and is_equal_approx(value_label.position.x, expected_value_x), "The debug value label must show the live axis number and follow the marker horizontally."):
+				return
+			if not require(value_label.position.y + value_label.size.y <= bar.position.y and center_zero.text == "0" and center_zero.position.y >= bar.position.y + bar.size.y, "The live number must stay above the bar while the fixed zero sits below it."):
+				return
+			var threshold_minus_40 := axis.find_child("ThresholdMinus40", true, false) as ColorRect
+			var threshold_40 := axis.find_child("Threshold40", true, false) as ColorRect
+			var threshold_minus_20 := axis.find_child("ThresholdMinus20", true, false) as ColorRect
+			var threshold_20 := axis.find_child("Threshold20", true, false) as ColorRect
+			var active_trait: String = str(main_ui.simulation.hero_state.personality_traits_by_axis[axis_id])
+			if active_trait.is_empty():
+				if not require(threshold_minus_40.visible and threshold_40.visible and not threshold_minus_20.visible and not threshold_20.visible, "Neutral personality axes must show only the ±40 activation thresholds."):
+					return
+			elif axis_value < 0:
+				if not require(not threshold_minus_40.visible and not threshold_40.visible and threshold_minus_20.visible and not threshold_20.visible, "An active negative trait must show only its -20 return-to-neutral threshold."):
+					return
+			else:
+				if not require(not threshold_minus_40.visible and not threshold_40.visible and not threshold_minus_20.visible and threshold_20.visible, "An active positive trait must show only its +20 return-to-neutral threshold."):
+					return
+		var courage_axis := personality_panel.find_child("CouragePersonalityAxis", true, false)
+		main_ui.simulation.hero_state.personality_axis_values[TraitDevelopmentScript.AXIS_COURAGE] = 35
+		main_ui.simulation.hero_state.personality_traits_by_axis[TraitDevelopmentScript.AXIS_COURAGE] = ""
+		main_ui.update_personality_panel()
+		var courage_value_label := courage_axis.find_child("CurrentValueLabel", true, false) as Label
+		if not require(courage_value_label.text == "+35", "The floating debug label must update when formative movement changes a live axis value."):
 			return
-		if not require(axis.find_child("ThresholdMinus20", true, false) == null and axis.find_child("Threshold20", true, false) == null, "Neutral decorative personality axes must not show the future ±20 return-to-neutral thresholds."):
+		if not require(opponent_rect.size == Vector2(320.0, 400.0), "Opponent panel must keep its original size."):
 			return
-	if not require(opponent_rect.size == Vector2(320.0, 400.0), "Opponent panel must keep its original size."):
-		return
 	if not require(is_equal_approx(opponent_rect.end.x, float(TARGET_SIZE.x) - SIDE_MARGIN), "Right panels must keep a 32px screen margin."):
 		return
 	if not require(opponent_rect.position.x - god_rect.end.x >= PANEL_GAP, "God panel must not overlap the opponent panel."):

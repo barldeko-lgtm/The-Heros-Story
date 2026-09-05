@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-03**.
+Last verified against the current repository, `current-state.md`, tests, and the Prototype 0.2 Scope: **2026-09-05**.
 
 This file is a short working progress map, not a design authority.
 
@@ -57,17 +57,17 @@ Status:
 
 ## 4. Personality and autonomous decisions
 
-- 🟡 Current prototype rolls 1–2 starting traits from the older `Coward / Brave / Dishonorable / Noble / Greedy` set and uses them in quest/combat decisions.
-- 🟡 Current QuestScore personality modifiers work, but the final Scope personality model is not yet implemented.
-- ⬜ Final four Prototype 0.2 personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
-- ⬜ Hidden continuous personality values, thresholds/hysteresis and visible-trait development.
+- 🟡 Current prototype still rolls 1–2 starting established traits, now using the final trait vocabulary; the current rollable subset is `Cautious / Brave / Devious / Noble / Greedy`.
+- 🟡 Current QuestScore personality modifiers read established traits derived from the four personality axes; the first authored temporary event now also applies live formative axis movement, while broader event-driven personality content is still incomplete.
+- ✅ Final four Prototype 0.2 personality axes: Brave ↔ Cautious, Noble ↔ Devious, Greedy ↔ Generous, Curious ↔ Conservative.
+- ✅ Hidden continuous personality values use −100…+100 with ±40 activation and ±20 return-to-neutral hysteresis; starting established traits initialize their matching axis at exactly ±40.
 - ⬜ Starting questionnaire applies small hidden personality shifts that remain below the visible-trait threshold by themselves.
-- ⬜ Decision-point roles: Formative / Expressive / Neutral.
-- ⬜ Formative decisions do not read general personality and may move hidden personality axes according to the authored meaning of the chosen action.
-- ⬜ Expressive decisions may use established personality but do not move the general personality axes.
+- 🟡 Decision-point roles Formative / Expressive / Neutral exist in the event framework and are exercised by the first authored event; broader content coverage remains incomplete.
+- 🟡 The first authored Formative decision does not read general personality and moves the matching hidden axis by its authored action meaning; broader content coverage remains incomplete.
+- 🟡 The first authored Expressive trait check reads established Brave without moving the general personality axes; broader content coverage remains incomplete.
 - ⬜ Neutral decisions neither need to read nor modify general personality.
 - ⬜ Personality and primary-attribute development remain independent; traits do not distribute level-up stat points.
-- ✅ Ordinary quest autonomous selection uses the Scope's personality-adjusted MobPower window: standard 55–95% of HeroPower, Brave 60–100%, and the current legacy Coward trait as the temporary Cautious equivalent at 50–90%.
+- ✅ Ordinary quest autonomous selection uses the Scope's personality-adjusted MobPower window: standard 55–95% of HeroPower, Brave 60–100%, and Cautious 50–90%.
 
 ## 5. World map and travel
 
@@ -91,7 +91,7 @@ Status:
 - ⬜ Full city runtime/context system.
 - ⬜ Autonomous relocation from Starting City to Mid-Level City.
 - ⬜ Mid-Level City as a complete playable economic/quest context.
-- ⬜ Travel interruption and resumption.
+- 🟡 Travel interruption and resumption works for the first temporary event while travelling to/from an ordinary quest; broader route contexts and authored event detours remain incomplete.
 
 ## 6. Ordinary quests and quest board
 
@@ -116,15 +116,16 @@ Status:
 ## 7. Temporary events
 
 - 🟡 Generic placement/reservation foundation already supports event-style radius footprints; radius 1 = 7 reserved hexes.
-- ⬜ `EventSystem` runtime lifecycle.
+- 🟡 `EventSystem` runtime lifecycle is implemented for the first authored Starting Region event; the final multi-event population is incomplete.
+- ✅ Global early-game event gate: no temporary event is placed before world tick 100; the first population becomes eligible on tick 100 and retries later if an active activity temporarily blocks every valid footprint.
 - ⬜ 2–4 simultaneous active temporary events.
-- ⬜ Event lifetime / replacement timing.
-- ⬜ Travel collision/activation with event areas.
-- ⬜ Suspend original travel objective → resolve event → resume travel.
-- ⬜ Conditional event options and autonomous reactions.
-- ⬜ Event decision stages support Formative / Expressive / Neutral roles.
-- ⬜ Formative event stages can change hidden personality according to the chosen action without reading current general personality.
-- ⬜ Expressive event stages can react to established traits without reinforcing those same general traits.
+- 🟡 Event lifetime/expiry works for unengaged events; automatic replacement/population maintenance after removal is not implemented yet.
+- 🟡 Travel collision/activation with event areas works for the first authored event.
+- 🟡 Suspend original travel objective → resolve event → resume travel works for the first authored event.
+- 🟡 Conditional event options and autonomous reactions work for the first authored event.
+- 🟡 Event decision stages support Formative / Expressive / Neutral roles in the current framework.
+- 🟡 Formative event stages can change hidden personality according to the chosen action without reading current general personality; the first event uses STR → Courage +5, DEX → Morality +5 toward Noble, WIS → Courage −5.
+- 🟡 Expressive event stages can react to established traits without reinforcing those same general traits; the first event's later Brave check does this.
 - ⬜ Approximately 15–20 handcrafted events across both regions.
 
 ## 8. Dungeons
@@ -264,15 +265,15 @@ Status:
 ## 18. Prototype 0.2 content targets at a glance
 
 - 🟡 Normal cities: **2 geographically / 1 complete gameplay context**.
-- 🟡 Ordinary quest templates: **21 / 36 current two-city target** (Starting City 21 complete; Mid-Level City currently targets 15).
+- 🟡 Ordinary quest templates: **22 / 37 current two-city target** (Starting City 22 complete; Mid-Level City currently targets 15).
 - 🟡 Simultaneous quest offers: the intended Starting City target remains **up to 9 offers, 3/3/3 by band**, but the current development build temporarily exposes all eligible templates to avoid no-suitable-quest stalls while this rule is being reconsidered.
-- ⬜ Handcrafted temporary events: **0 / 15–20**.
+- 🟡 Handcrafted temporary events: **1 / 15–20**.
 - 🟡 Ordinary dungeons: **2 / 4**.
 - ⬜ First specialization paths: **0 / 2 implemented**.
 - ⬜ Specialization dungeon variants: **0 / 2**.
 - ✅ Base Warrior abilities: **2 / 2** at Skill Level 1.
 - ⬜ First-specialization abilities: **0 / 2**.
-- ⬜ Final personality axes: **0 / 4**; current old trait prototype is temporary.
+- 🟡 Final personality axes: **4 / 4 runtime axes implemented**; starting-trait initialization and live UI are connected, while questionnaire/event-driven formative development is still incomplete.
 - 🟡 Visual armor families: **3 / minimum 5–6**.
 - 🟡 Item rarity in live content: White / Green / Blue(Rare) functional; Purple/Epic is now live through first-dungeon completion but remains absent from ordinary drops/shops.
 - 🟡 Main progression: +1 Warrior STR / +4 player allocation is implemented; the starting questionnaire and complete approximately compressed level 1–30 content/balance are not yet implemented.
@@ -282,9 +283,9 @@ Status:
 - ⬜ Full autonomous loop across both cities.
 - ⬜ Starting questionnaire creates only mild hidden personality bias rather than immediately assigning established traits.
 - ⬜ Player-guided stat allocation affects capabilities without directly commanding hero decisions.
-- ⬜ Formative decisions can create/change personality without reading the current general trait state.
-- ⬜ Expressive decisions reflect established personality without automatically reinforcing it.
-- ⬜ Events interrupt/resume real travel correctly.
+- 🟡 Formative decisions can create/change personality without reading the current general trait state; verified by the first authored event.
+- 🟡 Expressive decisions reflect established personality without automatically reinforcing it; verified by the first event's Brave check.
+- 🟡 Events interrupt/resume real travel correctly for the first ordinary-quest travel slice; broader travel contexts remain incomplete.
 - ⬜ Dungeons integrate travel, preparation, combat, loot, death and retry memory.
 - ⬜ Specialization combines player-shaped stats, independent Brave/Cautious character influence, and optional divine guidance.
 - ⬜ Specialization is reached through its full quest/dungeon flow rather than level alone.
@@ -302,8 +303,8 @@ This is only a working order, not permission to implement automatically:
 1. Validate the Starting City quest-board pacing in long runs: 22 templates, 8/7/7 bands, 9-offer 3/3/3 rotation, 50-tick shared refresh and 100-tick cooldown.
 2. Add the lightweight starting questionnaire foundation and connect its initial player-distributed attribute pool.
 3. Make the Mid-Level City a real gameplay context and implement autonomous relocation.
-4. Implement temporary events and travel interruption/resumption together with Formative / Expressive / Neutral decision roles.
-5. Replace the old trait prototype with the final four-axis hidden-value personality model and connect formative/expressive event behavior.
+4. Expand the now-working temporary-event framework from the first authored event toward the broader 15–20-event population, adding multi-event replacement/pacing and real event detours only as concrete events require them.
+5. Replace the temporary starting established-trait roll with the approved questionnaire's mild hidden starting biases while preserving the already-live four-axis personality model and event-driven development.
 6. Extend the now-working Belt/potion + first-dungeon slice into the remaining ordinary dungeon content.
 7. Implement first Warrior specialization using stats + Brave/Cautious + divine guidance, then the specialization dungeon flow.
 8. Complete item/shop/content breadth, Diary, Explanatory Log and remaining UI screens.

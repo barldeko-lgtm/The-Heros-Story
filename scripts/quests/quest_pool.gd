@@ -97,8 +97,7 @@ func reload_from_directory(quest_directory: String = DEFAULT_QUEST_DIRECTORY) ->
 	refresh_board(0)
 
 func refresh_board(current_tick: int) -> bool:
-	for existing_offer in available_quests:
-		release_offer_map_target(existing_offer)
+	release_available_offer_map_targets()
 	available_quests.clear()
 	for strength_band in STRENGTH_BANDS:
 		var eligible_templates: Array = get_eligible_templates_for_band(strength_band, current_tick)
@@ -108,6 +107,10 @@ func refresh_board(current_tick: int) -> bool:
 		assert(assign_map_targets_to_current_offers(), "Current quest board could not be placed on unique valid map hexes.")
 	last_board_refresh_tick = current_tick
 	return true
+
+func release_available_offer_map_targets() -> void:
+	for existing_offer in available_quests:
+		release_offer_map_target(existing_offer)
 
 func advance_world_tick(completed_tick: int) -> bool:
 	if quest_templates.is_empty() or completed_tick <= 0:

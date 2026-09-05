@@ -68,7 +68,7 @@ func _init() -> void:
 func find_suitable_current_board(simulation) -> Array:
 	for _roll in 10:
 		var offers: Array = simulation.quest_pool.get_available_quests()
-		var selection: Dictionary = simulation.quest_evaluator.select_quest(offers, simulation.get_hero_power(), simulation.hero_state.traits)
+		var selection: Dictionary = simulation.quest_evaluator.select_quest(offers, simulation.get_hero_power(), simulation.get_hero_traits())
 		if selection.get("selected_quest") != null:
 			return offers
 		assert(simulation.quest_pool.refresh_board(simulation.world_clock.world_tick), "Test setup must be able to reroll the current board until a suitable offer exists.")

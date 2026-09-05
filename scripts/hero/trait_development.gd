@@ -1,19 +1,22 @@
 class_name TraitDevelopment
 extends RefCounted
 
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+
 const AXIS_COURAGE := "courage"
 const AXIS_MORALITY := "morality"
 const AXIS_GREED := "greed"
 const AXIS_CURIOSITY := "curiosity"
+const AXIS_ORDER: Array[String] = [AXIS_COURAGE, AXIS_MORALITY, AXIS_GREED, AXIS_CURIOSITY]
 
-const TRAIT_BRAVE := "brave"
-const TRAIT_CAUTIOUS := "cautious"
-const TRAIT_NOBLE := "noble"
-const TRAIT_DEVIOUS := "devious"
-const TRAIT_GREEDY := "greedy"
-const TRAIT_GENEROUS := "generous"
-const TRAIT_CURIOUS := "curious"
-const TRAIT_CONSERVATIVE := "conservative"
+const TRAIT_BRAVE := HeroTraitsScript.BRAVE
+const TRAIT_CAUTIOUS := HeroTraitsScript.CAUTIOUS
+const TRAIT_NOBLE := HeroTraitsScript.NOBLE
+const TRAIT_DEVIOUS := HeroTraitsScript.DEVIOUS
+const TRAIT_GREEDY := HeroTraitsScript.GREEDY
+const TRAIT_GENEROUS := HeroTraitsScript.GENEROUS
+const TRAIT_CURIOUS := HeroTraitsScript.CURIOUS
+const TRAIT_CONSERVATIVE := HeroTraitsScript.CONSERVATIVE
 
 const MIN_AXIS_VALUE: int = -100
 const MAX_AXIS_VALUE: int = 100
@@ -42,6 +45,26 @@ func ensure_state(hero_state) -> void:
 			hero_state.personality_axis_values[axis_id] = 0
 		if not hero_state.personality_traits_by_axis.has(axis_id):
 			hero_state.personality_traits_by_axis[axis_id] = ""
+
+func reset_state(hero_state) -> void:
+	ensure_state(hero_state)
+	if hero_state == null:
+		return
+	for axis_id in AXIS_ORDER:
+		hero_state.personality_axis_values[axis_id] = 0
+		hero_state.personality_traits_by_axis[axis_id] = ""
+
+func apply_starting_traits(hero_state, starting_traits: Array) -> void:
+	reset_state(hero_state)
+	if hero_state == null:
+		return
+	for axis_id in AXIS_ORDER:
+		var positive_trait: String = str(POSITIVE_TRAIT_BY_AXIS[axis_id])
+		var negative_trait: String = str(NEGATIVE_TRAIT_BY_AXIS[axis_id])
+		if starting_traits.has(positive_trait):
+			apply_movement(hero_state, axis_id, ACTIVATION_THRESHOLD)
+		elif starting_traits.has(negative_trait):
+			apply_movement(hero_state, axis_id, -ACTIVATION_THRESHOLD)
 
 func apply_movement(hero_state, axis_id: String, delta: int) -> Dictionary:
 	ensure_state(hero_state)
@@ -87,6 +110,17 @@ func get_axis_value(hero_state, axis_id: String) -> int:
 func get_established_trait(hero_state, axis_id: String) -> String:
 	ensure_state(hero_state)
 	return "" if hero_state == null else str(hero_state.personality_traits_by_axis.get(axis_id, ""))
+
+func get_established_traits(hero_state) -> Array[String]:
+	ensure_state(hero_state)
+	var result: Array[String] = []
+	if hero_state == null:
+		return result
+	for axis_id in AXIS_ORDER:
+		var trait_id: String = str(hero_state.personality_traits_by_axis.get(axis_id, ""))
+		if not trait_id.is_empty():
+			result.append(trait_id)
+	return result
 
 func has_trait(hero_state, trait_id: String) -> bool:
 	ensure_state(hero_state)

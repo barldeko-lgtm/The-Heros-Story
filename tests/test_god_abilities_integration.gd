@@ -40,7 +40,7 @@ func test_instant_resurrection() -> void:
 
 func test_combat_buff() -> void:
 	var simulation = SimulationScript.new(1003, null)
-	simulation.hero_state.traits.clear()
+	simulation.trait_development.apply_starting_traits(simulation.hero_state, [])
 	simulation.combat_stats.crit_chance = 0.0
 	var base_attack: float = simulation.base_combat_stats.attack
 	var base_power: float = simulation.get_hero_power()
@@ -75,7 +75,7 @@ func test_quest_guidance() -> void:
 	for refresh_tick in [0, 100, 200, 300, 400]:
 		if refresh_tick > 0:
 			simulation.quest_pool.refresh_board(refresh_tick)
-		var power_window: Dictionary = simulation.quest_evaluator.get_hard_filter_power_window(simulation.get_hero_power(), simulation.hero_state.traits)
+		var power_window: Dictionary = simulation.quest_evaluator.get_hard_filter_power_window(simulation.get_hero_power(), simulation.get_hero_traits())
 		for quest in simulation.quest_pool.get_available_quests():
 			var mob_power: float = quest.mob_definition.get_power()
 			if mob_power >= float(power_window["minimum"]) and mob_power <= float(power_window["maximum"]):

@@ -8,7 +8,7 @@ const HERO_POWERS: Array[float] = [100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 450
 const PROFILES := {
 	"standard": [],
 	"brave": [HeroTraitsScript.BRAVE],
-	"cautious": [HeroTraitsScript.COWARD],
+	"cautious": [HeroTraitsScript.CAUTIOUS],
 	"greedy": [HeroTraitsScript.GREEDY],
 }
 

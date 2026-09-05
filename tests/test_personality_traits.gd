@@ -16,12 +16,15 @@ func _init() -> void:
 	var second_traits: Array[String] = HeroTraitsScript.roll_starting_traits(second_rng)
 	assert(first_traits == second_traits, "The same seed must reproduce starting traits.")
 	assert(first_traits.size() >= 1 and first_traits.size() <= 2, "A starting hero must receive one or two traits.")
-	assert(not (first_traits.has(HeroTraitsScript.COWARD) and first_traits.has(HeroTraitsScript.BRAVE)), "Coward and Brave must be mutually exclusive.")
-	assert(not (first_traits.has(HeroTraitsScript.DISHONORABLE) and first_traits.has(HeroTraitsScript.NOBLE)), "Dishonorable and Noble must be mutually exclusive.")
+	assert(not (first_traits.has(HeroTraitsScript.CAUTIOUS) and first_traits.has(HeroTraitsScript.BRAVE)), "Cautious and Brave must be mutually exclusive.")
+	assert(not (first_traits.has(HeroTraitsScript.DEVIOUS) and first_traits.has(HeroTraitsScript.NOBLE)), "Devious and Noble must be mutually exclusive.")
 	var first_simulation = SimulationScript.new(777, null)
 	var second_simulation = SimulationScript.new(777, null)
-	assert(first_simulation.hero_state.traits == second_simulation.hero_state.traits, "Simulation must assign reproducible starting traits from its shared seed.")
-	assert(first_simulation.hero_state.traits.size() >= 1 and first_simulation.hero_state.traits.size() <= 2, "Simulation must expose one or two starting traits on HeroState.")
+	var first_simulation_traits: Array[String] = first_simulation.get_hero_traits()
+	var second_simulation_traits: Array[String] = second_simulation.get_hero_traits()
+	assert(first_simulation_traits == second_simulation_traits, "Simulation must assign reproducible starting traits from its shared seed.")
+	assert(first_simulation_traits.size() >= 1 and first_simulation_traits.size() <= 2, "Simulation must expose one or two established starting traits through the new personality axes.")
+	assert_starting_axes_match_traits(first_simulation, first_simulation_traits)
 
 	var evaluator = QuestEvaluatorScript.new()
 	var quests := [
@@ -41,12 +44,12 @@ func _init() -> void:
 	assert(is_equal_approx(by_id["weak"]["greed_modifier"], 0.0), "Greedy must not gain a modifier for the lowest reward.")
 	assert(is_equal_approx(by_id["strong"]["greed_modifier"], 0.30), "Greedy must gain 0.30 for the highest reward.")
 
-	var coward_result: Dictionary = evaluator.select_quest(quests, 100.0, [HeroTraitsScript.COWARD])
-	var coward_by_id := {}
-	for evaluation in coward_result["evaluations"]:
-		coward_by_id[evaluation["quest"].id] = evaluation
-	assert(is_equal_approx(coward_by_id["weak"]["courage_modifier"], 0.30), "Coward must prefer the weakest eligible enemy by 0.30.")
-	assert(is_equal_approx(coward_by_id["strong"]["courage_modifier"], -0.30), "Coward must dislike the strongest eligible enemy by 0.30.")
+	var cautious_result: Dictionary = evaluator.select_quest(quests, 100.0, [HeroTraitsScript.CAUTIOUS])
+	var cautious_by_id := {}
+	for evaluation in cautious_result["evaluations"]:
+		cautious_by_id[evaluation["quest"].id] = evaluation
+	assert(is_equal_approx(cautious_by_id["weak"]["courage_modifier"], 0.30), "Cautious must prefer the weakest eligible enemy by 0.30.")
+	assert(is_equal_approx(cautious_by_id["strong"]["courage_modifier"], -0.30), "Cautious must dislike the strongest eligible enemy by 0.30.")
 
 	var too_weak_for_brave = make_quest("too_weak_for_brave", 55.0, 10, MobDefinitionScript.Category.MONSTER)
 	var brave_edge = make_quest("brave_edge", 98.0, 10, MobDefinitionScript.Category.MONSTER)
@@ -56,12 +59,28 @@ func _init() -> void:
 
 	var cautious_edge = make_quest("cautious_edge", 52.0, 10, MobDefinitionScript.Category.MONSTER)
 	var too_strong_for_cautious = make_quest("too_strong_for_cautious", 92.0, 10, MobDefinitionScript.Category.MONSTER)
-	var cautious_filter: Dictionary = evaluator.select_quest([cautious_edge, too_strong_for_cautious], 100.0, [HeroTraitsScript.COWARD])
-	assert(is_equal_approx(cautious_filter["hard_filter_minimum"], 50.0) and is_equal_approx(cautious_filter["hard_filter_limit"], 90.0), "Current Coward trait must use the Scope's Cautious 50%-90% Power window.")
-	assert(cautious_filter["eligible_count"] == 1 and cautious_filter["selected_quest"].id == "cautious_edge", "Cautious/Coward must retain weaker work longer and reject Power 92 at HeroPower 100.")
+	var cautious_filter: Dictionary = evaluator.select_quest([cautious_edge, too_strong_for_cautious], 100.0, [HeroTraitsScript.CAUTIOUS])
+	assert(is_equal_approx(cautious_filter["hard_filter_minimum"], 50.0) and is_equal_approx(cautious_filter["hard_filter_limit"], 90.0), "Cautious must use the Scope's 50%-90% Power window.")
+	assert(cautious_filter["eligible_count"] == 1 and cautious_filter["selected_quest"].id == "cautious_edge", "Cautious must retain weaker work longer and reject Power 92 at HeroPower 100.")
 
 	print("PASS: Starting traits, QuestScore personality modifiers, and Brave/Cautious Hard Filter windows follow the approved formulas.")
 	quit()
+
+func assert_starting_axes_match_traits(simulation, traits: Array[String]) -> void:
+	var development = simulation.trait_development
+	for axis_id in development.AXIS_ORDER:
+		var positive_trait: String = str(development.POSITIVE_TRAIT_BY_AXIS[axis_id])
+		var negative_trait: String = str(development.NEGATIVE_TRAIT_BY_AXIS[axis_id])
+		var expected_value: int = 0
+		var expected_trait: String = ""
+		if traits.has(positive_trait):
+			expected_value = development.ACTIVATION_THRESHOLD
+			expected_trait = positive_trait
+		elif traits.has(negative_trait):
+			expected_value = -development.ACTIVATION_THRESHOLD
+			expected_trait = negative_trait
+		assert(development.get_axis_value(simulation.hero_state, axis_id) == expected_value, "Starting trait must move its matching personality axis to exactly ±40.")
+		assert(development.get_established_trait(simulation.hero_state, axis_id) == expected_trait, "Starting axis must expose the matching established trait.")
 
 func make_quest(quest_id: String, target_power: float, reward: int, category: int):
 	var mob = MobDefinitionScript.new()

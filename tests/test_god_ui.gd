@@ -14,8 +14,7 @@ func run_test() -> void:
 	assert(main_ui.simulation.get_current_combat_results().is_empty(), "Developer UI must tolerate startup before the first autonomous quest is selected.")
 
 	var god_panel = main_ui.god_panel
-	main_ui.simulation.hero_state.traits.clear()
-	main_ui.simulation.hero_state.traits.append(HeroTraitsScript.NOBLE)
+	main_ui.simulation.trait_development.apply_starting_traits(main_ui.simulation.hero_state, [HeroTraitsScript.NOBLE])
 	main_ui.update_hero_panel()
 	god_panel.refresh()
 

@@ -8,8 +8,8 @@ const CombatStatsScript = preload("res://scripts/model/runtime/combat_stats.gd")
 func _init() -> void:
 	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.NOBLE], MobDefinitionScript.Category.MONSTER), 1.10), "Noble must deal 10% more damage to Monsters.")
 	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.NOBLE], MobDefinitionScript.Category.HUMANOID), 1.0), "Noble must not gain damage against Humanoids.")
-	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.DISHONORABLE], MobDefinitionScript.Category.HUMANOID), 1.10), "Dishonorable must deal 10% more damage to Humanoids.")
-	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.DISHONORABLE], MobDefinitionScript.Category.MONSTER), 1.0), "Dishonorable must not gain damage against Monsters.")
+	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.DEVIOUS], MobDefinitionScript.Category.HUMANOID), 1.10), "Devious must deal 10% more damage to Humanoids.")
+	assert(is_equal_approx(HeroTraitsScript.get_damage_multiplier([HeroTraitsScript.DEVIOUS], MobDefinitionScript.Category.MONSTER), 1.0), "Devious must not gain damage against Monsters.")
 
 	var hero_stats = CombatStatsScript.new()
 	hero_stats.max_hp = 100.0
@@ -28,5 +28,5 @@ func _init() -> void:
 	assert(actions.size() == 1 and actions[0].attacker_id == "hero", "The first deterministic action must be the hero strike.")
 	assert(is_equal_approx(actions[0].damage, 11.0), "The doubled trait multiplier must affect actual combat damage.")
 
-	print("PASS: Noble and Dishonorable category bonuses apply 10% actual combat damage.")
+	print("PASS: Noble and Devious category bonuses apply 10% actual combat damage.")
 	quit()

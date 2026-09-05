@@ -4,7 +4,7 @@ const SimulationScript = preload("res://scripts/core/simulation.gd")
 
 func _init() -> void:
 	var simulation = SimulationScript.new(2402, null)
-	simulation.hero_state.traits.clear()
+	simulation.trait_development.apply_starting_traits(simulation.hero_state, [])
 	var base_physical_damage: float = simulation.base_combat_stats.attack
 	var base_power: float = simulation.get_hero_power()
 

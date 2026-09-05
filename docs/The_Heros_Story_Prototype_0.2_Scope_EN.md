@@ -1585,6 +1585,12 @@ An event exists independently of the hero. The hero may travel through its area 
 
 Exact event spawn frequency, replacement delay, and lifetime values remain balance/tuning questions to be finalized after the real map and long-run simulation pacing can be observed.
 
+Prototype 0.2 uses one global early-game warm-up gate for temporary events:
+
+> **no temporary event may spawn before world tick 100; the first event population becomes eligible on world tick 100**
+
+This is a world-pacing rule rather than a hero-level requirement. Its purpose is to let the hero live through an initial stretch of ordinary quests and begin differentiating primary attributes before stat-driven formative events can occur. If no valid free footprint exists exactly on tick 100 because an already-active world activity occupies the required area, event placement may wait until the first later valid opportunity; the gate must never cancel or displace the hero's current activity merely to force an event onto the map. Ordinary available quest-board offers may be re-placed around an event at their normal refresh boundary, but an already accepted active quest keeps its real target reservation.
+
 Prototype 0.2 content target:
 
 > **approximately 15–20 handcrafted temporary events total across both city regions**

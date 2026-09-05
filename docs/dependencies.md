@@ -15,6 +15,30 @@ main_ui.gd
 → DebugLog
 ```
 
+Current temporary-event branch:
+
+```text
+world ticks 0–99 → EventSystem configured, no temporary-event placement
+world tick 100 and later 50-tick board refreshes while initial events remain unspawned
+→ available quest-board map reservations are released
+→ initial event population gets placement priority
+→ quest board is rebuilt around successful event footprints
+→
+WorldState.hero_position_changed
+→ EventSystem encounter lookup / pending activation
+→ EventRunner suspends TravelSystem
+→ authored SCENE / DECISION / COMBAT / END stages
+→ Formative movement through TraitDevelopment or Expressive trait read
+→ EventNarrator / DebugLog
+→ EventSystem cleanup
+→ TravelSystem resumes the original destination after success
+```
+
+Temporary-event warm-up / placement contracts:
+- temporary-event definitions may be loaded/configured from game start, but `EventSystem` must not place any event footprint before world tick 100;
+- when the gate opens, Simulation releases only the currently available quest-board map reservations before EventSystem tries to place the initial population; an already taken active quest target is not part of that release and is never displaced to force an event;
+- if an active activity still blocks every valid event footprint, the unspawned definition remains eligible; EventSystem keeps ordinary per-tick eligibility checks, and each later 50-tick quest-board refresh again gives pending initial events placement priority before rebuilding the board around successful event reservations.
+
 Live combat:
 
 ```text
@@ -22,7 +46,7 @@ CombatSession
 → CombatResult
 → Simulation
     ├── victory → HeroProgression XP / possible stat refresh
-    └── result → QuestRunner
+    └── result → owning QuestRunner / DungeonRunner / EventRunner
 → exactly one completed world tick
 ```
 
@@ -100,6 +124,30 @@ Current contracts:
 - current experimental equipment Strength uses the same centralized STR conversion and no longer grants MaxHP;
 - Armor, Accuracy/Dodge, elemental Resistance, and Block are resolved through the shared `DamageResolver`; `CombatStats` does not store a parallel `damage_reduction` value.
 
+## Personality axes and established traits
+
+Current flow:
+
+```text
+HeroTraits seeded starting roll
+→ TraitDevelopment initializes matching axis at exactly ±40
+→ HeroState.personality_axis_values / personality_traits_by_axis
+→ authored Formative event movement also routes through TraitDevelopment.apply_movement()
+→ Simulation.get_hero_traits()
+→ QuestEvaluator / conditional combat trait bonus / UI display
+```
+
+Contracts:
+- the four mutable axes are Courage, Morality, Greed, and Curiosity, each clamped to −100…+100;
+- neutral axes establish their positive trait at +40 or negative trait at −40;
+- an established positive trait remains active until its axis returns to +20; an established negative trait remains active until its axis returns to −20;
+- the current starting roll uses the final trait ids and initializes each rolled trait through `TraitDevelopment`; there is no separate `HeroState.traits` source of truth;
+- current rollable starting traits are Cautious / Brave / Devious / Noble / Greedy; Generous / Curious / Conservative already exist in the final vocabulary but are not yet rolled at creation;
+- the first temporary event already applies authored Formative movement through `TraitDevelopment.apply_movement()`: STR → Courage +5, DEX → Morality +5, WIS → Courage −5; the DEX rescue branch therefore moves toward Noble, while crossing ±40 establishes the corresponding trait and later movement follows the same ±20 hysteresis;
+- its later Brave check is Expressive: it reads the established trait through `TraitDevelopment.has_trait()` and does not award additional Brave movement;
+- `Simulation.get_hero_traits()` is the compatibility boundary consumed by quest/combat/UI systems;
+- UI may display axis values and threshold state but must not own personality-transition rules.
+
 ## Autonomous quest selection
 
 Owners:
@@ -114,7 +162,7 @@ Current decision flow:
 CHOOSING_QUEST
 → QuestPool current single-city offers
 → personality-adjusted Hard Filter Power window:
-   standard 55–95% / Brave 60–100% / current legacy Coward-as-Cautious 50–90%
+   standard 55–95% / Brave 60–100% / Cautious 50–90%
 → WeakestAllowedMobPower among allowed quests
 → RelativeRecoveryCost = MobPower / WeakestAllowedMobPower
 → EstimatedCostPerMob = 1 + RelativeRecoveryCost
@@ -123,16 +171,17 @@ CHOOSING_QUEST
 → current Courage / Morality / Greed modifiers
 → optional DivineModifier = +0.20 for the currently guided eligible offer, otherwise 0
 → strict highest QuestScore
+→ ranked evaluation telemetry from those same calculated records
 → selected QuestOffer assigned to QuestRunner
 → QuestRunner executes
 ```
 
 Contracts:
 - Hard Filter uses full-HP **base persistent HeroPower**, not current injured HP and not temporary combat-only bonuses;
-- standard heroes consider MobPower from 55% through 95% of HeroPower; Brave uses 60–100%; the current legacy Coward trait temporarily represents Cautious and uses 50–90%;
+- standard heroes consider MobPower from 55% through 95% of HeroPower; Brave uses 60–100%; Cautious uses 50–90%;
 - both bounds are inclusive within evaluator epsilon; quests below the minimum are outgrown and quests above the maximum are too dangerous, so neither participates in QuestScore;
 - temporary finite effects such as the divine five-fight `+3 Attack` do not alter HeroPower or Hard Filter;
-- conditional Noble/Dishonorable +10% category damage does not alter HeroPower or Hard Filter;
+- conditional Noble/Devious +10% category damage does not alter HeroPower or Hard Filter;
 - mob count does not affect Hard Filter;
 - filtered-out quests never participate in QuestScore;
 - the weakest allowed mob is normalized to recovery cost `1`;
@@ -141,10 +190,11 @@ Contracts:
 - current selection has no general roulette;
 - starting traits use the shared seeded RNG and opposing traits are mutually exclusive;
 - personality modifiers apply only after Hard Filter;
-- Noble deals 10% more actual damage to MONSTER and Dishonorable to HUMANOID;
+- Noble deals 10% more actual damage to MONSTER and Devious to HUMANOID;
 - quest guidance may add `+0.20` only to one current eligible offer for the next selection action and cannot bypass Hard Filter;
 - QuestEvaluator must not execute quests;
 - QuestRunner must not calculate Hard Filter or QuestScore;
+- quest-selection debug narration may rank and display the evaluator's returned records but must not reproduce the QuestScore formula;
 - UI must not choose quests;
 - changing `.tres` mob/quest tuning must not require changing selection code.
 
@@ -206,7 +256,7 @@ Current flow:
 assets/map/prototype_02_hex_layout.png
 → HexMapImageDecoder
 → HexMapDefinition decoded source layout
-→ HexMap builds 300 HexDefinition cells (coordinates + terrain + region + semantic tags)
+→ HexMap builds 390 HexDefinition cells (coordinates + terrain + region + semantic tags)
 → HexMap runtime adjacency / radius / route / distance queries
 → WorldState mutable hero position + active-activity hex occupancy
 → ActivityPlacementFinder valid center queries from region / distance / terrain / tags / free footprint
@@ -220,7 +270,8 @@ assets/map/prototype_02_hex_layout.png
 → DungeonRunner starts/advances the real route to the dungeon entrance through the same TravelSystem
 → DungeonRunner owns the authored encounter cursor / between-fight timing while Simulation uses the same shared CombatSession for each dungeon fight
 → Simulation applies PotionPreparationSystem healing inside the existing one-tick between-fight windows
-→ future Event systems reuse the same placement/reservation and travel foundations
+→ EventSystem uses the same placement/reservation foundation for current temporary events
+→ TravelSystem may suspend the interrupted quest route while EventRunner resolves the event, then recompute/resume toward the original destination
 → MapTileVisuals loads 3 authored 158 × 140 sprites per normal biome + 418 × 440 town overlay + hero/quest/dungeon map sprites
 → MapScreen sprite drawing / city overlays / live quest sprites / dungeon debug/discovered sprites / live hero sprite / hover inspection / camera transform
 ```
@@ -243,7 +294,7 @@ Contracts:
 - hero presence does not reserve a hex as an activity; changing `WorldState.hero_position` must validate the destination through `HexMap`; destination choice and tick-by-tick travel do not belong to `WorldState`;
 - `ActivityPlacementFinder` is a read-only placement filter: the requested center must belong to the requested region, lie inside the inclusive min/max hex-step distance from the supplied origin, satisfy any allowed-terrain filter plus the center's allowed/forbidden tag filters, and have a complete footprint for the requested radius; every footprint hex must remain inside the same region and be unoccupied; allowed terrain and allowed/forbidden tags apply to the center only, a non-empty terrain list requires an exact terrain-id match, and a non-empty allowed-tag list means at least one listed tag must match;
 - current Starting City `QuestDefinition` resources author inclusive `placement_distance_hex_min/max`, optional `placement_allowed_terrain_ids`, optional `placement_allowed_tags`, `placement_forbidden_tags`, and explicit strength-band membership; every current ordinary quest forbids `city`, and the temporary all-eligible-template board is regression-tested to fit on unique Starting Region hexes;
-- `ActivityPlacementFinder` remains a pure filter and does not choose a candidate, reserve cells, create runtime activities, or mutate Simulation; current `DungeonSystem` and `QuestPool` are separate consumers, each using its own deterministic placement RNG stream and reserving its chosen footprint through `WorldState`; future Event systems remain responsible for their own choice/lifecycle logic;
+- `ActivityPlacementFinder` remains a pure filter and does not choose a candidate, reserve cells, create runtime activities, or mutate Simulation; current `DungeonSystem`, `QuestPool`, and `EventSystem` are separate consumers with their own deterministic placement RNG streams and reservation/lifecycle ownership;
 - ordinary dungeon content under `data/dungeons/starting_region/` and `data/dungeons/mid_region/` is discovered automatically by `DungeonSystem`; only `DungeonDefinition` resources join the ordinary dungeon population, dungeon mob resources are ignored, ids must be unique, and the separate specialization folder is not part of this automatic ordinary-dungeon loading path;
 - each ordinary `DungeonDefinition` owns one `ordinary_mob_definition` plus an `ordinary_encounter_count` of 3–5, and `DungeonRunner` must use that same ordinary mob for every pre-boss room before switching to the definition's unique boss;
 - each current board `QuestOffer` owns one concrete `target_hex` plus the reservation id that protects that hex and a `map_distance_steps` value equal to the actual shortest route length from the Starting City center; live QuestScore travel estimation uses that real route distance whenever a map target exists, while legacy `distance_km_min/max` remains only for fixed compatibility offers that have no map target;
@@ -264,13 +315,13 @@ Contracts:
 - the second Starting Region dungeon reserves one forest hex 5–7 steps from Starting City, begins unknown under the same discovery rules, and uses `3 × Blackfang Guard (~600 Power, 260 XP) → Goblin King (~750 Power, 320 XP)`; it shares the same preparation/death/retry/return flow, then awards 2000 Gold + one compressed ilvl 10 Rare/Epic item from the twelve-slot Ironward source and disappears from the active map after completion;
 - MapScreen uses `assets/map/activities/dungeon.png` at 65 px draw height; the current developer-only view deliberately shows an unknown dungeon at 40% opacity while keeping its identity out of the tooltip, then renders it fully opaque and named after discovery;
 - opening MapScreen changes visibility only; the existing Simulation continues running;
-- ordinary quest-board locations/travel and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/full-Belt potion preparation/dedicated missing-potion purchase tick/between-fight potion use/completion reward/removal from the active map are integrated; current compressed Level 5/10 potions are visible individually in a vertical Inventory column with one bottle per slot, while prepared-Belt-slot visualization, current-route presentation, travel interruption/resumption, city relocation, events, and later potion tiers remain intentionally unintegrated.
+- ordinary quest-board locations/travel, the first map-backed temporary event with travel interruption/resumption and personality movement, and first-dungeon placement/discovery/post-quest priority/travel/sequential combat/+25%/+15%/+10% Power retry readiness/full-Belt potion preparation/dedicated missing-potion purchase tick/between-fight potion use/completion reward/removal from the active map are integrated; current compressed Level 5/10 potions are visible individually in a vertical Inventory column with one bottle per slot, while prepared-Belt-slot visualization, current-route presentation, city relocation, the broader event population, and later potion tiers remain incomplete.
 
 ## UI boundary
 
 `main_ui.gd` coordinates top-level screens and the remaining main developer panels. It instantiates `InventoryScreen`, `GodPanel`, and `NarrativePanel`, supplies the same live `Simulation` to each, and owns Inventory Back/close navigation.
 
-It may read the active respawn countdown only through `Simulation.get_respawn_ticks_remaining()` so quest- and dungeon-owned deaths display consistently; UI does not decrement the timer or change HP/state.
+It may read the active respawn countdown only through `Simulation.get_respawn_ticks_remaining()` so quest-, dungeon-, and event-owned deaths display consistently; UI does not decrement the timer or change HP/state.
 
 `scripts/ui/screens/inventory_screen.gd` reads equipped and retained-item state to display icons, quality outlines, tooltips, and portrait overlays. Its equipment layout is fixed to five armor slots left of the portrait, main-hand/off-hand below it, and necklace/earrings/two-rings/belt on the right. It does not grant, equip, drop, or modify items.
 
@@ -297,7 +348,7 @@ resurrection
 - combat blessing creates a generic `×1.15 resolved Physical Damage` active effect; `StatResolver` includes it in effective CombatStats, while base CombatStats/HeroPower remain unchanged;
 - CombatSession receives ready-made effective CombatStats and must not accept a separate divine damage bonus;
 - the active blessing consumes one HeroState effect charge after every finished fight and refreshes resolved stats when changed or removed;
-- Noble/Dishonorable conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
+- Noble/Devious conditional damage and temporary blessings are displayed separately in UI and intentionally excluded from HeroPower/Hard Filter;
 - guidance can target only a current tavern offer, never bypasses Hard Filter, and is consumed by the next quest-selection action even if it does not win;
 - the guided eligible offer receives `DivineModifier = +0.20` for that one selection action; all other offers receive `0`;
 - Divine Vision costs 80 Energy, starts a 1500-world-tick cooldown, and may reveal one random already-existing unknown dungeon only in the hero's current region; it never creates a dungeon or orders the hero to visit it;

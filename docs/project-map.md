@@ -21,17 +21,20 @@ Coordinates:
 - WorldClock;
 - SeededRng;
 - HeroState / HeroProgression / StatResolver;
+- TraitDevelopment;
 - PowerCalculator;
 - live CombatSession;
 - QuestPool / QuestEvaluator;
 - QuestRunner;
 - DungeonSystem / DungeonRunner;
+- EventSystem / EventRunner;
 - QuestNarrator;
+- EventNarrator;
 - DebugLog;
 - Diary shell;
 - GodState commands and active-effect coordination.
 
-On combat completion it records cumulative per-mob win/loss statistics, applies XP only after victory, consumes one active divine-blessing fight when present, passes the result to `QuestRunner`, logs the resulting structured event, and completes exactly one world tick for the fight.
+On combat completion it records cumulative per-mob win/loss statistics, applies XP only after victory, consumes one active divine-blessing fight when present, routes the result to the owning quest / dungeon / temporary-event runner, logs the context-appropriate result, and completes exactly one world tick for the fight.
 
 ### `scripts/core/world_clock.gd`
 Single world-time authority used by travel, recovery, the natural resurrection timer, god energy recovery, and god cooldowns.
@@ -46,7 +49,7 @@ Mutable hero state and centralized loop-state ids, including:
 - `DEAD_RESPAWNING`;
 - `RECOVERING_IN_CITY`.
 
-Also owns current `active_effects`, learned Power Strike and Battle Guard Skill Levels, the hero's pending player-distributed primary-attribute points, the hero's `Equipment`, the current `Inventory`, and the ordered levels of healing potions currently prepared into Belt slots for dungeon use.
+Also owns current `active_effects`, learned Power Strike and Battle Guard Skill Levels, the hero's pending player-distributed primary-attribute points, the four hidden personality-axis values plus established trait id per axis, the hero's `Equipment`, the current `Inventory`, and the ordered levels of healing potions currently prepared into Belt slots for dungeon use.
 
 ### `scripts/hero/equipment.gd`
 Owns equipped `ItemInstance` objects by slot, replaces an item when Simulation approves a better quality, and exposes persistent stat totals.
@@ -55,7 +58,10 @@ Owns equipped `ItemInstance` objects by slot, replaces an item when Simulation a
 Stores up to 36 retained equipment item instances in acquisition order; adding equipment item 37 removes and returns the oldest equipment item. The same Inventory model also owns persistent healing-potion counts by potion level, separate from that equipment FIFO so consumables are not accidentally sold or evicted as ordinary gear.
 
 ### `scripts/hero/hero_traits.gd`
-Owns the five Prototype 0 trait IDs, seeded assignment of 1–2 compatible starting traits, Russian display names, QuestScore personality constants, and the Noble/Dishonorable category-damage multiplier.
+Owns the final eight Prototype 0.2 trait IDs/display names, the current seeded assignment of 1–2 compatible starting established traits from the temporary five-trait rollable subset (`Cautious / Brave / Devious / Noble / Greedy`), QuestScore personality constants, and the existing Noble/Devious category-damage multiplier.
+
+### `scripts/hero/trait_development.gd`
+Owns the four final personality axes, their −100…+100 bounds, ±40 activation and ±20 return-to-neutral hysteresis, mapping between each axis and its positive/negative established trait, initialization of rolled starting traits at exactly ±40, authored formative movement, and stable retrieval of the hero's currently established traits. `HeroState` stores the mutable values; this helper owns the personality-transition rules.
 
 ### `scripts/hero/hero_progression.gd`
 Owns XP, the approved pre-specialization level growth of +1 fixed Warrior STR plus 4 pending player-distributed primary-attribute points, explicit spending of those pending points into STR / DEX / INT / CON / WIS, and the automatic Skill Level 1 unlocks of Power Strike at compressed Level 5 and Battle Guard at compressed Level 10.
@@ -88,7 +94,7 @@ Shared complete Prototype 0.2 hero/mob Power calculation. It includes expected p
 ## World map foundation
 
 ### `scripts/model/definitions/hex_definition.gd`
-One logical map cell. Each current `HexDefinition` owns the cell's stable logical coordinates, game-level terrain id, city `region_id`, and permanent semantic `tags`. The current tag vocabulary is intentionally small: `city`, `city_center`, and `road`; `has_tag()` is the shared query boundary. The 300 instances are built from the authored PNG layout by `HexMap`; the technical `hero_start` source marker is normalized to `starting_city` terrain rather than becoming a separate gameplay terrain type. Region ownership and semantic tags are derived from authored map structure rather than encoded as extra PNG colors.
+One logical map cell. Each current `HexDefinition` owns the cell's stable logical coordinates, game-level terrain id, city `region_id`, and permanent semantic `tags`. The current tag vocabulary is intentionally small: `city`, `city_center`, and `road`; `has_tag()` is the shared query boundary. The 390 instances are built from the authored PNG layout by `HexMap`; the technical `hero_start` source marker is normalized to `starting_city` terrain rather than becoming a separate gameplay terrain type. Region ownership and semantic tags are derived from authored map structure rather than encoded as extra PNG colors.
 
 ### `scripts/world/hex_map.gd`
 Runtime read/query layer over the authored map definition. It validates the decoded map, creates one `HexDefinition` for every logical cell, derives permanent semantic tags from authored structure (`city` from city terrain, `city_center` from the two authored centers, and `road` from the ordered road path), derives the two non-overlapping seven-step city regions, exposes hex lookup and valid neighboring cells, returns all valid cells within a requested hex radius, builds deterministic shortest adjacent-hex routes, and reports route distance in steps and kilometres using the fixed Prototype 0.2 scale of 3 km per hex. Overlap belongs to the nearer city; equal-distance boundary cells are divided by the midpoint between the two city-center X coordinates. It does not choose destinations, reserve activities, or advance travel.
@@ -97,10 +103,10 @@ Runtime read/query layer over the authored map definition. It validates the deco
 Mutable world-state owner for the current map slice. It owns the hero's current map hex and the current active-activity occupancy of map hexes. Activity reservations are atomic, one hex may belong to at most one active activity, and releasing an activity frees its complete stored footprint. Hero presence itself is not treated as activity occupancy. It initializes the hero position from the authored Starting City center and validates position changes against `HexMap`, but it does not decide where the hero should go or which activities should spawn.
 
 ### `scripts/world/travel_system.gd`
-Owns real multi-tick map movement. It asks `HexMap` for the deterministic shortest route from the hero's current `WorldState.hero_position` to an already chosen destination, stores the active route, and advances exactly one adjacent hex per world tick when its caller advances travel. It exposes remaining route steps and arrival state but does not choose destinations, quests, events, or city relocation. Current ordinary quest execution is its first consumer.
+Owns real multi-tick map movement. It asks `HexMap` for the deterministic shortest route from the hero's current `WorldState.hero_position` to an already chosen destination, stores the active route, and advances exactly one adjacent hex per world tick when its caller advances travel. It can suspend an active destination and later rebuild the route from the hero's new position toward that original destination; the first temporary event uses this for interruption/resumption. It exposes remaining route steps and arrival state but does not choose destinations, quests, events, or city relocation. Ordinary quests and dungeons use it directly, while temporary events currently use its suspension/resumption boundary.
 
 ### `scripts/world/activity_placement_finder.gd`
-Pure placement-query helper for future map-backed quests, dungeons, and temporary events. It returns valid central hexes for a requested region, inclusive distance range from an origin, optional allowed terrain ids, optional allowed/forbidden semantic tags on the center, and footprint radius. A non-empty terrain list requires the center terrain to match one listed id; a non-empty allowed-tag list requires at least one matching center tag; any forbidden center tag rejects the candidate. Every footprint hex must exist, remain inside the requested region, and be free in `WorldState`. The finder does not reserve cells, choose among candidates, roll RNG, create activities, or mutate Simulation.
+Pure placement-query helper shared by current map-backed quests, dungeons, and temporary events. It returns valid central hexes for a requested region, inclusive distance range from an origin, optional allowed terrain ids, optional allowed/forbidden semantic tags on the center, and footprint radius. A non-empty terrain list requires the center terrain to match one listed id; a non-empty allowed-tag list requires at least one matching center tag; any forbidden center tag rejects the candidate. Every footprint hex must exist, remain inside the requested region, and be free in `WorldState`. The finder does not reserve cells, choose among candidates, roll RNG, create activities, or mutate Simulation.
 
 ### `scripts/model/definitions/hex_map_definition.gd`
 Authored map source contract. It owns dimensions, PNG sampling geometry, flat-top odd-column adjacency, decoded terrain lookup, derived city centers/seven-hex clusters, the ordered road path, and structural validation. It references the editable PNG but does not own hero movement, route choice, travel time, events, quests, or world simulation state.
@@ -124,7 +130,7 @@ Owns immutable quest templates and the currently available runtime tavern offers
 
 The developer build loads every `.tres` under `res://data/quests` in stable filename order. The current twenty-two Starting City templates explicitly belong to lower / middle / higher strength bands in an 8 / 7 / 7 split. During the current playtest pass, `QuestPool` temporarily exposes every eligible template from all three bands instead of selecting only three per band; each runtime offer still rolls its integer count, legacy abstract distance, and per-mob-gold values through the established quest RNG. A separate deterministic placement RNG stream uses `ActivityPlacementFinder` plus each template's hex-distance/terrain/tag constraints to assign every current board offer one free Starting Region target and reserve it through `WorldState`. An offer calculates its total Gold reward as `MobCount × GoldPerMob`.
 
-The Starting City board is capped at nine available offers with a maximum of three per strength band. `QuestEvaluator` sees only those current offers; a particular board roll is allowed to contain no offer suitable for the hero's present Hard Filter window.
+The Starting City board is capped at nine available offers with a maximum of three per strength band. `QuestEvaluator` sees only those current offers; a particular board roll is allowed to contain no offer suitable for the hero's present Hard Filter window. `QuestPool` can release only the current available-offer map reservations without touching an already taken active quest; the world-tick-100 temporary-event gate uses that narrow boundary so EventSystem can reserve its first footprint before the normal board refresh places offers around it.
 
 `QuestPool` owns both board lifecycle and quest-target reservation lifecycle. The whole available board rerolls together every 50 completed world ticks. Accepting an offer removes it from the available board immediately and leaves the vacancy empty until the next global refresh, while the active QuestOffer keeps its target reservation during travel and quest execution. A global refresh releases/replaces only current board-offer reservations and preserves the separate active quest target. When the final objective is completed, that active target is released. Successful completion marks the template unavailable for 50 world ticks; cancellation has no completion cooldown. The cooldown is strict: blocked templates are not used as fallback fillers. Neither result triggers an individual replacement. `Simulation` forwards structured quest events and completed world ticks but does not own board state. Tests may still inject explicit fixed offers without map placement for regression use.
 
@@ -133,15 +139,16 @@ Runtime quest offer. Owns the rolled mob count, legacy abstract distance, gold p
 
 ### `scripts/quests/quest_evaluator.gd`
 Owns autonomous quest evaluation:
-- personality-adjusted lower/upper MobPower Hard Filter window: standard 55–95%, Brave 60–100%, current legacy Coward as temporary Cautious 50–90%;
+- personality-adjusted lower/upper MobPower Hard Filter window: standard 55–95%, Brave 60–100%, Cautious 50–90%;
 - weakest-allowed-mob normalization;
 - estimated combat/recovery cost;
 - BaseAttractiveness;
-- Coward/Brave modifier;
-- Dishonorable/Noble modifier;
+- Cautious/Brave modifier;
+- Devious/Noble modifier;
 - Greedy modifier;
 - optional one-selection `DivineModifier = +0.20` for the currently guided eligible offer;
-- strict highest-score selection.
+- strict highest-score selection;
+- ranked copies of the same eligible evaluation records for developer telemetry, without a second scoring formula.
 
 Hard Filter uses base persistent HeroPower. Quests below the lower bound are treated as outgrown, quests above the upper bound are too dangerous, and neither group participates in QuestScore. Guidance cannot bypass Hard Filter.
 
@@ -161,6 +168,29 @@ It does not award XP, choose quests, calculate QuestScore, or implement combat i
 
 ### `scripts/quests/quest_event.gd`
 Structured quest/runtime events, including death, resurrection, and city recovery.
+
+## Temporary events
+
+### `scripts/model/definitions/event_definition.gd` / `event_stage_definition.gd` / `event_option_definition.gd` / `data/events/`
+Immutable authored temporary-event content. `EventDefinition` owns placement/lifetime rules and a small typed stage graph; stage/option resources own scene timing, Formative/Expressive decision data, shared-combat references, outcomes, rewards, and future diary text. The first live event is `data/events/starting_region/0001_old_clearing_ambush.tres` (`У старой вырубки`), whose Formative STR / DEX / WIS choice applies Courage +5 / Morality +5 / Courage −5 respectively; the DEX rescue route therefore moves toward Noble.
+
+### `scripts/model/runtime/event_instance.gd`
+Mutable state for one spawned temporary event: target hex, reserved map activity, spawn/expiry ticks, current stage, engagement/completion state, outcome id, and local flags. An engaged event no longer expires underneath the hero.
+
+### `scripts/events/event_system.gd`
+Owns temporary-event definition loading, the global first-spawn gate at world tick 100, deterministic map placement, radius-footprint reservation, active instances, encounter lookup, engagement, lifetime expiry, completion cleanup, and the current maximum-active-event cap. During ticks 0–99 definitions are loaded/configured but no event footprint is placed; on tick 100 the initial population becomes eligible and uses the then-current free map space, retrying later if an already-active activity blocks every valid footprint. Pending initial events also receive placement priority before each later 50-tick quest-board refresh so available quest markers cannot permanently starve them of map space. It does not execute stages, move the hero, resolve combat, or mutate personality directly. Automatic replacement/population maintenance after an event disappears is not implemented yet.
+
+### `scripts/events/event_decision_resolver.gd`
+Owns the current reusable event decision rule for comparing up to three authored Warrior primary attributes and selecting the highest raw value; exact ties use the event's seeded resolution RNG. INT is not allowed in this ordinary Warrior pattern.
+
+### `scripts/events/event_runner.gd`
+Executes one engaged event graph. It suspends an interrupted `TravelSystem` route, advances timed stages, routes Formative movement through `TraitDevelopment`, reads established traits for Expressive checks, requests the shared event combat context, owns event-death resurrection/recovery state, and resumes the original travel destination after success. Event combat itself remains the shared `CombatSession`.
+
+### `scripts/narrative/event_narrator.gd`
+Presentation-only debug narration for temporary-event spawning, expiry, stages, Formative/Expressive decisions, combat, completion, death, resurrection, and recovery. Event-specific future diary prose remains authored in the event data.
+
+### `tests/test_first_temporary_event_content.gd` / `test_first_temporary_event_runtime.gd` / `test_event_travel_suspend_resume.gd`
+Protect the first event's authored branch timings/rewards/personality meanings, shared combat and death behavior, Expressive Brave branch, and suspension/resumption of the interrupted quest route.
 
 ## Dungeons
 
@@ -215,7 +245,7 @@ Protects the current compressed Level 5 / 10 potion data and supplied sprites, 1
 Owns energy, six-tick recovery progress, ability cooldowns, pending quest guidance, and resurrection energy cost. The active blessing and its remaining fights live in `HeroState.active_effects`.
 
 ### `scripts/god/god_system.gd`
-Owns divine-command rules and applies them through the existing state owners: live/non-combat healing, instant resurrection through whichever active respawn owner currently owns the death state (`QuestRunner` or `DungeonRunner`), five-fight blessing activation/consumption in `HeroState.active_effects`, and validation of quest-guidance targets. It returns structured results where coordination is still required. `Simulation` keeps the stable public command wrappers, refreshes resolved stats after blessing changes, and records context-appropriate resurrection narrative.
+Owns divine-command rules and applies them through the existing state owners: live/non-combat healing, instant resurrection through whichever active respawn owner currently owns the death state (`QuestRunner`, `DungeonRunner`, or `EventRunner`), five-fight blessing activation/consumption in `HeroState.active_effects`, and validation of quest-guidance targets. It returns structured results where coordination is still required. `Simulation` keeps the stable public command wrappers, refreshes resolved stats after blessing changes, and records context-appropriate resurrection narrative.
 
 ### `tests/test_god_state.gd`
 Protects energy, recovery, cooldown activation rules, guidance consumption, and resurrection cost.
@@ -229,7 +259,7 @@ Protects god-panel placement, energy display, startup safety, and state-based av
 ## Narrative
 
 ### `scripts/narrative/quest_narrator.gd`
-Turns quest/combat/death events into current Russian debug-log text.
+Turns quest/combat/death events into current Russian debug-log text. For autonomous quest selection it formats the evaluator's ranked top-three eligible offers plus the selected offer's existing Base/Courage/Morality/Greed/Divine score components; it does not calculate QuestScore itself.
 
 ### `scripts/narrative/debug_log.gd`
 Technical log store. Retains only the last 100 world ticks; multiple combat lines from one fight share the single world tick consumed by that fight.
@@ -251,7 +281,7 @@ Displays:
 - current death-respawn countdown through the hero state label;
 - fixed bottom-right cumulative combat-statistics panel.
 
-`MainUI` instantiates the lightweight Hero development view plus the dedicated Inventory, Map, God, and Narrative components and passes them the existing `Simulation`. The Hero view shows pending primary-attribute points and five allocation buttons that call `Simulation.allocate_primary_attribute()`; it does not own stat rules. It also currently contains four presentation-only personality-axis previews fixed at neutral `0`, with −100/+100 endpoints and only the ±40 activation-threshold markers visible in that neutral state. The future ±20 return-to-neutral markers are reserved for the later real active-trait state and are not shown yet; these previews are deliberately not connected to `HeroState`, quest selection, combat, or any trait-development logic. Switching screens changes visibility only; the same `Simulation` instance continues advancing.
+`MainUI` instantiates the lightweight Hero development view plus the dedicated Inventory, Map, God, and Narrative components and passes them the existing `Simulation`. The Hero view shows pending primary-attribute points and five allocation buttons that call `Simulation.allocate_primary_attribute()`; it does not own stat rules. It also renders the four live personality axes from `HeroState`: the marker follows the hidden −100…+100 value, a developer-only signed numeric label follows that marker above the bar, the fixed center `0` sits below the bar, neutral axes show ±40 activation thresholds, and an established negative/positive trait shows only its relevant −20/+20 return-to-neutral threshold. Switching screens changes visibility only; the same `Simulation` instance continues advancing.
 
 ### `scenes/ui/screens/inventory_screen.tscn`
 Dedicated Inventory screen root instantiated by `MainUI`.
@@ -405,7 +435,7 @@ Integration coverage that `Simulation` selects first and `QuestRunner` executes 
 Protects seeded compatible starting traits and the approved QuestScore formulas.
 
 ### `tests/test_trait_combat_bonus.gd`
-Protects the 10% Noble/Dishonorable category bonus in actual combat damage.
+Protects the 10% Noble/Devious category bonus in actual combat damage.
 
 ### `tests/test_goblin_definition.gd`
 Protects Goblin identity/category plus generic valid combat-data constraints without freezing ordinary tuning values.

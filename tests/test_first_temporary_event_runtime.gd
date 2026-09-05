@@ -2,8 +2,10 @@ extends SceneTree
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const CombatResultScript = preload("res://scripts/combat/combat_result.gd")
+const DefaultQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 
 func _init() -> void:
+	test_event_spawn_gate()
 	test_wisdom_branch()
 	test_standard_dexterity_branch()
 	test_brave_dexterity_branch()
@@ -12,9 +14,23 @@ func _init() -> void:
 	print("PASS: First temporary event resolves live WIS and Brave-DEX branches, rewards, personality, and route restoration.")
 	quit()
 
+func test_event_spawn_gate() -> void:
+	var simulation = SimulationScript.new(8199, DefaultQuest, [], true)
+	assert(simulation.event_system.get_active_events().is_empty(), "Temporary events must not exist on the map at game start.")
+	simulation.on_world_tick_completed(99)
+	assert(simulation.event_system.get_active_events().is_empty(), "Temporary events must remain unavailable through world tick 99.")
+	simulation.on_world_tick_completed(100)
+	var active_events: Array = simulation.event_system.get_active_events()
+	assert(active_events.size() == 1, "When a valid footprint is free, the first temporary-event population must spawn on world tick 100.")
+	assert(active_events[0].spawn_tick == 100, "The first event instance must record world tick 100 as its spawn tick.")
+
 func create_started_event_simulation(seed: int):
 	var simulation = SimulationScript.new(seed, null, [], true)
-	assert(simulation.event_system.get_active_events().size() == 1, "First slice must spawn the authored Old Clearing event.")
+	assert(simulation.event_system.get_active_events().is_empty(), "Temporary events must not spawn before the global world-tick gate.")
+	simulation.quest_pool.release_available_offer_map_targets()
+	var spawned_events: Array = simulation.event_system.spawn_initial_population_if_ready(100)
+	assert(spawned_events.size() == 1, "First slice must spawn the authored Old Clearing event once world tick 100 is eligible.")
+	assert(simulation.quest_pool.assign_map_targets_to_current_offers(), "Quest offers must be placeable around the newly spawned event footprint.")
 	var available_quests: Array = simulation.quest_pool.get_available_quests()
 	assert(not available_quests.is_empty())
 	simulation.quest_runner.quest_definition = available_quests[0]
@@ -22,13 +38,14 @@ func create_started_event_simulation(seed: int):
 	assert(selection_event != null)
 	assert(simulation.travel_system.is_travelling(), "Selected map quest must have active travel before event interruption.")
 	simulation.pending_event_instance = simulation.event_system.get_active_events()[0]
-	assert(simulation.begin_pending_event_if_ready(0))
+	assert(simulation.begin_pending_event_if_ready(100))
 	assert(simulation.event_runner.active_event != null)
 	assert(simulation.travel_system.has_suspended_travel())
 	return simulation
 
 func test_wisdom_branch() -> void:
 	var simulation = create_started_event_simulation(8101)
+	simulation.trait_development.reset_state(simulation.hero_state)
 	simulation.hero_state.strength = 5
 	simulation.hero_state.dexterity = 5
 	simulation.hero_state.wisdom = 30
@@ -46,6 +63,7 @@ func test_wisdom_branch() -> void:
 
 func test_brave_dexterity_branch() -> void:
 	var simulation = create_started_event_simulation(8102)
+	simulation.trait_development.reset_state(simulation.hero_state)
 	simulation.hero_state.strength = 5
 	simulation.hero_state.dexterity = 30
 	simulation.hero_state.wisdom = 5
@@ -77,6 +95,7 @@ func test_brave_dexterity_branch() -> void:
 
 func test_standard_dexterity_branch() -> void:
 	var simulation = create_started_event_simulation(8103)
+	simulation.trait_development.reset_state(simulation.hero_state)
 	simulation.hero_state.strength = 5
 	simulation.hero_state.dexterity = 30
 	simulation.hero_state.wisdom = 5
@@ -96,6 +115,9 @@ func test_standard_dexterity_branch() -> void:
 
 func test_strength_shared_combat_branch() -> void:
 	var simulation = create_started_event_simulation(8104)
+	simulation.trait_development.reset_state(simulation.hero_state)
+	simulation.trait_development.apply_movement(simulation.hero_state, "courage", 35)
+	assert(not simulation.trait_development.has_trait(simulation.hero_state, "brave"), "Courage +35 must still be neutral before the formative event choice.")
 	simulation.hero_state.strength = 200
 	simulation.hero_state.dexterity = 5
 	simulation.hero_state.constitution = 100
@@ -107,7 +129,8 @@ func test_strength_shared_combat_branch() -> void:
 	for tick in range(1, 4):
 		simulation.advance_event_tick(tick)
 	assert(simulation.hero_state.loop_state == simulation.hero_state.EVENT_COMBAT)
-	assert(simulation.hero_state.personality_axis_values["courage"] == 5)
+	assert(simulation.hero_state.personality_axis_values["courage"] == 40)
+	assert(simulation.trait_development.has_trait(simulation.hero_state, "brave"), "The event's +5 Courage movement must establish Brave when it crosses +40.")
 
 	simulation.start_event_combat()
 	assert(simulation.active_combat_session != null)
@@ -125,6 +148,7 @@ func test_strength_shared_combat_branch() -> void:
 
 func test_event_combat_death_cancels_quest() -> void:
 	var simulation = create_started_event_simulation(8105)
+	simulation.trait_development.reset_state(simulation.hero_state)
 	simulation.hero_state.strength = 30
 	simulation.hero_state.dexterity = 5
 	simulation.hero_state.wisdom = 5

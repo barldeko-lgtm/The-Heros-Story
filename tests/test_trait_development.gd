@@ -6,6 +6,11 @@ const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd"
 func _init() -> void:
 	var hero = HeroStateScript.new("Тест")
 	var traits = TraitDevelopmentScript.new()
+	traits.apply_starting_traits(hero, [traits.TRAIT_BRAVE, traits.TRAIT_NOBLE])
+	assert(traits.get_axis_value(hero, traits.AXIS_COURAGE) == 40, "Starting Brave must initialize Courage at +40.")
+	assert(traits.get_axis_value(hero, traits.AXIS_MORALITY) == 40, "Starting Noble must initialize Morality at +40.")
+	assert(traits.has_trait(hero, traits.TRAIT_BRAVE) and traits.has_trait(hero, traits.TRAIT_NOBLE), "Starting traits must become established immediately at their ±40 activation threshold.")
+	traits.reset_state(hero)
 
 	assert(traits.get_axis_value(hero, traits.AXIS_COURAGE) == 0)
 	assert(not traits.has_trait(hero, traits.TRAIT_BRAVE))
