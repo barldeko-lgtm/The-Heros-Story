@@ -1,0 +1,191 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=28 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0015_orc_raider.tres" id="4_orc"]
+[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl20_drop_table.tres" id="5_ilvl10"]
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "stabilize_the_scout"
+driver_attribute = "constitution"
+next_stage_id = "con_help"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "question_him_carefully"
+driver_attribute = "wisdom"
+next_stage_id = "wis_question"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "read_the_orc_tracks"
+driver_attribute = "dexterity"
+next_stage_id = "dex_tracks"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В холмах герой находит городского разведчика, прислонившегося к камню и зажимающего глубокую рану. Тот рассказывает, что наткнулся на орка-налётчика, сумел оторваться, но уверен: противник всё ещё неподалёку и может выйти к дороге."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_CON"), SubResource("Option_WIS"), SubResource("Option_DEX")])
+
+[sub_resource type="Resource" id="Stage_con_help"]
+script = ExtResource("2_stage")
+id = "con_help"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой три тика занимается прежде всего человеком: останавливает кровь, накладывает тугую повязку и переносит разведчика в защищённое место. Тот приходит в себя увереннее, но на подробный разбор следов времени уже не остаётся."
+next_stage_id = "con_brave_check"
+
+[sub_resource type="Resource" id="Stage_wis_question"]
+script = ExtResource("2_stage")
+id = "wis_question"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой расспрашивает разведчика о каждом движении налётчика, оружии и местности. Из рассказа складывается понятная схема: орк тяжело переносит крутой подъём и почти наверняка пойдёт через узкую каменную ложбину."
+next_stage_id = "wis_brave_check"
+
+[sub_resource type="Resource" id="Stage_dex_tracks"]
+script = ExtResource("2_stage")
+id = "dex_tracks"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой два тика проверяет свежие следы вокруг места схватки. Он видит, что орк сам ранен и движется медленнее, чем думает разведчик. По отпечаткам удаётся точно понять, где налётчика можно перехватить врасплох."
+next_stage_id = "dex_brave_check"
+
+[sub_resource type="Resource" id="Stage_con_brave_check"]
+script = ExtResource("2_stage")
+id = "con_brave_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "brave"
+trait_present_stage_id = "con_pursuit"
+trait_absent_stage_id = "safe_end"
+
+[sub_resource type="Resource" id="Stage_wis_brave_check"]
+script = ExtResource("2_stage")
+id = "wis_brave_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "brave"
+trait_present_stage_id = "wis_pursuit"
+trait_absent_stage_id = "safe_end"
+
+[sub_resource type="Resource" id="Stage_dex_brave_check"]
+script = ExtResource("2_stage")
+id = "dex_brave_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "brave"
+trait_present_stage_id = "dex_pursuit"
+trait_absent_stage_id = "safe_end"
+
+[sub_resource type="Resource" id="Stage_con_pursuit"]
+script = ExtResource("2_stage")
+id = "con_pursuit"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Убедившись, что разведчик не умрёт без него, смелый герой всё же идёт за налётчиком. Точного преимущества у него нет: орка придётся принимать почти в полной силе."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_wis_pursuit"]
+script = ExtResource("2_stage")
+id = "wis_pursuit"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Смелый герой решает воспользоваться полученными сведениями и выходит к узкой ложбине раньше орка. Налётчик оказывается зажат между камнями и получает несколько ран ещё до полноценной схватки."
+next_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_dex_pursuit"]
+script = ExtResource("2_stage")
+id = "dex_pursuit"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Смелый герой идёт по свежим следам и перехватывает налётчика на подъёме. Подкравшись с подветренной стороны, он успевает нанести тяжёлую первую рану прежде, чем орк понимает, что его догнали."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "brave_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "brave_end"
+combat_start_hp_ratio = 0.8
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "brave_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_safe_end"]
+script = ExtResource("2_stage")
+id = "safe_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой нашёл тяжело раненого городского разведчика и помог ему пережить встречу с орком-налётчиком. Вместо дополнительной охоты он сосредоточился на спасении человека и позже получил от городской стражи пятьдесят золотых."
+outcome_id = "scout_rescued"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_brave_end"]
+script = ExtResource("2_stage")
+id = "brave_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "После помощи раненому разведчику герой не остановился и пошёл по следу орка-налётчика. Победив его, герой вернул часть похищенного патрульного снаряжения; город выплатил пятьдесят золотых, а одна добротная вещь десятого уровня осталась герою."
+outcome_id = "scout_rescued_orc_hunted"
+gold_reward = 50
+equipment_reward_source = ExtResource("5_ilvl10")
+equipment_rarity_override = 0
+
+[resource]
+script = ExtResource("1_event")
+id = "wounded_scout"
+display_name = "Раненый разведчик"
+region_id = "starting_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_con_help"), SubResource("Stage_wis_question"), SubResource("Stage_dex_tracks"), SubResource("Stage_con_brave_check"), SubResource("Stage_wis_brave_check"), SubResource("Stage_dex_brave_check"), SubResource("Stage_con_pursuit"), SubResource("Stage_wis_pursuit"), SubResource("Stage_dex_pursuit"), SubResource("Stage_con_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_safe_end"), SubResource("Stage_brave_end")])

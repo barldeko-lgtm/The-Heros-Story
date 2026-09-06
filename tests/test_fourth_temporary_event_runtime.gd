@@ -183,8 +183,11 @@ func test_constitution_devious_curious_branch_stacks_rewards() -> void:
 func create_started_event_simulation(seed: int, engage_event: bool = true) -> Dictionary:
 	var simulation = SimulationScript.new(seed, null, [], true)
 	simulation.quest_pool.release_available_offer_map_targets()
-	var spawned_events: Array = simulation.event_system.spawn_initial_population_if_ready(100)
-	var event_instance = find_event_by_id(spawned_events, "dead_courier")
+	var definition = load("res://data/events/starting_region/0004_dead_courier.tres")
+	simulation.event_system.clear_instances()
+	simulation.event_system.set_definitions([definition])
+	assert(simulation.event_system.spawn_definition(definition, simulation.hex_map.definition.starting_city_center, 100))
+	var event_instance = simulation.event_system.get_active_events()[0]
 	assert(event_instance != null, "Dead Courier must find valid non-road plains placement at distance 2..5 once the event gate opens.")
 	assert(simulation.quest_pool.assign_map_targets_to_current_offers())
 	if not engage_event:

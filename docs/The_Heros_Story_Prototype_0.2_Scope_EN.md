@@ -1593,7 +1593,7 @@ The current event population uses one shared rotation cadence rather than allowi
 
 > **first population at world tick 100 → full unengaged population reroll every 200 world ticks: 300 / 500 / 700 / ...**
 
-At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current five authored events, all five definitions should therefore be selected whenever none is on cooldown; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
+At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current thirteen authored Starting Region events, a normal full rotation selects **five of the eligible definitions**, not the entire pool; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
 
 If a selected definition cannot fit because an already-active world activity occupies every valid footprint, that definition remains selected for the current cycle and may appear at the first later valid placement opportunity. The system must not cancel or move an already-active hero objective to force event placement.
 
@@ -1830,6 +1830,23 @@ The approved fifth Starting Region event, `ogre_at_old_barrow` / **«Огр у �
 - only STR and CON reach Stage 2. It is one Expressive **Devious OR Conservative** check. If either trait is established, the hero spends exactly **2 additional preparation ticks** on one shared trap/ambush branch and removes another 15 percentage points of the Ogre's full HP before combat: STR therefore starts at **65%**, CON at **70%**. If both traits are present, this branch still applies only once. The Expressive check moves neither Morality nor Curiosity;
 - every branch keeps the Ogre's normal full MaxHP and all normal combat stats; only `CombatSession.mob_remaining_hp` starts below full. Victory therefore still uses the shared combat engine and grants the Ogre's normal **195 XP**;
 - successful completion grants no extra Gold and awards exactly one guaranteed **Green / Uncommon ilvl 10** equipment item from the normal current ilvl 10 authored source through the shared item-generation/evaluation pipeline. Event combat itself does not add the Ogre's ordinary random equipment drop.
+
+### 15.10. Current Authored Event Batch — Events 6–13
+
+The next eight Starting Region events deliberately expand content breadth using the already-proven event framework rather than introducing more one-off mechanics:
+
+| Event | Placement | Formative opening | Expressive / later flow | Successful material outcome |
+| --- | --- | --- | --- | --- |
+| `ownerless_campfire` / **Костёр без хозяина** | forest, 3–5, off road | STR Courage +5 / DEX Curiosity +5 / WIS Courage −5 | Curious pursues an Experienced Bandit; otherwise Conservative safely leaves or neutral hero checks locally | Curious: Common ilvl10 + 145 XP; Conservative: 40 Gold; neutral: 25 Gold |
+| `wolves_at_pasture` / **Волки на пастбище** | plains, 3–5 | STR Courage +5 / DEX Curiosity +5 / CON Courage −5 | all fight Mature Wolf at 90% / 75% / 80% starting HP; Noble spends +2 ticks helping afterward | 40 Gold base or 75 Gold with Noble, plus normal 120 XP |
+| `strangers_casket` / **Чужая шкатулка** | road, 2–4 | WIS Morality +5 / DEX Curiosity +5 / CON Morality +5 | Greedy takes money; otherwise Generous returns everything and helps; neutral accepts normal payment | Greedy 120 Gold / Generous Green ilvl5 / neutral 60 Gold |
+| `fugitive_mercenary` / **Беглый наёмник** | hill, 4–6 | STR Courage +5 / DEX Curiosity +5 / WIS Morality +5 | Devious secures surrender alive; otherwise fight Experienced Bandit at 100% / 70% / 85% HP | Devious 100 Gold; combat 60 Gold + normal 145 XP |
+| `wounded_scout` / **Раненый разведчик** | hill, 4–6 | CON Morality +5 / WIS Courage −5 / DEX Curiosity +5 | without Brave, rescue ends safely; Brave additionally hunts Orc Raider at 100% / 80% / 70% HP | safe 50 Gold; Brave 50 Gold + Common ilvl10 + normal 240 XP |
+| `old_prospectors_stones` / **Камни старого старателя** | hill, 3–5 | STR Greed −5 / WIS Curiosity −5 / DEX Curiosity +5 | Greedy empties cache; otherwise Conservative leaves early; neutral searches moderately | 120 / 50 / 80 Gold respectively |
+| `beast_in_broken_cage` / **Зверь в сломанной клетке** | forest, 4–6 | STR Courage +5 / CON Courage −5 / WIS Curiosity +5 | Bear starts at 80% / 75% / 65%; Cautious adds +2 preparation ticks and reduces that branch by another 10 percentage points | Green ilvl5 + normal 100 XP |
+| `boundary_stone_dispute` / **Спор у межевого камня** | plains, 2–4, off road | WIS Morality +5 / CON Courage −5 / STR Courage +5 | Noble negotiates a fair settlement; otherwise Devious profits from both sides; neutral gives a plain ruling | Noble 70 Gold / Devious 100 Gold / neutral 50 Gold |
+
+All eight events author complete `scene_text` for their lived stages and branch-specific `diary_text` on every successful END. Formative movement is applied before later Expressive checks, so newly established traits at the `±40` threshold may affect the later stage of the same event exactly as in the earlier approved content.
 
 ---
 

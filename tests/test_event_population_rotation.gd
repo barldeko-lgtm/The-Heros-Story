@@ -21,7 +21,7 @@ func test_rotation_schedule_and_cap() -> void:
 
 	simulation.quest_pool.release_available_offer_map_targets()
 	var first_population: Dictionary = simulation.event_system.advance_population(100)
-	assert(simulation.event_system.current_cycle_definition_ids.size() == 5, "With five authored definitions and a five-event cap, all five must be selected into the tick-100 population cycle.")
+	assert(simulation.event_system.current_cycle_definition_ids.size() == 5, "The tick-100 population must select exactly five definitions when the authored pool exceeds the five-event cap.")
 	assert(not first_population["spawned"].is_empty())
 	assert(simulation.event_system.get_active_events().size() <= 5)
 	if simulation.event_system.get_active_events().size() < 5:
@@ -36,7 +36,7 @@ func test_rotation_schedule_and_cap() -> void:
 
 	var second_population: Dictionary = simulation.event_system.advance_population(300)
 	assert(second_population["rotated_out"].size() == first_instances.size(), "The shared tick-300 rotation must remove every unengaged event from the previous population together.")
-	assert(simulation.event_system.current_cycle_definition_ids.size() == 5, "All five authored eligible definitions must be selected into the tick-300 population cycle.")
+	assert(simulation.event_system.current_cycle_definition_ids.size() == 5, "The tick-300 rotation must again select exactly five eligible definitions from the larger authored pool.")
 	assert(simulation.event_system.get_active_events().size() == second_population["spawned"].size())
 	assert(simulation.event_system.get_active_events().size() <= 5)
 	if simulation.event_system.get_active_events().size() < 5:
@@ -65,6 +65,8 @@ func test_engagement_cooldown_and_rotation_survival() -> void:
 	assert(simulation.event_system.is_definition_on_cooldown(engaged_definition_id, 619))
 	assert(not simulation.event_system.is_definition_on_cooldown(engaged_definition_id, 620))
 
+	simulation.event_system.clear_instances()
+	simulation.event_system.set_definitions([engaged_event.definition])
 	var tick_700: Dictionary = simulation.event_system.advance_population(700)
 	assert(simulation.event_system.current_cycle_definition_ids.has(engaged_definition_id), "Once the cooldown has ended, the event must be eligible for selection at the next 200-tick population rotation even if its footprint has to remain pending.")
 

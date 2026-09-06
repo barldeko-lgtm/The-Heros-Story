@@ -1,0 +1,158 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "study_the_old_marks"
+driver_attribute = "wisdom"
+next_stage_id = "wis_marks"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "keep_both_sides_apart"
+driver_attribute = "constitution"
+next_stage_id = "con_hold"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "uncover_the_old_foundation"
+driver_attribute = "strength"
+next_stage_id = "str_clear"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На равнине герой слышит ругань у старого межевого камня. Две крестьянские семьи пришли сюда одновременно и каждая обвиняет соседей в том, что границу участка ночью передвинули. До драки остаётся совсем немного, а сам камень выглядит так, будто стоит здесь не первый десяток лет."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_WIS"), SubResource("Option_CON"), SubResource("Option_STR")])
+
+[sub_resource type="Resource" id="Stage_wis_marks"]
+script = ExtResource("2_stage")
+id = "wis_marks"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой сравнивает выветренные насечки на камне с линиями канав и старых деревьев. Выясняется, что нынешний камень вообще не был главным ориентиром: настоящая граница шла по фундаменту давно разобранной ограды чуть в стороне."
+next_stage_id = "noble_check"
+
+[sub_resource type="Resource" id="Stage_con_hold"]
+script = ExtResource("2_stage")
+id = "con_hold"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой буквально стоит между двумя семьями, отбирает палки у самых горячих спорщиков и заставляет людей говорить по одному. Пока страсти остывают, из рассказов стариков всплывает упоминание давно разобранной ограды, служившей прежней границей."
+next_stage_id = "noble_check"
+
+[sub_resource type="Resource" id="Stage_str_clear"]
+script = ExtResource("2_stage")
+id = "str_clear"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой замечает ряд крупных камней под дерном и три тика расчищает землю там, где никто из спорщиков уже не хотел копать. Под корнями обнаруживается фундамент старой ограды, однозначно показывающий прежнюю линию участка."
+next_stage_id = "noble_check"
+
+[sub_resource type="Resource" id="Stage_noble_check"]
+script = ExtResource("2_stage")
+id = "noble_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "noble"
+trait_present_stage_id = "noble_settlement"
+trait_absent_stage_id = "devious_check"
+
+[sub_resource type="Resource" id="Stage_noble_settlement"]
+script = ExtResource("2_stage")
+id = "noble_settlement"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой ещё два тика помогает обеим семьям перенести спор от взаимных обвинений к найденным фактам. Он добивается, чтобы границу восстановили по старому фундаменту и обе стороны публично признали решение справедливым."
+next_stage_id = "noble_end"
+
+[sub_resource type="Resource" id="Stage_devious_check"]
+script = ExtResource("2_stage")
+id = "devious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "devious"
+trait_present_stage_id = "devious_scheme"
+trait_absent_stage_id = "neutral_settlement"
+
+[sub_resource type="Resource" id="Stage_devious_scheme"]
+script = ExtResource("2_stage")
+id = "devious_scheme"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой по отдельности говорит с главами семей и каждому даёт понять, что именно его уступка была решающей. Оба уходят с ощущением, что герой скорее помог их стороне, и каждый считает нужным заплатить ему за такую полезную поддержку."
+next_stage_id = "devious_end"
+
+[sub_resource type="Resource" id="Stage_neutral_settlement"]
+script = ExtResource("2_stage")
+id = "neutral_settlement"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой просто показывает обеим сторонам старый фундамент и отказывается обсуждать, кто громче кричал до его появления. Семьи нехотя принимают очевидную границу и складываются на обычную плату за разрешённый спор."
+next_stage_id = "neutral_end"
+
+[sub_resource type="Resource" id="Stage_noble_end"]
+script = ExtResource("2_stage")
+id = "noble_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой разобрался в споре двух семей у межевого камня и добился справедливого восстановления старой границы. Обе стороны признали решение и вместе отдали ему семьдесят золотых."
+outcome_id = "boundary_fairly_restored"
+gold_reward = 70
+
+[sub_resource type="Resource" id="Stage_devious_end"]
+script = ExtResource("2_stage")
+id = "devious_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Найдя настоящую старую границу, герой сумел представить решение каждой семье так, будто особенно помог именно ей. В итоге обе стороны заплатили отдельно, и спор принёс герою сто золотых."
+outcome_id = "boundary_profitable_settlement"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_neutral_end"]
+script = ExtResource("2_stage")
+id = "neutral_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой нашёл остатки старой ограды и прекратил спор у межевого камня простым доказательством. Семьи восстановили прежнюю границу и заплатили ему пятьдесят золотых за помощь."
+outcome_id = "boundary_settled"
+gold_reward = 50
+
+[resource]
+script = ExtResource("1_event")
+id = "boundary_stone_dispute"
+display_name = "Спор у межевого камня"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city", "road")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_wis_marks"), SubResource("Stage_con_hold"), SubResource("Stage_str_clear"), SubResource("Stage_noble_check"), SubResource("Stage_noble_settlement"), SubResource("Stage_devious_check"), SubResource("Stage_devious_scheme"), SubResource("Stage_neutral_settlement"), SubResource("Stage_noble_end"), SubResource("Stage_devious_end"), SubResource("Stage_neutral_end")])

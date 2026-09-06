@@ -8,9 +8,9 @@ It is intentionally a runtime snapshot rather than a second design specification
 
 The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
 
-The most recent gameplay-content work expanded the Starting Region temporary-event population to five handcrafted events, including the first event whose preparation branches reduce only an enemy's starting current HP before a normal shared fight. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
+The most recent gameplay-content work expanded the Starting Region temporary-event population to **thirteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, only five handcrafted temporary events exist, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, thirteen handcrafted temporary events exist against the final two-region target of roughly 15–20, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
 
 ## Simulation and world time
 
@@ -251,13 +251,21 @@ fight lost
 
 ## Temporary events
 
-The generic temporary-event system is live and currently has **5 authored Starting Region events**:
+The generic temporary-event system is live and currently has **13 authored Starting Region events**:
 
 1. `У старой вырубки`;
 2. `Дым над старой башней`;
 3. `Чужие силки`;
 4. `Мёртвый гонец`;
-5. `Огр у старого кургана`.
+5. `Огр у старого кургана`;
+6. `Костёр без хозяина`;
+7. `Волки на пастбище`;
+8. `Чужая шкатулка`;
+9. `Беглый наёмник`;
+10. `Раненый разведчик`;
+11. `Камни старого старателя`;
+12. `Зверь в сломанной клетке`;
+13. `Спор у межевого камня`.
 
 The current event framework supports:
 
@@ -274,6 +282,8 @@ The current event framework supports:
 - event-owned death/resurrection handling.
 
 The fifth event, `Огр у старого кургана`, is placed on Starting Region plains 5–6 hexes from Starting City and always fights the existing `Опытный огр`. Its Formative opening compares DEX / STR / CON: DEX moves Courage `+5` and immediately attacks an Ogre starting at 75% current HP; STR spends two preparation ticks and reaches an 80% HP fight; CON spends three preparation ticks, moves Courage `−5` toward Cautious, and reaches an 85% HP fight. STR and CON then perform one shared Expressive **Devious OR Conservative** check: if either trait is established, two additional preparation ticks reduce the Ogre by another 15 percentage points, to 65% after STR or 70% after CON, without reinforcing either trait. The Ogre keeps its normal Attack, Armor, Attack Speed and other combat stats in every branch, grants its normal 195 XP on victory, and the event awards one guaranteed Green/Uncommon ilvl 10 equipment item through the normal authored reward pipeline with no extra Gold.
+
+Events 6–13 deliberately reuse the same framework rather than adding more event-only systems. They cover forest/plains/hill/road placements and combine STR/DEX/CON/WIS Formative openings with Curious, Conservative, Noble, Devious, Greedy, Generous, Brave and Cautious Expressive behaviour. Some outcomes are entirely social or exploratory, some make combat optional, and some always lead to shared `CombatSession` fights against existing ordinary mobs. Their authored material rewards range from 25–120 Gold and guaranteed Common/Uncommon ilvl 5/10 items; successful END stages contain their own branch-specific Diary text. Several branches intentionally prove same-event personality activation: a Formative `±5` movement can establish Greedy, Conservative, Cautious, Noble or Curious at the `±40` threshold and the later Expressive stage sees it immediately.
 
 Current shared population rules:
 
@@ -295,7 +305,7 @@ It does **not** yet activate during completed-dungeon return travel, dungeon com
 
 If an event kills the hero while travelling toward a dungeon, that trip is cancelled without recording a failed dungeon attempt or dungeon retry-Power penalty because the hero never entered the dungeon.
 
-The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete.
+The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete; the current Starting Region pool provides 13 of that target.
 
 ## Ordinary dungeons
 

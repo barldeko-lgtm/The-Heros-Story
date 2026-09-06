@@ -1,0 +1,160 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="4_ilvl5"]
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "follow_the_owner_signs"
+driver_attribute = "wisdom"
+next_stage_id = "wis_search"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "inspect_hidden_compartment"
+driver_attribute = "dexterity"
+next_stage_id = "dex_search"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "recover_scattered_cargo"
+driver_attribute = "constitution"
+next_stage_id = "con_search"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На дороге герой находит телегу с сорванным колесом. Ящики раскиданы по обочине, а под сиденьем лежит тяжёлая запертая шкатулка. Следы показывают, что хозяин телеги ушёл пешком и, судя по всему, остался жив."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_WIS"), SubResource("Option_DEX"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_wis_search"]
+script = ExtResource("2_stage")
+id = "wis_search"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой изучает следы и вещи, оставленные у телеги. Он понимает, куда ушёл владелец, и складывает груз так, чтобы тот легко заметил его при возвращении. Вскоре на дороге показывается усталый торговец, действительно искавший помощь."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_dex_search"]
+script = ExtResource("2_stage")
+id = "dex_search"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой два тика внимательно осматривает замки и крепления. В шкатулке обнаруживается скрытое отделение с деньгами, о котором случайный грабитель мог бы не догадаться. Пока герой заканчивает осмотр, хозяин телеги возвращается к месту аварии."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_con_search"]
+script = ExtResource("2_stage")
+id = "con_search"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Три тика герой вытаскивает телегу из канавы, собирает тяжёлые ящики и складывает рассыпавшийся товар. К концу работы появляется владелец: он вернулся с дороги, опасаясь, что всё имущество уже растащили."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_greedy_check"]
+script = ExtResource("2_stage")
+id = "greedy_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "greedy"
+trait_present_stage_id = "greedy_take"
+trait_absent_stage_id = "generous_check"
+
+[sub_resource type="Resource" id="Stage_greedy_take"]
+script = ExtResource("2_stage")
+id = "greedy_take"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Увидев владельца ещё издали, герой решает, что найденное богатство уже успело сменить хозяина. Он оставляет телегу и обычный товар на месте, но прячет сто двадцать золотых из шкатулки прежде, чем торговец подходит достаточно близко."
+next_stage_id = "greedy_end"
+
+[sub_resource type="Resource" id="Stage_generous_check"]
+script = ExtResource("2_stage")
+id = "generous_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "generous"
+trait_present_stage_id = "generous_return"
+trait_absent_stage_id = "neutral_reward"
+
+[sub_resource type="Resource" id="Stage_generous_return"]
+script = ExtResource("2_stage")
+id = "generous_return"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой возвращает торговцу всё до последней монеты и ещё два тика помогает снова закрепить груз на телеге. Тронутый такой щедростью, владелец достаёт из личного сундука добротную вещь и просит принять её вместо денег."
+next_stage_id = "generous_end"
+
+[sub_resource type="Resource" id="Stage_neutral_reward"]
+script = ExtResource("2_stage")
+id = "neutral_reward"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой передаёт шкатулку владельцу и не пытается скрыть найденные деньги. Торговец пересчитывает содержимое и сам откладывает шестьдесят золотых как честную плату за сохранённое имущество."
+next_stage_id = "neutral_end"
+
+[sub_resource type="Resource" id="Stage_greedy_end"]
+script = ExtResource("2_stage")
+id = "greedy_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "У разбитой телеги герой нашёл чужую шкатулку и успел забрать из неё сто двадцать золотых до возвращения владельца. Остальной груз остался торговцу, а найденные деньги герой оставил себе."
+outcome_id = "casket_money_taken"
+gold_reward = 120
+
+[sub_resource type="Resource" id="Stage_generous_end"]
+script = ExtResource("2_stage")
+id = "generous_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой сохранил груз разбитой телеги и вернул владельцу шкатулку вместе со всеми деньгами. Благодарный торговец вместо монет подарил ему добротную зелёную вещь пятого уровня."
+outcome_id = "cargo_returned_generously"
+equipment_reward_source = ExtResource("4_ilvl5")
+equipment_rarity_override = 1
+
+[sub_resource type="Resource" id="Stage_neutral_end"]
+script = ExtResource("2_stage")
+id = "neutral_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой дождался владельца разбитой телеги и вернул ему найденную шкатулку. За сохранённые вещи и деньги торговец честно заплатил шестьдесят золотых."
+outcome_id = "cargo_returned"
+gold_reward = 60
+
+[resource]
+script = ExtResource("1_event")
+id = "strangers_casket"
+display_name = "Чужая шкатулка"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_wis_search"), SubResource("Stage_dex_search"), SubResource("Stage_con_search"), SubResource("Stage_greedy_check"), SubResource("Stage_greedy_take"), SubResource("Stage_generous_check"), SubResource("Stage_generous_return"), SubResource("Stage_neutral_reward"), SubResource("Stage_greedy_end"), SubResource("Stage_generous_end"), SubResource("Stage_neutral_end")])

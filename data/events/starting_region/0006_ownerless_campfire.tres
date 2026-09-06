@@ -1,0 +1,153 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0009_bandit_veteran.tres" id="4_bandit"]
+[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl20_drop_table.tres" id="5_ilvl10"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "call_out_and_follow"
+driver_attribute = "strength"
+next_stage_id = "str_follow"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "search_without_a_sound"
+driver_attribute = "dexterity"
+next_stage_id = "dex_search"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "read_the_trap"
+driver_attribute = "wisdom"
+next_stage_id = "wis_read"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В стороне от дороги герой замечает в лесу свежий костёр. У огня сохнут две кружки, на земле лежит раскрытый мешок, а на траве видны тёмные пятна крови. Людей рядом нет, но костёр слишком свежий, чтобы хозяева ушли давно."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_follow"]
+script = ExtResource("2_stage")
+id = "str_follow"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой громко окликает хозяев лагеря и без попытки скрыться идёт по самым заметным следам. Два тика он продвигается между деревьями, всё дальше уходя от костра и показывая тому, кто наблюдает из укрытия, что не намерен отступать."
+next_stage_id = "curious_check"
+
+[sub_resource type="Resource" id="Stage_dex_search"]
+script = ExtResource("2_stage")
+id = "dex_search"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой не трогает вещи и два тика обходит лагерь по дуге. Он находит следы сапог, которые несколько раз возвращались к одному и тому же месту за кустами: кто-то устроил здесь наблюдательный пост и ждёт реакции случайного путника."
+next_stage_id = "curious_check"
+
+[sub_resource type="Resource" id="Stage_wis_read"]
+script = ExtResource("2_stage")
+id = "wis_read"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герою хватает одного тика, чтобы заметить несостыковки: кровь старая, кружки выставлены слишком аккуратно, а мешок раскрыт так, чтобы его содержимое было видно издалека. Это не брошенный лагерь, а приманка."
+next_stage_id = "curious_check"
+
+[sub_resource type="Resource" id="Stage_curious_check"]
+script = ExtResource("2_stage")
+id = "curious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "curious"
+trait_present_stage_id = "curious_pursuit"
+trait_absent_stage_id = "conservative_check"
+
+[sub_resource type="Resource" id="Stage_curious_pursuit"]
+script = ExtResource("2_stage")
+id = "curious_pursuit"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Любопытство не даёт герою ограничиться разгадкой. Ещё два тика он идёт по следам наблюдателя и добирается до маленькой стоянки разбойника, который использовал пустой костёр, чтобы выманивать путников с дороги. Отступать тот уже не собирается."
+next_stage_id = "curious_combat"
+
+[sub_resource type="Resource" id="Stage_curious_combat"]
+script = ExtResource("2_stage")
+id = "curious_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "curious_end"
+
+[sub_resource type="Resource" id="Stage_conservative_check"]
+script = ExtResource("2_stage")
+id = "conservative_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "conservative"
+trait_present_stage_id = "conservative_end"
+trait_absent_stage_id = "neutral_end"
+
+[sub_resource type="Resource" id="Stage_curious_end"]
+script = ExtResource("2_stage")
+id = "curious_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Свежий костёр оказался приманкой опытного разбойника. Герой не удовлетворился одной догадкой, нашёл его настоящую стоянку и победил в бою. Среди вещей прежних жертв нашлась добротная экипировка десятого уровня."
+outcome_id = "bandit_hideout_found"
+equipment_reward_source = ExtResource("5_ilvl10")
+equipment_rarity_override = 0
+
+[sub_resource type="Resource" id="Stage_conservative_end"]
+script = ExtResource("2_stage")
+id = "conservative_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой понял, что свежий костёр был приманкой, и не стал идти туда, куда его явно пытались заманить. Он забрал только сорок золотых, лежавших среди настоящих вещей ограбленных путников, и покинул опасное место."
+outcome_id = "trap_avoided"
+gold_reward = 40
+
+[sub_resource type="Resource" id="Stage_neutral_end"]
+script = ExtResource("2_stage")
+id = "neutral_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой проверил ближайшие заросли вокруг подозрительного костра, но не стал уходить глубже в лес. Никого он не нашёл и покинул место, забрав двадцать пять золотых из брошенного кошеля одной из прежних жертв."
+outcome_id = "camp_checked"
+gold_reward = 25
+
+[resource]
+script = ExtResource("1_event")
+id = "ownerless_campfire"
+display_name = "Костёр без хозяина"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city", "road")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_follow"), SubResource("Stage_dex_search"), SubResource("Stage_wis_read"), SubResource("Stage_curious_check"), SubResource("Stage_curious_pursuit"), SubResource("Stage_curious_combat"), SubResource("Stage_conservative_check"), SubResource("Stage_curious_end"), SubResource("Stage_conservative_end"), SubResource("Stage_neutral_end")])

@@ -158,8 +158,11 @@ func create_started_event_simulation(seed: int, engage_event: bool = true) -> Di
 	var simulation = SimulationScript.new(seed, null, [], true)
 	assert(simulation.event_system.get_active_events().is_empty())
 	simulation.quest_pool.release_available_offer_map_targets()
-	var spawned_events: Array = simulation.event_system.spawn_initial_population_if_ready(100)
-	var event_instance = find_event_by_id(spawned_events, "poachers_snares")
+	var definition = load("res://data/events/starting_region/0003_poachers_snares.tres")
+	simulation.event_system.clear_instances()
+	simulation.event_system.set_definitions([definition])
+	assert(simulation.event_system.spawn_definition(definition, simulation.hex_map.definition.starting_city_center, 100))
+	var event_instance = simulation.event_system.get_active_events()[0]
 	assert(event_instance != null, "Poachers' Snares must find a valid forest placement at distance 4..6 once the event gate opens.")
 	assert(simulation.quest_pool.assign_map_targets_to_current_offers())
 	if not engage_event:
@@ -205,4 +208,3 @@ func find_common_ilvl5_item(simulation):
 		if item != null and item.item_level == 5 and item.rarity == 0:
 			return item
 	return null
-

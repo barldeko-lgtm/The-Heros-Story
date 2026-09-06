@@ -284,7 +284,7 @@ Immutable authored temporary-event content.
 
 Definitions own placement/lifetime metadata and stage graphs. Stages/options own authored scene timing, decision rules, Formative/Expressive meaning, travel/combat references, rewards/outcomes and event-specific narrative text where appropriate. Current decision data supports both one-trait Expressive checks and an authored any-of-traits check; COMBAT stages may also author a reduced starting current-HP ratio while still referencing an ordinary immutable `MobDefinition` for all combat stats.
 
-Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP.
+Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. The current Starting Region pool contains thirteen resources (`0001`–`0013`). `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP; events `0006`–`0013` intentionally reuse the established framework for a broader content mix rather than introducing one-off event scripts.
 
 ### `scripts/model/runtime/event_instance.gd`
 
@@ -654,6 +654,8 @@ Representative high-value integration tests include:
 - `tests/test_quest_evaluator.gd`;
 - `tests/test_event_population_rotation.gd`;
 - `tests/test_event_travel_suspend_resume.gd`;
+- `tests/test_event_batch_six_to_thirteen_content.gd`;
+- `tests/test_event_batch_six_to_thirteen_runtime.gd`;
 - `tests/test_dungeon_post_quest_decision.gd`;
 - `tests/test_dungeon_combat_sequence.gd`;
 - `tests/test_dungeon_retry_readiness.gd`;

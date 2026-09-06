@@ -1,0 +1,158 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "clear_the_rubble"
+driver_attribute = "strength"
+next_stage_id = "str_clear"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "read_the_collapse"
+driver_attribute = "wisdom"
+next_stage_id = "wis_read"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "slip_through_the_gap"
+driver_attribute = "dexterity"
+next_stage_id = "dex_slip"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Среди холмов герой находит осыпавшуюся стоянку старого старателя. Рядом лежат проржавевшая кирка, пустой мешок и кусок промасленной бумаги с грубой схемой тайника под камнями. Часть склона недавно съехала, и место выглядит ненадёжно."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_WIS"), SubResource("Option_DEX")])
+
+[sub_resource type="Resource" id="Stage_str_clear"]
+script = ExtResource("2_stage")
+id = "str_clear"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Три тика герой разбирает тяжёлый завал вручную. Каждый новый камень открывает следующую часть старого хода, и мысль о том, сколько золота старатель мог спрятать в конце, заставляет работать ещё упорнее."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_wis_read"]
+script = ExtResource("2_stage")
+id = "wis_read"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой сравнивает схему с трещинами на склоне и быстро понимает, где проход когда-то шёл безопаснее. Одновременно он замечает свежую осыпь и понимает: слишком глубокий поиск легко закончится новым обвалом."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_dex_slip"]
+script = ExtResource("2_stage")
+id = "dex_slip"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой находит узкую щель между плитами и два тика протискивается через старую выработку, обходя большую часть завала. Внутри он видит несколько следов прежнего тайника, но часть камней всё ещё скрывает продолжение ниши."
+next_stage_id = "greedy_check"
+
+[sub_resource type="Resource" id="Stage_greedy_check"]
+script = ExtResource("2_stage")
+id = "greedy_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "greedy"
+trait_present_stage_id = "greedy_search"
+trait_absent_stage_id = "conservative_check"
+
+[sub_resource type="Resource" id="Stage_greedy_search"]
+script = ExtResource("2_stage")
+id = "greedy_search"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Найденного герою мало. Ещё два тика он снимает камень за камнем, залезает в самую дальнюю часть ниши и в итоге вытаскивает весь остаток старательского запаса, рискуя вызвать новую осыпь."
+next_stage_id = "greedy_end"
+
+[sub_resource type="Resource" id="Stage_conservative_check"]
+script = ExtResource("2_stage")
+id = "conservative_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "conservative"
+trait_present_stage_id = "conservative_take"
+trait_absent_stage_id = "neutral_search"
+
+[sub_resource type="Resource" id="Stage_conservative_take"]
+script = ExtResource("2_stage")
+id = "conservative_take"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Первого предупреждающего хруста камней герою достаточно. Он берёт только то, до чего можно дотянуться без дальнейшего разбора стены, и покидает выработку прежде, чем склон успевает решить за него."
+next_stage_id = "conservative_end"
+
+[sub_resource type="Resource" id="Stage_neutral_search"]
+script = ExtResource("2_stage")
+id = "neutral_search"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой продолжает поиск ещё два тика, но не лезет в самые опасные щели. Этого хватает, чтобы добраться до основной части тайника и уйти до того, как старая выработка начнёт осыпаться всерьёз."
+next_stage_id = "neutral_end"
+
+[sub_resource type="Resource" id="Stage_greedy_end"]
+script = ExtResource("2_stage")
+id = "greedy_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "По схеме старого старателя герой нашёл тайник в осыпающихся камнях и не остановился, пока не вытащил всё до последней монеты. Рискованный поиск принёс сто двадцать золотых."
+outcome_id = "prospector_cache_emptied"
+gold_reward = 120
+
+[sub_resource type="Resource" id="Stage_conservative_end"]
+script = ExtResource("2_stage")
+id = "conservative_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой нашёл старый тайник, но признаки нового обвала убедили его не жадничать. Он взял только безопасно доступные пятьдесят золотых и ушёл, пока склон оставался на месте."
+outcome_id = "prospector_cache_left_early"
+gold_reward = 50
+
+[sub_resource type="Resource" id="Stage_neutral_end"]
+script = ExtResource("2_stage")
+id = "neutral_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой осторожно разобрал часть старого тайника старателя, не заходя слишком далеко в осыпающуюся выработку. Из камней удалось достать восемьдесят золотых."
+outcome_id = "prospector_cache_searched"
+gold_reward = 80
+
+[resource]
+script = ExtResource("1_event")
+id = "old_prospectors_stones"
+display_name = "Камни старого старателя"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_clear"), SubResource("Stage_wis_read"), SubResource("Stage_dex_slip"), SubResource("Stage_greedy_check"), SubResource("Stage_greedy_search"), SubResource("Stage_conservative_check"), SubResource("Stage_conservative_take"), SubResource("Stage_neutral_search"), SubResource("Stage_greedy_end"), SubResource("Stage_conservative_end"), SubResource("Stage_neutral_end")])

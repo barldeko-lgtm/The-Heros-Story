@@ -1,0 +1,150 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0018_mature_wolf.tres" id="4_wolf"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "break_through_to_shepherd"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "draw_alpha_away"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "fortify_the_fence"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На равнине герой слышит крики и видит пастуха, прижатого к полуразрушенной изгороди вместе с несколькими овцами. Стая держится в стороне, а матёрый волк раз за разом подходит ближе, проверяя, когда человек перестанет сопротивляться."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой не ждёт удобного момента. Он с криком врывается между волком и изгородью, сбивает зверя с траектории первым ударом и заставляет стаю отступить, оставляя матёрого вожака один на один с собой."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой двигается по краю пастбища, бросая камни и меняя позицию так, чтобы вожак отделился от остальных. Когда волк наконец бросается на одинокую цель, стая остаётся далеко позади, а сам зверь получает рану на подготовленном колу."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой три тика укрепляет пролом жердями и собственным телом удерживает шаткую изгородь, пока волки кружат вокруг. Он не даёт вожаку добраться до пастуха и ждёт, пока очередной наскок оставит зверя раненым и без поддержки стаи."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_wolf")
+combat_victory_stage_id = "noble_check"
+combat_start_hp_ratio = 0.9
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_wolf")
+combat_victory_stage_id = "noble_check"
+combat_start_hp_ratio = 0.75
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_wolf")
+combat_victory_stage_id = "noble_check"
+combat_start_hp_ratio = 0.8
+
+[sub_resource type="Resource" id="Stage_noble_check"]
+script = ExtResource("2_stage")
+id = "noble_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "noble"
+trait_present_stage_id = "noble_help"
+trait_absent_stage_id = "standard_end"
+
+[sub_resource type="Resource" id="Stage_noble_help"]
+script = ExtResource("2_stage")
+id = "noble_help"
+stage_type = 0
+duration_ticks = 2
+scene_text = "После боя герой не уходит сразу. Два тика он помогает пастуху перевязать раны, собрать разбежавшихся животных и укрепить изгородь так, чтобы остатки стаи не вернулись следующей ночью."
+next_stage_id = "noble_end"
+
+[sub_resource type="Resource" id="Stage_standard_end"]
+script = ExtResource("2_stage")
+id = "standard_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой отбил пастуха и его стадо у матёрого волка. Когда опасность миновала, благодарный пастух отдал ему сорок золотых за спасённую жизнь и животных."
+outcome_id = "pasture_saved"
+gold_reward = 40
+
+[sub_resource type="Resource" id="Stage_noble_end"]
+script = ExtResource("2_stage")
+id = "noble_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "После победы над матёрым волком герой ещё долго помогал пастуху: собрал животных, перевязал раны и укрепил изгородь. За спасённое стадо и эту помощь пастух отдал ему семьдесят пять золотых."
+outcome_id = "pasture_restored"
+gold_reward = 75
+
+[resource]
+script = ExtResource("1_event")
+id = "wolves_at_pasture"
+display_name = "Волки на пастбище"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_con_combat"), SubResource("Stage_noble_check"), SubResource("Stage_noble_help"), SubResource("Stage_standard_end"), SubResource("Stage_noble_end")])

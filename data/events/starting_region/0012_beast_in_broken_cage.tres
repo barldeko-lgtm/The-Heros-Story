@@ -1,0 +1,208 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=28 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0003_bear.tres" id="4_bear"]
+[ext_resource type="Resource" path="res://data/loot/initial_equipment_drop_table.tres" id="5_ilvl5"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "meet_the_charge"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "hold_behind_the_cage"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "turn_the_cage_into_a_trap"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В лесу герой находит разбитую повозку звероловов и огромную железную клетку с сорванной дверью. Рядом лежат следы крови и разорванные ремни. Медведь, которого везли в клетке, всё ещё неподалёку и бросается к повозке, едва замечает нового человека."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой встречает первый бросок зверя почти в лоб. Ударом тяжёлой железной дверцы он сбивает медведя в сторону и успевает серьёзно ранить его, прежде чем начинается настоящая схватка."
+next_stage_id = "str_cautious_check"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой держит остатки клетки между собой и медведем, принимая удары на толстые прутья. Зверь снова и снова пытается прорваться, режется о сломанный металл и постепенно теряет силы."
+next_stage_id = "con_cautious_check"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Три тика герой изучает крепления клетки и следит за тем, как медведь атакует. Он закрепляет сорванную дверь как падающую решётку и приманивает зверя под неё. Ловушка не удерживает медведя, но оставляет ему тяжёлые раны."
+next_stage_id = "wis_cautious_check"
+
+[sub_resource type="Resource" id="Stage_str_cautious_check"]
+script = ExtResource("2_stage")
+id = "str_cautious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "cautious"
+trait_present_stage_id = "str_extra_prepare"
+trait_absent_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_con_cautious_check"]
+script = ExtResource("2_stage")
+id = "con_cautious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "cautious"
+trait_present_stage_id = "con_extra_prepare"
+trait_absent_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_wis_cautious_check"]
+script = ExtResource("2_stage")
+id = "wis_cautious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "cautious"
+trait_present_stage_id = "wis_extra_prepare"
+trait_absent_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_str_extra_prepare"]
+script = ExtResource("2_stage")
+id = "str_extra_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Осторожный герой не считает первой раны достаточной. Ещё два тика он держит дистанцию, заставляет медведя ломиться через остатки повозки и только после ещё одной раны выходит на бой."
+next_stage_id = "str_extra_combat"
+
+[sub_resource type="Resource" id="Stage_con_extra_prepare"]
+script = ExtResource("2_stage")
+id = "con_extra_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Осторожный герой продолжает использовать клетку как заслон ещё два тика. Он не даёт зверю приблизиться чисто и добивается ещё нескольких порезов о металл, прежде чем оставляет укрытие."
+next_stage_id = "con_extra_combat"
+
+[sub_resource type="Resource" id="Stage_wis_extra_prepare"]
+script = ExtResource("2_stage")
+id = "wis_extra_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Осторожный герой не спешит после сработавшей ловушки. Ещё два тика он использует обломки клетки как вторую преграду и вынуждает раненого зверя снова тратить силы, прежде чем подходит для решающей схватки."
+next_stage_id = "wis_extra_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.8
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.75
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.65
+
+[sub_resource type="Resource" id="Stage_str_extra_combat"]
+script = ExtResource("2_stage")
+id = "str_extra_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_con_extra_combat"]
+script = ExtResource("2_stage")
+id = "con_extra_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.65
+
+[sub_resource type="Resource" id="Stage_wis_extra_combat"]
+script = ExtResource("2_stage")
+id = "wis_extra_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bear")
+combat_victory_stage_id = "reward_end"
+combat_start_hp_ratio = 0.55
+
+[sub_resource type="Resource" id="Stage_reward_end"]
+script = ExtResource("2_stage")
+id = "reward_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "У разбитой клетки звероловов герой справился с разъярённым медведем, предварительно ранив его с помощью обломков повозки и клетки. Среди вещей погибших охотников нашлась зелёная экипировка пятого уровня."
+outcome_id = "escaped_bear_defeated"
+equipment_reward_source = ExtResource("5_ilvl5")
+equipment_rarity_override = 1
+
+[resource]
+script = ExtResource("1_event")
+id = "beast_in_broken_cage"
+display_name = "Зверь в сломанной клетке"
+region_id = "starting_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_str_cautious_check"), SubResource("Stage_con_cautious_check"), SubResource("Stage_wis_cautious_check"), SubResource("Stage_str_extra_prepare"), SubResource("Stage_con_extra_prepare"), SubResource("Stage_wis_extra_prepare"), SubResource("Stage_str_combat"), SubResource("Stage_con_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_str_extra_combat"), SubResource("Stage_con_extra_combat"), SubResource("Stage_wis_extra_combat"), SubResource("Stage_reward_end")])

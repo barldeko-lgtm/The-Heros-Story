@@ -382,6 +382,8 @@ It may:
 
 It does not own general event population/placement.
 
+`EventDefinition.validate_definition()` is the content boundary before a definition enters runtime. SCENE, TRAVEL, DECISION, COMBAT and END validation must remain independent stage-type checks; malformed decision links/rules or combat targets must be rejected even when the event contains no TRAVEL stage.
+
 Event COMBAT stages may author a starting current-HP ratio for their referenced mob. `Simulation` applies that ratio only to `CombatSession.mob_remaining_hp` when the event fight starts. The referenced immutable `MobDefinition`, its `CombatStats.max_hp`, Attack, Armor, Attack Speed, Power inputs and other authored stats remain unchanged. A ratio of `1.0` is the default and preserves all older event fights unchanged.
 
 ### Travel interruption contract
@@ -772,6 +774,7 @@ High-value integration coverage includes:
 - `tests/test_personality_traits.gd` and event runtime tests — personality transition/consumer boundaries;
 - `tests/test_event_population_rotation.gd` — event population/reservation lifecycle;
 - `tests/test_event_travel_suspend_resume.gd` — event detour and original-route restoration;
+- `tests/test_event_batch_six_to_thirteen_content.gd` and `test_event_batch_six_to_thirteen_runtime.gd` — strict event-graph validation plus representative live branches across the expanded Starting Region content pool;
 - `tests/test_event_dungeon_travel_interruption.gd` — outbound dungeon interruption without false dungeon failure memory;
 - `tests/test_dungeon_post_quest_decision.gd` — market/shopping/readiness/preparation/dungeon hand-off;
 - `tests/test_dungeon_combat_sequence.gd` — shared combat plus dungeon-owned expedition progression;

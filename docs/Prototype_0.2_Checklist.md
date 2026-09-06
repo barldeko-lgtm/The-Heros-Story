@@ -78,10 +78,10 @@ Status:
 ## 6. Temporary events
 
 - ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
-- ✅ Current Starting Region events: **5** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`.
+- ✅ Current Starting Region events: **13** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`.
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
 - ✅ Events can suspend/resume an ordinary quest route or outbound dungeon route, and can use their own real travel objective.
-- 🟡 Current event framework is functional, but the final world population is still small and some travel contexts remain unsupported.
+- 🟡 Current event framework is functional and the Starting Region now has a substantial 13-event authored pool, but the final two-region population and some travel contexts remain incomplete.
 - ⬜ Approximately **15–20 handcrafted events total** across both regions.
 
 ## 7. Ordinary dungeons
@@ -135,10 +135,10 @@ Status:
 
 - ✅ Structured quest/death facts and separate developer narration.
 - ✅ Developer Debug Log with bounded recent history and automatic newest-entry scrolling.
-- 🟡 Hero Diary is now a real live system for ordinary quest selection, successful turn-in and ordinary-quest death; entries include their real world tick.
+- 🟡 Hero Diary is now a real live system for ordinary quest activity, combat death/resurrection, significant equipment, dungeon milestones and successful temporary-event outcomes; entries include their real world tick.
 - 🟡 Ordinary quest Diary wording already lives in external narrative data with variant arrays and per-quest override support, but only one phrase per category is currently authored.
 - 🟡 Diary UI updates live and stays scrolled to the newest entry.
-- ⬜ Remaining required Diary sources: events, Rare+ item acquisition, levels, visible trait changes, dungeons, specialization, meaningful divine intervention and other important progression moments.
+- ⬜ Remaining required Diary sources include levels, visible trait changes, specialization, remaining divine/progression milestones and other important progression moments.
 - ⬜ Diary episode grouping and persistent history/save integration.
 - ⬜ Player-facing Explanatory Log and its UI.
 
@@ -176,7 +176,7 @@ Status:
 |---|---:|---:|
 | Normal cities | 2 on map / 1 complete | 2 complete |
 | Ordinary quest templates | 22 | 37 current target (22 + 15) |
-| Handcrafted temporary events | 5 | ~15–20 |
+| Handcrafted temporary events | 13 | ~15–20 |
 | Ordinary dungeons | 2 | 4 |
 | First specialization paths | 0 | 2 |
 | Specialization dungeon variants | 0 | 2 |
@@ -196,7 +196,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 1. Continue expanding the Hero Diary from the current ordinary-quest slice and author more phrase variation.
 2. Implement the lightweight starting questionnaire and replace the temporary seeded starting-trait bootstrap.
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
-4. Expand the temporary-event population from 5 toward the ~15–20 target and complete the remaining travel-interception context where needed.
+4. Finish expanding the temporary-event population from 13 toward the ~15–20 target and complete the remaining travel-interception context where needed.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement Skill Level training and Curious/Conservative spending priority.
 7. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
