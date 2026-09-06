@@ -4,7 +4,7 @@
 
 [node name="NarrativePanel" type="TabContainer"]
 offset_left = 423.0
-offset_top = 400.0
+offset_top = 380.0
 offset_right = 967.0
-offset_bottom = 650.0
+offset_bottom = 690.0
 script = ExtResource("1_narrative_panel")

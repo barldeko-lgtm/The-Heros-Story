@@ -51,8 +51,9 @@ func test_successful_quest_diary_flow() -> void:
 		simulation.advance_time(0.01)
 		guard += 1
 	assert(guard < 1500, "The fixed safe quest must finish while testing diary completion.")
-	assert(simulation.diary.entries.size() == 2, "A successful ordinary quest must add one completion entry and no routine travel/combat diary spam.")
-	assert(simulation.diary.entries[1].contains(str(simulation.hero_state.gold)), "The completion entry must use the real Gold reward.")
+	assert(simulation.diary.entries.size() == 1, "A successful ordinary quest must replace its temporary selection entry with one completion entry.")
+	assert(simulation.diary.entries[0].contains(str(simulation.hero_state.gold)), "The completion entry must use the real Gold reward.")
+	assert(not simulation.diary.entries[0].contains("новым делом"), "The temporary quest-selection entry must not remain after successful turn-in.")
 
 func test_failed_quest_diary_flow() -> void:
 	var simulation = SimulationScript.new(54321)
@@ -72,7 +73,7 @@ func test_failed_quest_diary_flow() -> void:
 		quest.mob_count
 	)
 	simulation.record_quest_diary_event(failure_event, 77)
-	assert(simulation.diary.entries.size() == 2, "A failed ordinary quest must add one failure entry after its selection entry.")
-	assert(simulation.diary.entries[1].begins_with("Тик 77 — "), "A quest failure diary entry must display the supplied event world tick.")
-	assert(simulation.diary.entries[1].contains("Борис") and simulation.diary.entries[1].contains(mob_name), "The failure entry must use the real hero and enemy names.")
-	assert(simulation.diary.entries[1].contains(quest.display_name) and simulation.diary.entries[1].contains("задания"), "Quest death must identify the ordinary quest activity by its real name.")
+	assert(simulation.diary.entries.size() == 1, "Quest death must remove the temporary selection entry and leave only the contextual death entry.")
+	assert(simulation.diary.entries[0].begins_with("Тик 77 — "), "A quest failure diary entry must display the supplied event world tick.")
+	assert(simulation.diary.entries[0].contains("Борис") and simulation.diary.entries[0].contains(mob_name), "The failure entry must use the real hero and enemy names.")
+	assert(simulation.diary.entries[0].contains(quest.display_name) and simulation.diary.entries[0].contains("задания"), "Quest death must identify the ordinary quest activity by its real name.")

@@ -34,7 +34,11 @@ func run_test() -> void:
 	assert(god_panel.get_script().resource_path == GOD_SCRIPT_PATH, "GodPanel must own its extracted presentation script.")
 	assert(narrative_panel.get_script().resource_path == NARRATIVE_SCRIPT_PATH, "NarrativePanel must own its extracted presentation script.")
 	assert(god_panel.position == Vector2(423.0, 80.0) and god_panel.size == Vector2(544.0, 235.0), "GodPanel must keep its size at the centered 1366px layout position.")
-	assert(narrative_panel.position == Vector2(423.0, 400.0) and narrative_panel.size == Vector2(544.0, 250.0), "NarrativePanel must match the full width of the divine-skill panel.")
+	assert(narrative_panel.position == Vector2(423.0, 380.0) and narrative_panel.size == Vector2(544.0, 310.0), "NarrativePanel must use the expanded center-column space without overlapping bottom controls.")
+	assert(main_ui.time_progress_bar.custom_minimum_size == Vector2(390.0, 18.0), "The world-tick progress strip must use the compact half-height layout.")
+	assert(main_ui.time_progress_bar.size.y <= 22.0, "The world-tick progress strip must stay compact after Godot resolves container minimum sizes.")
+	var speed_controls := main_ui.main_screen.get_node("SpeedControls") as HBoxContainer
+	assert(speed_controls != null and narrative_panel.position.y + narrative_panel.size.y <= speed_controls.position.y - 20.0, "Expanded NarrativePanel must remain visibly separated from the bottom speed controls.")
 
 	assert(is_equal_approx(god_panel.god_energy_bar.max_value, 100.0), "Extracted GodPanel must retain the energy scale.")
 	assert(god_panel.divine_healing_button.disabled, "Healing must remain disabled at full HP.")
@@ -49,8 +53,11 @@ func run_test() -> void:
 	main_ui.simulation.diary.add_entry(42, "Тестовая запись дневника.")
 	await process_frame
 	assert(diary_text_edit.text.contains("Тик 42 — Тестовая запись дневника."), "NarrativePanel must update the visible Diary tab with the diary entry's world tick when Diary emits new text.")
+	main_ui.simulation.diary.add_entry(43, "Вторая запись без пустой строки.")
+	await process_frame
+	assert(not diary_text_edit.text.contains("\n\n"), "Diary entries must be separated by one newline, not a blank line.")
 	for index in 40:
-		main_ui.simulation.diary.add_entry(43 + index, "Длинная запись дневника %d — %s" % [index, "жизнь героя продолжается ".repeat(12)])
+		main_ui.simulation.diary.add_entry(44 + index, "Длинная запись дневника %d — %s" % [index, "жизнь героя продолжается ".repeat(12)])
 	await process_frame
 	await process_frame
 	var diary_scroll_bar: VScrollBar = diary_text_edit.get_v_scroll_bar()

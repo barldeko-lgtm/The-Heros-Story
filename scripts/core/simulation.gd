@@ -116,6 +116,7 @@ var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
 var pending_dungeon_preparation = null
+var active_quest_diary_entry_id: int = -1
 # Only fights that started with the blessing consume its charges.
 var active_combat_uses_blessing: bool = false
 
@@ -420,6 +421,8 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 		return
 
 	var cancelled_quest = quest_runner.cancel_for_external_failure(hero_state)
+	if cancelled_quest != null:
+		clear_active_quest_diary_entry()
 	if autonomous_quest_choice and quest_pool != null and cancelled_quest != null:
 		quest_pool.cancel_taken_offer(cancelled_quest)
 	if interrupted_loop_state == HeroState.TRAVEL_TO_DUNGEON:
@@ -587,8 +590,21 @@ func record_quest_diary_event(event, event_tick: int) -> void:
 	if diary_narrator == null:
 		return
 	var diary_text: String = diary_narrator.describe_quest_event(event)
+	if event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
+		clear_active_quest_diary_entry()
+		if not diary_text.is_empty():
+			active_quest_diary_entry_id = diary.add_temporary_entry(event_tick, diary_text)
+		return
+	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST or event.event_type == QuestEventScript.HERO_DIED:
+		clear_active_quest_diary_entry()
 	if not diary_text.is_empty():
 		diary.add_entry(event_tick, diary_text)
+
+func clear_active_quest_diary_entry() -> void:
+	if active_quest_diary_entry_id <= 0:
+		return
+	diary.remove_entry(active_quest_diary_entry_id)
+	active_quest_diary_entry_id = -1
 
 func record_death_diary_entry(hero_name: String, killer_name: String, activity_type: String, activity_name: String, event_tick: int) -> void:
 	if diary_narrator == null:

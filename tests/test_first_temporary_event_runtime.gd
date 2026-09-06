@@ -47,6 +47,7 @@ func create_started_event_simulation(seed: int):
 	simulation.quest_runner.quest_definition = available_quests[0]
 	var selection_event = simulation.quest_runner.advance(simulation.hero_state, simulation.combat_stats)
 	assert(selection_event != null)
+	simulation.record_quest_diary_event(selection_event, 100)
 	assert(simulation.travel_system.is_travelling(), "Selected map quest must have active travel before event interruption.")
 	simulation.pending_event_instance = old_clearing
 	assert(simulation.begin_pending_event_if_ready(100))
@@ -184,12 +185,13 @@ func test_event_combat_death_cancels_quest() -> void:
 	assert(simulation.event_runner.owns_respawn_state())
 	assert(simulation.hero_state.personality_axis_values["courage"] == 5, "Formative Brave movement must survive later combat failure.")
 	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center)
-	assert(simulation.diary.entries.size() == diary_count_before_death + 1, "Event combat death must add exactly one Diary entry.")
+	assert(simulation.diary.entries.size() == diary_count_before_death, "Event combat death must replace the cancelled quest's temporary selection entry with the event-death entry.")
+	assert(simulation.active_quest_diary_entry_id == -1, "Externally cancelled quest must not leave a temporary Diary entry id behind.")
 	var death_entry: String = simulation.diary.entries.back()
 	assert(death_entry.contains(event_name) and death_entry.contains(fought_mob.display_name) and death_entry.contains("события"), "Event death Diary entry must identify the event and the killer.")
 	assert(simulation.use_instant_resurrection(), "Divine instant resurrection must route through EventRunner when the event owns death.")
 	assert(simulation.hero_state.loop_state == simulation.hero_state.RECOVERING_IN_CITY)
-	assert(simulation.diary.entries.size() == diary_count_before_death + 2, "Divine event resurrection must add one additional Diary entry.")
+	assert(simulation.diary.entries.size() == diary_count_before_death + 1, "Divine event resurrection must add one additional Diary entry after the cancelled quest entry was removed.")
 	assert(simulation.diary.entries.back().contains("Божественное вмешательство"), "Event-owned instant resurrection must use the shared divine-resurrection wording.")
 
 func find_new_green_ilvl10_item(simulation):

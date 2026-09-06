@@ -488,8 +488,8 @@ The first real diary slice is live.
 
 Current diary sources are only:
 
-- ordinary quest selected;
-- ordinary quest successfully turned in;
+- ordinary quest selection as a temporary "current activity" entry while that quest remains active;
+- ordinary quest successfully turned in, replacing/removing its earlier temporary selection entry so a completed quest occupies only one lasting Diary entry;
 - hero died in combat during an ordinary quest, ordinary dungeon, or temporary event; the entry names the killer and the specific activity.
 - natural resurrection after the normal respawn delay;
 - instant resurrection caused by player divine intervention, with distinct wording from natural resurrection.
@@ -504,6 +504,8 @@ Current behaviour:
 
 - structured quest/death/resurrection/equipment-acquisition/dungeon facts plus authored successful-event endings are converted/routed by a separate `DiaryNarrator`;
 - `Diary` stores the ready player-facing entries;
+- `Diary` retains at most the newest **100 entries**; adding another entry discards the oldest one;
+- a selected ordinary quest uses a removable temporary Diary entry; successful turn-in removes it before adding the final completion entry, while quest cancellation/death removes it without leaving a separate cancelled-quest line;
 - every entry is prefixed with the real world tick;
 - the Diary tab updates live and automatically stays scrolled to the newest wrapped entry;
 - routine travel, individual attacks/fights, recovery ticks, market noise, and QuestScore diagnostics do not create diary entries;

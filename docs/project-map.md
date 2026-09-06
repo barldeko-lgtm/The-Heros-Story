@@ -494,7 +494,7 @@ Formats dungeon facts for developer/debug output.
 
 ### `scripts/narrative/diary.gd`
 
-Stores already prepared player-facing Diary entries, adds the supplied real world tick and emits text updates.
+Stores already prepared player-facing Diary entries, adds the supplied real world tick and emits text updates. It also supports removable temporary entries used for an activity that must be visible while active but should not remain as a second permanent history line after resolution.
 
 It does not decide significance or generate prose.
 

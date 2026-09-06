@@ -632,21 +632,21 @@ func create_god_panel() -> void:
 func create_tick_indicator() -> void:
 	var indicator := HBoxContainer.new()
 	indicator.position = Vector2(423.0, 335.0)
-	indicator.size = Vector2(520.0, 44.0)
+	indicator.size = Vector2(520.0, 22.0)
 	indicator.add_theme_constant_override("separation", 16)
 	add_to_main_screen(indicator)
 
 	time_progress_bar = ProgressBar.new()
-	time_progress_bar.custom_minimum_size = Vector2(390.0, 36.0)
+	time_progress_bar.custom_minimum_size = Vector2(390.0, 18.0)
 	time_progress_bar.max_value = 100.0
 	time_progress_bar.show_percentage = false
 	apply_progress_bar_style(time_progress_bar, Color("9ca9b8"))
 	indicator.add_child(time_progress_bar)
 
 	tick_counter_label = Label.new()
-	tick_counter_label.custom_minimum_size = Vector2(110.0, 36.0)
+	tick_counter_label.custom_minimum_size = Vector2(110.0, 18.0)
 	tick_counter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tick_counter_label.add_theme_font_size_override("font_size", 22)
+	tick_counter_label.add_theme_font_size_override("font_size", 16)
 	tick_counter_label.add_theme_color_override("font_color", Color("242a31"))
 	tick_counter_label.text = "Тик: 0"
 	indicator.add_child(tick_counter_label)

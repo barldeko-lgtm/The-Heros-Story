@@ -629,12 +629,18 @@ Never parse UI/narrative text back into gameplay decisions.
 Current ordinary-quest path:
 
 ```text
-QuestEvent fact
-→ Simulation
-→ DiaryNarrator
-→ QuestDiaryTextDefinition / shared phrase bank
-→ Diary.add_entry(world_tick, text)
-→ NarrativePanel
+HERO_SELECTED_QUEST fact
+→ Simulation / DiaryNarrator
+→ Diary temporary selection entry
+→ remains visible while that quest is active
+
+successful HERO_TURNED_IN_QUEST
+→ remove temporary selection entry
+→ add one permanent completion entry at the real completion tick
+
+quest death / external cancellation
+→ remove temporary selection entry
+→ keep the separate meaningful death/event consequence entry
 ```
 
 Combat death from any currently supported activity follows the shared narrative path:
@@ -693,6 +699,7 @@ Contracts:
 
 - `DiaryNarrator` describes approved facts only;
 - `Diary` stores ready player-facing entries and owns no significance/gameplay rules;
+- ordinary quest selection is the current narrow exception that uses a removable Diary entry for active-activity visibility; Simulation owns its lifecycle and clears it on successful turn-in, quest death, or external quest cancellation;
 - real dynamic names/rewards/outcomes come from current game state/events rather than being duplicated in templates;
 - generic reusable wording belongs in shared narrative data;
 - shared death wording must receive the actual killer and owning quest/dungeon/event name from gameplay context rather than infer them from UI text;
