@@ -17,5 +17,5 @@ placement_distance_hex_min = 3
 placement_distance_hex_max = 6
 placement_allowed_terrain_ids = PackedStringArray("hill")
 placement_forbidden_tags = PackedStringArray("city")
-gold_per_mob_min = 34
-gold_per_mob_max = 38
+gold_per_mob_min = 46
+gold_per_mob_max = 50

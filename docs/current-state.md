@@ -49,9 +49,9 @@ Current pre-specialization level-up growth is already the approved Prototype 0.2
 
 The current generic primary-stat effects are centralized through `StatResolver`:
 
-- STR contributes physical Damage and Critical Damage;
-- DEX contributes Accuracy, Dodge, and Critical Chance;
-- CON contributes MaxHP and Armor;
+- each STR contributes +2 physical Damage and +1 percentage point Critical Damage;
+- each DEX contributes +10 Accuracy, +2 Dodge, and +0.5 percentage points Critical Chance;
+- each CON contributes +20 MaxHP and +0.5 Armor;
 - INT currently has no generic Warrior combat conversion;
 - WIS currently scales Warrior abilities through their own formulas rather than a universal combat-stat bonus.
 
@@ -191,7 +191,7 @@ City-to-city autonomous relocation is not implemented yet.
 
 The Starting City currently has:
 
-- **22 ordinary mob definitions** on the current approximately 30→650 Power progression;
+- **22 ordinary mob definitions** on the current approximately 25→320 Power progression;
 - **22 matching ordinary quest templates**;
 - explicit 8 lower / 7 middle / 7 higher strength-band membership;
 - authored real map-placement constraints for every current quest;
@@ -313,8 +313,8 @@ The current ordinary-dungeon system loads ordinary dungeon definitions from the 
 
 Both required **Starting Region ordinary dungeons** are live:
 
-- **Заброшенные железные шахты** — 3 Mine Troglodytes then Deep Devourer; completion grants 700 Gold + one compressed ilvl 5 Rare/Epic item;
-- **Городище Черноклыков** — 3 Blackfang Guards then Goblin King; completion grants 2000 Gold + one compressed ilvl 10 Rare/Epic item.
+- **Заброшенные железные шахты** — 3 Mine Troglodytes at approximately 140 Power, then Deep Devourer at approximately 180 Power; completion grants 700 Gold + one compressed ilvl 5 Rare/Epic item;
+- **Городище Черноклыков** — 3 Blackfang Guards at approximately 230 Power, then Goblin King at approximately 300 Power; completion grants 2000 Gold + one compressed ilvl 10 Rare/Epic item.
 
 Both current completion item rolls use **75% Rare / 25% Epic** and may select from all twelve current equipment slots.
 
@@ -343,8 +343,8 @@ Every current dungeon attempt requires all currently available Belt potion slots
 
 After a failed attempt, the next attempt is additionally blocked until current base HeroPower reaches the remembered retry threshold from the failed attempt:
 
-- +25% after dying before killing any ordinary dungeon enemy;
-- +15% after making ordinary progress without reaching the boss;
+- +30% after dying before killing any ordinary dungeon enemy;
+- +20% after making ordinary progress without reaching the boss;
 - +10% after reaching the boss.
 
 The failed attempt's starting HeroPower is the comparison baseline. A later failed retry replaces that baseline with the retry's own starting HeroPower.

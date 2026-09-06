@@ -231,10 +231,10 @@ The current provisional contribution of one attribute point is:
 
 | Attribute | Working contribution |
 | --- | --- |
-| STR | +2 physical Damage; +5 percentage points Critical Damage |
-| DEX | +10 Accuracy; +2 Dodge; +3 percentage points Critical Chance |
+| STR | +2 physical Damage; +1 percentage point Critical Damage |
+| DEX | +10 Accuracy; +2 Dodge; +0.5 percentage points Critical Chance |
 | INT | +2 magical Damage; +20 Mana |
-| CON | +20 maximum Health; +1 Armor |
+| CON | +20 maximum Health; +0.5 Armor |
 | WIS | improves learned abilities through ability-specific scaling |
 
 **These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full compressed level-1-to-30 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
@@ -1946,8 +1946,8 @@ After failure, the hero remembers how far they progressed.
 
 The current working retry-readiness gates are:
 
-- died before killing one ordinary dungeon enemy → retry after approximately **+25% Hero Power** from the start of that attempt;
-- killed at least one ordinary enemy but did not reach boss → retry after approximately **+15% Hero Power**;
+- died before killing one ordinary dungeon enemy → retry after approximately **+30% Hero Power** from the start of that attempt;
+- killed at least one ordinary enemy but did not reach boss → retry after approximately **+20% Hero Power**;
 - reached boss and died → retry after approximately **+10% Hero Power**.
 
 The comparison is made against the Hero Power recorded at the start of the failed attempt.
@@ -1983,8 +1983,8 @@ Discovery should use map knowledge rather than omniscient UI.
 
 The currently approved Starting Region pair is:
 
-- **Abandoned Iron Mines / `Заброшенные железные шахты`** — hill placement, 4–7 hexes from Starting City, `3 × Mine Troglodyte` at approximately 200 Power / 150 XP, then `Deep Devourer` at approximately 300 Power / 185 XP; completion grants 700 Gold + one ilvl 5 item at 75% Rare / 25% Epic.
-- **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 600 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 750 Power / 320 XP; completion grants 2000 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
+- **Abandoned Iron Mines / `Заброшенные железные шахты`** — hill placement, 4–7 hexes from Starting City, `3 × Mine Troglodyte` at approximately 140 Power / 150 XP, then `Deep Devourer` at approximately 180 Power / 185 XP; completion grants 700 Gold + one ilvl 5 item at 75% Rare / 25% Epic.
+- **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 230 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 300 Power / 320 XP; completion grants 2000 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
 
 Both completion equipment sources cover all twelve current equipment slots. These concrete Power, XP, Gold, distance, and rarity values remain balance data and may be tuned without changing the shared dungeon architecture.
 

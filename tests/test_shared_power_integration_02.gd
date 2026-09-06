@@ -16,7 +16,7 @@ func _init() -> void:
 	var common_chest: Resource = load("res://data/items/visual_families/ironward_vanguard/boar_chestplate.tres")
 	assert(common_chest != null, "Common chestplate must load for ItemPower integration.")
 	assert(absf(ItemPowerCalculatorScript.get_reference_power() - 433.012701892) < 0.0001, "ItemPower must use the approved fixed Prototype 0.2 reference profile.")
-	assert(absf(common_chest.get_item_power() - 18.451295985) < 0.0001, "ItemPower must apply item stats through the shared Prototype 0.2 Power formula.")
+	assert(absf(common_chest.get_item_power() - 16.659765117) < 0.0001, "ItemPower must apply item stats through the shared Prototype 0.2 Power formula.")
 
 	print("PASS: HeroPower, MobPower, and ItemPower share the Prototype 0.2 PowerCalculator.")
 	quit()

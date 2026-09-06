@@ -9,7 +9,7 @@ func _init() -> void:
 	assert(quest.mob_definition.id == "bear", "Bear quest must use Bear.")
 	assert(quest.mob_count_min == 4 and quest.mob_count_max == 6, "Bear offer count must roll from 4 through 6.")
 	assert(quest.distance_km_min == 6 and quest.distance_km_max == 8, "Bear offer distance must roll from 6 through 8 km.")
-	assert(quest.gold_per_mob_min == 20 and quest.gold_per_mob_max == 22, "Bear offer reward must roll from 20 through 22 gold per mob.")
+	assert(quest.gold_per_mob_min == 16 and quest.gold_per_mob_max == 18, "Bear offer reward must roll from 16 through 18 gold per mob.")
 
 	print("PASS: Bear quest template contains only approved integer ranges.")
 	quit()

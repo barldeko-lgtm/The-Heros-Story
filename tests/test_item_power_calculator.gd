@@ -14,12 +14,12 @@ func _init() -> void:
 	assert(calculator_script != null and common != null and uncommon != null and rare != null, "Item power dependencies must load.")
 
 	assert(is_equal_approx(calculator_script.get_reference_power(), 433.012701892), "Reference combat profile must use the approved Prototype 0.2 Power.")
-	assert(is_equal_approx(calculator_script.calculate(common), 18.451295985), "Common chestplate ItemPower must use the shared Power formula.")
-	assert(is_equal_approx(calculator_script.calculate(uncommon), 29.956283218), "Uncommon chestplate ItemPower must use the shared Power formula.")
-	assert(is_equal_approx(calculator_script.calculate(rare), 42.672987403), "Rare chestplate ItemPower must use the shared Power formula.")
-	assert(common.get_tooltip_text().contains("Сила предмета: 18.45"), "Common tooltip must display calculated ItemPower.")
-	assert(uncommon.get_tooltip_text().contains("Сила предмета: 29.96"), "Uncommon tooltip must display calculated ItemPower.")
-	assert(rare.get_tooltip_text().contains("Сила предмета: 42.67"), "Rare tooltip must display calculated ItemPower.")
+	assert(is_equal_approx(calculator_script.calculate(common), 16.659765117), "Common chestplate ItemPower must use the shared Power formula.")
+	assert(is_equal_approx(calculator_script.calculate(uncommon), 26.310801409), "Uncommon chestplate ItemPower must use the shared Power formula.")
+	assert(is_equal_approx(calculator_script.calculate(rare), 37.098353207), "Rare chestplate ItemPower must use the shared Power formula.")
+	assert(common.get_tooltip_text().contains("Сила предмета: 16.66"), "Common tooltip must display calculated ItemPower.")
+	assert(uncommon.get_tooltip_text().contains("Сила предмета: 26.31"), "Uncommon tooltip must display calculated ItemPower.")
+	assert(rare.get_tooltip_text().contains("Сила предмета: 37.10"), "Rare tooltip must display calculated ItemPower.")
 
 	print("PASS: Every item card calculates and displays static ItemPower through the shared Power formula.")
 	quit()

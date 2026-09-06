@@ -8,7 +8,7 @@ func _init() -> void:
 	assert(quest.mob_definition.id == "goblin", "Quest must reference the Goblin definition.")
 	assert(quest.mob_count_min == 4 and quest.mob_count_max == 6, "Goblin offer count must roll from 4 through 6.")
 	assert(quest.distance_km_min == 1 and quest.distance_km_max == 3, "Goblin offer distance must roll from 1 through 3 km.")
-	assert(quest.gold_per_mob_min == 7 and quest.gold_per_mob_max == 9, "Goblin offer reward must roll from 7 through 9 gold per mob.")
+	assert(quest.gold_per_mob_min == 5 and quest.gold_per_mob_max == 8, "Goblin offer reward must roll from 5 through 8 gold per mob.")
 
 	print("PASS: Goblin quest template contains only approved integer ranges.")
 	quit()

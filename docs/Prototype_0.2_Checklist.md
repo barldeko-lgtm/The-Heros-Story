@@ -136,6 +136,7 @@ Status:
 - ✅ Structured quest/death facts and separate developer narration.
 - ✅ Developer Debug Log with bounded recent history and automatic newest-entry scrolling.
 - 🟡 Hero Diary is now a real live system for ordinary quest activity, combat death/resurrection, significant equipment, dungeon milestones and successful temporary-event outcomes; entries include their real world tick.
+- ✅ Diary keeps only the newest **100 meaningful entries**; ordinary quest acceptance is temporary and is removed when that quest is successfully completed or cancelled, so completed quests do not occupy two permanent Diary records.
 - 🟡 Ordinary quest Diary wording already lives in external narrative data with variant arrays and per-quest override support, but only one phrase per category is currently authored.
 - 🟡 Diary UI updates live and stays scrolled to the newest entry.
 - ⬜ Remaining required Diary sources include levels, visible trait changes, specialization, remaining divine/progression milestones and other important progression moments.
@@ -193,7 +194,7 @@ The intended ordinary quest board remains up to 9 offers / 3 per strength band, 
 
 This is a progress-oriented list, not automatic permission or a fixed implementation order:
 
-1. Continue expanding the Hero Diary from the current ordinary-quest slice and author more phrase variation.
+1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Implement the lightweight starting questionnaire and replace the temporary seeded starting-trait bootstrap.
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
 4. Finish expanding the temporary-event population from 13 toward the ~15–20 target and complete the remaining travel-interception context where needed.

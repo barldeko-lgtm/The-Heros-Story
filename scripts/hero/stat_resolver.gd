@@ -4,12 +4,12 @@ extends RefCounted
 const CombatStatsScript = preload("res://scripts/model/runtime/combat_stats.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const PHYSICAL_DAMAGE_PER_STRENGTH: float = 2.0
-const CRIT_DAMAGE_PER_STRENGTH: float = 0.05
+const CRIT_DAMAGE_PER_STRENGTH: float = 0.01
 const ACCURACY_PER_DEXTERITY: float = 10.0
 const DODGE_PER_DEXTERITY: float = 2.0
-const CRIT_CHANCE_PER_DEXTERITY: float = 0.03
+const CRIT_CHANCE_PER_DEXTERITY: float = 0.005
 const MAX_HP_PER_CONSTITUTION: float = 20.0
-const ARMOR_PER_CONSTITUTION: float = 1.0
+const ARMOR_PER_CONSTITUTION: float = 0.5
 
 var hero_progression = HeroProgressionScript.new()
 

@@ -30,8 +30,8 @@ func _init() -> void:
 	assert(is_equal_approx(level_two_stats.max_hp, 200.0), "Pending points must provide no MaxHP before the player spends them.")
 	assert(is_equal_approx(level_two_stats.attack, 17.0), "Level 2 physical Damage must include only the fixed +1 Warrior Strength before player allocation.")
 	assert(is_equal_approx(level_two_stats.attack_speed, 1.10), "Primary attributes must not change AttackSpeed.")
-	assert(is_equal_approx(level_two_stats.crit_chance, 0.25), "Pending Dexterity must provide no Critical Chance before allocation.")
-	assert(is_equal_approx(level_two_stats.crit_damage, 1.80), "Level 2 Critical Damage must include only the fixed +1 Warrior Strength before allocation.")
+	assert(is_equal_approx(level_two_stats.crit_chance, 0.125), "Pending Dexterity must provide no Critical Chance before allocation.")
+	assert(is_equal_approx(level_two_stats.crit_damage, 1.56), "Level 2 Critical Damage must include only the fixed +1 Warrior Strength before allocation.")
 
 	assert(hero_progression.allocate_primary_attribute(hero_state, "constitution"), "A pending point must be spendable on Constitution.")
 	assert(hero_progression.allocate_primary_attribute(hero_state, "wisdom"), "A pending point must be spendable on Wisdom.")

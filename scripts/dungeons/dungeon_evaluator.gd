@@ -1,8 +1,8 @@
 class_name DungeonEvaluator
 extends RefCounted
 
-const NO_KILLS_RETRY_GROWTH: float = 0.25
-const ORDINARY_PROGRESS_RETRY_GROWTH: float = 0.15
+const NO_KILLS_RETRY_GROWTH: float = 0.30
+const ORDINARY_PROGRESS_RETRY_GROWTH: float = 0.20
 const BOSS_REACHED_RETRY_GROWTH: float = 0.10
 const POWER_EPSILON: float = 0.0001
 
