@@ -6,4 +6,3 @@
 script = ExtResource("1_quest_diary")
 selected_variants = PackedStringArray("Для {hero} новым делом стало задание «{quest}».")
 completed_variants = PackedStringArray("Задание «{quest}» было завершено. {hero} вернулся за наградой в {gold} золота.")
-failed_variants = PackedStringArray("Задание «{quest}» осталось незавершённым: поход закончился смертью {hero} в бою с {mob}.")

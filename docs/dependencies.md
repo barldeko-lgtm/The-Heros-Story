@@ -173,6 +173,7 @@ Contracts:
 - there is no separate legacy free-form trait list that may disagree with the four axes;
 - Formative event choices may move an authored axis because of the meaning of that choice, but should not be chosen by reading the same general personality trait;
 - Expressive event choices may read an established trait, but do not automatically reinforce that trait;
+- an Expressive stage may author an "any of these traits" check when multiple established traits intentionally lead to the same single branch; this remains one Expressive decision and must not stack the branch effect when more than one listed trait is present;
 - an authored Formative movement may establish a visible trait early enough for a later Expressive stage in the same event to observe it;
 - UI may display current development/debug state but must not own personality-transition logic.
 
@@ -373,13 +374,15 @@ It may:
 
 - advance timed stages;
 - route Formative movement through `TraitDevelopment`;
-- read established traits for Expressive stages;
+- read established traits for single-trait or authored any-of-traits Expressive stages;
 - request shared combat;
 - use `TravelSystem` for authored detours;
 - own event-context death/recovery;
 - resume the previously interrupted travel target after successful resolution.
 
 It does not own general event population/placement.
+
+Event COMBAT stages may author a starting current-HP ratio for their referenced mob. `Simulation` applies that ratio only to `CombatSession.mob_remaining_hp` when the event fight starts. The referenced immutable `MobDefinition`, its `CombatStats.max_hp`, Attack, Armor, Attack Speed, Power inputs and other authored stats remain unchanged. A ratio of `1.0` is the default and preserves all older event fights unchanged.
 
 ### Travel interruption contract
 
@@ -634,12 +637,23 @@ QuestEvent fact
 → NarrativePanel
 ```
 
+Combat death from any currently supported activity follows the shared narrative path:
+
+```text
+quest / dungeon / temporary-event combat defeat
+→ Simulation keeps the real killer + owning activity context
+→ DiaryNarrator shared death wording
+→ Diary.add_entry(world_tick, text)
+→ NarrativePanel
+```
+
 Contracts:
 
 - `DiaryNarrator` describes approved facts only;
 - `Diary` stores ready player-facing entries and owns no significance/gameplay rules;
 - real dynamic names/rewards/outcomes come from current game state/events rather than being duplicated in templates;
 - generic reusable wording belongs in shared narrative data;
+- shared death wording must receive the actual killer and owning quest/dungeon/event name from gameplay context rather than infer them from UI text;
 - unique authored wording may remain with the content it belongs to;
 - narrative phrase selection uses a dedicated RNG stream so adding or reordering wording variants cannot perturb gameplay RNG;
 - UI displays Diary output and must not create Diary gameplay facts itself.

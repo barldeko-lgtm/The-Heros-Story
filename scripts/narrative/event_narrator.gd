@@ -39,9 +39,12 @@ func describe_formative_decision(result: Dictionary) -> String:
 
 func describe_trait_check(result: Dictionary) -> String:
 	var event_instance = result["event_instance"]
+	var checked_trait_text: String = str(result.get("checked_trait_id", ""))
+	if checked_trait_text.is_empty() and result.has("checked_trait_ids"):
+		checked_trait_text = " / ".join(PackedStringArray(result["checked_trait_ids"]))
 	return "СОБЫТИЕ «%s»: expressive-проверка %s → %s." % [
 		event_instance.definition.display_name,
-		result["checked_trait_id"],
+		checked_trait_text,
 		"особая ветка" if bool(result["trait_present"]) else "стандартная ветка",
 	]
 

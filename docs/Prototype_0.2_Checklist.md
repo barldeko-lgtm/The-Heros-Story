@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-05**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-06**.
 
 This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
@@ -78,7 +78,7 @@ Status:
 ## 6. Temporary events
 
 - ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
-- ✅ Current Starting Region events: **4** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`.
+- ✅ Current Starting Region events: **5** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`.
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
 - ✅ Events can suspend/resume an ordinary quest route or outbound dungeon route, and can use their own real travel objective.
 - 🟡 Current event framework is functional, but the final world population is still small and some travel contexts remain unsupported.
@@ -176,7 +176,7 @@ Status:
 |---|---:|---:|
 | Normal cities | 2 on map / 1 complete | 2 complete |
 | Ordinary quest templates | 22 | 37 current target (22 + 15) |
-| Handcrafted temporary events | 4 | ~15–20 |
+| Handcrafted temporary events | 5 | ~15–20 |
 | Ordinary dungeons | 2 | 4 |
 | First specialization paths | 0 | 2 |
 | Specialization dungeon variants | 0 | 2 |
@@ -196,7 +196,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 1. Continue expanding the Hero Diary from the current ordinary-quest slice and author more phrase variation.
 2. Implement the lightweight starting questionnaire and replace the temporary seeded starting-trait bootstrap.
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
-4. Expand the temporary-event population from 4 toward the ~15–20 target and complete the remaining travel-interception context where needed.
+4. Expand the temporary-event population from 5 toward the ~15–20 target and complete the remaining travel-interception context where needed.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement Skill Level training and Curious/Conservative spending priority.
 7. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.

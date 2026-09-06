@@ -66,21 +66,29 @@ func validate_definition() -> bool:
 				return false
 			if stage.travel_target == EventStageDefinitionScript.TravelTarget.SECONDARY_TARGET and not secondary_target_enabled:
 				return false
-		if stage.stage_type == EventStageDefinitionScript.StageType.DECISION:
-			if stage.selection_rule == EventStageDefinitionScript.RULE_HIGHEST_PRIMARY_ATTRIBUTE:
-				if stage.options.is_empty() or stage.options.size() > 3:
-					return false
-				for option in stage.options:
-					if option == null or option.next_stage_id.is_empty() or not stage_ids.has(option.next_stage_id):
+			if stage.stage_type == EventStageDefinitionScript.StageType.DECISION:
+				if stage.selection_rule == EventStageDefinitionScript.RULE_HIGHEST_PRIMARY_ATTRIBUTE:
+					if stage.options.is_empty() or stage.options.size() > 3:
 						return false
-			elif stage.selection_rule == EventStageDefinitionScript.RULE_TRAIT_PRESENT:
-				if stage.checked_trait_id.is_empty() or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
+					for option in stage.options:
+						if option == null or option.next_stage_id.is_empty() or not stage_ids.has(option.next_stage_id):
+							return false
+				elif stage.selection_rule == EventStageDefinitionScript.RULE_TRAIT_PRESENT:
+					if stage.checked_trait_id.is_empty() or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
+						return false
+				elif stage.selection_rule == EventStageDefinitionScript.RULE_ANY_TRAIT_PRESENT:
+					if stage.checked_trait_ids.is_empty() or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
+						return false
+					for trait_id in stage.checked_trait_ids:
+						if trait_id.is_empty():
+							return false
+				else:
 					return false
-			else:
-				return false
-		if stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
-			if stage.mob_definition == null or stage.combat_victory_stage_id.is_empty() or not stage_ids.has(stage.combat_victory_stage_id):
-				return false
+			if stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
+				if stage.mob_definition == null or stage.combat_victory_stage_id.is_empty() or not stage_ids.has(stage.combat_victory_stage_id):
+					return false
+				if stage.combat_start_hp_ratio <= 0.0 or stage.combat_start_hp_ratio > 1.0:
+					return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.END:
 			if stage.outcome_id.is_empty() or stage.diary_text.is_empty():
 				return false

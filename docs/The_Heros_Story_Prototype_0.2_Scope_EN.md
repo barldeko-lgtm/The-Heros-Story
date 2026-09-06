@@ -1593,7 +1593,7 @@ The current event population uses one shared rotation cadence rather than allowi
 
 > **first population at world tick 100 → full unengaged population reroll every 200 world ticks: 300 / 500 / 700 / ...**
 
-At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current four authored events, all four definitions should therefore be selected whenever none is on cooldown; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
+At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current five authored events, all five definitions should therefore be selected whenever none is on cooldown; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
 
 If a selected definition cannot fit because an already-active world activity occupies every valid footprint, that definition remains selected for the current cycle and may appear at the first later valid placement opportunity. The system must not cancel or move an already-active hero objective to force event placement.
 
@@ -1665,6 +1665,8 @@ Event combat must reuse the normal shared `CombatSession`, combat stats, abiliti
 For an **expressive** decision point, established visible personality may affect what the hero does, but that stage must not move the general personality axes.
 
 An expressive trait check must always define what happens when the checked trait is **not** established. Do not author an implicit two-way `Brave versus Cautious` branch that leaves a neutral hero undefined.
+
+When two or more established traits intentionally represent different motivations for the **same exact authored response**, one Expressive stage may check whether **any** trait from that authored list is established. This is still one branch: if several listed traits are present, its time/reward/combat effect applies only once and the stage does not reinforce any of those traits.
 
 The preferred simple expressive pattern is:
 
@@ -1769,6 +1771,8 @@ An event may chain more than one real `TRAVEL` stage. For example, the hero may 
 
 `COMBAT` stages reuse the existing `CombatSession`, Warrior abilities, CombatStats, and shared Hero/Mob Power rules. Event combat must not duplicate combat resolution.
 
+An authored event COMBAT stage may begin the referenced enemy below full current HP when earlier event actions have explicitly wounded or exhausted that same opponent. This changes only the fight's starting `mob_remaining_hp`; the referenced `MobDefinition`, full MaxHP, Attack, Armor, Attack Speed, Accuracy, Dodge, critical stats and shared Power inputs remain unchanged.
+
 Gold, equipment, personality movement, and other consequences are applied through their normal owning systems. Event data describes the authored consequence; it does not create separate event-only economy, item-generation, trait, or equipment logic.
 
 Entering an event activation area during a travel step should first record a pending event encounter. The simulation should begin the event only after the current travel-step / runner transition has safely finished, rather than changing the active hero state re-entrantly from inside a position-change callback.
@@ -1814,6 +1818,18 @@ The approved fourth Starting Region event, `dead_courier` / **«Мёртвый �
 - Stage 3 performs an **Expressive Curious** check without moving Curiosity. Established Curious adds exactly two search ticks, recovers the missing letter, and raises final Gold by **+50**. Because the Formative DEX movement happens first, DEX may move Curiosity from `+35` to `+40` and immediately unlock this same-event Curious search;
 - successful base rewards are **WIS 75 Gold**, **DEX 75 Gold + one Common ilvl 5 item**, and **CON 100 Gold**. With Curious they become **WIS 125 Gold**, **DEX 125 Gold + the same Common ilvl 5 item**, and **CON 150 Gold**;
 - including the common one-tick intro and one-tick Formative decision, non-Devious/non-Curious successful totals are **WIS 7 ticks / DEX 8 ticks / CON 10 ticks**. Curious adds exactly `+2` ticks. On DEX/CON, Devious replaces the one-tick combat with a one-tick confession scene and therefore preserves the same base duration while removing combat risk.
+
+### 15.9. Current Authored Event Reference — Ogre at the Old Barrow
+
+The approved fifth Starting Region event, `ogre_at_old_barrow` / **«Огр у старого кургана»**, is the first event where earlier authored decisions change only the enemy's starting current HP before one otherwise-normal shared fight.
+
+- the event uses a normal radius-1 footprint centered on **plains terrain 5–6 hexes from Starting City** and fights the existing ordinary **Experienced Ogre / «Опытный огр»** in every combat branch;
+- the Formative opening compares **DEX / STR / CON**. DEX seizes a short opening, moves Courage `+5` toward Brave, and attacks immediately after one short strike scene with the Ogre at **75% starting current HP**;
+- STR spends exactly **2 preparation ticks** bringing old stones down onto the Ogre, does not move general personality, and reaches the second stage with an **80% HP** fight as the fallback;
+- CON spends exactly **3 preparation ticks** wearing the Ogre down through repeated dangerous pursuit, moves Courage `−5` toward Cautious, and reaches the second stage with an **85% HP** fight as the fallback;
+- only STR and CON reach Stage 2. It is one Expressive **Devious OR Conservative** check. If either trait is established, the hero spends exactly **2 additional preparation ticks** on one shared trap/ambush branch and removes another 15 percentage points of the Ogre's full HP before combat: STR therefore starts at **65%**, CON at **70%**. If both traits are present, this branch still applies only once. The Expressive check moves neither Morality nor Curiosity;
+- every branch keeps the Ogre's normal full MaxHP and all normal combat stats; only `CombatSession.mob_remaining_hp` starts below full. Victory therefore still uses the shared combat engine and grants the Ogre's normal **195 XP**;
+- successful completion grants no extra Gold and awards exactly one guaranteed **Green / Uncommon ilvl 10** equipment item from the normal current ilvl 10 authored source through the shared item-generation/evaluation pipeline. Event combat itself does not add the Ogre's ordinary random equipment drop.
 
 ---
 

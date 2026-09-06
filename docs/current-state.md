@@ -8,9 +8,9 @@ It is intentionally a runtime snapshot rather than a second design specification
 
 The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
 
-The most recent work has started the **Hero Diary / Chronicle** as a real player-facing system. Ordinary quest selection, successful completion, and ordinary-quest death now create live diary entries. The next diary work is content/coverage expansion rather than a redesign of the simulation.
+The most recent gameplay-content work expanded the Starting Region temporary-event population to five handcrafted events, including the first event whose preparation branches reduce only an enemy's starting current HP before a normal shared fight. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, only four handcrafted temporary events exist, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, only five handcrafted temporary events exist, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
 
 ## Simulation and world time
 
@@ -251,24 +251,29 @@ fight lost
 
 ## Temporary events
 
-The generic temporary-event system is live and currently has **4 authored Starting Region events**:
+The generic temporary-event system is live and currently has **5 authored Starting Region events**:
 
 1. `У старой вырубки`;
 2. `Дым над старой башней`;
 3. `Чужие силки`;
-4. `Мёртвый гонец`.
+4. `Мёртвый гонец`;
+5. `Огр у старого кургана`.
 
 The current event framework supports:
 
 - authored SCENE / DECISION / TRAVEL / COMBAT / END style stages;
 - Formative and Expressive personality interactions;
 - stat-driven authored branch choice;
+- Expressive checks for either one established trait or any established trait from an authored list;
 - shared combat through the normal `CombatSession`;
+- event combat may author a reduced **starting current HP ratio** for the referenced mob while preserving that mob's normal MaxHP and all other combat stats;
 - authored Gold/equipment consequences through normal reward systems;
 - multi-tick authored stages;
 - real map detours to an event-owned secondary objective;
 - interruption and later resumption of the previous travel destination;
 - event-owned death/resurrection handling.
+
+The fifth event, `Огр у старого кургана`, is placed on Starting Region plains 5–6 hexes from Starting City and always fights the existing `Опытный огр`. Its Formative opening compares DEX / STR / CON: DEX moves Courage `+5` and immediately attacks an Ogre starting at 75% current HP; STR spends two preparation ticks and reaches an 80% HP fight; CON spends three preparation ticks, moves Courage `−5` toward Cautious, and reaches an 85% HP fight. STR and CON then perform one shared Expressive **Devious OR Conservative** check: if either trait is established, two additional preparation ticks reduce the Ogre by another 15 percentage points, to 65% after STR or 70% after CON, without reinforcing either trait. The Ogre keeps its normal Attack, Armor, Attack Speed and other combat stats in every branch, grants its normal 195 XP on victory, and the event awards one guaranteed Green/Uncommon ilvl 10 equipment item through the normal authored reward pipeline with no extra Gold.
 
 Current shared population rules:
 
@@ -485,17 +490,18 @@ Current diary sources are only:
 
 - ordinary quest selected;
 - ordinary quest successfully turned in;
-- hero died during an ordinary quest.
+- hero died in combat during an ordinary quest, ordinary dungeon, or temporary event; the entry names the killer and the specific activity.
 
 Current behaviour:
 
-- structured quest facts are converted by a separate `DiaryNarrator`;
+- structured quest/death facts are converted by a separate `DiaryNarrator`;
 - `Diary` stores the ready player-facing entries;
 - every entry is prefixed with the real world tick;
 - the Diary tab updates live and automatically stays scrolled to the newest wrapped entry;
 - routine travel, individual attacks/fights, recovery ticks, market noise, and QuestScore diagnostics do not create diary entries;
-- ordinary quest phrases live in an external shared narrative resource;
-- selection / completion / failure are already variant arrays, but currently contain only **one authored phrase each**;
+- ordinary quest selection/completion phrases live in an external shared narrative resource;
+- generic combat-death wording lives in a separate shared narrative resource;
+- selection / completion / death are already variant arrays, but currently contain only **one authored phrase each**;
 - an individual quest may later override the shared phrase resource with quest-specific wording;
 - phrase selection uses a dedicated narrative RNG stream so adding wording variants cannot perturb gameplay randomness.
 

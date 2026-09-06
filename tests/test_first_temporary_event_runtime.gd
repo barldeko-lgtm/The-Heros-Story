@@ -167,6 +167,8 @@ func test_event_combat_death_cancels_quest() -> void:
 		simulation.advance_event_tick(tick)
 	assert(simulation.hero_state.loop_state == simulation.hero_state.EVENT_COMBAT)
 	var fought_mob = simulation.event_runner.get_current_mob_definition()
+	var event_name: String = simulation.event_runner.active_event.definition.display_name
+	var diary_count_before_death: int = simulation.diary.entries.size()
 	var loss = CombatResultScript.new(false, 0.0, 10.0, 1.0, [])
 	simulation.complete_event_combat(fought_mob, loss, 4)
 
@@ -176,6 +178,9 @@ func test_event_combat_death_cancels_quest() -> void:
 	assert(simulation.event_runner.owns_respawn_state())
 	assert(simulation.hero_state.personality_axis_values["courage"] == 5, "Formative Brave movement must survive later combat failure.")
 	assert(simulation.world_state.hero_position == simulation.hex_map.definition.starting_city_center)
+	assert(simulation.diary.entries.size() == diary_count_before_death + 1, "Event combat death must add exactly one Diary entry.")
+	var death_entry: String = simulation.diary.entries.back()
+	assert(death_entry.contains(event_name) and death_entry.contains(fought_mob.display_name) and death_entry.contains("события"), "Event death Diary entry must identify the event and the killer.")
 	assert(simulation.use_instant_resurrection(), "Divine instant resurrection must route through EventRunner when the event owns death.")
 	assert(simulation.hero_state.loop_state == simulation.hero_state.RECOVERING_IN_CITY)
 

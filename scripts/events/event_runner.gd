@@ -145,6 +145,25 @@ func resolve_decision(hero_state, stage) -> Dictionary:
 			"trait_present": trait_present,
 			"next_stage": get_current_stage(),
 		}
+
+	if stage.selection_rule == EventStageDefinitionScript.RULE_ANY_TRAIT_PRESENT:
+		var matched_trait_id: String = ""
+		for trait_id in stage.checked_trait_ids:
+			if trait_development.has_trait(hero_state, trait_id):
+				matched_trait_id = trait_id
+				break
+		var trait_present: bool = not matched_trait_id.is_empty()
+		var next_stage_id: String = stage.trait_present_stage_id if trait_present else stage.trait_absent_stage_id
+		enter_stage(hero_state, next_stage_id)
+		return {
+			"type": "expressive_trait_check",
+			"event_instance": active_event,
+			"stage": stage,
+			"checked_trait_id": matched_trait_id,
+			"checked_trait_ids": stage.checked_trait_ids,
+			"trait_present": trait_present,
+			"next_stage": get_current_stage(),
+		}
 	return {}
 
 func complete_combat(hero_state, combat_stats: CombatStats, combat_result) -> Dictionary:

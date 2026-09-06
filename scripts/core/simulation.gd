@@ -330,7 +330,9 @@ func start_dungeon_combat() -> void:
 func start_event_combat() -> void:
 	var mob_definition = event_runner.get_current_mob_definition()
 	assert(mob_definition != null and event_runner.active_event != null, "Event combat requires an authored active event encounter.")
+	var combat_stage = event_runner.get_current_stage()
 	start_combat_session(mob_definition, COMBAT_CONTEXT_EVENT, hero_state.current_hp)
+	active_combat_session.mob_remaining_hp = active_combat_session.mob_stats.max_hp * clampf(combat_stage.combat_start_hp_ratio, 0.01, 1.0)
 	debug_log.record_combat_event(
 		event_narrator.describe_combat_started(hero_state.hero_name, event_runner.active_event.definition.display_name, mob_definition),
 		get_active_combat_world_tick()
@@ -380,21 +382,20 @@ func advance_active_combat(available_seconds: float) -> float:
 			if hero_state.level != previous_level:
 				refresh_combat_stats()
 
-			if finished_combat_context == COMBAT_CONTEXT_EVENT:
-				complete_event_combat(fought_mob_definition, combat_result, combat_world_tick)
-			elif finished_combat_context == COMBAT_CONTEXT_DUNGEON:
-				complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
-			else:
-				var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
-				if combat_result.hero_won:
-					resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
-				if event != null:
-					if event.event_type == QuestEventScript.HERO_DIED:
-						var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
-						assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
-						refresh_finished_quest_offer_if_needed(event, combat_world_tick)
-						debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
-						record_quest_diary_event(event, combat_world_tick)
+		if finished_combat_context == COMBAT_CONTEXT_EVENT:
+			complete_event_combat(fought_mob_definition, combat_result, combat_world_tick)
+		elif finished_combat_context == COMBAT_CONTEXT_DUNGEON:
+			complete_dungeon_combat(fought_mob_definition, combat_result, dungeon_was_boss, combat_world_tick)
+		else:
+			var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
+			if combat_result.hero_won:
+				resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
+			if event != null and event.event_type == QuestEventScript.HERO_DIED:
+				var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+				assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
+				refresh_finished_quest_offer_if_needed(event, combat_world_tick)
+				debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
+				record_quest_diary_event(event, combat_world_tick)
 
 		if hero_state.level != previous_level:
 			debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
@@ -431,6 +432,13 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 		event_narrator.describe_death(hero_state.hero_name, event_name, fought_mob_definition, int(result.get("respawn_ticks_remaining", 0))),
 		combat_world_tick
 	)
+	record_death_diary_entry(
+		hero_state.hero_name,
+		fought_mob_definition.display_name,
+		DiaryNarratorScript.DEATH_ACTIVITY_EVENT,
+		event_name,
+		combat_world_tick
+	)
 
 func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was_boss: bool, combat_world_tick: int) -> void:
 	var result: Dictionary = dungeon_runner.complete_fight(hero_state, combat_stats, combat_result)
@@ -453,6 +461,13 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		assert(_assert_set_hero_position_ok_8, "Dead dungeon hero must return to the current city map position for resurrection.")
 		debug_log.record_combat_event(
 			dungeon_narrator.describe_death(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, fought_mob_definition, dungeon_runner.respawn_ticks_remaining),
+			combat_world_tick
+		)
+		record_death_diary_entry(
+			hero_state.hero_name,
+			fought_mob_definition.display_name,
+			DiaryNarratorScript.DEATH_ACTIVITY_DUNGEON,
+			dungeon_runner.active_dungeon.definition.display_name,
 			combat_world_tick
 		)
 		debug_log.record_combat_event(
@@ -570,6 +585,13 @@ func record_quest_diary_event(event, event_tick: int) -> void:
 	if diary_narrator == null:
 		return
 	var diary_text: String = diary_narrator.describe_quest_event(event)
+	if not diary_text.is_empty():
+		diary.add_entry(event_tick, diary_text)
+
+func record_death_diary_entry(hero_name: String, killer_name: String, activity_type: String, activity_name: String, event_tick: int) -> void:
+	if diary_narrator == null:
+		return
+	var diary_text: String = diary_narrator.describe_death(hero_name, killer_name, activity_type, activity_name)
 	if not diary_text.is_empty():
 		diary.add_entry(event_tick, diary_text)
 

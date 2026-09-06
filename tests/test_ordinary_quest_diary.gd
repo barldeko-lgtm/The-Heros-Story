@@ -8,15 +8,16 @@ const QuestOfferScript = preload("res://scripts/model/runtime/quest_offer.gd")
 const QuestDiaryTextDefinitionScript = preload("res://scripts/model/definitions/quest_diary_text_definition.gd")
 const MobDefinitionScript = preload("res://scripts/model/definitions/mob_definition.gd")
 const DefaultDiaryText = preload("res://data/narrative/quests/ordinary_quest_diary.tres")
+const DefaultDeathDiaryText = preload("res://data/narrative/death_diary.tres")
 
 func _init() -> void:
 	assert(DefaultDiaryText.selected_variants.size() == 1, "The first ordinary-quest diary slice must start with one authored selection phrase.")
 	assert(DefaultDiaryText.completed_variants.size() == 1, "The first ordinary-quest diary slice must start with one authored completion phrase.")
-	assert(DefaultDiaryText.failed_variants.size() == 1, "The first ordinary-quest diary slice must start with one authored failure phrase.")
+	assert(DefaultDeathDiaryText.variants.size() == 1, "The shared death diary slice must start with one authored phrase.")
 	test_authored_quest_override()
 	test_successful_quest_diary_flow()
 	test_failed_quest_diary_flow()
-	print("PASS: Ordinary quests write selection/success/failure diary entries from external phrase data with per-quest override support.")
+	print("PASS: Ordinary quests write selection/success plus shared contextual death Diary entries from external phrase data.")
 	quit()
 
 func test_authored_quest_override() -> void:
@@ -74,3 +75,4 @@ func test_failed_quest_diary_flow() -> void:
 	assert(simulation.diary.entries.size() == 2, "A failed ordinary quest must add one failure entry after its selection entry.")
 	assert(simulation.diary.entries[1].begins_with("Тик 77 — "), "A quest failure diary entry must display the supplied event world tick.")
 	assert(simulation.diary.entries[1].contains("Борис") and simulation.diary.entries[1].contains(mob_name), "The failure entry must use the real hero and enemy names.")
+	assert(simulation.diary.entries[1].contains(quest.display_name) and simulation.diary.entries[1].contains("задания"), "Quest death must identify the ordinary quest activity by its real name.")

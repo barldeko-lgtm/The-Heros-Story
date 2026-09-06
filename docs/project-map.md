@@ -282,9 +282,9 @@ Structured quest/runtime facts used by coordination and narrative layers, includ
 
 Immutable authored temporary-event content.
 
-Definitions own placement/lifetime metadata and stage graphs. Stages/options own authored scene timing, decision rules, Formative/Expressive meaning, travel/combat references, rewards/outcomes and event-specific narrative text where appropriate.
+Definitions own placement/lifetime metadata and stage graphs. Stages/options own authored scene timing, decision rules, Formative/Expressive meaning, travel/combat references, rewards/outcomes and event-specific narrative text where appropriate. Current decision data supports both one-trait Expressive checks and an authored any-of-traits check; COMBAT stages may also author a reduced starting current-HP ratio while still referencing an ordinary immutable `MobDefinition` for all combat stats.
 
-Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code.
+Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP.
 
 ### `scripts/model/runtime/event_instance.gd`
 
@@ -304,7 +304,7 @@ Reusable resolver for the current authored primary-attribute comparison pattern 
 
 Executes one engaged event graph.
 
-Handles timed stages, Formative movement through `TraitDevelopment`, Expressive trait checks, event detours through `TravelSystem`, shared-combat requests, event-owned death/recovery flow and resumption of the interrupted activity.
+Handles timed stages, Formative movement through `TraitDevelopment`, single-trait and any-of-traits Expressive checks, event detours through `TravelSystem`, shared-combat requests, event-owned death/recovery flow and resumption of the interrupted activity. The runner exposes the authored current COMBAT stage; Simulation uses that stage's optional starting-HP ratio only when creating event combat, leaving the referenced mob definition immutable.
 
 Combat itself remains `CombatSession`; map population remains `EventSystem`.
 
@@ -500,14 +500,19 @@ It does not decide significance or generate prose.
 
 ### `scripts/narrative/diary_narrator.gd`
 
-Current player-facing Diary prose converter for the first ordinary-quest slice. Selects an authored phrase variant using the dedicated narrative RNG and substitutes real structured values.
+Current player-facing Diary prose converter for ordinary quest selection/completion plus shared combat-death coverage. Death narration receives the real killer and owning quest/dungeon/event context, selects authored wording through the dedicated narrative RNG, and substitutes real structured values.
 
 It must remain presentation-only.
 
 ### `scripts/model/definitions/quest_diary_text_definition.gd`
 ### `data/narrative/quests/ordinary_quest_diary.tres`
 
-External ordinary-quest Diary phrase data. Holds variant arrays for quest selection, completion and failure. `QuestDefinition` may reference a bespoke override resource when a specific quest needs unique wording.
+External ordinary-quest Diary phrase data. Holds variant arrays for quest selection and completion. `QuestDefinition` may reference a bespoke override resource when a specific quest needs unique wording.
+
+### `scripts/model/definitions/death_diary_text_definition.gd`
+### `data/narrative/death_diary.tres`
+
+Shared combat-death Diary wording. The activity kind/name and killer come from the live simulation context rather than being authored into the phrase resource.
 
 Future reusable generic Diary wording should live under `data/narrative/`; unique event/dungeon/content wording should remain with the owning content where practical.
 
@@ -594,7 +599,7 @@ Quest code discovers content by directory rather than hard-coding every individu
 
 ### Narrative
 
-- `data/narrative/` — reusable player-facing narrative phrase data; currently ordinary quest Diary phrases are the live slice.
+- `data/narrative/` — reusable player-facing narrative phrase data; currently ordinary quest and shared combat-death Diary phrases are live.
 
 ### Future scaffolds not yet implemented
 

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="DeathDiaryTextDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/death_diary_text_definition.gd" id="1_death_diary"]
+
+[resource]
+script = ExtResource("1_death_diary")
+variants = PackedStringArray("Во время {activity} {hero} погиб в бою с противником «{killer}».")

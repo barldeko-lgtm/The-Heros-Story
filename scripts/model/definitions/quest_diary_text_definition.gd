@@ -3,4 +3,3 @@ extends Resource
 
 @export var selected_variants: PackedStringArray = PackedStringArray()
 @export var completed_variants: PackedStringArray = PackedStringArray()
-@export var failed_variants: PackedStringArray = PackedStringArray()
