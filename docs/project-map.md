@@ -500,7 +500,7 @@ It does not decide significance or generate prose.
 
 ### `scripts/narrative/diary_narrator.gd`
 
-Current player-facing Diary prose converter for ordinary quest selection/completion plus shared combat-death coverage. Death narration receives the real killer and owning quest/dungeon/event context, selects authored wording through the dedicated narrative RNG, and substitutes real structured values.
+Current player-facing Diary prose converter for ordinary quest selection/completion plus shared combat-death, resurrection, significant equipment-acquisition, ordinary-dungeon milestones, and successful temporary-event endings. Successful events pass through the authored `diary_text` of the exact END stage that actually resolved. Phrase selection uses the dedicated narrative RNG where variants exist and substitutes real structured values where needed.
 
 It must remain presentation-only.
 
@@ -513,6 +513,23 @@ External ordinary-quest Diary phrase data. Holds variant arrays for quest select
 ### `data/narrative/death_diary.tres`
 
 Shared combat-death Diary wording. The activity kind/name and killer come from the live simulation context rather than being authored into the phrase resource.
+
+### `scripts/model/definitions/resurrection_diary_text_definition.gd`
+### `data/narrative/resurrection_diary.tres`
+
+Shared resurrection Diary wording with separate natural and divine variant groups. Simulation supplies which resurrection path actually occurred; narrative does not infer it.
+
+### `scripts/model/definitions/equipment_acquisition_diary_text_definition.gd`
+### `data/narrative/equipment_acquisition_diary.tres`
+
+Shared significant-equipment acquisition wording with separate Rare and Epic variant groups. The reward/drop pipeline supplies the actual acquired item; shop purchases remain a separate future Diary source.
+
+### `scripts/model/definitions/dungeon_diary_text_definition.gd`
+### `data/narrative/dungeon_diary.tres`
+
+Shared ordinary-dungeon milestone wording for discovery, attempt start, purchased-potion count, and successful completion reward. Dynamic dungeon/item/reward values come from live runtime facts.
+
+Temporary-event Diary prose is intentionally owned by each branch-specific END stage in the corresponding resource under `data/events/`; it is not duplicated into `data/narrative/`.
 
 Future reusable generic Diary wording should live under `data/narrative/`; unique event/dungeon/content wording should remain with the owning content where practical.
 

@@ -491,17 +491,29 @@ Current diary sources are only:
 - ordinary quest selected;
 - ordinary quest successfully turned in;
 - hero died in combat during an ordinary quest, ordinary dungeon, or temporary event; the entry names the killer and the specific activity.
+- natural resurrection after the normal respawn delay;
+- instant resurrection caused by player divine intervention, with distinct wording from natural resurrection.
+- acquisition of Rare/Blue or Epic/Purple reward/drop equipment; Common/White and Uncommon/Green equipment do not create Diary entries.
+- ordinary dungeon discovery;
+- the hero committing to a dungeon attempt;
+- the number of healing potions actually bought for that dungeon preparation;
+- successful dungeon completion with the real Gold and Rare/Epic equipment reward in one combined entry.
+- successful temporary events using the authored `diary_text` from the exact END branch that resolved; event equipment rewards stay folded into that event passage instead of creating a second significant-equipment Diary entry.
 
 Current behaviour:
 
-- structured quest/death facts are converted by a separate `DiaryNarrator`;
+- structured quest/death/resurrection/equipment-acquisition/dungeon facts plus authored successful-event endings are converted/routed by a separate `DiaryNarrator`;
 - `Diary` stores the ready player-facing entries;
 - every entry is prefixed with the real world tick;
 - the Diary tab updates live and automatically stays scrolled to the newest wrapped entry;
 - routine travel, individual attacks/fights, recovery ticks, market noise, and QuestScore diagnostics do not create diary entries;
 - ordinary quest selection/completion phrases live in an external shared narrative resource;
 - generic combat-death wording lives in a separate shared narrative resource;
-- selection / completion / death are already variant arrays, but currently contain only **one authored phrase each**;
+- generic resurrection wording has separate natural/divine variant groups in its own shared narrative resource;
+- Rare/Epic equipment acquisition wording has separate quality-specific variant groups in its own shared narrative resource;
+- dungeon discovery / attempt / potion-purchase / completion wording lives in its own shared narrative resource;
+- successful temporary-event outcome wording stays with the owning END stage in the event data rather than being duplicated into a shared phrase bank;
+- current implemented Diary event types still contain only **one authored phrase each**;
 - an individual quest may later override the shared phrase resource with quest-specific wording;
 - phrase selection uses a dedicated narrative RNG stream so adding wording variants cannot perturb gameplay randomness.
 
@@ -510,9 +522,7 @@ Still missing from the Diary:
 - episode grouping;
 - persistent save/load history;
 - additional phrase variants;
-- temporary-event entries;
-- Rare+ equipment acquisition entries;
-- level-up / trait-change / dungeon / specialization / important divine-intervention coverage;
+- level-up / trait-change / remaining dungeon detail / specialization / other important divine-intervention coverage;
 - the rest of the required Prototype 0.2 diary sources.
 
 ## Current developer UI

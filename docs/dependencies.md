@@ -647,6 +647,48 @@ quest / dungeon / temporary-event combat defeat
 → NarrativePanel
 ```
 
+Resurrection follows the same downstream-only rule:
+
+```text
+natural respawn completion OR successful divine instant-resurrection command
+→ Simulation knows the real resurrection source
+→ DiaryNarrator shared resurrection wording
+→ Diary.add_entry(world_tick, text)
+→ NarrativePanel
+```
+
+Meaningful reward/drop equipment uses the shared acquisition path:
+
+```text
+mob drop / non-event reward source
+→ EquipmentRewardSystem creates and routes the ItemInstance
+→ Simulation finalizes the acquired item
+→ Rare/Epic significance check
+→ DiaryNarrator shared equipment-acquisition wording
+→ Diary.add_entry(world_tick, text)
+→ NarrativePanel
+```
+
+Successful temporary events use their authored branch ending directly:
+
+```text
+EventRunner resolves one concrete END stage
+→ Simulation applies that END stage's real rewards
+→ DiaryNarrator receives the resolved END stage
+→ the END stage's authored diary_text becomes one Diary passage
+→ NarrativePanel
+```
+
+Ordinary dungeon milestones use one coordinated downstream path:
+
+```text
+discovery / successful begin_trip / actual potion purchase / completion reward
+→ Simulation keeps the already-decided dungeon facts
+→ DiaryNarrator shared dungeon wording
+→ Diary.add_entry(world_tick, text)
+→ NarrativePanel
+```
+
 Contracts:
 
 - `DiaryNarrator` describes approved facts only;
@@ -654,6 +696,13 @@ Contracts:
 - real dynamic names/rewards/outcomes come from current game state/events rather than being duplicated in templates;
 - generic reusable wording belongs in shared narrative data;
 - shared death wording must receive the actual killer and owning quest/dungeon/event name from gameplay context rather than infer them from UI text;
+- shared resurrection wording must receive the actual natural/divine source from Simulation; a failed divine command must never create a resurrection Diary entry;
+- only acquired Rare/Blue and Epic/Purple reward/drop equipment currently enters the Diary through this path; Common/White and Uncommon/Green equipment remain routine noise;
+- dungeon completion folds its guaranteed Rare/Epic equipment into the single dungeon-completion Diary entry, so the same reward must not also create the generic Rare/Epic acquisition entry;
+- a successful temporary event uses the `diary_text` authored on the exact END stage that actually resolved; intermediate `scene_text`, decision diagnostics, travel progress, and combat detail remain Debug Log material;
+- equipment granted by a successful temporary event must not also create a separate Rare/Epic acquisition Diary entry, because the event passage owns the whole outcome and reward context;
+- dungeon potion wording uses the executed preparation result and therefore reports the number actually bought, not Belt capacity or planned loadout size;
+- shop purchases are not routed through reward/drop acquisition Diary wording and remain a separate future Diary source;
 - unique authored wording may remain with the content it belongs to;
 - narrative phrase selection uses a dedicated RNG stream so adding or reordering wording variants cannot perturb gameplay RNG;
 - UI displays Diary output and must not create Diary gameplay facts itself.

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ResurrectionDiaryTextDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/resurrection_diary_text_definition.gd" id="1_resurrection_diary"]
+
+[resource]
+script = ExtResource("1_resurrection_diary")
+natural_variants = PackedStringArray("После обычного ожидания воскрешения {hero} вернулся к жизни.")
+divine_variants = PackedStringArray("Божественное вмешательство вернуло {hero} к жизни раньше срока.")

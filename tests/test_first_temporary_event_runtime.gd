@@ -61,6 +61,7 @@ func test_wisdom_branch() -> void:
 	simulation.hero_state.dexterity = 5
 	simulation.hero_state.wisdom = 30
 	var starting_gold: int = simulation.hero_state.gold
+	var diary_count_before: int = simulation.diary.entries.size()
 
 	for tick in range(1, 9):
 		simulation.advance_event_tick(tick)
@@ -71,6 +72,8 @@ func test_wisdom_branch() -> void:
 	assert(simulation.hero_state.personality_axis_values["courage"] == -5)
 	assert(simulation.hero_state.loop_state == simulation.hero_state.TRAVEL_TO_QUEST)
 	assert(simulation.travel_system.is_travelling(), "Successful event must resume the interrupted quest route.")
+	assert(simulation.diary.entries.size() == diary_count_before + 1, "Successful event completion must add exactly one authored Diary passage.")
+	assert(simulation.diary.entries.back().contains("Рассказ о пострадавшем брате не совпал со следами на дороге."), "Diary must use the authored END-stage text from the branch that actually resolved.")
 
 func test_brave_dexterity_branch() -> void:
 	var simulation = create_started_event_simulation(8102)
@@ -82,6 +85,7 @@ func test_brave_dexterity_branch() -> void:
 	assert(simulation.trait_development.has_trait(simulation.hero_state, "brave"))
 	var starting_gold: int = simulation.hero_state.gold
 	var starting_item_count: int = simulation.hero_state.inventory.get_items().size() + simulation.hero_state.equipment.get_all_items().size()
+	var diary_count_before: int = simulation.diary.entries.size()
 
 	for tick in range(1, 8):
 		simulation.advance_event_tick(tick)
@@ -101,6 +105,8 @@ func test_brave_dexterity_branch() -> void:
 	assert(ending_item_count == starting_item_count + 1)
 	var rewarded_item = find_new_green_ilvl10_item(simulation)
 	assert(rewarded_item != null, "Brave DEX finish must route one Green ilvl 10 item through normal equipment/inventory handling.")
+	assert(simulation.diary.entries.size() == diary_count_before + 1, "Successful rewarded event must create one Diary passage, not separate event/reward entries.")
+	assert(simulation.diary.entries.back().contains("Обойдя засаду через лес"), "Rewarded event completion must use its authored branch-specific END diary text.")
 	assert(simulation.hero_state.loop_state == simulation.hero_state.TRAVEL_TO_QUEST)
 	assert(simulation.travel_system.is_travelling())
 
@@ -183,6 +189,8 @@ func test_event_combat_death_cancels_quest() -> void:
 	assert(death_entry.contains(event_name) and death_entry.contains(fought_mob.display_name) and death_entry.contains("события"), "Event death Diary entry must identify the event and the killer.")
 	assert(simulation.use_instant_resurrection(), "Divine instant resurrection must route through EventRunner when the event owns death.")
 	assert(simulation.hero_state.loop_state == simulation.hero_state.RECOVERING_IN_CITY)
+	assert(simulation.diary.entries.size() == diary_count_before_death + 2, "Divine event resurrection must add one additional Diary entry.")
+	assert(simulation.diary.entries.back().contains("Божественное вмешательство"), "Event-owned instant resurrection must use the shared divine-resurrection wording.")
 
 func find_new_green_ilvl10_item(simulation):
 	for item in simulation.hero_state.inventory.get_items():

@@ -34,5 +34,12 @@ func _init() -> void:
 	assert(death_entry.contains(killer_name), "Dungeon death Diary entry must name the killer.")
 	assert(death_entry.contains("данжа"), "Dungeon death Diary entry must identify the activity as a dungeon.")
 
-	print("PASS: Dungeon combat death writes one contextual Diary entry with the real tick, killer, and dungeon name.")
+	simulation.dungeon_runner.respawn_ticks_remaining = 1
+	simulation.advance_dungeon_respawn_tick(78)
+	assert(simulation.hero_state.loop_state == HeroState.RECOVERING_IN_CITY, "Dungeon natural resurrection must enter city recovery.")
+	assert(simulation.diary.entries.size() == diary_count_before_death + 2, "Dungeon natural resurrection must add one additional Diary entry.")
+	var resurrection_entry: String = simulation.diary.entries.back()
+	assert(resurrection_entry.begins_with("Тик 78 — ") and resurrection_entry.contains("обычного ожидания"), "Dungeon natural resurrection must use the shared natural-resurrection wording and real tick.")
+
+	print("PASS: Dungeon combat death and natural resurrection write contextual Diary entries with real ticks.")
 	quit()

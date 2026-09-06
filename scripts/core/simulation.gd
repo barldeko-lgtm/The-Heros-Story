@@ -61,6 +61,7 @@ const NARRATIVE_RNG_SEED_OFFSET: int = 700003
 const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
+const MIN_DIARY_EQUIPMENT_RARITY: int = 2
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
@@ -484,7 +485,8 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		var reward_item = reward_result.get("item_instance")
 		assert(reward_item != null, "Completed dungeon must produce its guaranteed equipment reward.")
 		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
-		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp)
+		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp, false)
+		record_dungeon_completed_diary_entry(dungeon_definition, gold_reward, reward_item, combat_world_tick)
 		var _assert_remove_completed_dungeon_from_map_ok_9: bool = dungeon_system.remove_completed_dungeon_from_map(completed_dungeon)
 		assert(_assert_remove_completed_dungeon_from_map_ok_9, "Completed dungeon must release its map activity and disappear from the map.")
 		var _assert_begin_return_to_city_ok_10: bool = dungeon_runner.begin_return_to_city(hero_state, hex_map.definition.starting_city_center)
@@ -595,6 +597,20 @@ func record_death_diary_entry(hero_name: String, killer_name: String, activity_t
 	if not diary_text.is_empty():
 		diary.add_entry(event_tick, diary_text)
 
+func record_resurrection_diary_entry(resurrection_type: String, event_tick: int) -> void:
+	if diary_narrator == null:
+		return
+	var diary_text: String = diary_narrator.describe_resurrection(hero_state.hero_name, resurrection_type)
+	if not diary_text.is_empty():
+		diary.add_entry(event_tick, diary_text)
+
+func record_event_completed_diary_entry(end_stage, completed_tick: int) -> void:
+	if diary_narrator == null or end_stage == null:
+		return
+	var diary_text: String = diary_narrator.describe_event_completed(end_stage)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
+
 func begin_pending_event_if_ready(completed_tick: int) -> bool:
 	if not temporary_events_enabled or pending_event_instance == null or event_runner.active_event != null:
 		return false
@@ -653,8 +669,9 @@ func advance_event_tick(completed_tick: int) -> void:
 			end_stage.equipment_rarity_override
 		)
 		assert(reward_result.get("item_instance") != null, "Authored event equipment reward must produce one item.")
-		finalize_item_reward(reward_result, completed_tick, previous_max_hp)
+		finalize_item_reward(reward_result, completed_tick, previous_max_hp, false)
 	debug_log.record_event(completed_tick, event_narrator.describe_completed(hero_state.hero_name, event_name, end_stage))
+	record_event_completed_diary_entry(end_stage, completed_tick)
 	var _assert_complete_instance_ok_11: bool = event_system.complete_instance(event_instance, end_stage.outcome_id)
 	assert(_assert_complete_instance_ok_11, "Completed event must release its world activity.")
 	var _assert_finish_success_ok_12: bool = event_runner.finish_success(hero_state)
@@ -667,6 +684,7 @@ func advance_event_respawn_tick(completed_tick: int) -> void:
 		return
 	if str(result.get("type", "")) == "resurrected":
 		debug_log.record_event(completed_tick, event_narrator.describe_resurrected(hero_state.hero_name, str(result.get("event_name", "")), hero_state.current_hp))
+		record_resurrection_diary_entry(DiaryNarratorScript.RESURRECTION_NATURAL, completed_tick)
 	else:
 		debug_log.record_event(completed_tick, event_narrator.describe_waiting_for_resurrection(hero_state.hero_name, str(result.get("event_name", "")), event_runner.respawn_ticks_remaining))
 
@@ -927,6 +945,8 @@ func advance_dungeon_potion_purchase_tick(completed_tick: int) -> Dictionary:
 	if not begin_prepared_dungeon_trip(dungeon, current_hero_power, preparation, completed_tick):
 		pending_dungeon_preparation = null
 		hero_state.loop_state = HeroState.CHOOSING_QUEST
+		return preparation
+	record_dungeon_potion_purchase_diary_entry(dungeon, preparation, completed_tick)
 	return preparation
 
 func begin_prepared_dungeon_trip(dungeon, current_hero_power: float, preparation: Dictionary, completed_tick: int) -> bool:
@@ -935,6 +955,7 @@ func begin_prepared_dungeon_trip(dungeon, current_hero_power: float, preparation
 	if not dungeon_runner.begin_trip(hero_state, dungeon, current_hero_power):
 		return false
 	pending_dungeon_preparation = null
+	record_dungeon_attempt_started_diary_entry(dungeon, completed_tick)
 	debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_prepared(hero_state.hero_name, dungeon.definition.display_name, preparation))
 	debug_log.record_event(completed_tick, "%s закончил дела в городе и отправился в данж «%s»." % [hero_state.hero_name, dungeon.definition.display_name])
 	return true
@@ -995,6 +1016,7 @@ func advance_dungeon_respawn_tick(completed_tick: int) -> void:
 		return
 	if str(result.get("type", "")) == "resurrected":
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_resurrected(hero_state.hero_name, hero_state.current_hp))
+		record_resurrection_diary_entry(DiaryNarratorScript.RESURRECTION_NATURAL, completed_tick)
 	else:
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_waiting_for_resurrection(hero_state.hero_name, dungeon_runner.respawn_ticks_remaining))
 
@@ -1057,7 +1079,7 @@ func receive_item_reward(item_definition: Resource, completed_tick: int = 0, ite
 	var result: Dictionary = equipment_reward_system.receive_item(hero_state, item_definition, item_level, rng, rarity_override)
 	return finalize_item_reward(result, completed_tick, previous_max_hp)
 
-func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_hp: float) -> Dictionary:
+func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_hp: float, write_significant_equipment_diary: bool = true) -> Dictionary:
 	var item_instance = result.get("item_instance")
 	if item_instance == null:
 		return result
@@ -1071,7 +1093,54 @@ func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_
 	if result.get("dropped_item") != null:
 		var dropped_instance = result["dropped_item"]
 		debug_log.record_event(completed_tick, "Инвентарь переполнен: самый старый предмет «%s» (%s) выпал." % [dropped_instance.definition.display_name, dropped_instance.get_quality_display_name()])
+	if write_significant_equipment_diary:
+		record_equipment_acquisition_diary_entry(item_instance, completed_tick)
 	return result
+
+func record_equipment_acquisition_diary_entry(item_instance, completed_tick: int) -> void:
+	if diary_narrator == null or item_instance == null or item_instance.definition == null:
+		return
+	if int(item_instance.rarity) < MIN_DIARY_EQUIPMENT_RARITY:
+		return
+	var diary_text: String = diary_narrator.describe_equipment_acquisition(
+		hero_state.hero_name,
+		item_instance.definition.display_name,
+		int(item_instance.rarity)
+	)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
+
+func record_dungeon_attempt_started_diary_entry(dungeon_instance, completed_tick: int) -> void:
+	if diary_narrator == null or dungeon_instance == null or dungeon_instance.definition == null:
+		return
+	var diary_text: String = diary_narrator.describe_dungeon_attempt_started(hero_state.hero_name, dungeon_instance.definition.display_name)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
+
+func record_dungeon_potion_purchase_diary_entry(dungeon_instance, preparation: Dictionary, completed_tick: int) -> void:
+	if diary_narrator == null or dungeon_instance == null or dungeon_instance.definition == null:
+		return
+	var potion_count: int = 0
+	for count in preparation.get("purchase_counts", {}).values():
+		potion_count += int(count)
+	if potion_count <= 0:
+		return
+	var diary_text: String = diary_narrator.describe_dungeon_potions_bought(hero_state.hero_name, dungeon_instance.definition.display_name, potion_count)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
+
+func record_dungeon_completed_diary_entry(dungeon_definition: Resource, gold_reward: int, reward_item, completed_tick: int) -> void:
+	if diary_narrator == null or dungeon_definition == null or reward_item == null or reward_item.definition == null:
+		return
+	var diary_text: String = diary_narrator.describe_dungeon_completed(
+		hero_state.hero_name,
+		dungeon_definition.display_name,
+		gold_reward,
+		reward_item.definition.display_name,
+		int(reward_item.rarity)
+	)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
 
 func get_active_respawn_owner():
 	if event_runner != null and event_runner.owns_respawn_state():
@@ -1092,12 +1161,14 @@ func use_instant_resurrection() -> bool:
 	var result: Dictionary = god_system.use_instant_resurrection(hero_state, get_active_respawn_owner(), combat_stats)
 	var event = result.get("event")
 	if event != null:
-		if event_respawn_active:
-			debug_log.record_event(world_clock.world_tick, event_narrator.describe_resurrected(hero_state.hero_name, str(event.get("event_name", "")), hero_state.current_hp))
-		elif dungeon_respawn_active:
-			debug_log.record_event(world_clock.world_tick, dungeon_narrator.describe_resurrected(hero_state.hero_name, hero_state.current_hp))
-		else:
-			debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
+			if event_respawn_active:
+				debug_log.record_event(world_clock.world_tick, event_narrator.describe_resurrected(hero_state.hero_name, str(event.get("event_name", "")), hero_state.current_hp))
+			elif dungeon_respawn_active:
+				debug_log.record_event(world_clock.world_tick, dungeon_narrator.describe_resurrected(hero_state.hero_name, hero_state.current_hp))
+			else:
+				debug_log.record_event(world_clock.world_tick, quest_narrator.describe(event))
+	if bool(result.get("succeeded", false)):
+		record_resurrection_diary_entry(DiaryNarratorScript.RESURRECTION_DIVINE, world_clock.world_tick)
 	return bool(result.get("succeeded", false))
 
 func use_divine_healing() -> bool:
@@ -1159,6 +1230,10 @@ func record_dungeon_discovery(dungeon_instance, prefix: String) -> void:
 	if dungeon_instance == null or dungeon_instance.definition == null:
 		return
 	debug_log.record_event(world_clock.world_tick, "%s данж «%s»." % [prefix, dungeon_instance.definition.display_name])
+	if diary_narrator != null:
+		var diary_text: String = diary_narrator.describe_dungeon_discovered(hero_state.hero_name, dungeon_instance.definition.display_name)
+		if not diary_text.is_empty():
+			diary.add_entry(world_clock.world_tick, diary_text)
 
 func refresh_finished_quest_offer_if_needed(event, completed_tick: int) -> void:
 	if not autonomous_quest_choice:

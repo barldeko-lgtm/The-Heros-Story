@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DungeonDiaryTextDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/dungeon_diary_text_definition.gd" id="1_dungeon_diary"]
+
+[resource]
+script = ExtResource("1_dungeon_diary")
+discovered_variants = PackedStringArray("{hero} узнал о данже «{dungeon}».")
+attempt_started_variants = PackedStringArray("{hero} решил отправиться в данж «{dungeon}».")
+potions_bought_variants = PackedStringArray("Перед походом в данж «{dungeon}» {hero} купил лечебные зелья — {count} шт.")
+completed_variants = PackedStringArray("{hero} прошёл данж «{dungeon}», получив {gold} золота и {rarity} предмет «{item}».")
