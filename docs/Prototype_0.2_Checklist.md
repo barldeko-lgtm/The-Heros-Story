@@ -57,7 +57,7 @@ Status:
 - ✅ Real hero map position, shared activity reservations and placement filtering.
 - ✅ Real route movement: 1 traversed hex = 1 world tick; 1 hex = 3 km.
 - ✅ Map Screen shows terrain, both city clusters, road, hero, current quest targets, dungeon markers, temporary-event footprints, zoom and panning.
-- 🟡 Travel interruption/resumption works for ordinary quest travel and outbound ordinary-dungeon travel, including event-owned detours; completed-dungeon return interception is still missing.
+- ✅ Travel interruption/resumption works for ordinary quest travel plus outbound and completed-return ordinary-dungeon travel, including event-owned detours.
 - 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
 - ⬜ Full city runtime/context system.
 - ⬜ Autonomous relocation from Starting City to Mid-Level City.
@@ -80,8 +80,8 @@ Status:
 - ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
 - ✅ Current Starting Region events: **13** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`.
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
-- ✅ Events can suspend/resume an ordinary quest route or outbound dungeon route, and can use their own real travel objective.
-- 🟡 Current event framework is functional and the Starting Region now has a substantial 13-event authored pool, but the final two-region population and some travel contexts remain incomplete.
+- ✅ Events can suspend/resume an ordinary quest route or either leg of an ordinary-dungeon trip, and can use their own real travel objective.
+- 🟡 Current event framework is functional and the Starting Region now has a substantial 13-event authored pool, but the final two-region population remains incomplete.
 - ⬜ Approximately **15–20 handcrafted events total** across both regions.
 
 ## 7. Ordinary dungeons

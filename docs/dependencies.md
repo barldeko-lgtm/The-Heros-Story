@@ -402,6 +402,8 @@ The event engagement hex is runtime state and may matter independently of the ev
 
 If an event kills the hero during outbound dungeon travel before the hero entered the dungeon, the dungeon trip is cancelled as an external failure. It must **not** create dungeon failed-attempt memory or retry-Power penalties.
 
+If an event interrupts return travel after the dungeon was already completed, successful event resolution must resume the route to the city from the hero's new hex. If the event kills the hero, the completed dungeon and its already-granted rewards remain completed/permanent; only the stale return-trip runtime is cleared, and no new dungeon failed-attempt memory or retry-Power penalty is created.
+
 Exact current event timing/population tuning and supported interception states live in `current-state.md`.
 
 ## Ordinary dungeons
@@ -563,6 +565,12 @@ It may use:
 - a protected-Gold budget supplied by Simulation when a Power-ready dungeon needs mandatory potion preparation.
 
 Belt candidates continue through the Belt-specific utility rule rather than the ordinary equipment comparison path.
+
+### Dungeon preparation budget policy
+
+`DungeonPreparationBudget` owns the read-only economic protection rule: reserve the missing potion purchase cost of a feasible current loadout, and reject Belt candidates whose post-purchase Gold cannot fill their resulting capacity. Already owned potions count through the existing `PotionPreparationSystem` planner.
+
+Simulation supplies current-region known-dungeon Power readiness and keeps its public budget/listing/plan methods. No ready dungeon means no preparation reserve/filter; an unaffordable current loadout retains the existing unrestricted-budget behaviour. Filtering preserves listing indices and never mutates real shop stock or hero state. Actual potion purchasing, travel and world-tick transitions remain outside this policy.
 
 ### ShopSystem contract
 
@@ -775,7 +783,7 @@ High-value integration coverage includes:
 - `tests/test_event_population_rotation.gd` — event population/reservation lifecycle;
 - `tests/test_event_travel_suspend_resume.gd` — event detour and original-route restoration;
 - `tests/test_event_batch_six_to_thirteen_content.gd` and `test_event_batch_six_to_thirteen_runtime.gd` — strict event-graph validation plus representative live branches across the expanded Starting Region content pool;
-- `tests/test_event_dungeon_travel_interruption.gd` — outbound dungeon interruption without false dungeon failure memory;
+- `tests/test_event_dungeon_travel_interruption.gd` — outbound and completed-return dungeon interruption/resumption without false dungeon failure memory;
 - `tests/test_dungeon_post_quest_decision.gd` — market/shopping/readiness/preparation/dungeon hand-off;
 - `tests/test_dungeon_combat_sequence.gd` — shared combat plus dungeon-owned expedition progression;
 - `tests/test_dungeon_retry_readiness.gd` — failed-attempt memory → evaluator gate;

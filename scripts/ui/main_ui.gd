@@ -66,16 +66,23 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
-	time_progress_bar.value = simulation.world_clock.tick_progress * 100.0
-	tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
-	update_hero_panel()
+	refresh_visible_screen()
+
+func refresh_visible_screen() -> void:
 	update_pending_attribute_indicator()
-	update_attribute_allocation_panel()
-	update_personality_panel()
-	update_opponent_panel()
-	update_combat_statistics_panel()
-	god_panel.refresh()
-	inventory_screen.refresh()
+	if main_screen.is_visible_in_tree():
+		time_progress_bar.value = simulation.world_clock.tick_progress * 100.0
+		tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
+		update_hero_panel()
+		update_opponent_panel()
+		update_combat_statistics_panel()
+		god_panel.refresh()
+	if hero_screen.is_visible_in_tree():
+		update_attribute_allocation_panel()
+		update_personality_panel()
+	if inventory_screen.is_visible_in_tree():
+		inventory_screen.refresh()
+
 func create_background() -> void:
 	var background := ColorRect.new()
 	background.color = Color("d9dde2")
@@ -255,6 +262,9 @@ func set_active_screen(screen_id: String) -> void:
 	map_button.text = "НАЗАД" if map_is_open else "КАРТА"
 	map_button.tooltip_text = "Вернуться на главный экран" if map_is_open else "Открыть карту"
 	inventory_close_button.visible = hero_is_open or inventory_is_open or map_is_open
+	refresh_visible_screen()
+	if map_screen.is_visible_in_tree():
+		map_screen.refresh()
 
 func create_speed_controls() -> void:
 	var speed_controls := HBoxContainer.new()

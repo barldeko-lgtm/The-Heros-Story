@@ -454,6 +454,12 @@ Immutable healing-potion data used by the shop/preparation systems.
 
 Central Belt capacity/potion-eligibility and potential-healing utility rules. It does not buy, store or consume potions.
 
+### `scripts/economy/dungeon_preparation_budget.gd`
+
+Read-only economic policy protecting dungeon potion preparation from optional equipment spending. Calculates the remaining equipment budget from a supplied loadout plan and filters Belt purchases that would make the new full loadout unaffordable.
+
+Simulation supplies known-dungeon Power readiness and retains city-state transitions; `PotionPreparationSystem` still owns loadout calculations, purchases and consumption. The policy never changes Gold, stock, equipment, Inventory or prepared slots.
+
 ### `scripts/economy/potion_preparation_system.gd`
 
 Owns current dungeon potion loadout planning, purchase of missing bottles, prepared-slot state updates and allowed between-fight consumption decisions.

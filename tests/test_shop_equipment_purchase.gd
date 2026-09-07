@@ -2,6 +2,9 @@ extends SceneTree
 
 func _init() -> void:
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
+	if not test_invalid_purchase_slot_preserves_state(simulation_script):
+		quit(1)
+		return
 	var simulation = simulation_script.new(23)
 	simulation.hero_state.gold = 10000
 	simulation.hero_state.loop_state = "SHOPPING"
@@ -118,6 +121,39 @@ func test_shop_ring_purchase_targets_weaker_slot(simulation_script: Script) -> v
 	assert(simulation.hero_state.equipment.get_item("ring_2") == candidate_ring, "The purchased ring must replace the weaker ring even when its definition is authored for Ring 1.")
 	assert(purchase_result.get("replaced_item") == weak_ring and int(purchase_result.get("replaced_item_sale_value", 0)) == weak_sell_value, "The weaker displaced ring must be the item immediately resold by the shop transaction.")
 	assert(simulation.hero_state.gold == gold_before - candidate_price + weak_sell_value, "Cross-slot ring purchase must keep the normal purchase and immediate-resale economy.")
+
+func test_invalid_purchase_slot_preserves_state(simulation_script: Script) -> bool:
+	var simulation = simulation_script.new(53)
+	var definition: Resource = load("res://data/items/visual_families/ironward_vanguard/ironward_ring_1_uncommon.tres")
+	var local_rng := RandomNumberGenerator.new()
+	local_rng.seed = 53
+	var candidate = simulation.item_generator.generate(definition, 5, local_rng)
+	var all_passed: bool = true
+	for invalid_slot in ["belt", "not_a_slot"]:
+		simulation.hero_state.gold = 10000
+		simulation.shop_system.listings = [{"item_instance": candidate}]
+		var equipment_before: Dictionary = simulation.hero_state.equipment.equipped_items.duplicate()
+		var inventory_before: Array = simulation.hero_state.inventory.get_items().duplicate()
+		var result: Dictionary = simulation.shop_system.purchase_listing(simulation.hero_state, 0, invalid_slot)
+		var passed: bool = (
+			not bool(result["purchased"])
+			and result["item_instance"] == null
+			and int(result["price_paid"]) == 0
+			and result["replaced_item"] == null
+			and int(result["replaced_item_sale_value"]) == 0
+			and str(result["target_slot"]).is_empty()
+			and simulation.hero_state.gold == 10000
+			and simulation.shop_system.listings.size() == 1
+			and simulation.shop_system.listings[0]["item_instance"] == candidate
+			and simulation.hero_state.equipment.equipped_items == equipment_before
+			and simulation.hero_state.inventory.get_items() == inventory_before
+		)
+		if not passed:
+			printerr("FAIL: Invalid purchase slot '%s' must reject the transaction without changing gold, stock, equipment or inventory." % invalid_slot)
+			all_passed = false
+	if all_passed:
+		print("PASS: Incompatible and unknown purchase slots preserve transaction state.")
+	return all_passed
 
 func count_filled_shop_listings(listings: Array) -> int:
 	var count: int = 0

@@ -83,8 +83,11 @@ func purchase_listing(hero_state, listing_index: int, target_slot: String = "") 
 	if price < 0 or hero_state.gold < price:
 		return result
 
+	var resolved_target_slot: String = hero_state.equipment.resolve_target_slot(item_instance, target_slot)
+	if resolved_target_slot.is_empty():
+		return result
+
 	hero_state.gold -= price
-	var resolved_target_slot: String = item_instance.definition.equipment_slot if target_slot.is_empty() else target_slot
 	var replaced_item = hero_state.equipment.replace_item(item_instance, resolved_target_slot)
 	var resale_value: int = 0
 	if replaced_item != null:

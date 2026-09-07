@@ -1561,7 +1561,7 @@ Temporary travel events may activate while the hero travels:
 - quest/activity → city;
 - city → city.
 
-Temporary events may therefore interrupt ordinary open-world travel **to an ordinary dungeon**. The current Prototype 0.2 implementation does not yet activate events during the return trip from a completed dungeon. Events also do not activate while the hero is inside `DOING_DUNGEON`, during dungeon combat, or during between-fight preparation.
+Temporary events may therefore interrupt ordinary open-world travel **to an ordinary dungeon and back to the city after successful completion**. Events do not activate while the hero is inside `DOING_DUNGEON`, during dungeon combat, or during between-fight preparation.
 
 If the hero dies inside a temporary event encountered while travelling **to** an ordinary dungeon, that road-event death cancels the current trip but does **not** count as a failed dungeon attempt and does not create a dungeon retry-Power penalty, because the hero never entered the dungeon.
 

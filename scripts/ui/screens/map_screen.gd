@@ -102,7 +102,10 @@ func _ready() -> void:
 	queue_redraw()
 
 func _process(_delta: float) -> void:
-	if simulation == null or simulation.world_state == null:
+	refresh()
+
+func refresh() -> void:
+	if not is_visible_in_tree() or simulation == null or simulation.world_state == null:
 		return
 	var redraw_needed: bool = false
 	var current_hero_position: Vector2i = get_hero_cell()

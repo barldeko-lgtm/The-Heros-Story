@@ -40,6 +40,7 @@ const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_
 const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
 const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluator.gd")
 const PotionPreparationSystemScript = preload("res://scripts/economy/potion_preparation_system.gd")
+const DungeonPreparationBudgetScript = preload("res://scripts/economy/dungeon_preparation_budget.gd")
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
@@ -109,6 +110,7 @@ var equipment_reward_system
 var equipment_sale_system = EquipmentSaleSystemScript.new()
 var spending_evaluator = SpendingEvaluatorScript.new()
 var potion_preparation_system = PotionPreparationSystemScript.new()
+var dungeon_preparation_budget = DungeonPreparationBudgetScript.new()
 var shop_system
 var god_state
 var god_system
@@ -425,7 +427,7 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 		clear_active_quest_diary_entry()
 	if autonomous_quest_choice and quest_pool != null and cancelled_quest != null:
 		quest_pool.cancel_taken_offer(cancelled_quest)
-	if interrupted_loop_state == HeroState.TRAVEL_TO_DUNGEON:
+	if [HeroState.TRAVEL_TO_DUNGEON, HeroState.DUNGEON_RETURNING_TO_CITY].has(interrupted_loop_state):
 		dungeon_runner.cancel_for_external_failure()
 	var _assert_complete_instance_ok_6: bool = event_system.complete_instance(event_instance, "combat_failure")
 	assert(_assert_complete_instance_ok_6, "Failed event must release its world activity.")
@@ -795,63 +797,32 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	return result
 
 func get_equipment_purchase_listings_with_dungeon_prep_safety() -> Array:
-	var listings: Array = shop_system.get_listings().duplicate(true)
-	if dungeon_system == null or shop_system == null:
-		return listings
-	var current_region_id: String = get_current_region_id()
-	if current_region_id.is_empty():
-		return listings
-	var current_hero_power: float = get_hero_power()
-	var has_power_ready_dungeon: bool = false
-	for candidate in dungeon_system.get_discovered_dungeons_in_region(current_region_id):
-		if bool(dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power).get("ready", false)):
-			has_power_ready_dungeon = true
-			break
-	if not has_power_ready_dungeon:
-		return listings
-
-	var potion_definitions: Array = shop_system.get_healing_potion_definitions()
-	for listing_index in listings.size():
-		var listing: Dictionary = listings[listing_index]
-		var item_instance = listing.get("item_instance")
-		if item_instance == null or item_instance.definition == null or item_instance.definition.equipment_slot != "belt":
-			continue
-		var price: int = shop_system.item_price_calculator.get_reference_shop_value_for_item(item_instance)
-		if price < 0 or price > hero_state.gold:
-			continue
-		var remaining_gold: int = hero_state.gold - price
-		var candidate_plan: Dictionary = potion_preparation_system.get_full_loadout_plan(
-			hero_state,
-			potion_definitions,
-			item_instance,
-			remaining_gold
-		)
-		if bool(candidate_plan.get("can_prepare", false)):
-			continue
-		listings[listing_index] = {"item_instance": null}
-	return listings
+	return dungeon_preparation_budget.filter_equipment_listings(
+		hero_state, shop_system, potion_preparation_system, get_power_ready_dungeon() != null
+	)
 
 func get_equipment_purchase_gold_budget() -> int:
-	var plan: Dictionary = get_ready_dungeon_potion_plan()
-	if plan.is_empty() or not bool(plan.get("can_prepare", false)):
-		return hero_state.gold
-	return maxi(0, hero_state.gold - int(plan.get("purchase_cost", 0)))
+	return dungeon_preparation_budget.get_equipment_gold_budget(hero_state.gold, get_ready_dungeon_potion_plan())
 
 func get_ready_dungeon_potion_plan() -> Dictionary:
-	if dungeon_system == null or shop_system == null:
+	var dungeon = get_power_ready_dungeon()
+	if dungeon == null:
 		return {}
+	var plan: Dictionary = potion_preparation_system.get_full_loadout_plan(hero_state, shop_system.get_healing_potion_definitions())
+	plan["dungeon"] = dungeon
+	return plan
+
+func get_power_ready_dungeon():
+	if dungeon_system == null or shop_system == null:
+		return null
 	var current_region_id: String = get_current_region_id()
 	if current_region_id.is_empty():
-		return {}
+		return null
 	var current_hero_power: float = get_hero_power()
 	for candidate in dungeon_system.get_discovered_dungeons_in_region(current_region_id):
-		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
-		if not bool(readiness.get("ready", false)):
-			continue
-		var plan: Dictionary = potion_preparation_system.get_full_loadout_plan(hero_state, shop_system.get_healing_potion_definitions())
-		plan["dungeon"] = candidate
-		return plan
-	return {}
+		if bool(dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power).get("ready", false)):
+			return candidate
+	return null
 
 func finish_shopping_phase(completed_tick: int) -> void:
 	if try_start_discovered_dungeon_trip(completed_tick):
@@ -1024,6 +995,7 @@ func advance_dungeon_return_tick(completed_tick: int) -> void:
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_returned_to_city(hero_state.hero_name, dungeon_name))
 	else:
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_returning_to_city(hero_state.hero_name, dungeon_name, int(result.get("remaining_steps", 0))))
+		begin_pending_event_if_ready(completed_tick)
 
 func advance_dungeon_respawn_tick(completed_tick: int) -> void:
 	var result: Dictionary = dungeon_runner.advance_respawn(hero_state, combat_stats)
@@ -1238,6 +1210,7 @@ func on_hero_position_changed(cell: Vector2i) -> void:
 		HeroState.TRAVEL_TO_QUEST,
 		HeroState.RETURNING_TO_CITY,
 		HeroState.TRAVEL_TO_DUNGEON,
+		HeroState.DUNGEON_RETURNING_TO_CITY,
 	].has(hero_state.loop_state):
 		return
 	pending_event_instance = event_system.find_encounter_at_hex(cell)

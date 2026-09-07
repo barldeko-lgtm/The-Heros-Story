@@ -183,7 +183,7 @@ Travel uses the approved current scale:
 - **1 hex = 3 km**;
 - `TravelSystem` moves the hero one adjacent hex per completed travel tick.
 
-Ordinary selected quests use real placed targets and real outbound/return routes. Temporary events can suspend a quest or outbound dungeon route, resolve their own activity/detour, and then rebuild the interrupted route from the hero's new position.
+Ordinary selected quests use real placed targets and real outbound/return routes. Temporary events can suspend a quest route or either leg of an ordinary-dungeon trip, resolve their own activity/detour, and then rebuild the interrupted route from the hero's new position.
 
 City-to-city autonomous relocation is not implemented yet.
 
@@ -299,11 +299,14 @@ Event interception currently works during:
 
 - ordinary quest outbound travel;
 - ordinary quest return travel;
-- outbound ordinary-dungeon travel.
+- outbound ordinary-dungeon travel;
+- completed ordinary-dungeon return travel.
 
-It does **not** yet activate during completed-dungeon return travel, dungeon combat, or dungeon between-fight preparation.
+It does **not** activate during dungeon combat or dungeon between-fight preparation.
 
 If an event kills the hero while travelling toward a dungeon, that trip is cancelled without recording a failed dungeon attempt or dungeon retry-Power penalty because the hero never entered the dungeon.
+
+If an event kills the hero while returning from an already completed dungeon, the dungeon remains completed and its granted completion rewards remain permanent; the interrupted return runtime is cleared and no new dungeon failed-attempt memory or retry-Power penalty is created.
 
 The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete; the current Starting Region pool provides 13 of that target.
 
@@ -636,7 +639,6 @@ The most important incomplete areas are:
 - autonomous city relocation;
 - Mid-Level City ordinary quests/content;
 - the remaining temporary-event population toward the 15–20 target;
-- event interception during completed-dungeon return travel;
 - two Mid Region ordinary dungeons;
 - first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;
 - later equipment/potion progression content beyond the currently live Starting City tiers;

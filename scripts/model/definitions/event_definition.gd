@@ -2,6 +2,10 @@ class_name EventDefinition
 extends Resource
 
 const EventStageDefinitionScript = preload("res://scripts/model/definitions/event_stage_definition.gd")
+const EventOptionDefinitionScript = preload("res://scripts/model/definitions/event_option_definition.gd")
+const MobDefinitionScript = preload("res://scripts/model/definitions/mob_definition.gd")
+const EventDecisionResolverScript = preload("res://scripts/events/event_decision_resolver.gd")
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
 @export var id: String = ""
 @export var display_name: String = ""
@@ -57,12 +61,14 @@ func validate_definition() -> bool:
 		return false
 
 	for stage in stages:
+		if not EventStageDefinitionScript.StageType.values().has(stage.stage_type):
+			return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.SCENE and not stage.next_stage_id.is_empty() and not stage_ids.has(stage.next_stage_id):
 			return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.TRAVEL:
 			if stage.next_stage_id.is_empty() or not stage_ids.has(stage.next_stage_id):
 				return false
-			if stage.travel_target == EventStageDefinitionScript.TravelTarget.NONE:
+			if stage.travel_target not in [EventStageDefinitionScript.TravelTarget.ENCOUNTER_HEX, EventStageDefinitionScript.TravelTarget.SECONDARY_TARGET]:
 				return false
 			if stage.travel_target == EventStageDefinitionScript.TravelTarget.SECONDARY_TARGET and not secondary_target_enabled:
 				return false
@@ -71,21 +77,25 @@ func validate_definition() -> bool:
 				if stage.options.is_empty() or stage.options.size() > 3:
 					return false
 				for option in stage.options:
-					if option == null or option.next_stage_id.is_empty() or not stage_ids.has(option.next_stage_id):
+					if not option is EventOptionDefinitionScript:
+						return false
+					if not EventDecisionResolverScript.ALLOWED_WARRIOR_ATTRIBUTES.has(option.driver_attribute):
+						return false
+					if option.next_stage_id.is_empty() or not stage_ids.has(option.next_stage_id):
 						return false
 			elif stage.selection_rule == EventStageDefinitionScript.RULE_TRAIT_PRESENT:
-				if stage.checked_trait_id.is_empty() or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
+				if not HeroTraitsScript.ALL.has(stage.checked_trait_id) or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
 					return false
 			elif stage.selection_rule == EventStageDefinitionScript.RULE_ANY_TRAIT_PRESENT:
 				if stage.checked_trait_ids.is_empty() or not stage_ids.has(stage.trait_present_stage_id) or not stage_ids.has(stage.trait_absent_stage_id):
 					return false
 				for trait_id in stage.checked_trait_ids:
-					if trait_id.is_empty():
+					if not HeroTraitsScript.ALL.has(trait_id):
 						return false
 			else:
 				return false
 		if stage.stage_type == EventStageDefinitionScript.StageType.COMBAT:
-			if stage.mob_definition == null or stage.combat_victory_stage_id.is_empty() or not stage_ids.has(stage.combat_victory_stage_id):
+			if not stage.mob_definition is MobDefinitionScript or stage.combat_victory_stage_id.is_empty() or not stage_ids.has(stage.combat_victory_stage_id):
 				return false
 			if stage.combat_start_hp_ratio <= 0.0 or stage.combat_start_hp_ratio > 1.0:
 				return false
