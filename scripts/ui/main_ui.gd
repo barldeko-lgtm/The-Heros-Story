@@ -1,34 +1,42 @@
 extends Control
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
-const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
-const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
-const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
+const HeroSummaryPanelScene = preload("res://scenes/ui/components/hero_summary_panel.tscn")
+const HeroScreenScene = preload("res://scenes/ui/screens/hero_screen.tscn")
 const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.tscn")
 const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
-const HERO_TEXT_CONTENT_WIDTH: float = 288.0
-const PRIMARY_ATTRIBUTE_DISPLAY_NAMES := {
-	"strength": "Сила",
-	"dexterity": "Ловкость",
-	"intelligence": "Интеллект",
-	"constitution": "Телосложение",
-	"wisdom": "Мудрость",
-}
+const HERO_TEXT_CONTENT_WIDTH: float = preload("res://scripts/ui/components/hero_summary_panel.gd").HERO_TEXT_CONTENT_WIDTH
+const PRIMARY_ATTRIBUTE_DISPLAY_NAMES = preload("res://scripts/ui/screens/hero_screen.gd").PRIMARY_ATTRIBUTE_DISPLAY_NAMES
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation = SimulationScript.new(simulation_seed, null, [], true)
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
-var hero_details_label: Label
-var pending_attribute_indicator: Label
+var hero_summary_panel: Control
+var hero_details_label: Label:
+	get:
+		return hero_summary_panel.hero_details_label
+var pending_attribute_indicator: Label:
+	get:
+		return hero_summary_panel.pending_attribute_indicator
 var opponent_details_label: Label
 var combat_statistics_label: Label
-var attribute_points_label: Label
-var attribute_buttons: Dictionary = {}
-var personality_axis_bars: Dictionary = {}
-var personality_axis_markers: Dictionary = {}
-var personality_axis_value_labels: Dictionary = {}
+var attribute_points_label: Label:
+	get:
+		return hero_screen.attribute_points_label
+var attribute_buttons: Dictionary:
+	get:
+		return hero_screen.attribute_buttons
+var personality_axis_bars: Dictionary:
+	get:
+		return hero_screen.personality_axis_bars
+var personality_axis_markers: Dictionary:
+	get:
+		return hero_screen.personality_axis_markers
+var personality_axis_value_labels: Dictionary:
+	get:
+		return hero_screen.personality_axis_value_labels
 var speed_buttons: Dictionary = {}
 var god_panel: PanelContainer
 var narrative_panel: TabContainer
@@ -48,9 +56,6 @@ func _ready() -> void:
 	create_inventory_close_button()
 	create_speed_controls()
 	create_hero_panel()
-	create_pending_attribute_indicator()
-	create_attribute_allocation_panel()
-	create_personality_panel()
 	create_opponent_panel()
 	create_combat_statistics_panel()
 	create_god_panel()
@@ -78,8 +83,7 @@ func refresh_visible_screen() -> void:
 		update_combat_statistics_panel()
 		god_panel.refresh()
 	if hero_screen.is_visible_in_tree():
-		update_attribute_allocation_panel()
-		update_personality_panel()
+		hero_screen.refresh()
 	if inventory_screen.is_visible_in_tree():
 		inventory_screen.refresh()
 
@@ -95,9 +99,9 @@ func create_screen_layers() -> void:
 	main_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(main_screen)
 
-	hero_screen = Control.new()
-	hero_screen.name = "HeroScreen"
-	hero_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hero_screen = HeroScreenScene.instantiate()
+	hero_screen.setup(simulation)
+	hero_screen.hero_state_changed.connect(update_hero_panel)
 	hero_screen.visible = false
 	add_child(hero_screen)
 
@@ -292,234 +296,21 @@ func set_time_scale(new_time_scale: float) -> void:
 		speed_buttons[speed].button_pressed = is_equal_approx(speed, new_time_scale)
 
 func create_hero_panel() -> void:
-	var panel := PanelContainer.new()
-	apply_panel_style(panel)
-	panel.position = Vector2(32.0, 80.0)
-	panel.size = Vector2(320.0, 430.0)
-	add_to_main_screen(panel)
-
-	hero_details_label = Label.new()
-	hero_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hero_details_label.add_theme_font_size_override("font_size", 14)
-	panel.add_child(hero_details_label)
-
-func create_pending_attribute_indicator() -> void:
-	pending_attribute_indicator = Label.new()
-	pending_attribute_indicator.name = "PendingAttributeIndicator"
-	pending_attribute_indicator.text = "+"
-	pending_attribute_indicator.tooltip_text = "Есть нераспределённые очки характеристик"
-	pending_attribute_indicator.add_theme_font_size_override("font_size", 20)
-	pending_attribute_indicator.add_theme_color_override("font_color", Color("ff3030"))
-	pending_attribute_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pending_attribute_indicator.visible = false
-	add_to_main_screen(pending_attribute_indicator)
+	hero_summary_panel = HeroSummaryPanelScene.instantiate()
+	hero_summary_panel.setup(simulation)
+	add_to_main_screen(hero_summary_panel)
 
 func update_pending_attribute_indicator() -> void:
-	if pending_attribute_indicator == null:
-		return
-	if simulation.hero_state.pending_primary_attribute_points <= 0:
-		pending_attribute_indicator.visible = false
-		return
-
-	pending_attribute_indicator.visible = true
-
-	var font: Font = hero_details_label.get_theme_font("font")
-	var font_size: int = hero_details_label.get_theme_font_size("font_size")
-	var line_height: float = font.get_height(font_size)
-	var bonus_line_count: int = 0
-	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(simulation.get_hero_traits())
-	if not trait_bonus_text.is_empty():
-		bonus_line_count += 1
-	if simulation.get_combat_buff_fights_remaining() > 0:
-		bonus_line_count += 1
-	var level_line_index: int = 3 + bonus_line_count
-	var hero_panel := hero_details_label.get_parent() as Control
-	pending_attribute_indicator.position = hero_panel.position + Vector2(286.0, 14.0 + line_height * level_line_index - 2.0)
-
-func create_attribute_allocation_panel() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "AttributeAllocationPanel"
-	apply_panel_style(panel)
-	panel.position = Vector2(411.0, 108.0)
-	panel.size = Vector2(544.0, 360.0)
-	hero_screen.add_child(panel)
-
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 10)
-	panel.add_child(content)
-
-	var title := Label.new()
-	title.text = "Развитие героя"
-	title.add_theme_font_size_override("font_size", 24)
-	content.add_child(title)
-
-	attribute_points_label = Label.new()
-	attribute_points_label.name = "AttributePointsLabel"
-	attribute_points_label.add_theme_font_size_override("font_size", 18)
-	content.add_child(attribute_points_label)
-
-	for attribute_id in PRIMARY_ATTRIBUTE_DISPLAY_NAMES:
-		var button := Button.new()
-		button.name = "%sAttributeButton" % attribute_id.capitalize()
-		button.custom_minimum_size = Vector2(506.0, 42.0)
-		button.add_theme_font_size_override("font_size", 16)
-		apply_secondary_button_style(button)
-		button.pressed.connect(on_allocate_attribute_pressed.bind(attribute_id))
-		content.add_child(button)
-		attribute_buttons[attribute_id] = button
-
-func create_personality_panel() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "PersonalityAxesPanel"
-	apply_panel_style(panel)
-	panel.position = Vector2(411.0, 472.0)
-	panel.size = Vector2(544.0, 280.0)
-	hero_screen.add_child(panel)
-
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 2)
-	panel.add_child(content)
-
-	var header := HBoxContainer.new()
-	header.custom_minimum_size = Vector2(0.0, 26.0)
-	content.add_child(header)
-
-	var title := Label.new()
-	title.text = "Черты характера"
-	title.add_theme_font_size_override("font_size", 20)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
-
-	var range_label := Label.new()
-	range_label.text = "−100 … +100"
-	range_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	range_label.add_theme_font_size_override("font_size", 12)
-	range_label.add_theme_color_override("font_color", Color("aeb6c1"))
-	header.add_child(range_label)
-
-	create_personality_axis(content, TraitDevelopmentScript.AXIS_COURAGE, "CouragePersonalityAxis", "Осторожный", "Смелый")
-	create_personality_axis(content, TraitDevelopmentScript.AXIS_MORALITY, "MoralityPersonalityAxis", "Хитрый", "Благородный")
-	create_personality_axis(content, TraitDevelopmentScript.AXIS_GREED, "GreedPersonalityAxis", "Жадный", "Щедрый")
-	create_personality_axis(content, TraitDevelopmentScript.AXIS_CURIOSITY, "CuriosityPersonalityAxis", "Консервативный", "Любопытный")
-
-func create_personality_axis(parent: VBoxContainer, axis_id: String, axis_name: String, negative_label: String, positive_label: String) -> void:
-	var row := VBoxContainer.new()
-	row.name = axis_name
-	row.add_theme_constant_override("separation", 1)
-	parent.add_child(row)
-
-	var labels := HBoxContainer.new()
-	labels.custom_minimum_size = Vector2(0.0, 17.0)
-	row.add_child(labels)
-
-	var negative := Label.new()
-	negative.text = negative_label
-	negative.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	negative.add_theme_font_size_override("font_size", 11)
-	labels.add_child(negative)
-
-	var positive := Label.new()
-	positive.text = positive_label
-	positive.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	positive.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	positive.add_theme_font_size_override("font_size", 11)
-	labels.add_child(positive)
-
-	var track := Control.new()
-	track.name = "AxisTrack"
-	track.custom_minimum_size = Vector2(506.0, 35.0)
-	row.add_child(track)
-
-	var value_label := Label.new()
-	value_label.name = "CurrentValueLabel"
-	value_label.position = Vector2(231.0, 0.0)
-	value_label.size = Vector2(44.0, 14.0)
-	value_label.text = "0"
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	value_label.add_theme_font_size_override("font_size", 10)
-	value_label.add_theme_color_override("font_color", Color("edf0f4"))
-	value_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	track.add_child(value_label)
-
-	var bar := ColorRect.new()
-	bar.name = "AxisBar"
-	bar.position = Vector2(0.0, 14.0)
-	bar.size = Vector2(506.0, 8.0)
-	bar.color = Color("15191f")
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	track.add_child(bar)
-
-	for axis_value in [-40, 40, -20, 20]:
-		var threshold := ColorRect.new()
-		threshold.name = "Threshold%s" % str(axis_value).replace("-", "Minus")
-		threshold.position = Vector2(506.0 * (float(axis_value) + 100.0) / 200.0 - 1.0, 0.0)
-		threshold.size = Vector2(2.0, 8.0)
-		threshold.color = Color("d0a95b")
-		threshold.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		threshold.visible = abs(axis_value) == TraitDevelopmentScript.ACTIVATION_THRESHOLD
-		bar.add_child(threshold)
-
-	var value_marker := ColorRect.new()
-	value_marker.name = "ValueMarker"
-	value_marker.position = Vector2(251.0, -2.0)
-	value_marker.size = Vector2(4.0, 12.0)
-	value_marker.color = Color("edf0f4")
-	value_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bar.add_child(value_marker)
-
-	var center_zero := Label.new()
-	center_zero.name = "CenterZeroLabel"
-	center_zero.position = Vector2(235.0, 22.0)
-	center_zero.size = Vector2(36.0, 13.0)
-	center_zero.text = "0"
-	center_zero.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	center_zero.add_theme_font_size_override("font_size", 10)
-	center_zero.add_theme_color_override("font_color", Color("aeb6c1"))
-	center_zero.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	track.add_child(center_zero)
-
-	personality_axis_bars[axis_id] = bar
-	personality_axis_markers[axis_id] = value_marker
-	personality_axis_value_labels[axis_id] = value_label
+	hero_summary_panel.update_pending_attribute_indicator()
 
 func update_personality_panel() -> void:
-	for axis_id in personality_axis_bars:
-		var bar := personality_axis_bars[axis_id] as ColorRect
-		var marker := personality_axis_markers[axis_id] as ColorRect
-		var value_label := personality_axis_value_labels[axis_id] as Label
-		if bar == null or marker == null or value_label == null:
-			continue
-		var axis_value: int = clampi(int(simulation.hero_state.personality_axis_values.get(axis_id, 0)), TraitDevelopmentScript.MIN_AXIS_VALUE, TraitDevelopmentScript.MAX_AXIS_VALUE)
-		var axis_value_x: float = 506.0 * (float(axis_value) + 100.0) / 200.0
-		marker.position.x = axis_value_x - marker.size.x * 0.5
-		value_label.text = "0" if axis_value == 0 else "%+d" % axis_value
-		value_label.position.x = clampf(axis_value_x - value_label.size.x * 0.5, 0.0, 506.0 - value_label.size.x)
-		var active_trait: String = str(simulation.hero_state.personality_traits_by_axis.get(axis_id, ""))
-		var threshold_minus_40 := bar.get_node("ThresholdMinus40") as ColorRect
-		var threshold_40 := bar.get_node("Threshold40") as ColorRect
-		var threshold_minus_20 := bar.get_node("ThresholdMinus20") as ColorRect
-		var threshold_20 := bar.get_node("Threshold20") as ColorRect
-		var is_neutral: bool = active_trait.is_empty()
-		threshold_minus_40.visible = is_neutral
-		threshold_40.visible = is_neutral
-		threshold_minus_20.visible = not is_neutral and axis_value < 0
-		threshold_20.visible = not is_neutral and axis_value > 0
+	hero_screen.update_personality_panel()
 
 func on_allocate_attribute_pressed(attribute_id: String) -> void:
-	if simulation.allocate_primary_attribute(attribute_id):
-		update_hero_panel()
-		update_attribute_allocation_panel()
+	hero_screen.on_allocate_attribute_pressed(attribute_id)
 
 func update_attribute_allocation_panel() -> void:
-	if attribute_points_label == null:
-		return
-	var pending_points: int = simulation.hero_state.pending_primary_attribute_points
-	var in_combat: bool = simulation.active_combat_session != null
-	attribute_points_label.text = "Нераспределённые очки: %d%s" % [pending_points, " (после боя)" if in_combat and pending_points > 0 else ""]
-	for attribute_id in attribute_buttons:
-		var current_value: int = int(simulation.hero_state.get(attribute_id))
-		attribute_buttons[attribute_id].text = "+1 %s   (сейчас %d)" % [PRIMARY_ATTRIBUTE_DISPLAY_NAMES[attribute_id], current_value]
-		attribute_buttons[attribute_id].disabled = pending_points <= 0 or in_combat
+	hero_screen.update_attribute_allocation_panel()
 
 func create_opponent_panel() -> void:
 	var panel := PanelContainer.new()
@@ -581,55 +372,13 @@ func update_combat_statistics_panel() -> void:
 	]
 
 func update_hero_panel() -> void:
-	var hero = simulation.hero_state
-	var stats = simulation.base_combat_stats
-	var effective_strength: int = hero.strength + hero.equipment.get_strength_bonus()
-	var armor: int = int(round(stats.armor))
-	var physical_reduction_percent := (1.0 - DamageResolverScript.calculate_physical_taken(stats.armor)) * 100.0
-	var active_quest_name: String = "—"
-	if hero.active_quest != null:
-		active_quest_name = hero.active_quest.display_name
-	var current_traits: Array[String] = simulation.get_hero_traits()
-	var trait_names: String = HeroTraitsScript.get_display_names(current_traits)
-	var bonus_lines: PackedStringArray = []
-	var trait_bonus_text: String = HeroTraitsScript.get_conditional_damage_bonus_text(current_traits)
-	if not trait_bonus_text.is_empty():
-		bonus_lines.append("Бонус черты: %s" % trait_bonus_text)
-	var buff_fights: int = simulation.get_combat_buff_fights_remaining()
-	if buff_fights > 0:
-		bonus_lines.append("Божественное благословение: +15%% физ. урона (%d боёв)" % buff_fights)
-	var bonuses_text: String = ""
-	if not bonus_lines.is_empty():
-		bonuses_text = "\n" + "\n".join(bonus_lines)
-	var state_display_name: String = get_state_display_name(hero.loop_state)
-	var state_spacer: String = get_state_spacer(state_display_name)
-	hero_details_label.text = "%s\nВоин\nЧерты: %s%s\nУровень: %d   XP: %d / %d\nHP: %.1f / %.1f\nЗолото: %d\nСостояние: %s%s\nКвест: %s\nСила: %d\nЛовкость: %d\nИнтеллект: %d\nТелосложение: %d\nМудрость: %d\nФиз. урон: %.0f\nТочность: %.0f\nУклонение: %.0f\nБроня: %d (снижение %.1f%%)\nОгонь / Холод / Молния: %.0f / %.0f / %.0f\nБлок: %.0f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила героя: %.2f\nSeed: %d" % [hero.hero_name, trait_names, bonuses_text, hero.level, hero.experience, hero.experience_to_next_level, simulation.get_current_hero_hp(), stats.max_hp, hero.gold, state_display_name, state_spacer, active_quest_name, effective_strength, hero.dexterity, hero.intelligence, hero.constitution, hero.wisdom, stats.attack, stats.accuracy, stats.dodge, armor, physical_reduction_percent, stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance, stats.block, stats.attack_speed, stats.crit_chance * 100.0, stats.crit_damage * 100.0, simulation.get_hero_power(), simulation.simulation_seed]
+	hero_summary_panel.update_hero_panel()
 
 func get_state_spacer(state_display_name: String) -> String:
-	var font: Font = hero_details_label.get_theme_font("font")
-	var font_size: int = hero_details_label.get_theme_font_size("font_size")
-	var state_line_width: float = font.get_string_size("Состояние: %s" % state_display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	return "\n" if state_line_width <= HERO_TEXT_CONTENT_WIDTH else ""
+	return hero_summary_panel.get_state_spacer(state_display_name)
 
 func get_state_display_name(loop_state: String) -> String:
-	match loop_state:
-		HeroState.CHOOSING_QUEST: return "Выбирает квест"
-		HeroState.TRAVEL_TO_QUEST: return "Идёт к цели"
-		HeroState.DOING_QUEST: return "Выполняет квест"
-		HeroState.RECOVERING_AFTER_FIGHT: return "Восстанавливается после боя"
-		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
-		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
-		HeroState.VISITING_MARKET: return "На рынке — продаёт ненужный шмот"
-		HeroState.SHOPPING: return "В магазине — выбирает покупку"
-		HeroState.TRAVEL_TO_DUNGEON: return "Идёт к данжу"
-		HeroState.AT_DUNGEON_ENTRANCE: return "У входа в данж"
-		HeroState.DOING_DUNGEON: return "В данже — бой"
-		HeroState.DUNGEON_BETWEEN_FIGHTS: return "В данже — готовится к следующему бою"
-		HeroState.DUNGEON_COMPLETED: return "Данж пройден"
-		HeroState.DUNGEON_RETURNING_TO_CITY: return "Возвращается в город после данжа"
-		HeroState.DEAD_RESPAWNING: return "Мёртв — тиков до возрождения: %d" % simulation.get_respawn_ticks_remaining()
-		HeroState.RECOVERING_IN_CITY: return "Восстанавливается в городе"
-	return loop_state
+	return hero_summary_panel.get_state_display_name(loop_state)
 
 func create_god_panel() -> void:
 	if god_panel != null:

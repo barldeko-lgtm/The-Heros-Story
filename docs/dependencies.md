@@ -634,13 +634,15 @@ Never parse UI/narrative text back into gameplay decisions.
 - quest-selection narration uses the evaluator's returned ranked records and must not recalculate QuestScore;
 - DebugLog retention/scrolling must not affect simulation state or combat telemetry.
 
+`EconomyNarrator` and `ItemNarrator` format already-resolved economic/item facts. They do not mutate hero state, evaluate purchases, generate rewards, consume RNG, or write to DebugLog/Diary. Simulation retains log insertion at the original world tick and in the original order, including reward-before-overflow messages. Item stat/HP refresh and explicit suppression of duplicate equipment Diary records remain in Simulation; the Rare/Epic recording filter belongs to DiaryRecorder.
+
 ### Hero Diary
 
 Current ordinary-quest path:
 
 ```text
 HERO_SELECTED_QUEST fact
-→ Simulation / DiaryNarrator
+→ Simulation / DiaryRecorder / DiaryNarrator
 → Diary temporary selection entry
 → remains visible while that quest is active
 
@@ -707,9 +709,11 @@ discovery / successful begin_trip / actual potion purchase / completion reward
 
 Contracts:
 
+- `DiaryRecorder` owns the temporary quest-entry id/lifecycle, supplied-fact recording and Rare/Epic significance filter; it receives explicit data/ticks, never owns gameplay state, and uses the same live Diary/Narrator;
+- Simulation keeps the existing record-call timing and public wrappers, supplies real outcomes and explicitly suppresses duplicate equipment records for event/dungeon rewards;
 - `DiaryNarrator` describes approved facts only;
 - `Diary` stores ready player-facing entries and owns no significance/gameplay rules;
-- ordinary quest selection is the current narrow exception that uses a removable Diary entry for active-activity visibility; Simulation owns its lifecycle and clears it on successful turn-in, quest death, or external quest cancellation;
+- ordinary quest selection is the current narrow exception that uses a removable Diary entry for active-activity visibility; DiaryRecorder owns its lifecycle and clears it when Simulation reports successful turn-in, quest death, or external quest cancellation;
 - real dynamic names/rewards/outcomes come from current game state/events rather than being duplicated in templates;
 - generic reusable wording belongs in shared narrative data;
 - shared death wording must receive the actual killer and owning quest/dungeon/event name from gameplay context rather than infer them from UI text;
@@ -793,6 +797,16 @@ High-value integration coverage includes:
 - `tests/test_debug_log_autoscroll.gd` and `test_main_ui_component_extraction.gd` — presentation updates without gameplay ownership.
 
 If a refactor changes a hand-off named in this document, update or add the closest deterministic test rather than relying only on visual testing.
+
+## Hero summary presentation
+
+MainUI → HeroSummaryPanel.setup(existing Simulation) → main hero text and pending-attribute indicator. MainUI keeps visible-screen refresh scheduling and GodPanel/HeroScreen signal routing through its compatible update_hero_panel wrapper. HeroSummaryPanel only reads current state and formats existing values; state labels, wrapping spacer and plus coordinates are presentation-owned. The original separately scheduled plus update is preserved. `tests/test_hero_summary_extraction.gd` covers geometry, state spacing, compatibility, indicator and navigation.
+
+## Hero development screen presentation
+
+MainUI → HeroScreen.setup(existing Simulation) → screen-local controls/refresh.
+Attribute button → Simulation.allocate_primary_attribute → hero_state_changed → MainUI hero summary refresh, then local allocation refresh. Rules and point consumption stay in Simulation.
+MainUI owns time advancement and navigation; hidden HeroScreen has no polling loop and is refreshed immediately on opening. Existing update wrappers and control references remain available. `tests/test_hero_screen_extraction.gd` covers these contracts plus runtime geometry and personality markers.
 
 ## Refactor checklist
 

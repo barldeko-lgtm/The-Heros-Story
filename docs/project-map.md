@@ -498,6 +498,22 @@ Formats temporary-event facts for developer/debug output.
 
 Formats dungeon facts for developer/debug output.
 
+### `scripts/narrative/economy_narrator.gd`
+
+Presentation-only developer wording for market sales, stock refresh/assortment, equipment purchases, immediate replacement sales, and unsuccessful shopping. Receives existing transaction/evaluation results; never selects purchases, spends Gold or writes logs.
+
+### `scripts/narrative/item_narrator.gd`
+
+Presentation-only developer wording for acquired/equipped/retained reward equipment and Inventory overflow. Receives already-resolved item routing; never generates items, equips them, or decides Diary significance.
+
+Simulation retains log insertion, order and world ticks, plus the compatible shop-text/slot-name wrappers. Existing `DiaryNarrator` and Diary lifecycle remain separate and unchanged.
+
+### `scripts/narrative/diary_recorder.gd`
+
+Owns recording supplied Diary facts, temporary quest-entry lifecycle/id, and the current Rare/Epic acquisition significance filter. Receives explicit hero/context data and world ticks, calls `DiaryNarrator`, and writes to the same live `Diary` store.
+
+It has no Simulation reference and never changes gameplay, rewards or world time. Simulation keeps compatible record methods and forwarding access to the narrator/temporary-entry id; it still supplies facts at their original points and explicitly suppresses duplicate equipment records for event/dungeon completion rewards.
+
 ### `scripts/narrative/diary.gd`
 
 Stores already prepared player-facing Diary entries, adds the supplied real world tick and emits text updates. It also supports removable temporary entries used for an activity that must be visible while active but should not remain as a second permanent history line after resolution.
@@ -546,6 +562,16 @@ Future reusable generic Diary wording should live under `data/narrative/`; uniqu
 Top-level developer UI coordinator. Owns navigation/visibility and passes the existing `Simulation` to dedicated screens/components.
 
 It may issue approved gameplay commands through Simulation but must not own gameplay rules.
+
+### `scenes/ui/components/hero_summary_panel.tscn`
+### `scripts/ui/components/hero_summary_panel.gd`
+
+Owns main-screen hero summary construction, exact text/state-spacing presentation and pending-attribute plus placement. A mouse-ignoring full-screen Control keeps the original panel and indicator coordinates. Receives the live Simulation, never advances time or owns gameplay. MainUI retains original refresh timing, signal connections, and compatible label/update/state-text accessors.
+
+### `scenes/ui/screens/hero_screen.tscn`
+### `scripts/ui/screens/hero_screen.gd`
+
+Owns development-screen construction, primary-attribute buttons, personality axis controls and their presentation refresh. Receives the existing Simulation through setup; allocation requests use Simulation and emit hero_state_changed to refresh the main summary. MainUI retains navigation, visible-screen refresh scheduling, compatible update methods and live control references. Geometry and node names are unchanged.
 
 ### `scenes/ui/screens/inventory_screen.tscn`
 ### `scripts/ui/screens/inventory_screen.gd`

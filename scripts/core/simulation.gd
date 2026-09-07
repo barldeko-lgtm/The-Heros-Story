@@ -24,10 +24,13 @@ const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd"
 const CombatSimulatorScript = preload("res://scripts/combat/combat_simulator.gd")
 const DebugLogScript = preload("res://scripts/narrative/debug_log.gd")
 const DiaryScript = preload("res://scripts/narrative/diary.gd")
+const DiaryRecorderScript = preload("res://scripts/narrative/diary_recorder.gd")
 const DiaryNarratorScript = preload("res://scripts/narrative/diary_narrator.gd")
 const QuestNarratorScript = preload("res://scripts/narrative/quest_narrator.gd")
 const DungeonNarratorScript = preload("res://scripts/narrative/dungeon_narrator.gd")
 const EventNarratorScript = preload("res://scripts/narrative/event_narrator.gd")
+const EconomyNarratorScript = preload("res://scripts/narrative/economy_narrator.gd")
+const ItemNarratorScript = preload("res://scripts/narrative/item_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
@@ -62,12 +65,17 @@ const NARRATIVE_RNG_SEED_OFFSET: int = 700003
 const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
-const MIN_DIARY_EQUIPMENT_RARITY: int = 2
+const MIN_DIARY_EQUIPMENT_RARITY: int = DiaryRecorderScript.MIN_DIARY_EQUIPMENT_RARITY
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
 var diary = DiaryScript.new()
-var diary_narrator
+var diary_recorder = DiaryRecorderScript.new(diary)
+var diary_narrator:
+	get:
+		return diary_recorder.diary_narrator
+	set(value):
+		diary_recorder.diary_narrator = value
 var quest_narrator = QuestNarratorScript.new()
 var dungeon_narrator = DungeonNarratorScript.new()
 var time_scale: float = 1.0
@@ -83,6 +91,8 @@ var dungeon_vision_rng: RandomNumberGenerator
 var event_system
 var event_runner
 var event_narrator = EventNarratorScript.new()
+var economy_narrator = EconomyNarratorScript.new()
+var item_narrator = ItemNarratorScript.new()
 var trait_development = TraitDevelopmentScript.new()
 var event_resolution_rng: RandomNumberGenerator
 var narrative_rng: RandomNumberGenerator
@@ -118,7 +128,12 @@ var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
 var pending_dungeon_preparation = null
-var active_quest_diary_entry_id: int = -1
+# Compatibility access; DiaryRecorder is the only owner of this id.
+var active_quest_diary_entry_id: int:
+	get:
+		return diary_recorder.active_quest_diary_entry_id
+	set(value):
+		diary_recorder.active_quest_diary_entry_id = value
 # Only fights that started with the blessing consume its charges.
 var active_combat_uses_blessing: bool = false
 
@@ -519,7 +534,7 @@ func on_world_tick_completed(completed_tick: int) -> void:
 				pending_event_instance = null
 			debug_log.record_event(completed_tick, event_narrator.describe_expired(expired_event))
 	if shop_system.advance_world_tick(completed_tick):
-		debug_log.record_event(completed_tick, "Магазин: ассортимент обновлён.")
+		debug_log.record_event(completed_tick, economy_narrator.describe_stock_refreshed())
 	if autonomous_quest_choice and quest_pool.advance_world_tick(completed_tick):
 		debug_log.record_event(completed_tick, "Доска заданий: предложения обновлены.")
 	if skip_quest_advance_on_completed_combat_tick:
@@ -589,45 +604,19 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	begin_pending_event_if_ready(completed_tick)
 
 func record_quest_diary_event(event, event_tick: int) -> void:
-	if diary_narrator == null:
-		return
-	var diary_text: String = diary_narrator.describe_quest_event(event)
-	if event.event_type == QuestEventScript.HERO_SELECTED_QUEST:
-		clear_active_quest_diary_entry()
-		if not diary_text.is_empty():
-			active_quest_diary_entry_id = diary.add_temporary_entry(event_tick, diary_text)
-		return
-	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST or event.event_type == QuestEventScript.HERO_DIED:
-		clear_active_quest_diary_entry()
-	if not diary_text.is_empty():
-		diary.add_entry(event_tick, diary_text)
+	diary_recorder.record_quest_diary_event(event, event_tick)
 
 func clear_active_quest_diary_entry() -> void:
-	if active_quest_diary_entry_id <= 0:
-		return
-	diary.remove_entry(active_quest_diary_entry_id)
-	active_quest_diary_entry_id = -1
+	diary_recorder.clear_active_quest_diary_entry()
 
 func record_death_diary_entry(hero_name: String, killer_name: String, activity_type: String, activity_name: String, event_tick: int) -> void:
-	if diary_narrator == null:
-		return
-	var diary_text: String = diary_narrator.describe_death(hero_name, killer_name, activity_type, activity_name)
-	if not diary_text.is_empty():
-		diary.add_entry(event_tick, diary_text)
+	diary_recorder.record_death_diary_entry(hero_name, killer_name, activity_type, activity_name, event_tick)
 
 func record_resurrection_diary_entry(resurrection_type: String, event_tick: int) -> void:
-	if diary_narrator == null:
-		return
-	var diary_text: String = diary_narrator.describe_resurrection(hero_state.hero_name, resurrection_type)
-	if not diary_text.is_empty():
-		diary.add_entry(event_tick, diary_text)
+	diary_recorder.record_resurrection_diary_entry(hero_state.hero_name, resurrection_type, event_tick)
 
 func record_event_completed_diary_entry(end_stage, completed_tick: int) -> void:
-	if diary_narrator == null or end_stage == null:
-		return
-	var diary_text: String = diary_narrator.describe_event_completed(end_stage)
-	if not diary_text.is_empty():
-		diary.add_entry(completed_tick, diary_text)
+	diary_recorder.record_event_completed_diary_entry(end_stage, completed_tick)
 
 func begin_pending_event_if_ready(completed_tick: int) -> bool:
 	if not temporary_events_enabled or pending_event_instance == null or event_runner.active_event != null:
@@ -723,10 +712,7 @@ func advance_market_sale_tick(completed_tick: int) -> Dictionary:
 		return empty_result
 	var result: Dictionary = equipment_sale_system.sell_ordinary_inventory(hero_state)
 	hero_state.loop_state = HeroState.SHOPPING
-	if result["sold_count"] > 0:
-		debug_log.record_event(completed_tick, "Рынок: продано предметов: %d, получено +%d золота." % [result["sold_count"], result["gold_gained"]])
-	else:
-		debug_log.record_event(completed_tick, "%s посетил рынок, но продавать было нечего." % hero_state.hero_name)
+	debug_log.record_event(completed_tick, economy_narrator.describe_market_sale(hero_state.hero_name, result))
 	return result
 
 func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
@@ -746,7 +732,7 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	var purchase_listings: Array = get_equipment_purchase_listings_with_dungeon_prep_safety()
 	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, purchase_listings, equipment_gold_budget)
 	if best_purchase.is_empty():
-		debug_log.record_event(completed_tick, "%s осмотрел магазин, но достаточно выгодных покупок не нашёл." % hero_state.hero_name)
+		debug_log.record_event(completed_tick, economy_narrator.describe_no_purchase(hero_state.hero_name))
 		finish_shopping_phase(completed_tick)
 		return empty_result
 
@@ -757,36 +743,14 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 		str(best_purchase.get("target_slot", ""))
 	)
 	if not bool(result.get("purchased", false)):
-		debug_log.record_event(completed_tick, "%s не смог завершить выбранную покупку." % hero_state.hero_name)
+		debug_log.record_event(completed_tick, economy_narrator.describe_purchase_failed(hero_state.hero_name))
 		finish_shopping_phase(completed_tick)
 		return result
 
 	refresh_combat_stats()
 	hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
 	result["power_gain"] = float(best_purchase.get("power_gain", 0.0))
-	var purchased_item = result["item_instance"]
-	var log_text: String
-	if str(best_purchase.get("comparison_mode", "")) == "belt_utility":
-		log_text = "%s купил «%s» (%s, ilvl %d) за %d золота; пояс теперь поддерживает до %.0f HP лечения." % [
-			hero_state.hero_name,
-			purchased_item.definition.display_name,
-			purchased_item.get_quality_display_name(),
-			purchased_item.item_level,
-			result["price_paid"],
-			float(best_purchase.get("candidate_belt_healing", 0.0)),
-		]
-	else:
-		log_text = "%s купил «%s» (%s, ilvl %d) за %d золота; сила героя +%.2f." % [
-			hero_state.hero_name,
-			purchased_item.definition.display_name,
-			purchased_item.get_quality_display_name(),
-			purchased_item.item_level,
-			result["price_paid"],
-			result["power_gain"],
-		]
-	if result["replaced_item"] != null:
-		log_text += " Старый предмет «%s» сразу продан за %d золота." % [result["replaced_item"].definition.display_name, result["replaced_item_sale_value"]]
-	debug_log.record_event(completed_tick, log_text)
+	debug_log.record_event(completed_tick, economy_narrator.describe_purchase(hero_state.hero_name, result, best_purchase))
 
 	if spending_evaluator.select_best_equipment_purchase(
 		hero_state,
@@ -1024,36 +988,10 @@ func advance_dungeon_city_recovery_tick(completed_tick: int) -> void:
 	)
 
 func get_shop_stock_debug_text() -> String:
-	var white_slots: Array[String] = []
-	var green_slots: Array[String] = []
-	for listing in shop_system.get_listings():
-		var item_instance = listing.get("item_instance")
-		if item_instance == null or item_instance.definition == null:
-			continue
-		var slot_name: String = get_shop_slot_debug_name(item_instance.definition.equipment_slot)
-		if item_instance.rarity == 1:
-			green_slots.append(slot_name)
-		else:
-			white_slots.append(slot_name)
-	var white_text: String = ", ".join(white_slots) if not white_slots.is_empty() else "нет"
-	var green_text: String = ", ".join(green_slots) if not green_slots.is_empty() else "нет"
-	return "Магазин: белые — %s; зелёные — %s." % [white_text, green_text]
+	return economy_narrator.describe_stock(shop_system.get_listings())
 
 func get_shop_slot_debug_name(equipment_slot: String) -> String:
-	match equipment_slot:
-		"helmet": return "шлем"
-		"chest": return "нагрудник"
-		"gloves": return "перчатки"
-		"pants": return "штаны"
-		"boots": return "сапоги"
-		"weapon": return "меч"
-		"shield": return "щит"
-		"necklace": return "ожерелье"
-		"earrings": return "серьги"
-		"ring_1": return "кольцо 1"
-		"ring_2": return "кольцо 2"
-		"belt": return "пояс"
-	return equipment_slot
+	return economy_narrator.get_shop_slot_debug_name(equipment_slot)
 
 func resolve_mob_equipment_drop(mob_definition: Resource, completed_tick: int, rng_override = null) -> Dictionary:
 	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
@@ -1074,61 +1012,26 @@ func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_
 	if bool(result.get("equipped", false)):
 		refresh_combat_stats()
 		hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
-		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и надел предмет." % [hero_state.hero_name, item_instance.definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
-	else:
-		debug_log.record_event(completed_tick, "%s получил «%s» (%s, ilvl %d) и убрал предмет в инвентарь." % [hero_state.hero_name, item_instance.definition.display_name, item_instance.get_quality_display_name(), item_instance.item_level])
+	debug_log.record_event(completed_tick, item_narrator.describe_received(hero_state.hero_name, item_instance, bool(result.get("equipped", false))))
 
 	if result.get("dropped_item") != null:
 		var dropped_instance = result["dropped_item"]
-		debug_log.record_event(completed_tick, "Инвентарь переполнен: самый старый предмет «%s» (%s) выпал." % [dropped_instance.definition.display_name, dropped_instance.get_quality_display_name()])
+		debug_log.record_event(completed_tick, item_narrator.describe_overflow(dropped_instance))
 	if write_significant_equipment_diary:
 		record_equipment_acquisition_diary_entry(item_instance, completed_tick)
 	return result
 
 func record_equipment_acquisition_diary_entry(item_instance, completed_tick: int) -> void:
-	if diary_narrator == null or item_instance == null or item_instance.definition == null:
-		return
-	if int(item_instance.rarity) < MIN_DIARY_EQUIPMENT_RARITY:
-		return
-	var diary_text: String = diary_narrator.describe_equipment_acquisition(
-		hero_state.hero_name,
-		item_instance.definition.display_name,
-		int(item_instance.rarity)
-	)
-	if not diary_text.is_empty():
-		diary.add_entry(completed_tick, diary_text)
+	diary_recorder.record_equipment_acquisition_diary_entry(hero_state.hero_name, item_instance, completed_tick)
 
 func record_dungeon_attempt_started_diary_entry(dungeon_instance, completed_tick: int) -> void:
-	if diary_narrator == null or dungeon_instance == null or dungeon_instance.definition == null:
-		return
-	var diary_text: String = diary_narrator.describe_dungeon_attempt_started(hero_state.hero_name, dungeon_instance.definition.display_name)
-	if not diary_text.is_empty():
-		diary.add_entry(completed_tick, diary_text)
+	diary_recorder.record_dungeon_attempt_started_diary_entry(hero_state.hero_name, dungeon_instance, completed_tick)
 
 func record_dungeon_potion_purchase_diary_entry(dungeon_instance, preparation: Dictionary, completed_tick: int) -> void:
-	if diary_narrator == null or dungeon_instance == null or dungeon_instance.definition == null:
-		return
-	var potion_count: int = 0
-	for count in preparation.get("purchase_counts", {}).values():
-		potion_count += int(count)
-	if potion_count <= 0:
-		return
-	var diary_text: String = diary_narrator.describe_dungeon_potions_bought(hero_state.hero_name, dungeon_instance.definition.display_name, potion_count)
-	if not diary_text.is_empty():
-		diary.add_entry(completed_tick, diary_text)
+	diary_recorder.record_dungeon_potion_purchase_diary_entry(hero_state.hero_name, dungeon_instance, preparation, completed_tick)
 
 func record_dungeon_completed_diary_entry(dungeon_definition: Resource, gold_reward: int, reward_item, completed_tick: int) -> void:
-	if diary_narrator == null or dungeon_definition == null or reward_item == null or reward_item.definition == null:
-		return
-	var diary_text: String = diary_narrator.describe_dungeon_completed(
-		hero_state.hero_name,
-		dungeon_definition.display_name,
-		gold_reward,
-		reward_item.definition.display_name,
-		int(reward_item.rarity)
-	)
-	if not diary_text.is_empty():
-		diary.add_entry(completed_tick, diary_text)
+	diary_recorder.record_dungeon_completed_diary_entry(hero_state.hero_name, dungeon_definition, gold_reward, reward_item, completed_tick)
 
 func get_active_respawn_owner():
 	if event_runner != null and event_runner.owns_respawn_state():
@@ -1219,10 +1122,7 @@ func record_dungeon_discovery(dungeon_instance, prefix: String) -> void:
 	if dungeon_instance == null or dungeon_instance.definition == null:
 		return
 	debug_log.record_event(world_clock.world_tick, "%s данж «%s»." % [prefix, dungeon_instance.definition.display_name])
-	if diary_narrator != null:
-		var diary_text: String = diary_narrator.describe_dungeon_discovered(hero_state.hero_name, dungeon_instance.definition.display_name)
-		if not diary_text.is_empty():
-			diary.add_entry(world_clock.world_tick, diary_text)
+	diary_recorder.record_dungeon_discovered(hero_state.hero_name, dungeon_instance, world_clock.world_tick)
 
 func refresh_finished_quest_offer_if_needed(event, completed_tick: int) -> void:
 	if not autonomous_quest_choice:

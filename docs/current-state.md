@@ -515,7 +515,7 @@ Current diary sources are only:
 
 Current behaviour:
 
-- structured quest/death/resurrection/equipment-acquisition/dungeon facts plus authored successful-event endings are converted/routed by a separate `DiaryNarrator`;
+- Simulation supplies structured quest/death/resurrection/equipment-acquisition/dungeon facts and authored successful-event endings to `DiaryRecorder`, which manages recording and temporary quest-entry lifecycle through the existing `DiaryNarrator` and `Diary`;
 - `Diary` stores the ready player-facing entries;
 - `Diary` retains at most the newest **100 entries**; adding another entry discards the oldest one;
 - a selected ordinary quest uses a removable temporary Diary entry; successful turn-in removes it before adding the final completion entry, while quest cancellation/death removes it without leaving a separate cancelled-quest line;
@@ -547,7 +547,7 @@ The present interface is a functional **developer-oriented UI**, not the finishe
 Current major pieces:
 
 - persistent top navigation;
-- main hero/opponent/debug panels;
+- main hero/opponent/debug panels; the hero summary and pending-attribute plus are owned by the dedicated `HeroSummaryPanel` component, with existing presentation and refresh timing preserved;
 - Hero development screen;
 - Inventory screen;
 - Map screen;
@@ -556,6 +556,8 @@ Current major pieces:
 - developer simulation-speed controls.
 
 ### Hero screen
+
+The development controls and personality axes are owned by `scripts/ui/screens/hero_screen.gd` and its dedicated scene. MainUI retains navigation, simulation advancement and main-screen summary coordination; allocation rules remain in Simulation.
 
 Currently shows:
 
