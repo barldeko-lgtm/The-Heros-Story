@@ -54,6 +54,17 @@ func _init() -> void:
 	var wise_protected_actions: Array = wise_session.advance(2.0)
 	assert(is_equal_approx(wise_protected_actions[0].damage, 67.5), "105 Wisdom must raise Battle Guard reduction from 25% to 32.5%.")
 
+	var max_rank_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 5, 10)
+	max_rank_session.hero_remaining_hp = 760.0
+	max_rank_session.advance(2.0)
+	var max_rank_protected_actions: Array = max_rank_session.advance(2.0)
+	assert(is_equal_approx(max_rank_protected_actions[0].damage, 55.0), "Skill Level 10 Battle Guard at starting Wisdom must reduce remaining incoming damage by 45%.")
+
+	for skill_level in range(1, 11):
+		var rank_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 5, skill_level)
+		var expected_reduction := lerpf(0.25, 0.45, float(skill_level - 1) / 9.0)
+		assert(is_equal_approx(rank_session.get_battle_guard_multiplier(), 1.0 - expected_reduction), "Battle Guard Skill Levels must scale evenly from 25% to 45% reduction.")
+
 	var locked_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 105, 0)
 	locked_session.hero_remaining_hp = 760.0
 	var locked_actions: Array = locked_session.advance(4.0)
@@ -65,7 +76,7 @@ func _init() -> void:
 	var narration: String = narrator.describe_combat_action(threshold_actions[1], hero_state.hero_name, quest_definition)
 	assert(narration.contains("Боевой заслон"), "The combat log must name Battle Guard activation separately.")
 
-	print("PASS: Autonomous Level 1 Battle Guard follows the approved threshold, duration, cooldown, mitigation, and Wisdom rules.")
+	print("PASS: Autonomous Battle Guard Skill Levels 1-10 follow the approved threshold, duration, cooldown, mitigation, and Wisdom rules.")
 	quit()
 
 func make_stats(combat_stats_script: Script, max_hp: float, attack: float, attack_speed: float, armor: float) -> RefCounted:

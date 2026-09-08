@@ -23,7 +23,7 @@ Status:
 - ✅ Before specialization, each level grants +1 fixed Warrior STR and +4 player-distributed primary-attribute points; unspent points remain pending and provide no benefit until spent.
 - ✅ Player-facing allocation of pending primary-attribute points works without directly commanding hero behaviour.
 - 🟡 Progression mechanics work, but full compressed level 1–30 content/balance is incomplete.
-- ⬜ Lightweight starting questionnaire, its small extra attribute pool and mild hidden personality biases.
+- ✅ Four-question starting background assigns exactly three attribute points and mild hidden personality biases through selected answers.
 - ⬜ Post-specialization attribute growth/reward rules.
 - ⬜ Long-run Prototype 0.2 balance/soak validation.
 
@@ -31,12 +31,12 @@ Status:
 
 - ✅ Live one-on-one automatic combat with Accuracy/Dodge, Armor, elemental Resistances, Block, Critical Chance/Damage and Attack Speed.
 - ✅ Fight-local Rage generation/cap/reset.
-- ✅ Level 5 Power Strike at Skill Level 1 with autonomous use and WIS scaling.
-- ✅ Level 10 Battle Guard at Skill Level 1 with autonomous use and WIS scaling.
+- ✅ Level 5 Power Strike is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from ×1.50 to ×2.50 plus separate WIS scaling.
+- ✅ Level 10 Battle Guard is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from 25% to 45% base reduction plus separate WIS scaling.
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - 🟡 Elemental mitigation exists, but current ordinary content is still effectively physical.
-- ⬜ Purchasable Skill Levels 2–10 / training economy.
+- ⬜ Autonomous purchase of the already-supported Skill Levels 2–10 / training economy.
 - ⬜ Protector ability: Shield Bash.
 - ⬜ Slayer ability: Crippling Blows.
 
@@ -48,8 +48,8 @@ Status:
 - ✅ Formative / Expressive / Neutral decision roles exist in the event framework.
 - ✅ Current authored events use real Formative movement and Expressive checks without self-reinforcing the same trait; current live content exercises Courage, Morality and Curiosity movement plus Brave, Greedy, Curious, Noble and Devious expression.
 - ✅ Ordinary quest selection uses the current personality-adjusted Power windows.
-- 🟡 New heroes still receive a temporary seeded roll of 1–2 established traits instead of beginning from questionnaire-driven mild hidden biases.
-- ⬜ Starting questionnaire personality shifts and removal of the temporary starting-trait bootstrap.
+- ✅ Normal new games begin with questionnaire-driven biases and no established starting traits.
+- 🟡 Seeded starting traits remain only in direct legacy/headless constructors without background answers, preserving fixture compatibility.
 
 ## 4. World map, cities and travel
 
@@ -151,7 +151,7 @@ Status:
 - 🟡 Inventory Screen is a strong functional first pass with paper doll, all 12 equipment slots, retained gear and potion display.
 - 🟡 Map Screen is functional but still needs final route/destination and hidden-information presentation.
 - 🟡 God panel and Log/Diary presentation are functional; ordinary quest-guidance UI is still missing.
-- ⬜ Starting questionnaire UI/flow.
+- 🟡 Debug questionnaire is live on one screen, followed by an empty class-selection screen with Next; separate question pages and actual class choices remain deferred.
 - ⬜ Finished player-facing Hero/Main/Diary presentation.
 - ⬜ Player-facing Explanatory Log UI.
 - ⬜ Menu Screen.
@@ -196,7 +196,7 @@ The intended ordinary quest board remains up to 9 offers / 3 per strength band, 
 This is a progress-oriented list, not automatic permission or a fixed implementation order:
 
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
-2. Implement the lightweight starting questionnaire and replace the temporary seeded starting-trait bootstrap.
+2. Replace the debug all-in-one questionnaire layout with separate question pages when needed; actual class-selection content is still absent.
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
 4. Finish expanding the temporary-event population from 13 toward the ~15–20 target and complete the remaining travel-interception context where needed.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.

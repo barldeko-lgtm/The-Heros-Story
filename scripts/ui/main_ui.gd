@@ -10,7 +10,7 @@ const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.
 const HERO_TEXT_CONTENT_WIDTH: float = preload("res://scripts/ui/components/hero_summary_panel.gd").HERO_TEXT_CONTENT_WIDTH
 const PRIMARY_ATTRIBUTE_DISPLAY_NAMES = preload("res://scripts/ui/screens/hero_screen.gd").PRIMARY_ATTRIBUTE_DISPLAY_NAMES
 var simulation_seed: int = int(Time.get_unix_time_from_system())
-var simulation = SimulationScript.new(simulation_seed, null, [], true)
+var simulation
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_summary_panel: Control
@@ -48,6 +48,9 @@ var hero_button: Button
 var inventory_button: Button
 var map_button: Button
 var inventory_close_button: Button
+
+func _init(initial_simulation = null) -> void:
+	simulation = initial_simulation if initial_simulation != null else SimulationScript.new(simulation_seed, null, [], true)
 
 func _ready() -> void:
 	create_background()

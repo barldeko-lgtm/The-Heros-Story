@@ -16,12 +16,15 @@ const CRITICAL_HIT_RAGE: int = 7
 const RECEIVED_HIT_RAGE: int = 3
 const POWER_STRIKE_RAGE_COST: int = 30
 const POWER_STRIKE_COOLDOWN_SECONDS: float = 10.0
-const POWER_STRIKE_BASE_MULTIPLIER: float = 1.5
+const MAX_SKILL_LEVEL: int = 10
+const POWER_STRIKE_MIN_MULTIPLIER: float = 1.5
+const POWER_STRIKE_MAX_MULTIPLIER: float = 2.5
 const POWER_STRIKE_WISDOM_COEFFICIENT: float = 2.0
 const BATTLE_GUARD_HP_THRESHOLD: float = 0.75
 const BATTLE_GUARD_DURATION_SECONDS: float = 10.0
 const BATTLE_GUARD_COOLDOWN_SECONDS: float = 60.0
-const BATTLE_GUARD_BASE_REDUCTION: float = 0.25
+const BATTLE_GUARD_MIN_REDUCTION: float = 0.25
+const BATTLE_GUARD_MAX_REDUCTION: float = 0.45
 const BATTLE_GUARD_WISDOM_COEFFICIENT: float = 0.15
 const BASE_WISDOM: int = 5
 
@@ -53,8 +56,8 @@ func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, init
 	mob_stats = initial_mob_stats
 	hero_damage_multiplier = initial_hero_damage_multiplier
 	assert(hero_damage_multiplier > 0.0, "Hero damage multiplier must be positive.")
-	assert(initial_power_strike_skill_level == 0 or initial_power_strike_skill_level == 1, "The current slice supports only locked or Skill Level 1 Power Strike.")
-	assert(initial_battle_guard_skill_level == 0 or initial_battle_guard_skill_level == 1, "The current slice supports only locked or Skill Level 1 Battle Guard.")
+	assert(initial_power_strike_skill_level >= 0 and initial_power_strike_skill_level <= MAX_SKILL_LEVEL, "Power Strike Skill Level must be between 0 and 10.")
+	assert(initial_battle_guard_skill_level >= 0 and initial_battle_guard_skill_level <= MAX_SKILL_LEVEL, "Battle Guard Skill Level must be between 0 and 10.")
 	power_strike_skill_level = initial_power_strike_skill_level
 	hero_wisdom = initial_hero_wisdom
 	battle_guard_skill_level = initial_battle_guard_skill_level
@@ -149,27 +152,33 @@ func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: 
 	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical, true, was_blocked, DamageResolverScript.DAMAGE_TYPE_PHYSICAL, action_id)
 
 func can_use_power_strike() -> bool:
-	return power_strike_skill_level == 1 and rage >= POWER_STRIKE_RAGE_COST and elapsed_seconds + TIME_EPSILON >= power_strike_ready_time
+	return power_strike_skill_level > 0 and rage >= POWER_STRIKE_RAGE_COST and elapsed_seconds + TIME_EPSILON >= power_strike_ready_time
 
 func get_power_strike_multiplier() -> float:
+	assert(power_strike_skill_level > 0 and power_strike_skill_level <= MAX_SKILL_LEVEL, "Power Strike multiplier requires a learned Skill Level from 1 to 10.")
 	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
 	var wisdom_factor := float(effective_wisdom) / float(effective_wisdom + 100)
-	return POWER_STRIKE_BASE_MULTIPLIER + POWER_STRIKE_WISDOM_COEFFICIENT * wisdom_factor
+	var skill_progress := float(power_strike_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
+	var skill_multiplier := lerpf(POWER_STRIKE_MIN_MULTIPLIER, POWER_STRIKE_MAX_MULTIPLIER, skill_progress)
+	return skill_multiplier + POWER_STRIKE_WISDOM_COEFFICIENT * wisdom_factor
 
 func add_rage(amount: int) -> void:
 	rage = mini(MAX_RAGE, rage + amount)
 
 func is_battle_guard_active() -> bool:
-	return battle_guard_skill_level == 1 and elapsed_seconds < battle_guard_active_until - TIME_EPSILON
+	return battle_guard_skill_level > 0 and elapsed_seconds < battle_guard_active_until - TIME_EPSILON
 
 func get_battle_guard_multiplier() -> float:
+	assert(battle_guard_skill_level > 0 and battle_guard_skill_level <= MAX_SKILL_LEVEL, "Battle Guard multiplier requires a learned Skill Level from 1 to 10.")
 	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
 	var wisdom_factor := float(effective_wisdom) / float(effective_wisdom + 100)
-	var damage_reduction := BATTLE_GUARD_BASE_REDUCTION + BATTLE_GUARD_WISDOM_COEFFICIENT * wisdom_factor
+	var skill_progress := float(battle_guard_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
+	var base_reduction := lerpf(BATTLE_GUARD_MIN_REDUCTION, BATTLE_GUARD_MAX_REDUCTION, skill_progress)
+	var damage_reduction := base_reduction + BATTLE_GUARD_WISDOM_COEFFICIENT * wisdom_factor
 	return 1.0 - damage_reduction
 
 func try_activate_battle_guard(resolved_actions: Array) -> void:
-	if battle_guard_skill_level != 1 or is_battle_guard_active():
+	if battle_guard_skill_level <= 0 or is_battle_guard_active():
 		return
 	if elapsed_seconds + TIME_EPSILON < battle_guard_ready_time:
 		return

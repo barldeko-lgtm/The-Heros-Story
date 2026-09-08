@@ -13,6 +13,7 @@ const DungeonEvaluatorScript = preload("res://scripts/dungeons/dungeon_evaluator
 const EventSystemScript = preload("res://scripts/events/event_system.gd")
 const EventRunnerScript = preload("res://scripts/events/event_runner.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
+const HeroBackgroundScript = preload("res://scripts/hero/hero_background.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
@@ -138,7 +139,7 @@ var active_quest_diary_entry_id: int:
 # Only fights that started with the blessing consume its charges.
 var active_combat_uses_blessing: bool = false
 
-func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = [], enable_temporary_events: bool = false) -> void:
+func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition: Resource = DefaultInitialQuest, available_quest_definitions: Array = [], enable_temporary_events: bool = false, background_answers: Array = []) -> void:
 	autonomous_quest_choice = initial_quest_definition == null
 	simulation_seed = initial_seed
 	temporary_events_enabled = enable_temporary_events
@@ -174,8 +175,13 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	trait_development.ensure_state(hero_state)
 	equip_starting_armor()
-	var starting_traits: Array[String] = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
-	trait_development.apply_starting_traits(hero_state, starting_traits)
+	if background_answers.is_empty():
+		# Legacy direct/headless construction retains its seeded fixture behaviour.
+		var starting_traits: Array[String] = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
+		trait_development.apply_starting_traits(hero_state, starting_traits)
+	else:
+		var background_applied: bool = HeroBackgroundScript.new().apply_to(hero_state, trait_development, background_answers)
+		assert(background_applied, "New-game background answers must be complete and valid.")
 	var runner_initial_quest
 	if autonomous_quest_choice:
 		quest_pool = QuestPoolScript.new(available_quest_definitions, seeded_rng.get_rng())

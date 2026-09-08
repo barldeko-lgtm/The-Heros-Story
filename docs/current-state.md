@@ -57,7 +57,9 @@ The current generic primary-stat effects are centralized through `StatResolver`:
 
 XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights.
 
-The lightweight starting questionnaire is **not implemented yet**. New heroes therefore still use the temporary seeded starting-trait bootstrap described below.
+The lightweight starting questionnaire is live in the normal new-game entry flow. All four questions are shown together in a compact debug screen with visible bonuses; one answer per question is required. The first Next opens an intentionally empty future class-selection screen containing only Next. The second Next creates the Warrior simulation and opens the existing game UI. No simulation/world time exists before that point.
+
+Family grants one point in STR / DEX / CON / INT / WIS without a personality shift. Childhood grants 20 toward Brave / Noble / Greedy / Curious. Youth and departure each grant one point in STR / DEX / CON / INT and 10 toward one of the opposite sides (Cautious / Devious / Generous / Conservative). Every path therefore grants exactly three assigned attribute points, not a free allocation pool. Opposing shifts cancel; no starting axis exceeds 20 in magnitude. Answers are applied once, recorded on HeroState, and current HP starts at the resolved full MaxHP. Separate question pages and actual class selection remain unimplemented.
 
 ## Personality and traits
 
@@ -74,11 +76,7 @@ Each hidden axis currently uses:
 - visible trait activation at ±40;
 - return-to-neutral hysteresis at ±20.
 
-Current temporary new-game bootstrap:
-
-- 1–2 established starting traits are rolled from Cautious, Brave, Devious, Noble, and Greedy;
-- each rolled trait initializes its matching hidden axis at exactly ±40;
-- this seeded roll is transitional and will later be replaced by the approved starting questionnaire with smaller non-visible biases.
+Normal new games use questionnaire-driven hidden biases without any established starting trait. The previous seeded roll of 1–2 established traits at ±40 remains only for direct legacy/headless Simulation construction without background answers; the normal startup flow never uses that fallback.
 
 Personality is already used by real gameplay:
 
@@ -123,23 +121,25 @@ Current ordinary mobs mostly use physical attacks; elemental mitigation exists, 
 ### Power Strike
 
 - learned automatically at compressed hero Level 5;
-- currently Skill Level 1 only;
+- learned at Skill Level 1; combat now supports Skill Levels 1–10 even though paid city training is not wired into the economy loop yet;
 - autonomous use when its Rage/cooldown conditions are satisfied;
 - replaces the next normal attack opportunity;
 - cannot miss but may critically hit;
-- scales with WIS through its ability-specific formula.
+- Skill Level scales the base multiplier evenly from ×1.50 at Skill Level 1 to ×2.50 at Skill Level 10;
+- scales with WIS separately through its ability-specific formula.
 
 ### Battle Guard
 
 - learned automatically at compressed hero Level 10;
-- currently Skill Level 1 only;
+- learned at Skill Level 1; combat now supports Skill Levels 1–10 even though paid city training is not wired into the economy loop yet;
 - autonomous defensive activation after HP falls to the current threshold;
 - no Rage cost and no shield requirement;
 - lasts 10 seconds with a 60-second cooldown;
 - applies after ordinary Block/Armor/Resistance resolution;
-- scales with WIS through its own ability-specific formula.
+- Skill Level scales base remaining-damage reduction evenly from 25% at Skill Level 1 to 45% at Skill Level 10;
+- scales with WIS separately through its own ability-specific formula.
 
-Purchasable Skill Levels 2–10 and Protector/Slayer specialization abilities are not implemented yet.
+The approved working Skill Level cost curve now starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Actual autonomous city purchase/training and Curious/Conservative spending priority are not implemented yet. Protector/Slayer specialization abilities are also not implemented yet.
 
 ## Death and resurrection
 
@@ -627,7 +627,7 @@ These are intentional or transitional and should not be silently "fixed" back to
 
 - the Starting City quest board currently exposes all eligible templates instead of enforcing the intended 3/3/3 maximum while the no-suitable-quest problem is being evaluated;
 - the current ordinary quest completion cooldown is 50 world ticks;
-- new heroes still receive 1–2 seeded established traits instead of the future questionnaire's mild hidden biases;
+- direct legacy/headless Simulation construction without background answers retains 1–2 seeded established traits; normal new games use the questionnaire;
 - `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
 - ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
@@ -639,7 +639,7 @@ These are intentional or transitional and should not be silently "fixed" back to
 
 The most important incomplete areas are:
 
-- starting questionnaire and removal of the temporary seeded established-trait bootstrap;
+- separate question pages and actual class-selection content (the debug questionnaire and empty second screen are live);
 - Mid-Level City as a complete quest/economy gameplay context;
 - autonomous city relocation;
 - Mid-Level City ordinary quests/content;
@@ -649,7 +649,7 @@ The most important incomplete areas are:
 - later equipment/potion progression content beyond the currently live Starting City tiers;
 - two-handed / complete legal hand-configuration content breadth;
 - full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;
-- purchasable higher Skill Levels and training economy;
+- autonomous city purchase/training for the already-supported higher Skill Levels;
 - Curious/Conservative spending priority;
 - player-facing ordinary quest-guidance selection UI;
 - full Hero Diary coverage and episode grouping;

@@ -50,6 +50,17 @@ func _init() -> void:
 	assert(guaranteed_action.action_id == POWER_STRIKE_ID and guaranteed_action.did_hit, "Power Strike must bypass the ordinary hit roll.")
 	assert(is_equal_approx(guaranteed_action.damage, 25.0), "105 Wisdom must raise the Skill Level 1 multiplier from x1.50 to x2.50.")
 
+	var max_rank_session = combat_simulator.create_session(hero_stats, high_dodge_mob, null, 1.0, 10, 5)
+	max_rank_session.rage = 30
+	var max_rank_action = max_rank_session.advance(1.5)[0]
+	assert(max_rank_action.action_id == POWER_STRIKE_ID and max_rank_action.did_hit, "Skill Level 10 Power Strike must remain an autonomous guaranteed hit.")
+	assert(is_equal_approx(max_rank_action.damage, 25.0), "Skill Level 10 Power Strike at starting Wisdom must deal x2.50 weapon damage.")
+
+	for skill_level in range(1, 11):
+		var rank_session = combat_simulator.create_session(hero_stats, passive_mob_stats, null, 1.0, skill_level, 5)
+		var expected_multiplier := lerpf(1.5, 2.5, float(skill_level - 1) / 9.0)
+		assert(is_equal_approx(rank_session.get_power_strike_multiplier(), expected_multiplier), "Power Strike Skill Levels must scale evenly from x1.50 to x2.50.")
+
 	var critical_hero_stats: RefCounted = make_stats(combat_stats_script, 1000.0, 10.0, 1.0, 1.0, 100.0, 0.0)
 	var critical_session = combat_simulator.create_session(critical_hero_stats, passive_mob_stats)
 	critical_session.advance(1.5)
@@ -102,7 +113,7 @@ func _init() -> void:
 	var narration: String = narrator.describe_combat_action(power_strike, hero_state.hero_name, quest_definition)
 	assert(narration.contains("Мощный удар"), "The combat log must distinguish Power Strike from a normal attack.")
 
-	print("PASS: Warrior Rage and autonomous Level 1 Power Strike follow the approved first-slice rules.")
+	print("PASS: Warrior Rage and autonomous Power Strike Skill Levels 1-10 follow the approved rules.")
 	quit()
 
 func make_stats(combat_stats_script: Script, max_hp: float, attack: float, attack_speed: float, crit_chance: float, accuracy: float, dodge: float) -> RefCounted:

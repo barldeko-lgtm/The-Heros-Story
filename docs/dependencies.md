@@ -91,6 +91,18 @@ Important invariants:
 
 The completed `CombatResult` returns to `Simulation`, which routes it to the current activity owner.
 
+## New-game background and startup boundary
+
+Normal launch: StartupFlow → BackgroundScreen (selection only) → empty ClassSelectionScreen → Simulation constructed with complete background answers → existing MainUI using that same Simulation.
+
+- Neither setup screen owns or advances world time; no Simulation exists until the second Next.
+- HeroBackground validates all answer indices before mutation, assigns the authored attribute points, and resets/applies personality through TraitDevelopment rather than duplicating threshold rules.
+- HeroState.background_answers records the applied selection and prevents applying another background to the same hero.
+- Simulation applies background before its first StatResolver pass/full-HP initialization. Questionnaire points never enter the level-up pending-points pool.
+- Existing direct/headless constructors without answers retain the seeded trait bootstrap for fixture compatibility; normal startup supplies answers and never rolls established starting traits.
+- MainUI accepts an existing Simulation without creating a replacement. Direct MainUI construction remains available for existing isolated UI tests.
+- The second screen currently has no class choices; Warrior remains the only class. Question-per-screen presentation is deferred.
+
 ## Hero stats and shared Power
 
 Persistent hero combat values must always resolve through:

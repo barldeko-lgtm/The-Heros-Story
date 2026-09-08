@@ -61,7 +61,7 @@ Prototype 0.2 must include, at minimum:
 
 - one autonomous hero;
 - one starting class: **Warrior**;
-- a small starting questionnaire that creates a mild initial personality bias and a small pool of additional player-distributed primary-attribute points without implementing the full future biography system;
+- a small starting questionnaire that creates a mild initial personality bias and assigns three additional primary-attribute points through the selected biography answers, without implementing the full future biography system;
 - progression from approximately level 1 through **level 25–30** on the compressed progression scale;
 - five primary attributes;
 - player distribution of the free primary-attribute points gained through normal level progression;
@@ -277,10 +277,19 @@ Prototype 0.2 then presents a **small fixed set of questions about the hero's pa
 
 The questionnaire has two mechanical purposes:
 
-1. it grants a **small pool of additional primary-attribute points** that the player distributes directly among STR / DEX / INT / CON / WIS;
-2. individual answers may apply a **small hidden starting shift** toward one side of an appropriate personality axis.
+1. it assigns **exactly three additional primary-attribute points through the chosen answers**, not a separate free allocation pool;
+2. individual answers apply **hidden starting personality shifts** without immediately establishing a visible trait.
 
-The exact number of questionnaire questions, the size of the additional primary-attribute pool, and the numerical hidden personality shifts are tuning values to be finalized during implementation.
+The approved fixed sequence has four questions:
+
+- Family: five answers, granting +1 STR / DEX / CON / INT / WIS respectively, with no personality shift.
+- Childhood: four answers, granting 20 toward Brave / Noble / Greedy / Curious respectively, with no attribute point.
+- Youth: four answers, each granting +1 in STR / DEX / CON / INT plus 10 toward one of Conservative / Generous / Devious / Cautious. Carrying cargo belongs only to the second youth answer and grants CON.
+- Departure: four answers, each granting +1 in STR / DEX / CON / INT plus 10 toward one of Generous / Cautious / Conservative / Devious. WIS is excluded from both later questions.
+
+Each of questions 2–4 represents every personality axis once; questions 3–4 use the opposite sides from question 2. Opposite shifts cancel on their shared axis; every final starting axis remains within ±20. The same attribute can be chosen in multiple episodes. These are the approved initial tuning values.
+
+The eventual presentation uses a separate screen per question. The debug build instead displays all questions/answers and their bonuses on one screen for fast testing. Next requires one selected answer for every question and leads to a separate future class-selection screen. That second screen is currently intentionally empty except for Next; actual class selection is deferred and the hero remains a Warrior. Only the second Next creates the simulation, applies the background once and starts the game. No world time passes during either setup screen.
 
 A starting personality shift must be deliberately smaller than the amount required to create an established visible trait by itself. A biography answer may therefore make the hero begin somewhat closer to Brave, Cautious, Noble, Devious, Greedy, Generous, Curious, or Conservative without immediately labeling the hero with that trait.
 
@@ -635,7 +644,7 @@ The final Power Strike damage multiplier is:
 
 > **`FinalPowerStrikeMultiplier = BaseSkillMultiplier + 2.0 × WisdomFactor`**
 
-`BaseSkillMultiplier` continues to come from Power Strike Skill Level, from **1.50 at Skill Level 1** to **2.00 at Skill Level 10**.
+`BaseSkillMultiplier` continues to come from Power Strike Skill Level, from **1.50 at Skill Level 1** to **2.50 at Skill Level 10**.
 
 WIS therefore improves Power Strike specifically through the ability multiplier, while STR continues to improve the hero's underlying physical Damage and Critical Damage and consequently strengthens both normal attacks and weapon-based abilities.
 
@@ -687,7 +696,7 @@ Battle Guard then multiplies the already-mitigated remaining damage by the multi
 Working endpoints are defined in Section 27:
 
 - Skill Level 1 → **25% base damage reduction**;
-- Skill Level 10 → **35% base damage reduction**;
+- Skill Level 10 → **45% base damage reduction**;
 - intermediate Skill Levels scale evenly between those endpoints.
 
 Battle Guard uses the same shared Wisdom model as other Warrior abilities:
@@ -3160,7 +3169,7 @@ Working endpoints:
 
 > **Skill Level 1 → ×1.50 damage**
 
-> **Skill Level 10 → ×2.00 damage**
+> **Skill Level 10 → ×2.50 damage**
 
 Normal and critical Power Strike hits use the same Skill Level multiplier.
 
@@ -3174,13 +3183,11 @@ critical Power Strike
 = normal critical resolved weapon hit × SkillMultiplier
 ```
 
-Intermediate ranks scale evenly between `×1.50` and `×2.00`.
+Intermediate ranks scale evenly between `×1.50` and `×2.50`.
 
 Because ten Skill Levels contain nine upgrade intervals from Level 1 to Level 10, preserving both exact endpoints produces an average increase of approximately:
 
-> **+0.0556 multiplier per purchased rank after Level 1**
-
-This is preferred over forcing `+0.05` and ending at `×1.95`.
+> **+0.1111 multiplier per purchased rank after Level 1**
 
 The exact intermediate displayed values may be rounded for UI readability while the simulation keeps one deterministic underlying value.
 
@@ -3203,7 +3210,7 @@ Working endpoints:
 
 > **Skill Level 1 → 25% damage reduction**
 
-> **Skill Level 10 → 35% damage reduction**
+> **Skill Level 10 → 45% damage reduction**
 
 Intermediate ranks scale evenly between those endpoints.
 
@@ -3214,7 +3221,7 @@ Skill Level 1:
 remaining damage × 0.75
 
 Skill Level 10:
-remaining damage × 0.65
+remaining damage × 0.55
 ```
 
 Cooldown, duration, activation threshold, and Rage cost do not improve with Skill Level in Prototype 0.2.
@@ -3286,7 +3293,21 @@ Prototype 0.2 bosses and special enemies receive the normal resolved Crippling B
 
 Higher Skill Levels cost progressively more Gold.
 
-The exact Gold price curve remains balance data to define after early economy testing.
+The current working Prototype 0.2 price curve is:
+
+| Purchased Skill Level | Gold cost |
+|---:|---:|
+| 2 | 500 |
+| 3 | 650 |
+| 4 | 850 |
+| 5 | 1100 |
+| 6 | 1450 |
+| 7 | 1900 |
+| 8 | 2450 |
+| 9 | 3200 |
+| 10 | 4150 |
+
+The intended tuning rule is **Skill Level 2 = 500 Gold; each following rank costs approximately 30% more than the previous one, rounded to the nearest 50 Gold**. These values are working balance data and are expected to be revisited after the Mid-Level City economy and longer progression tests are live.
 
 The rank system itself is fixed:
 

@@ -29,6 +29,8 @@ signal state_changed
 
 var hero_name: String
 var hero_class_id: String = "warrior"
+# Applied once at new-game creation; empty for legacy headless fixtures.
+var background_answers: Array[int] = []
 var level: int = 1
 var experience: int = 0
 var experience_to_next_level: int = 1000

@@ -40,7 +40,8 @@ If the task is about...
 ## Project root
 
 - `project.godot` — Godot project configuration and main-scene registration.
-- `scenes/main/main.tscn` — minimal application root; instantiates `MainUI`.
+- `scenes/main/startup.tscn` — normal application root: background questionnaire → empty class-selection placeholder → game.
+- `scenes/main/main.tscn` — direct MainUI scene retained for isolated game-UI use/tests; normal startup injects its newly created Simulation into MainUI.
 - `.github/workflows/tests.yml` — GitHub Actions test workflow.
 - `assets/` — visual source assets and shaders used by current UI.
 - `data/` — immutable authored/tuning resources.
@@ -114,6 +115,10 @@ Owns, among other things:
 - prepared Belt potion levels.
 
 It stores state; rule-heavy calculations should remain in their owning systems.
+
+### `scripts/hero/hero_background.gd` / `data/hero/starting_background.json`
+
+Authored four-question background and Hero-layer answer validation/resolution/application. Grants fixed attribute increments and routes signed personality shifts through TraitDevelopment. Validates the full selection before mutation and uses HeroState.background_answers to reject repeat application. Simulation applies this at construction before StatResolver/full-HP initialization; UI only selects answer indices.
 
 ### `scripts/hero/hero_recovery.gd`
 
@@ -560,6 +565,18 @@ Temporary-event Diary prose is intentionally owned by each branch-specific END s
 Future reusable generic Diary wording should live under `data/narrative/`; unique event/dungeon/content wording should remain with the owning content where practical.
 
 ## UI and scenes
+
+### `scripts/ui/startup_flow.gd` / `scenes/main/startup.tscn`
+
+Owns pregame screen order and selected answer indices, not gameplay formulas. Creates no Simulation until the second Next; then constructs the normal autonomous/event-enabled Warrior simulation with background answers and injects it into MainUI. Duplicate submissions cannot create another game.
+
+### `scripts/ui/screens/background_screen.gd` / `scenes/ui/screens/background_screen.tscn`
+
+Debug questionnaire presentation: four questions in a two-column grid, exclusive answer groups, visible authored bonuses and a bottom-right Next gated on complete valid answers. Authored text/effects live in the separate background data. All options fit at 1366x768; a scroll container protects smaller layouts.
+
+### `scripts/ui/screens/class_selection_screen.gd` / `scenes/ui/screens/class_selection_screen.tscn`
+
+Intentionally empty second screen with only Next. No actual class selection or class rules are implemented yet.
 
 ### `scripts/ui/main_ui.gd`
 
