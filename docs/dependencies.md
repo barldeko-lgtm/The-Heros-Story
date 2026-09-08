@@ -102,7 +102,7 @@ Normal launch: StartupFlow → BackgroundScreen (selection only) → ClassSelect
 - Simulation applies background before its first StatResolver pass/full-HP initialization. Questionnaire points never enter the level-up pending-points pool.
 - Existing direct/headless constructors without answers retain the seeded trait bootstrap for fixture compatibility; normal startup supplies answers and never rolls established starting traits.
 - MainUI accepts an existing Simulation without creating a replacement. Direct MainUI construction remains available for existing isolated UI tests.
-- The second screen currently has no class choices; Warrior remains the only class. Question-per-screen presentation is deferred.
+- The second screen currently shows Warrior, Archer, Mage, and Assassin; only Warrior is selectable in Prototype 0.2, while the other three choices are visibly locked. Explicit Warrior selection is required before the second Next can start the simulation. Question-per-screen presentation is deferred.
 
 ## Hero stats and shared Power
 

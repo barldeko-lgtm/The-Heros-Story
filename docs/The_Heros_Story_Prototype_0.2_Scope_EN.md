@@ -75,7 +75,7 @@ Prototype 0.2 must include, at minimum:
 - travel between cities and to local activities;
 - changing city quest offers;
 - approximately **15–22 ordinary quest templates per city**; the current Starting City uses 22 while the not-yet-authored Mid-Level City still targets 15 unless later balance testing justifies the same expansion;
-- up to **9 simultaneously active ordinary quest offers per city**;
+- current working tuning of up to **12 simultaneously active ordinary quest offers per city**;
 - quest offer expiration and replacement;
 - approximately **15–20 handcrafted temporary events total** across the two-city world;
 - a working personality system with several opposing trait axes and real trait development;
@@ -1430,19 +1430,19 @@ The purpose of the three bands is to make the active board naturally contain opp
 
 ### 14.2. Active Quest Board Composition
 
-The active quest board contains up to nine ordinary quest offers:
+The current working active quest board contains up to twelve ordinary quest offers:
 
-- up to **3 lower-strength offers**;
-- up to **3 middle-strength offers**;
-- up to **3 higher-strength offers**.
+- up to **4 lower-strength offers**;
+- up to **4 middle-strength offers**;
+- up to **4 higher-strength offers**.
 
-Each Starting City band draws only from the seven quest templates assigned to that band. The future Mid-Level City uses the same rule against however many templates are authored for each of its three bands.
+Each Starting City band draws only from the quest templates assigned to that band. The future Mid-Level City uses the same rule against however many templates are authored for each of its three bands.
 
-If a band temporarily cannot provide three valid offers, the board may contain fewer than nine total offers.
+If a band temporarily cannot provide four valid offers, the board may contain fewer than twelve total offers.
 
-The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain nine offers.
+The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain twelve offers.
 
-This preserves the intended 3 / 3 / 3 composition and makes temporary exhaustion of appropriate content meaningful.
+The current **4 / 4 / 4** composition is a working Prototype 0.2 tuning value chosen for transition testing. It may be adjusted later without changing the three-band architecture or shared board lifecycle.
 
 ### 14.3. Shared Quest-Board Rotation
 
@@ -1452,11 +1452,11 @@ Each city's ordinary quest board uses one shared refresh interval of:
 
 At each shared refresh boundary, all ordinary offers still present on that city's board are discarded and the board is rolled again from the currently eligible templates.
 
-The new roll again attempts to produce up to three lower-strength, three middle-strength, and three higher-strength offers. Missing slots are not filled from another band.
+The new roll again attempts to produce up to four lower-strength, four middle-strength, and four higher-strength offers. Missing slots are not filled from another band.
 
 When the hero accepts an offer, that offer immediately stops being an active board offer. Its vacated board slot remains empty until the next shared board refresh; accepting, completing, cancelling, or turning in one quest does **not** trigger an immediate one-slot replacement.
 
-A quest currently being performed by the hero remains the hero's active quest independently of board rotation. Its active world target may remain visible while the quest is being performed, but it does not count toward the board's maximum nine available offers and is never removed merely because the board refreshes.
+A quest currently being performed by the hero remains the hero's active quest independently of board rotation. Its active world target may remain visible while the quest is being performed, but it does not count toward the board's maximum twelve available offers and is never removed merely because the board refreshes.
 
 The 50-tick value is a working Prototype 0.2 tuning value.
 
@@ -1466,7 +1466,7 @@ When a quest template has recently been used and is not yet eligible to generate
 
 Prototype 0.2 must support this temporary unavailability so the board does not instantly regenerate the exact same completed quest.
 
-Therefore the number of currently available offers in a strength band can temporarily fall below three.
+Therefore the number of currently available offers in a strength band can temporarily fall below four.
 
 This cooldown is strict in the current Prototype 0.2 rule: a blocked template is not allowed to return early merely to fill a missing board slot.
 
@@ -4910,8 +4910,8 @@ Replace the Prototype 0 single-city quest board with the approved Prototype 0.2 
 
 - 22 ordinary quest templates in Starting City and a current target of 15 for the not-yet-authored Mid-Level City;
 - three relative mob-strength bands: Starting City uses 8 lower / 7 middle / 7 higher; Mid-Level City must use the same banded model when authored;
-- up to 9 simultaneously active ordinary offers;
-- maximum 3 active offers from each strength band;
+- current working tuning of up to 12 simultaneously active ordinary offers;
+- maximum 4 active offers from each strength band;
 - one shared 50-world-tick full-board refresh cycle; accepted offers leave vacancies until that shared refresh;
 - temporary template unavailability after use;
 - hero evaluation of active offers only;

@@ -206,13 +206,14 @@ Ordinary quest selection is autonomous and uses the current dedicated flow:
 
 `QuestRunner` executes only the already selected quest. Quest selection, scoring, combat resolution, item generation, diary prose, God rules, and UI remain outside it.
 
-### Current temporary quest-board development mode
+### Current quest-board tuning
 
-The intended Prototype 0.2 board target remains up to 9 offers with up to 3 per strength band, but that cap is **temporarily disabled for playtesting**.
+The current working Prototype 0.2 board cap is **up to 12 offers total, with up to 4 offers per strength band**. This 4 / 4 / 4 composition is an explicit tuning step before Mid-Level City relocation testing and may be adjusted again after playtesting.
 
 Current runtime behaviour:
 
-- every currently eligible Starting City quest template may appear simultaneously;
+- each shared board roll selects up to 4 different currently eligible templates from each strength band;
+- missing slots in one band are not filled from another band;
 - accepted offers leave the board immediately;
 - the accepted active quest keeps its real target reservation independently of later board refreshes;
 - the whole available board refreshes every **50 world ticks**;
@@ -638,7 +639,7 @@ For ordinary changes, narrow deterministic tests are preferred over running the 
 
 These are intentional or transitional and should not be silently "fixed" back to older behaviour:
 
-- the Starting City quest board currently exposes all eligible templates instead of enforcing the intended 3/3/3 maximum while the no-suitable-quest problem is being evaluated;
+- the Starting City quest board currently uses the working 4/4/4 cap (up to 12 offers total); this remains a balance value to validate before/with city-relocation tuning;
 - the current ordinary quest completion cooldown is 50 world ticks;
 - direct legacy/headless Simulation construction without background answers retains 1–2 seeded established traits; normal new games use the questionnaire;
 - `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;

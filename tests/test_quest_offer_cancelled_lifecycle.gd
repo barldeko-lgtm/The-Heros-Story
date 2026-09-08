@@ -31,7 +31,7 @@ func _init() -> void:
 	assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Natural resurrection and city recovery must return the hero to quest choice.")
 	assert(simulation.quest_pool.last_board_refresh_tick >= 100, "The global quest board must keep its own 50-tick schedule even during death and recovery.")
 	var current_offers: Array = simulation.quest_pool.get_available_quests()
-	assert(current_offers.size() == 9, "A normal global refresh after cancellation must refill the full 3/3/3 board when all templates are eligible.")
+	assert(current_offers.size() == 12, "A normal global refresh after cancellation must refill the full 4/4/4 board when all bands have enough eligible templates.")
 	for current_offer in current_offers:
 		assert(current_offer.has_map_target(), "Every globally rerolled offer after recovery must have a fresh map target.")
 		assert(simulation.world_state.get_activity_id_at_hex(current_offer.target_hex) == current_offer.map_activity_id, "Every rerolled quest marker must correspond to its own live map reservation.")

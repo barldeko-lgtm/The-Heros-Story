@@ -70,7 +70,7 @@ Status:
 - ✅ Autonomous `Hard Filter → QuestScore → best valid quest` selection.
 - ✅ Real travel to quest target, combat/recovery loop, real return travel, turn-in and Gold reward.
 - ✅ Shared 50-world-tick full-board refresh and strict 50-world-tick completed-template cooldown.
-- 🟡 Intended final board remains up to 9 offers / 3 per band, but the current development build deliberately exposes all eligible templates while the no-suitable-quest problem is being evaluated.
+- ✅ Current quest-board working tuning is live at up to 12 offers / 4 per strength band, with deterministic rerolls every 50 ticks and vacancies left until the next shared refresh.
 - ⬜ 15 Mid-Level City ordinary quest templates.
 - ⬜ City-local quest pools across both cities.
 - ⬜ "Hero outgrew this city" relocation trigger from the current active opportunities.
@@ -189,7 +189,7 @@ Status:
 | Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
 | Main playable progression | early-game systems live | compressed level ~1–30 |
 
-The intended ordinary quest board remains up to 9 offers / 3 per strength band, but the current development build temporarily exposes all eligible Starting City templates. This is a known development deviation, not a completed final-board decision.
+The current ordinary quest-board tuning is up to 12 offers / 4 per strength band. This 4/4/4 value is deliberately still treated as balance tuning and may be adjusted after first-to-second-city transition testing.
 
 ## 16. Major remaining Prototype 0.2 blocks
 

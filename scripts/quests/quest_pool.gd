@@ -9,6 +9,7 @@ const ActivityPlacementFinderScript = preload("res://scripts/world/activity_plac
 const BOARD_REFRESH_INTERVAL_TICKS: int = 50
 const COMPLETED_TEMPLATE_COOLDOWN_TICKS: int = 50
 const STRENGTH_BANDS: Array[String] = ["lower", "middle", "higher"]
+const MAX_OFFERS_PER_STRENGTH_BAND: int = 4
 
 var available_quests: Array = []
 var quest_templates: Array[Resource] = []
@@ -101,7 +102,8 @@ func refresh_board(current_tick: int) -> bool:
 	available_quests.clear()
 	for strength_band in STRENGTH_BANDS:
 		var eligible_templates: Array = get_eligible_templates_for_band(strength_band, current_tick)
-		for quest_template in eligible_templates:
+		var selected_templates: Array = select_templates_for_board(eligible_templates)
+		for quest_template in selected_templates:
 			available_quests.append(create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
 	if has_map_placement_context():
 		var _assert_assign_map_targets_to_current_offers_ok_1: bool = assign_map_targets_to_current_offers()
@@ -131,6 +133,18 @@ func get_eligible_templates_for_band(strength_band: String, current_tick: int) -
 			continue
 		result.append(quest_template)
 	return result
+
+func select_templates_for_board(eligible_templates: Array) -> Array:
+	if eligible_templates.size() <= MAX_OFFERS_PER_STRENGTH_BAND:
+		return eligible_templates.duplicate()
+
+	var remaining_templates: Array = eligible_templates.duplicate()
+	var selected_templates: Array = []
+	while selected_templates.size() < MAX_OFFERS_PER_STRENGTH_BAND:
+		var selected_index: int = random_number_generator.randi_range(0, remaining_templates.size() - 1)
+		selected_templates.append(remaining_templates[selected_index])
+		remaining_templates.remove_at(selected_index)
+	return selected_templates
 
 func take_offer(offer) -> bool:
 	var offer_index: int = available_quests.find(offer)
