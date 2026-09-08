@@ -236,7 +236,7 @@ Contracts:
 
 `QuestRunner` executes one already selected quest.
 
-It may own quest-specific state transitions such as travel phase, objective progress, post-fight recovery, return/turn-in and ordinary-quest death/resurrection flow.
+It may own quest-specific state transitions such as travel phase, objective progress, post-fight recovery, the post-objective equipment-review gate, return/turn-in and ordinary-quest death/resurrection flow. Whether any generated quest equipment is waiting is supplied to it by coordination; it does not inspect, generate or evaluate those items itself.
 
 It must not own:
 
@@ -253,6 +253,8 @@ XP remains outside `QuestRunner`: `Simulation` applies defeated-mob XP only afte
 ## Death and resurrection ownership
 
 Death is activity-contextual even though the broad recovery contract is shared.
+
+`HeroRecovery` implements the shared countdown, resurrection and city-recovery rules without storing runtime state. Each runner retains its own timer, entry guards, failure/context cleanup and original result payloads; Simulation and GodSystem still route through the active runner. Only that owner advances its timer once per completed world tick. Natural and forced resurrection use the same HP/state operation. Ordinary post-victory quest healing remains in QuestRunner and is not tied to city-recovery tuning.
 
 Current pattern:
 
@@ -490,6 +492,23 @@ drop/reward source
 → StatResolver refresh
 ```
 
+Ordinary quest mob equipment now inserts a delayed review boundary into that same chain:
+
+```text
+mob defeated
+→ LootGenerator rolls the source drop
+→ ItemGenerator creates the concrete ItemInstance immediately
+→ current quest equipment buffer (not yet Equipment / Inventory)
+→ main mob objective completed
+→ if buffer is non-empty: exactly one world-tick review phase
+→ EquipmentEvaluator routes every buffered item in sequence
+→ Equipment or Inventory
+→ StatResolver refresh as required
+→ normal return travel
+```
+
+No equipment drop means no review phase and no extra world tick. Multiple buffered items are all reviewed inside the same single review tick; item count must not multiply world-time cost. A failed unresolved ordinary quest clears its still-buffered equipment. This current buffer is a narrow equipment-only implementation slice and must not be mistaken for the final generalized QuestLoot/trophy/backpack model.
+
 ### Definition/runtime boundary
 
 - `ItemDefinition` is immutable identity/visual/base data;
@@ -526,7 +545,7 @@ Contracts:
 - healing-potion counts are persistent Inventory state but are separate from retained-equipment FIFO capacity;
 - automatic sale systems must never treat potions as ordinary equipment;
 - ordinary found/reward equipment that replaces an equipped item routes the displaced/rejected permanent gear through the normal retained-Inventory path, while a **shop purchase** follows the separate shop transaction rule where the replaced equipped item is sold immediately instead of entering Inventory;
-- future `QuestLoot` must remain separate from permanent Equipment/Inventory so death can clear unsafe carried quest loot without deleting permanent gear.
+- still-unreviewed ordinary quest equipment remains separate from permanent Equipment/Inventory so quest failure can clear unsafe carried equipment without deleting permanent gear; a future generalized QuestLoot/trophy/backpack model must preserve that separation.
 
 Exact current slot counts, tier mappings, drop chances and rarity tuning live in `current-state.md`/data.
 

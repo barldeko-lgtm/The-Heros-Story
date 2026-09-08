@@ -97,6 +97,7 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.TRAVEL_TO_QUEST: return "Идёт к цели"
 		HeroState.DOING_QUEST: return "Выполняет квест"
 		HeroState.RECOVERING_AFTER_FIGHT: return "Восстанавливается после боя"
+		HeroState.REVIEWING_QUEST_LOOT: return "Разбирает найденную добычу"
 		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
 		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
 		HeroState.VISITING_MARKET: return "На рынке — продаёт ненужный шмот"
@@ -125,4 +126,3 @@ func apply_panel_style(panel: PanelContainer) -> void:
 	panel_style.content_margin_top = 14.0
 	panel_style.content_margin_bottom = 14.0
 	panel.add_theme_stylebox_override("panel", panel_style)
-

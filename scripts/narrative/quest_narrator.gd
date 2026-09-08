@@ -100,10 +100,16 @@ func describe_recovery(event) -> String:
 	var message := "%s восстановил здоровье: %.1f / %.1f." % [event.hero_name, event.current_hp, event.max_hp]
 	if is_equal_approx(event.current_hp, event.max_hp):
 		if event.completed_mob_count >= event.mob_count:
-			message += " Все противники побеждены; он идёт в город."
+			if event.loot_review_pending:
+				message += " Все противники побеждены; перед дорогой домой он разберёт найденную добычу."
+			else:
+				message += " Все противники побеждены; он идёт в город."
 		else:
 			message += " Готов к следующему бою."
 	return message
+
+func describe_loot_review(hero_name: String, item_count: int) -> String:
+	return "%s разбирает найденное снаряжение после выполнения цели. Предметов: %d." % [hero_name, item_count]
 
 func describe_city_recovery(event) -> String:
 	var message := "%s восстанавливается в городе: %.1f / %.1f HP." % [event.hero_name, event.current_hp, event.max_hp]

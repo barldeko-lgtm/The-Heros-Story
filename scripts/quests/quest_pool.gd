@@ -161,7 +161,9 @@ func handle_quest_event(event, hero_loop_state: String, completed_tick: int = 0)
 		var _assert_take_offer_ok_2: bool = take_offer(event.quest_definition)
 		assert(_assert_take_offer_ok_2, "Selected autonomous quest must be removed from the active board until the next global refresh.")
 		return
-	if event.event_type == QuestEventScript.HERO_RECOVERED_AFTER_FIGHT and hero_loop_state == HeroStateScript.RETURNING_TO_CITY and event.completed_mob_count >= event.mob_count:
+	if event.event_type == QuestEventScript.HERO_RECOVERED_AFTER_FIGHT \
+		and hero_loop_state in [HeroStateScript.REVIEWING_QUEST_LOOT, HeroStateScript.RETURNING_TO_CITY] \
+		and event.completed_mob_count >= event.mob_count:
 		release_offer_map_target(event.quest_definition)
 		return
 	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST:

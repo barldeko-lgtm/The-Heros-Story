@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-06**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-08**.
 
 This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
@@ -105,7 +105,8 @@ Status:
 - ✅ Three current visual families: Rustchain Initiate, Ironwake Sentinel, Ironward Vanguard, including five armor paper-doll overlays.
 - ✅ Source-driven ordinary mob drops and autonomous equip/inventory routing.
 - 🟡 Inventory is a functional first pass: 36 retained equipment items plus separate persistent potion counts/visual bottle slots.
-- ⬜ `QuestLoot` / unsafe carried adventure loot and death-loss handling for it.
+- ✅ Ordinary quest equipment `QuestLoot` flow is live: mob drops wait until objective completion, all found equipment is reviewed in one dedicated tick, unreviewed equipment is lost on quest death, and reviewed items become normal permanent Equipment/Inventory before the return trip.
+- ⬜ General trophy/backpack carried-loot handling beyond ordinary equipment.
 - ⬜ Full legal two-handed / hand-configuration content and evaluation.
 - ⬜ Remaining 2–3+ visual armor families and later equipment tiers required for the full 0.2 content target.
 
@@ -201,5 +202,5 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement Skill Level training and Curious/Conservative spending priority.
 7. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
-8. Complete QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
+8. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
 9. Add Save/Load and run long-duration Prototype 0.2 validation through the intended compressed level range.

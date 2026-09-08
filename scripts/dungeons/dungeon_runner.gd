@@ -1,10 +1,12 @@
 class_name DungeonRunner
 extends RefCounted
 
+const HeroRecoveryScript = preload("res://scripts/hero/hero_recovery.gd")
+
 const BETWEEN_FIGHT_PREPARATION_TICKS: int = 1
-const RESPAWN_DURATION_TICKS: int = 100
-const RESURRECTION_HP: float = 1.0
-const CITY_RECOVERY_PERCENT_OF_MAX_HP: float = 0.20
+const RESPAWN_DURATION_TICKS: int = HeroRecoveryScript.RESPAWN_DURATION_TICKS
+const RESURRECTION_HP: float = HeroRecoveryScript.RESURRECTION_HP
+const CITY_RECOVERY_PERCENT_OF_MAX_HP: float = HeroRecoveryScript.CITY_RECOVERY_PERCENT_OF_MAX_HP
 
 var travel_system
 var active_dungeon
@@ -167,10 +169,8 @@ func advance_return_to_city(hero_state) -> Dictionary:
 func advance_respawn(hero_state, combat_stats: CombatStats) -> Dictionary:
 	if hero_state == null or combat_stats == null or not failure_recovery_active or hero_state.loop_state != HeroState.DEAD_RESPAWNING:
 		return {}
-	respawn_ticks_remaining = maxi(0, respawn_ticks_remaining - 1)
+	respawn_ticks_remaining = HeroRecoveryScript.advance_respawn(hero_state, combat_stats, respawn_ticks_remaining)
 	if respawn_ticks_remaining <= 0:
-		hero_state.current_hp = minf(RESURRECTION_HP, combat_stats.max_hp)
-		hero_state.loop_state = HeroState.RECOVERING_IN_CITY
 		return {
 			"type": "resurrected",
 			"current_hp": hero_state.current_hp,
@@ -186,8 +186,7 @@ func force_resurrection(hero_state, combat_stats: CombatStats):
 	if hero_state == null or combat_stats == null or not failure_recovery_active or hero_state.loop_state != HeroState.DEAD_RESPAWNING:
 		return null
 	respawn_ticks_remaining = 0
-	hero_state.current_hp = minf(RESURRECTION_HP, combat_stats.max_hp)
-	hero_state.loop_state = HeroState.RECOVERING_IN_CITY
+	HeroRecoveryScript.resurrect(hero_state, combat_stats)
 	return {
 		"type": "resurrected",
 		"current_hp": hero_state.current_hp,
@@ -198,11 +197,8 @@ func force_resurrection(hero_state, combat_stats: CombatStats):
 func advance_city_recovery(hero_state, combat_stats: CombatStats) -> Dictionary:
 	if hero_state == null or combat_stats == null or not failure_recovery_active or hero_state.loop_state != HeroState.RECOVERING_IN_CITY:
 		return {}
-	hero_state.current_hp = minf(combat_stats.max_hp, hero_state.current_hp + combat_stats.max_hp * CITY_RECOVERY_PERCENT_OF_MAX_HP)
-	var fully_recovered: bool = is_equal_approx(hero_state.current_hp, combat_stats.max_hp)
+	var fully_recovered: bool = HeroRecoveryScript.advance_city_recovery(hero_state, combat_stats)
 	if fully_recovered:
-		hero_state.current_hp = combat_stats.max_hp
-		hero_state.loop_state = HeroState.CHOOSING_QUEST
 		failure_recovery_active = false
 	return {
 		"type": "city_recovery",

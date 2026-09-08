@@ -115,6 +115,10 @@ Owns, among other things:
 
 It stores state; rule-heavy calculations should remain in their owning systems.
 
+### `scripts/hero/hero_recovery.gd`
+
+Shared stateless death-recovery rules used by QuestRunner, DungeonRunner and EventRunner: respawn countdown calculation, resurrection HP/state, and city healing/full-recovery transition. Uses supplied current CombatStats; owns no timer, activity context, world time, travel, rewards or narration. Existing runner constants alias the shared tuning; ordinary post-victory quest recovery remains separate.
+
 ### `scripts/hero/hero_progression.gd`
 
 Owns XP application, level-up growth, pending primary-point creation/spending and current automatic Warrior ability unlocks.
@@ -265,7 +269,7 @@ It evaluates; it does not mutate the board or execute the quest.
 
 ### `scripts/quests/quest_runner.gd`
 
-Executes one already selected ordinary quest: travel-state progression, objective progress, post-fight recovery, return/turn-in and ordinary-quest death/resurrection/city-recovery flow.
+Executes one already selected ordinary quest: travel-state progression, objective progress, post-fight recovery, the post-objective equipment-review gate, return/turn-in and ordinary-quest death/resurrection/city-recovery flow.
 
 It does **not** choose quests, calculate QuestScore, resolve combat internally, generate loot, write diary prose, own God rules or own UI.
 
@@ -407,7 +411,7 @@ Chooses source/slot/rarity outcome from an approved equipment source. It does no
 
 ### `scripts/loot/equipment_reward_system.gd`
 
-Coordinates generated-equipment reward routing:
+Coordinates generated-equipment reward routing. It can either complete the normal route immediately or split generation from later routing for the ordinary-quest post-objective review point:
 
 `LootGenerator → ItemGenerator → EquipmentEvaluator → Equipment/Inventory`
 

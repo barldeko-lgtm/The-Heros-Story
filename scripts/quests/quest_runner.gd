@@ -1,10 +1,12 @@
 class_name QuestRunner
 extends RefCounted
 
+const HeroRecoveryScript = preload("res://scripts/hero/hero_recovery.gd")
+
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
 const RECOVERY_PERCENT_OF_MAX_HP: float = 0.20
-const RESPAWN_DURATION_TICKS: int = 100
-const RESURRECTION_HP: float = 1.0
+const RESPAWN_DURATION_TICKS: int = HeroRecoveryScript.RESPAWN_DURATION_TICKS
+const RESURRECTION_HP: float = HeroRecoveryScript.RESURRECTION_HP
 
 var quest_definition
 var travel_system
@@ -19,7 +21,7 @@ func _init(initial_quest_definition, initial_travel_system = null, initial_city_
 	travel_system = initial_travel_system
 	city_center = initial_city_center
 
-func advance(hero_state, combat_stats: CombatStats = null):
+func advance(hero_state, combat_stats: CombatStats = null, has_pending_quest_loot: bool = false):
 	match hero_state.loop_state:
 		HeroState.CHOOSING_QUEST:
 			completed_mob_count = 0
@@ -47,16 +49,15 @@ func advance(hero_state, combat_stats: CombatStats = null):
 			if is_equal_approx(hero_state.current_hp, combat_stats.max_hp):
 				hero_state.current_hp = combat_stats.max_hp
 				if completed_mob_count >= quest_definition.mob_count:
-					hero_state.loop_state = HeroState.RETURNING_TO_CITY
-					if map_travel_active:
-						var _assert_begin_travel_ok_2: bool = travel_system.begin_travel(city_center)
-						assert(_assert_begin_travel_ok_2, "Completed map-backed quest must have a valid route back to its city.")
-						travel_ticks_remaining = travel_system.get_remaining_steps()
+					if has_pending_quest_loot:
+						hero_state.loop_state = HeroState.REVIEWING_QUEST_LOOT
 					else:
-						travel_ticks_remaining = ceili(quest_definition.distance_km)
+						begin_return_to_city(hero_state)
 				else:
 					hero_state.loop_state = HeroState.DOING_QUEST
-			return QuestEventScript.new(QuestEventScript.HERO_RECOVERED_AFTER_FIGHT, hero_state.hero_name, quest_definition, 0, 0, null, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp)
+			var recovery_event = QuestEventScript.new(QuestEventScript.HERO_RECOVERED_AFTER_FIGHT, hero_state.hero_name, quest_definition, 0, 0, null, completed_mob_count, quest_definition.mob_count, hero_state.current_hp, combat_stats.max_hp)
+			recovery_event.loot_review_pending = hero_state.loop_state == HeroState.REVIEWING_QUEST_LOOT
+			return recovery_event
 		HeroState.RETURNING_TO_CITY:
 			if map_travel_active:
 				return advance_map_travel(hero_state, false)
@@ -74,20 +75,12 @@ func advance(hero_state, combat_stats: CombatStats = null):
 				travel_system.clear_travel()
 			return QuestEventScript.new(QuestEventScript.HERO_TURNED_IN_QUEST, hero_state.hero_name, quest_definition, 0, quest_definition.gold_reward)
 		HeroState.DEAD_RESPAWNING:
-			respawn_ticks_remaining -= 1
+			respawn_ticks_remaining = HeroRecoveryScript.advance_respawn(hero_state, combat_stats, respawn_ticks_remaining)
 			if respawn_ticks_remaining <= 0:
-				assert(combat_stats != null, "Resurrection requires resolved hero CombatStats.")
-				respawn_ticks_remaining = 0
-				hero_state.current_hp = minf(RESURRECTION_HP, combat_stats.max_hp)
-				hero_state.loop_state = HeroState.RECOVERING_IN_CITY
 				return QuestEventScript.new(QuestEventScript.HERO_RESURRECTED, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp)
 			return QuestEventScript.new(QuestEventScript.HERO_WAITING_FOR_RESURRECTION, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp, 0, respawn_ticks_remaining)
 		HeroState.RECOVERING_IN_CITY:
-			assert(combat_stats != null, "City recovery requires resolved hero CombatStats.")
-			hero_state.current_hp = minf(combat_stats.max_hp, hero_state.current_hp + combat_stats.max_hp * RECOVERY_PERCENT_OF_MAX_HP)
-			if is_equal_approx(hero_state.current_hp, combat_stats.max_hp):
-				hero_state.current_hp = combat_stats.max_hp
-				hero_state.loop_state = HeroState.CHOOSING_QUEST
+			HeroRecoveryScript.advance_city_recovery(hero_state, combat_stats)
 			return QuestEventScript.new(QuestEventScript.HERO_RECOVERING_IN_CITY, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp)
 	return null
 
@@ -127,9 +120,23 @@ func force_resurrection(hero_state, combat_stats: CombatStats):
 	if hero_state.loop_state != HeroState.DEAD_RESPAWNING:
 		return null
 	respawn_ticks_remaining = 0
-	hero_state.current_hp = minf(RESURRECTION_HP, combat_stats.max_hp)
-	hero_state.loop_state = HeroState.RECOVERING_IN_CITY
+	HeroRecoveryScript.resurrect(hero_state, combat_stats)
 	return QuestEventScript.new(QuestEventScript.HERO_RESURRECTED, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp)
+
+func complete_loot_review(hero_state) -> bool:
+	if hero_state == null or hero_state.loop_state != HeroState.REVIEWING_QUEST_LOOT:
+		return false
+	begin_return_to_city(hero_state)
+	return true
+
+func begin_return_to_city(hero_state) -> void:
+	hero_state.loop_state = HeroState.RETURNING_TO_CITY
+	if map_travel_active:
+		var _assert_begin_travel_ok_2: bool = travel_system.begin_travel(city_center)
+		assert(_assert_begin_travel_ok_2, "Completed map-backed quest must have a valid route back to its city.")
+		travel_ticks_remaining = travel_system.get_remaining_steps()
+	else:
+		travel_ticks_remaining = ceili(quest_definition.distance_km)
 
 func complete_fight(hero_state, combat_stats: CombatStats, combat_result):
 	hero_state.current_hp = maxf(0.0, combat_result.hero_remaining_hp)

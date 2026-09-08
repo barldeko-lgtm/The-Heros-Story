@@ -128,6 +128,7 @@ var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
 var combat_results_by_mob: Dictionary = {}
 var pending_dungeon_preparation = null
+var pending_quest_equipment_drops: Array = []
 # Compatibility access; DiaryRecorder is the only owner of this id.
 var active_quest_diary_entry_id: int:
 	get:
@@ -408,8 +409,9 @@ func advance_active_combat(available_seconds: float) -> float:
 		else:
 			var event = quest_runner.complete_fight(hero_state, combat_stats, combat_result)
 			if combat_result.hero_won:
-				resolve_mob_equipment_drop(fought_mob_definition, combat_world_tick)
+				collect_mob_equipment_drop(fought_mob_definition)
 			if event != null and event.event_type == QuestEventScript.HERO_DIED:
+				pending_quest_equipment_drops.clear()
 				var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
 				assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
 				refresh_finished_quest_offer_if_needed(event, combat_world_tick)
@@ -439,6 +441,7 @@ func complete_event_combat(fought_mob_definition: Resource, combat_result, comba
 
 	var cancelled_quest = quest_runner.cancel_for_external_failure(hero_state)
 	if cancelled_quest != null:
+		pending_quest_equipment_drops.clear()
 		clear_active_quest_diary_entry()
 	if autonomous_quest_choice and quest_pool != null and cancelled_quest != null:
 		quest_pool.cancel_taken_offer(cancelled_quest)
@@ -585,12 +588,15 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.RECOVERING_IN_CITY and dungeon_runner.owns_respawn_state():
 		advance_dungeon_city_recovery_tick(completed_tick)
 		return
+	if hero_state.loop_state == HeroState.REVIEWING_QUEST_LOOT:
+		advance_quest_loot_review_tick(completed_tick)
+		return
 	if hero_state.loop_state == HeroState.DOING_QUEST or hero_state.loop_state == HeroState.DOING_DUNGEON:
 		return
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
 		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
 		return
-	var event = quest_runner.advance(hero_state, combat_stats)
+	var event = quest_runner.advance(hero_state, combat_stats, not pending_quest_equipment_drops.is_empty())
 	if event == null:
 		debug_log.record_tick(completed_tick)
 		begin_pending_event_if_ready(completed_tick)
@@ -605,6 +611,25 @@ func on_world_tick_completed(completed_tick: int) -> void:
 
 func record_quest_diary_event(event, event_tick: int) -> void:
 	diary_recorder.record_quest_diary_event(event, event_tick)
+
+func collect_mob_equipment_drop(mob_definition: Resource, rng_override = null) -> Dictionary:
+	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
+	var result: Dictionary = equipment_reward_system.generate_mob_equipment_drop(mob_definition, rng)
+	var item_instance = result.get("item_instance")
+	if item_instance != null:
+		pending_quest_equipment_drops.append(item_instance)
+	return result
+
+func advance_quest_loot_review_tick(completed_tick: int) -> void:
+	assert(not pending_quest_equipment_drops.is_empty(), "Quest loot review state requires at least one generated equipment drop.")
+	debug_log.record_event(completed_tick, quest_narrator.describe_loot_review(hero_state.hero_name, pending_quest_equipment_drops.size()))
+	for item_instance in pending_quest_equipment_drops:
+		var previous_max_hp: float = combat_stats.max_hp
+		var result: Dictionary = equipment_reward_system.route_item(hero_state, item_instance)
+		finalize_item_reward(result, completed_tick, previous_max_hp)
+	pending_quest_equipment_drops.clear()
+	var _assert_complete_loot_review_ok: bool = quest_runner.complete_loot_review(hero_state)
+	assert(_assert_complete_loot_review_ok, "Quest loot review must transition into the normal return-to-city route.")
 
 func clear_active_quest_diary_entry() -> void:
 	diary_recorder.clear_active_quest_diary_entry()

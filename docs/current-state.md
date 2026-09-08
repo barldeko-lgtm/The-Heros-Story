@@ -158,9 +158,9 @@ On ordinary quest combat death:
 - city recovery restores 20% MaxHP per world tick;
 - the hero does not resume normal activity until fully recovered.
 
-Dungeon and temporary-event deaths reuse the same broad death/resurrection contract through their current owning runner.
+Dungeon and temporary-event deaths use the same `HeroRecovery` rules as ordinary quests through their current owning runner; timers, activity context and result reporting remain runner-owned. Gameplay timing and recovery values are unchanged.
 
-`QuestLoot` does not exist yet, so the intended unsafe-adventure-loot loss on death is not implemented. Current generated ordinary equipment becomes permanent immediately.
+The full generalized `QuestLoot` / unsafe-adventure-loot model is not implemented yet. Ordinary quest equipment now has the narrow post-objective review buffer described below: unreviewed equipment is not permanent and is discarded on quest combat death, while the broader trophy/backpack and post-review unsafe-carried-loot rules remain future work.
 
 ## World map and travel
 
@@ -229,6 +229,7 @@ Successful ordinary life currently follows roughly:
 choose quest
 → real map travel to target
 → fight / XP / recovery until objective completes
+→ if at least one equipment item dropped: one world tick to review all found equipment
 → real return travel
 → turn in for Gold
 → dedicated market/sale tick
@@ -406,9 +407,11 @@ Ordinary mob equipment drops currently use:
 - middle band → compressed ilvl 5 source;
 - higher band → compressed ilvl 10 source.
 
+During an ordinary quest, a successful equipment-drop roll now creates the concrete generated `ItemInstance` at the defeated mob, but does **not** immediately evaluate/equip it. Found quest equipment waits in the current adventure buffer until the main mob objective is complete. Before return travel, if at least one equipment item was found, the hero spends exactly **one world tick** reviewing the entire accumulated equipment batch through the existing `EquipmentEvaluator` / Equipment / Inventory routing. The review costs one tick regardless of item count; if no equipment dropped, the extra phase is skipped completely. A quest combat death clears still-unreviewed equipment rather than allowing it to leak into a later quest.
+
 The current Inventory keeps up to **36 unequipped equipment items** in FIFO order. Healing potions are stored separately from that equipment capacity.
 
-`QuestLoot` / temporary unsafe adventure loot is not implemented yet.
+This is the first **equipment-only** slice of the intended `QuestLoot` flow, not the complete future backpack system. General trophies, broader carried-adventure-loot representation/UI and the rest of the final QuestLoot model are still not implemented.
 
 ## Economy, shop, Belt and potions
 
@@ -627,7 +630,7 @@ These are intentional or transitional and should not be silently "fixed" back to
 - new heroes still receive 1–2 seeded established traits instead of the future questionnaire's mild hidden biases;
 - `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
-- `QuestLoot` is not implemented, so ordinary generated equipment is currently permanent immediately;
+- ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
 - current normal attacks/content are effectively physical even though elemental mitigation exists;
 - unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
 - the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
@@ -645,7 +648,7 @@ The most important incomplete areas are:
 - first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;
 - later equipment/potion progression content beyond the currently live Starting City tiers;
 - two-handed / complete legal hand-configuration content breadth;
-- QuestLoot / unsafe carried adventure loot;
+- full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;
 - purchasable higher Skill Levels and training economy;
 - Curious/Conservative spending priority;
 - player-facing ordinary quest-guidance selection UI;

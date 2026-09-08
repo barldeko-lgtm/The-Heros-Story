@@ -11,19 +11,29 @@ func _init(initial_loot_generator, initial_item_generator, initial_equipment_eva
 	equipment_evaluator = initial_equipment_evaluator
 
 func resolve_mob_equipment_drop(hero_state, mob_definition: Resource, rng) -> Dictionary:
+	var generated: Dictionary = generate_mob_equipment_drop(mob_definition, rng)
+	var item_instance = generated.get("item_instance")
+	if item_instance == null:
+		var empty_result: Dictionary = create_empty_routing_result()
+		empty_result["item_definition"] = generated.get("item_definition")
+		return empty_result
+	var result: Dictionary = route_item(hero_state, item_instance)
+	result["item_definition"] = generated.get("item_definition")
+	return result
+
+func generate_mob_equipment_drop(mob_definition: Resource, rng) -> Dictionary:
 	var result: Dictionary = {
 		"item_definition": null,
 		"item_instance": null,
-		"equipped": false,
-		"inventory_item": null,
-		"dropped_item": null,
 	}
+	if mob_definition == null or rng == null or mob_definition.equipment_drop_table == null:
+		return result
 	var item_definition = loot_generator.roll_mob_equipment(mob_definition, rng)
 	if item_definition == null:
 		return result
 	var item_level: int = int(mob_definition.equipment_drop_table.item_level)
-	result = receive_item(hero_state, item_definition, item_level, rng)
 	result["item_definition"] = item_definition
+	result["item_instance"] = item_generator.generate(item_definition, item_level, rng)
 	return result
 
 func resolve_dungeon_completion_reward(hero_state, dungeon_definition: Resource, rng) -> Dictionary:
@@ -63,19 +73,18 @@ func resolve_authored_source_reward(hero_state, source: Resource, rng, rarity_ov
 	return result
 
 func receive_item(hero_state, item_definition: Resource, item_level: int, rng, rarity_override: int = -1) -> Dictionary:
-	var result: Dictionary = {
-		"item_instance": null,
-		"equipment_evaluation": {},
-		"equipped": false,
-		"inventory_item": null,
-		"dropped_item": null,
-		"target_slot": "",
-	}
+	var result: Dictionary = create_empty_routing_result()
 	if hero_state == null or item_definition == null or rng == null:
 		return result
 
 	var item_instance = item_generator.generate(item_definition, item_level, rng, rarity_override)
 	if item_instance == null:
+		return result
+	return route_item(hero_state, item_instance)
+
+func route_item(hero_state, item_instance) -> Dictionary:
+	var result: Dictionary = create_empty_routing_result()
+	if hero_state == null or item_instance == null or item_instance.definition == null:
 		return result
 	result["item_instance"] = item_instance
 
@@ -93,3 +102,13 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng, r
 		result["inventory_item"] = item_instance
 		result["dropped_item"] = hero_state.inventory.add_item(item_instance)
 	return result
+
+func create_empty_routing_result() -> Dictionary:
+	return {
+		"item_instance": null,
+		"equipment_evaluation": {},
+		"equipped": false,
+		"inventory_item": null,
+		"dropped_item": null,
+		"target_slot": "",
+	}
