@@ -4,6 +4,7 @@ extends RefCounted
 const EquipmentScript = preload("res://scripts/hero/equipment.gd")
 const InventoryScript = preload("res://scripts/hero/inventory.gd")
 
+const VISITING_GUILD := "VISITING_GUILD"
 const CHOOSING_QUEST := "CHOOSING_QUEST"
 const TRAVEL_TO_QUEST := "TRAVEL_TO_QUEST"
 const DOING_QUEST := "DOING_QUEST"

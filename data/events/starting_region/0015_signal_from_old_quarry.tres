@@ -1,0 +1,229 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/0013_cave_lizard.tres" id="4_lizard"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "take_the_sledge_and_rush"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "prepare_ropes_and_braces"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В холмах у старой погрузочной площадки героя останавливает молодой каменотёс. Его напарник остался в заброшенном карьере дальше от города: после обвала туда забрался крупный пещерный варан. Издалека всё ещё слышны редкие удары металла о камень — человек жив и подаёт сигнал."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой берёт тяжёлую кувалду и не тратит время на сложные приготовления. За один тик он выбирает прямой путь к карьеру: если проход завален, камни придётся разбирать на месте, а зверя — оттеснять силой."
+next_stage_id = "str_travel_out"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой два тика готовится к спасению: берёт верёвки, деревянные распорки и старый лом, связывает всё в тяжёлый комплект и только после этого отправляется к карьеру. Он предпочитает потратить время сейчас, чтобы не остаться без опоры среди осыпающихся камней."
+next_stage_id = "con_travel_out"
+
+[sub_resource type="Resource" id="Stage_str_travel_out"]
+script = ExtResource("2_stage")
+id = "str_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С кувалдой на плече герой идёт к старому карьеру, откуда доносится сигнал запертого каменотёса."
+next_stage_id = "str_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel_out"]
+script = ExtResource("2_stage")
+id = "con_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой несёт подготовленные верёвки и распорки к старому карьеру."
+next_stage_id = "con_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_arrival"]
+script = ExtResource("2_stage")
+id = "str_arrival"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "У входа герой быстро разбивает кувалдой несколько осыпавшихся плит и видит запертого каменотёса за каменной грядой. Шум привлекает пещерного варана: зверь выползает из бокового прохода совершенно невредимым и перекрывает путь к человеку."
+next_stage_id = "str_cautious_check"
+
+[sub_resource type="Resource" id="Stage_con_arrival"]
+script = ExtResource("2_stage")
+id = "con_arrival"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "У карьера герой ставит распорки и с усилием сталкивает старую рудную тележку поперёк узкого прохода. Когда пещерный варан бросается на шум, тяжёлая тележка выдерживает первый наскок и ранит зверя, но тот остаётся между героем и запертым каменотёсом."
+next_stage_id = "con_cautious_check"
+
+[sub_resource type="Resource" id="Stage_str_cautious_check"]
+script = ExtResource("2_stage")
+id = "str_cautious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "cautious"
+trait_present_stage_id = "cautious_wait"
+trait_absent_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_con_cautious_check"]
+script = ExtResource("2_stage")
+id = "con_cautious_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "cautious"
+trait_present_stage_id = "cautious_wait"
+trait_absent_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_cautious_wait"]
+script = ExtResource("2_stage")
+id = "cautious_wait"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Осторожный герой не принимает бой только потому, что зверь оказался перед ним. Три тика он отходит от входа, шумом выманивает варана наружу и каждый раз держит дистанцию. В конце концов зверь уходит по каменной ложбине прочь от карьера, и герой получает безопасное окно для спасения."
+next_stage_id = "cautious_rescue"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_lizard")
+combat_victory_stage_id = "fight_rescue"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_lizard")
+combat_victory_stage_id = "fight_rescue"
+combat_start_hp_ratio = 0.85
+
+[sub_resource type="Resource" id="Stage_cautious_rescue"]
+script = ExtResource("2_stage")
+id = "cautious_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Пока варан остаётся далеко в ложбине, герой входит в карьер, освобождает каменотёса из-под осыпавшихся досок и помогает ему выбраться наружу. Драться со зверем так и не приходится."
+next_stage_id = "cautious_return"
+
+[sub_resource type="Resource" id="Stage_fight_rescue"]
+script = ExtResource("2_stage")
+id = "fight_rescue"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "После победы над пещерным вараном герой добирается до запертого каменотёса, разбирает последние доски и помогает измученному человеку выйти из карьера."
+next_stage_id = "fight_return"
+
+[sub_resource type="Resource" id="Stage_cautious_return"]
+script = ExtResource("2_stage")
+id = "cautious_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой вместе со спасённым каменотёсом возвращается к старой погрузочной площадке, не возвращаясь к оставленному далеко варану."
+next_stage_id = "cautious_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_fight_return"]
+script = ExtResource("2_stage")
+id = "fight_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой вместе со спасённым каменотёсом возвращается от карьера к его ожидающему товарищу."
+next_stage_id = "fight_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_cautious_end"]
+script = ExtResource("2_stage")
+id = "cautious_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У старого карьера герой нашёл запертого каменотёса за осыпью, но не стал драться с пещерным вараном без необходимости. Он терпеливо выманил зверя из карьера, спас человека и вернулся вместе с ним. Каменотёсы собрали для героя семьдесят золотых."
+outcome_id = "quarry_worker_rescued_cautiously"
+gold_reward = 70
+
+[sub_resource type="Resource" id="Stage_fight_end"]
+script = ExtResource("2_stage")
+id = "fight_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой добрался до старого карьера, победил пещерного варана, освободил запертого каменотёса из-под осыпи и вернул его товарищу. За спасение каменотёсы заплатили семьдесят золотых."
+outcome_id = "quarry_worker_rescued_after_fight"
+gold_reward = 70
+
+[resource]
+script = ExtResource("1_event")
+id = "signal_from_old_quarry"
+display_name = "Сигнал из старого карьера"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_travel_out"), SubResource("Stage_con_travel_out"), SubResource("Stage_str_arrival"), SubResource("Stage_con_arrival"), SubResource("Stage_str_cautious_check"), SubResource("Stage_con_cautious_check"), SubResource("Stage_cautious_wait"), SubResource("Stage_str_combat"), SubResource("Stage_con_combat"), SubResource("Stage_cautious_rescue"), SubResource("Stage_fight_rescue"), SubResource("Stage_cautious_return"), SubResource("Stage_fight_return"), SubResource("Stage_cautious_end"), SubResource("Stage_fight_end")])

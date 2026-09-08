@@ -198,6 +198,11 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	refresh_combat_stats()
 	hero_state.current_hp = combat_stats.max_hp
 	world_clock.tick_completed.connect(on_world_tick_completed)
+	if not hero_state.background_answers.is_empty() and autonomous_quest_choice:
+		hero_state.loop_state = HeroState.VISITING_GUILD
+		var arrival_text: String = diary_narrator.describe_new_game_arrival(hero_state.hero_name)
+		diary.add_entry(world_clock.world_tick, arrival_text)
+		debug_log.record_event(world_clock.world_tick, arrival_text)
 
 func equip_starting_armor() -> void:
 	for item_definition in DefaultStartingArmorDefinitions:
@@ -602,6 +607,8 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		return
 	if hero_state.loop_state == HeroState.DOING_QUEST or hero_state.loop_state == HeroState.DOING_DUNGEON:
 		return
+	if hero_state.loop_state == HeroState.VISITING_GUILD:
+		hero_state.loop_state = HeroState.CHOOSING_QUEST
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
 		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
 		return

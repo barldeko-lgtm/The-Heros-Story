@@ -59,7 +59,20 @@ func run() -> void:
 	await click_control(screen.next_button)
 	await process_frame
 	assert(not screen.visible and startup.class_screen.visible)
-	assert(startup.class_screen.get_child_count() == 1, "Class placeholder must contain only Next.")
+	assert(startup.class_screen.next_button.disabled)
+	startup.start_game()
+	assert(startup.simulation == null, "Class choice cannot be bypassed.")
+	startup.class_screen.selected_class_id = "mage"
+	startup.start_game()
+	assert(startup.simulation == null, "Unavailable class cannot create a game.")
+	startup.class_screen.selected_class_id = ""
+	assert(startup.class_screen.class_buttons.size() == 4)
+	for i in range(1, 4):
+		assert(startup.class_screen.class_buttons[i].disabled)
+		await click_control(startup.class_screen.class_buttons[i])
+	assert(startup.class_screen.next_button.disabled)
+	await click_control(startup.class_screen.class_buttons[0])
+	assert(not startup.class_screen.next_button.disabled)
 	assert(Rect2(Vector2.ZERO, Vector2(1366, 768)).encloses(startup.class_screen.next_button.get_global_rect()))
 	if OS.get_cmdline_user_args().has("--capture-startup"):
 		await RenderingServer.frame_post_draw
@@ -83,11 +96,18 @@ func run() -> void:
 	assert(startup.game_ui.simulation == simulation)
 	startup.class_screen.next_button.pressed.emit()
 	assert(startup.simulation == simulation and simulation.hero_state.strength == 6)
+	assert(simulation.hero_state.loop_state == "VISITING_GUILD")
+	assert(simulation.diary.get_text().contains("Илье"))
+	if OS.get_cmdline_user_args().has("--capture-startup"):
+		await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://.godot/startup-arrival.png")
 	startup.game_ui._process(10.0)
-	assert(simulation.world_clock.world_tick == 1, "Gameplay must advance normally after startup.")
+	assert(simulation.world_clock.world_tick == 1)
+	assert(simulation.hero_state.active_quest != null)
 	startup.queue_free()
 	await process_frame
-	print("PASS: questionnaire -> empty class screen -> one correctly initialized live game, without pregame time.")
+	print("PASS: questionnaire -> Warrior selection -> one correctly initialized live game, without pregame time.")
 	quit()
 
 func click_control(control: Control) -> void:

@@ -78,10 +78,12 @@ func on_background_completed(answers: Array) -> void:
 	background_answers = answers.duplicate()
 	background_screen.hide()
 	class_screen.show()
-	class_screen.next_button.grab_focus()
+	class_screen.class_buttons[0].grab_focus()
 
 func start_game() -> void:
 	if simulation != null or background_answers.is_empty() or not class_screen.visible:
+		return
+	if class_screen.selected_class_id != "warrior":
 		return
 	# No simulation exists during either setup screen; bonuses apply only here.
 	simulation = SimulationScript.new(simulation_seed, null, [], true, background_answers)

@@ -93,9 +93,10 @@ The completed `CombatResult` returns to `Simulation`, which routes it to the cur
 
 ## New-game background and startup boundary
 
-Normal launch: StartupFlow → BackgroundScreen (selection only) → empty ClassSelectionScreen → Simulation constructed with complete background answers → existing MainUI using that same Simulation.
+Normal launch: StartupFlow → BackgroundScreen (selection only) → ClassSelectionScreen (explicit Warrior selection; three locked alternatives) → Simulation constructed with complete background answers → existing MainUI using that same Simulation.
 
-- Neither setup screen owns or advances world time; no Simulation exists until the second Next.
+- Neither setup screen owns or advances world time; no Simulation exists until the second Next, which is guarded by a valid Warrior choice.
+- Simulation owns the one-time background-created arrival: creation at tick 0 enters VISITING_GUILD at the existing Starting City center and records narrator-produced text before MainUI binds; the first completed world tick enters ordinary autonomous quest selection. No UI-generated diary entries, additional map route, or changes to legacy no-background fixture timing.
 - HeroBackground validates all answer indices before mutation, assigns the authored attribute points, and resets/applies personality through TraitDevelopment rather than duplicating threshold rules.
 - HeroState.background_answers records the applied selection and prevents applying another background to the same hero.
 - Simulation applies background before its first StatResolver pass/full-HP initialization. Questionnaire points never enter the level-up pending-points pool.
@@ -830,6 +831,7 @@ High-value integration coverage includes:
 - `tests/test_event_population_rotation.gd` — event population/reservation lifecycle;
 - `tests/test_event_travel_suspend_resume.gd` — event detour and original-route restoration;
 - `tests/test_event_batch_six_to_thirteen_content.gd` and `test_event_batch_six_to_thirteen_runtime.gd` — strict event-graph validation plus representative live branches across the expanded Starting Region content pool;
+- `tests/test_event_batch_fourteen_fifteen_content.gd` and `test_event_batch_fourteen_fifteen_runtime.gd` — two-way CON/STR Formative content plus real secondary-objective travel, same-event Generous/Cautious activation, quarry combat/avoidance and route restoration;
 - `tests/test_event_dungeon_travel_interruption.gd` — outbound and completed-return dungeon interruption/resumption without false dungeon failure memory;
 - `tests/test_dungeon_post_quest_decision.gd` — market/shopping/readiness/preparation/dungeon hand-off;
 - `tests/test_dungeon_combat_sequence.gd` — shared combat plus dungeon-owned expedition progression;

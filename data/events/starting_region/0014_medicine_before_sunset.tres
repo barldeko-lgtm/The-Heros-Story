@@ -1,0 +1,199 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "raise_the_cart_and_move"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "save_the_whole_shipment"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На дороге герой встречает пожилого лекаря возле повозки со сломанной осью. В ящиках лежат лекарства для дальнего полевого лагеря, где несколько рабочих тяжело заболели. До лагеря ещё несколько гексов, часть бутылей уже разбита, а лекарь один не успеет перенести оставшийся груз до темноты."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой не ждёт помощи с дороги. За один тик он приподнимает перекошенную повозку, освобождает два главных ящика с лекарствами и связывает их так, чтобы можно было нести дальше. Хрупкие второстепенные припасы уже не спасти, зато самое нужное можно доставить быстро."
+next_stage_id = "str_travel_out"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой решает не бросать ничего, что ещё может пригодиться больным. Три тика он перебирает разбитые ящики, перекладывает целые бутыли, мастерит две тяжёлые связки и делит груз с лекарем. Работа утомительная, зато в путь уходит почти всё уцелевшее содержимое повозки."
+next_stage_id = "con_travel_out"
+
+[sub_resource type="Resource" id="Stage_str_travel_out"]
+script = ExtResource("2_stage")
+id = "str_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой вместе с лекарем несёт спасённые основные ящики к полевому лагерю."
+next_stage_id = "str_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel_out"]
+script = ExtResource("2_stage")
+id = "con_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Нагруженные всем уцелевшим запасом, герой и лекарь медленно идут к полевому лагерю."
+next_stage_id = "con_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_arrival"]
+script = ExtResource("2_stage")
+id = "str_arrival"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В лагерь удаётся доставить главные лекарства прежде, чем состояние больных ухудшается. Старший рабочих благодарит героя: часть дополнительных припасов пропала вместе с повозкой, но самого важного хватит. За такую доставку ему готовы заплатить семьдесят золотых."
+next_stage_id = "str_generous_check"
+
+[sub_resource type="Resource" id="Stage_con_arrival"]
+script = ExtResource("2_stage")
+id = "con_arrival"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В полевой лагерь приходит почти весь уцелевший запас: лекарства, перевязочный материал и дополнительные настойки. Лекарь сразу берётся за больных, а старший рабочих предлагает герою сто золотых за то, что тот не бросил тяжёлый груз на дороге."
+next_stage_id = "con_generous_check"
+
+[sub_resource type="Resource" id="Stage_str_generous_check"]
+script = ExtResource("2_stage")
+id = "str_generous_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "generous"
+trait_present_stage_id = "str_generous_help"
+trait_absent_stage_id = "str_standard_end"
+
+[sub_resource type="Resource" id="Stage_con_generous_check"]
+script = ExtResource("2_stage")
+id = "con_generous_check"
+stage_type = 1
+decision_role = 2
+duration_ticks = 1
+selection_rule = "trait_present"
+checked_trait_id = "generous"
+trait_present_stage_id = "con_generous_help"
+trait_absent_stage_id = "con_standard_end"
+
+[sub_resource type="Resource" id="Stage_str_generous_help"]
+script = ExtResource("2_stage")
+id = "str_generous_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Щедрый герой не считает чужую беду удобным заработком. Он оставляет себе только двадцать золотых на дорожные расходы и ещё два тика помогает лекарю разнести доставленные лекарства по палаткам и перенести самых слабых больных ближе к огню."
+next_stage_id = "str_generous_end"
+
+[sub_resource type="Resource" id="Stage_con_generous_help"]
+script = ExtResource("2_stage")
+id = "con_generous_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Несмотря на предложенную крупную плату, щедрый герой берёт лишь двадцать золотых на дорогу. Ещё два тика он остаётся в лагере, помогает разгружать сохранённые припасы и переносит больных, пока лекарь распределяет лекарства."
+next_stage_id = "con_generous_end"
+
+[sub_resource type="Resource" id="Stage_str_standard_end"]
+script = ExtResource("2_stage")
+id = "str_standard_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У сломанной повозки герой помог лекарю спасти самые важные ящики и отнёс их в дальний полевой лагерь. Лекарства успели доставить вовремя, и рабочие заплатили герою семьдесят золотых за помощь."
+outcome_id = "essential_medicine_delivered"
+gold_reward = 70
+
+[sub_resource type="Resource" id="Stage_con_standard_end"]
+script = ExtResource("2_stage")
+id = "con_standard_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой потратил много сил, чтобы собрать у разбитой повозки почти весь уцелевший запас лекаря, и вместе с ним донёс груз до полевого лагеря. За спасённые лекарства рабочие заплатили сто золотых."
+outcome_id = "full_medicine_shipment_delivered"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_str_generous_end"]
+script = ExtResource("2_stage")
+id = "str_generous_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой быстро доставил в полевой лагерь самые важные лекарства, но от полной платы отказался. Он оставил себе только двадцать золотых на дорогу и ещё помог лекарю с больными, прежде чем продолжить путь."
+outcome_id = "essential_medicine_delivered_generously"
+gold_reward = 20
+
+[sub_resource type="Resource" id="Stage_con_generous_end"]
+script = ExtResource("2_stage")
+id = "con_generous_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой донёс до полевого лагеря почти весь уцелевший запас лекарств, а затем отказался от предложенных ста золотых. Взяв лишь двадцать на дорожные расходы, он ещё помог разгрузить припасы и устроить больных."
+outcome_id = "full_medicine_shipment_delivered_generously"
+gold_reward = 20
+
+[resource]
+script = ExtResource("1_event")
+id = "medicine_before_sunset"
+display_name = "Лекарство до заката"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 4
+secondary_target_distance_hex_max = 6
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("plains", "forest")
+secondary_target_forbidden_tags = PackedStringArray("city", "road")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_travel_out"), SubResource("Stage_con_travel_out"), SubResource("Stage_str_arrival"), SubResource("Stage_con_arrival"), SubResource("Stage_str_generous_check"), SubResource("Stage_con_generous_check"), SubResource("Stage_str_generous_help"), SubResource("Stage_con_generous_help"), SubResource("Stage_str_standard_end"), SubResource("Stage_con_standard_end"), SubResource("Stage_str_generous_end"), SubResource("Stage_con_generous_end")])

@@ -78,10 +78,10 @@ Status:
 ## 6. Temporary events
 
 - ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
-- ✅ Current Starting Region events: **13** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`.
+- ✅ Current Starting Region events: **15** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`, `Лекарство до заката`, `Сигнал из старого карьера`.
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
 - ✅ Events can suspend/resume an ordinary quest route or either leg of an ordinary-dungeon trip, and can use their own real travel objective.
-- 🟡 Current event framework is functional and the Starting Region now has a substantial 13-event authored pool, but the final two-region population remains incomplete.
+- 🟡 Current event framework is functional and the Starting Region now has a complete first-city batch of 15 authored events, but Mid Region event content and the final two-region distribution remain incomplete.
 - ⬜ Approximately **15–20 handcrafted events total** across both regions.
 
 ## 7. Ordinary dungeons
@@ -178,7 +178,7 @@ Status:
 |---|---:|---:|
 | Normal cities | 2 on map / 1 complete | 2 complete |
 | Ordinary quest templates | 22 | 37 current target (22 + 15) |
-| Handcrafted temporary events | 13 | ~15–20 |
+| Handcrafted temporary events | 15 | ~15–20 across both regions |
 | Ordinary dungeons | 2 | 4 |
 | First specialization paths | 0 | 2 |
 | Specialization dungeon variants | 0 | 2 |
@@ -198,7 +198,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Replace the debug all-in-one questionnaire layout with separate question pages when needed; actual class-selection content is still absent.
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
-4. Finish expanding the temporary-event population from 13 toward the ~15–20 target and complete the remaining travel-interception context where needed.
+4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.

@@ -1,0 +1,28 @@
+extends SceneTree
+
+func _init() -> void:
+	var sim = load("res://scripts/core/simulation.gd").new(12345, null, [], false, [0, 0, 3, 1])
+	assert(sim.diary.get_text().contains("Тик 0 —"), "Arrival must exist immediately at creation.")
+	assert(sim.hero_state.loop_state == "VISITING_GUILD")
+	assert(sim.hero_state.active_quest == null)
+	sim.set_time_scale(0)
+	sim.advance_time(10.0)
+	assert(sim.diary.entries.size() == 1 and sim.world_clock.world_tick == 0)
+	sim.set_time_scale(1)
+	sim.advance_time(9.0)
+	assert(sim.diary.entries.size() == 1 and sim.world_clock.world_tick == 0)
+	sim.advance_time(1.0)
+	assert(sim.world_clock.world_tick == 1)
+	assert(sim.diary.get_text().contains("небольшого городка"), "Arrival remains visible after the first tick.")
+	assert(sim.hero_state.active_quest != null)
+	assert(sim.world_state.hero_position == sim.hex_map.definition.starting_city_center)
+	var arrival: String = sim.diary.entries[0]
+	sim.advance_time(10.0)
+	assert(sim.hero_state.active_quest != null, "Next tick uses real autonomous quest selection.")
+	assert(sim.diary.entries.count(arrival) == 1)
+	var legacy = load("res://scripts/core/simulation.gd").new(12345, null)
+	legacy.advance_time(10.0)
+	assert(legacy.hero_state.active_quest != null)
+	assert(not legacy.diary.get_text().contains("небольшого городка"))
+	print("PASS: immediate tick-zero arrival, guild state, autonomous first quest, legacy unchanged.")
+	quit()

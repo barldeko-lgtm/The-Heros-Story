@@ -93,6 +93,7 @@ func get_state_spacer(state_display_name: String) -> String:
 
 func get_state_display_name(loop_state: String) -> String:
 	match loop_state:
+		HeroState.VISITING_GUILD: return "Идёт в гильдию"
 		HeroState.CHOOSING_QUEST: return "Выбирает квест"
 		HeroState.TRAVEL_TO_QUEST: return "Идёт к цели"
 		HeroState.DOING_QUEST: return "Выполняет квест"

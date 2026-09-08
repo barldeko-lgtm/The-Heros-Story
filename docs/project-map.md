@@ -40,7 +40,7 @@ If the task is about...
 ## Project root
 
 - `project.godot` — Godot project configuration and main-scene registration.
-- `scenes/main/startup.tscn` — normal application root: background questionnaire → empty class-selection placeholder → game.
+- `scenes/main/startup.tscn` — normal application root: background questionnaire → story and Warrior selection (three locked classes) → game.
 - `scenes/main/main.tscn` — direct MainUI scene retained for isolated game-UI use/tests; normal startup injects its newly created Simulation into MainUI.
 - `.github/workflows/tests.yml` — GitHub Actions test workflow.
 - `assets/` — visual source assets and shaders used by current UI.
@@ -293,7 +293,7 @@ Immutable authored temporary-event content.
 
 Definitions own placement/lifetime metadata and stage graphs. Stages/options own authored scene timing, decision rules, Formative/Expressive meaning, travel/combat references, rewards/outcomes and event-specific narrative text where appropriate. Current decision data supports both one-trait Expressive checks and an authored any-of-traits check; COMBAT stages may also author a reduced starting current-HP ratio while still referencing an ordinary immutable `MobDefinition` for all combat stats.
 
-Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. The current Starting Region pool contains thirteen resources (`0001`–`0013`). `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP; events `0006`–`0013` intentionally reuse the established framework for a broader content mix rather than introducing one-off event scripts.
+Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. The current Starting Region pool contains fifteen resources (`0001`–`0015`). `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP; events `0006`–`0013` intentionally reuse the established framework for a broader content mix, while `0014_medicine_before_sunset.tres` and `0015_signal_from_old_quarry.tres` add two more real secondary-objective travel stories without introducing one-off event scripts.
 
 ### `scripts/model/runtime/event_instance.gd`
 
@@ -580,7 +580,7 @@ Debug questionnaire presentation: four questions in a two-column grid, exclusive
 
 ### `scripts/ui/screens/class_selection_screen.gd` / `scenes/ui/screens/class_selection_screen.tscn`
 
-Intentionally empty second screen with only Next. No actual class selection or class rules are implemented yet.
+Presents the friend-loss/training story and four class options. Only Warrior is enabled; explicit selection unlocks Next. Owns presentation/selection only, not hero mutations or time.
 
 ### `scripts/ui/main_ui.gd`
 
@@ -713,6 +713,8 @@ Representative high-value integration tests include:
 - `tests/test_event_travel_suspend_resume.gd`;
 - `tests/test_event_batch_six_to_thirteen_content.gd`;
 - `tests/test_event_batch_six_to_thirteen_runtime.gd`;
+- `tests/test_event_batch_fourteen_fifteen_content.gd`;
+- `tests/test_event_batch_fourteen_fifteen_runtime.gd`;
 - `tests/test_dungeon_post_quest_decision.gd`;
 - `tests/test_dungeon_combat_sequence.gd`;
 - `tests/test_dungeon_retry_readiness.gd`;

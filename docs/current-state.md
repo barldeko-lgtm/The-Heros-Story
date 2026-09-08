@@ -8,9 +8,9 @@ It is intentionally a runtime snapshot rather than a second design specification
 
 The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
 
-The most recent gameplay-content work expanded the Starting Region temporary-event population to **thirteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
+The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, thirteen handcrafted temporary events exist against the final two-region target of roughly 15–20, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
 
 ## Simulation and world time
 
@@ -57,9 +57,9 @@ The current generic primary-stat effects are centralized through `StatResolver`:
 
 XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights.
 
-The lightweight starting questionnaire is live in the normal new-game entry flow. All four questions are shown together in a compact debug screen with visible bonuses; one answer per question is required. The first Next opens an intentionally empty future class-selection screen containing only Next. The second Next creates the Warrior simulation and opens the existing game UI. No simulation/world time exists before that point.
+The lightweight starting questionnaire is live in the normal new-game entry flow. All four questions are shown together in a compact debug screen with visible bonuses; one answer per question is required. The first Next opens the childhood-friend loss/training story and four class options: Warrior is selectable; Archer, Mage and Assassin are visibly unavailable. The second Next creates the Warrior simulation and opens the existing game UI. No simulation/world time exists before that point.
 
-Family grants one point in STR / DEX / CON / INT / WIS without a personality shift. Childhood grants 20 toward Brave / Noble / Greedy / Curious. Youth and departure each grant one point in STR / DEX / CON / INT and 10 toward one of the opposite sides (Cautious / Devious / Generous / Conservative). Every path therefore grants exactly three assigned attribute points, not a free allocation pool. Opposing shifts cancel; no starting axis exceeds 20 in magnitude. Answers are applied once, recorded on HeroState, and current HP starts at the resolved full MaxHP. Separate question pages and actual class selection remain unimplemented.
+Family grants one point in STR / DEX / CON / INT / WIS without a personality shift. Childhood grants 20 toward Brave / Noble / Greedy / Curious. Youth and departure each grant one point in STR / DEX / CON / INT and 10 toward one of the opposite sides (Cautious / Devious / Generous / Conservative). Every path therefore grants exactly three assigned attribute points, not a free allocation pool. Opposing shifts cancel; no starting axis exceeds 20 in magnitude. Answers are applied once, recorded on HeroState, and current HP starts at the resolved full MaxHP. Separate question pages and non-Warrior class mechanics remain unimplemented. The friend in the childhood/departure text is named Илья. For normal background-created games, creation at tick 0 immediately records arrival in the Starting City in Diary/Debug Log and enters VISITING_GUILD; tick 1 resumes real autonomous quest selection. No world time is advanced to display the introduction. There is no separate intra-city hex route or simulated training period.
 
 ## Personality and traits
 
@@ -257,7 +257,7 @@ fight lost
 
 ## Temporary events
 
-The generic temporary-event system is live and currently has **13 authored Starting Region events**:
+The generic temporary-event system is live and currently has **15 authored Starting Region events**:
 
 1. `У старой вырубки`;
 2. `Дым над старой башней`;
@@ -271,7 +271,9 @@ The generic temporary-event system is live and currently has **13 authored Start
 10. `Раненый разведчик`;
 11. `Камни старого старателя`;
 12. `Зверь в сломанной клетке`;
-13. `Спор у межевого камня`.
+13. `Спор у межевого камня`;
+14. `Лекарство до заката`;
+15. `Сигнал из старого карьера`.
 
 The current event framework supports:
 
@@ -290,6 +292,8 @@ The current event framework supports:
 The fifth event, `Огр у старого кургана`, is placed on Starting Region plains 5–6 hexes from Starting City and always fights the existing `Опытный огр`. Its Formative opening compares DEX / STR / CON: DEX moves Courage `+5` and immediately attacks an Ogre starting at 75% current HP; STR spends two preparation ticks and reaches an 80% HP fight; CON spends three preparation ticks, moves Courage `−5` toward Cautious, and reaches an 85% HP fight. STR and CON then perform one shared Expressive **Devious OR Conservative** check: if either trait is established, two additional preparation ticks reduce the Ogre by another 15 percentage points, to 65% after STR or 70% after CON, without reinforcing either trait. The Ogre keeps its normal Attack, Armor, Attack Speed and other combat stats in every branch, grants its normal 195 XP on victory, and the event awards one guaranteed Green/Uncommon ilvl 10 equipment item through the normal authored reward pipeline with no extra Gold.
 
 Events 6–13 deliberately reuse the same framework rather than adding more event-only systems. They cover forest/plains/hill/road placements and combine STR/DEX/CON/WIS Formative openings with Curious, Conservative, Noble, Devious, Greedy, Generous, Brave and Cautious Expressive behaviour. Some outcomes are entirely social or exploratory, some make combat optional, and some always lead to shared `CombatSession` fights against existing ordinary mobs. Their authored material rewards range from 25–120 Gold and guaranteed Common/Uncommon ilvl 5/10 items; successful END stages contain their own branch-specific Diary text. Several branches intentionally prove same-event personality activation: a Formative `±5` movement can establish Greedy, Conservative, Cautious, Noble or Curious at the `±40` threshold and the later Expressive stage sees it immediately.
+
+Events 14–15 were added specifically to balance underused event inputs. Before them, CON appeared in 8 of 13 event Formative openings and STR in 9, while DEX/WIS each appeared in 11; Cautious and Generous each had only one event that read them Expressively. Both new events therefore use a two-way **CON / STR** Formative comparison. `Лекарство до заката` moves to a real off-road secondary camp and gives Generous a costly selfless outcome; its CON action can move Greed `+5` and establish Generous for that same destination check. `Сигнал из старого карьера` travels to a real farther hill objective and then returns to the encounter point; its CON action moves Courage `−5`, and established Cautious spends extra time to rescue the trapped worker without fighting the Cave Lizard, while a non-Cautious hero fights the normal shared enemy instead. After these additions, event-level Formative participation is CON 10 / STR 11 / DEX 11 / WIS 11, while Cautious and Generous each appear in two event concepts.
 
 Current shared population rules:
 
@@ -648,7 +652,7 @@ These are intentional or transitional and should not be silently "fixed" back to
 
 The most important incomplete areas are:
 
-- separate question pages and actual class-selection content (the debug questionnaire and empty second screen are live);
+- separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
 - Mid-Level City as a complete quest/economy gameplay context;
 - autonomous city relocation;
 - Mid-Level City ordinary quests/content;
