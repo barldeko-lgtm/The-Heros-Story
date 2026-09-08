@@ -3,10 +3,13 @@ extends RefCounted
 
 # Read-only economic policy. Simulation supplies dungeon readiness;
 # PotionPreparationSystem remains the owner of loadout calculation.
-func get_equipment_gold_budget(gold: int, preparation_plan: Dictionary) -> int:
+func get_optional_spending_gold_budget(gold: int, preparation_plan: Dictionary) -> int:
 	if preparation_plan.is_empty() or not bool(preparation_plan.get("can_prepare", false)):
 		return gold
 	return maxi(0, gold - int(preparation_plan.get("purchase_cost", 0)))
+
+func get_equipment_gold_budget(gold: int, preparation_plan: Dictionary) -> int:
+	return get_optional_spending_gold_budget(gold, preparation_plan)
 
 func filter_equipment_listings(hero_state, shop_system, potion_preparation_system, has_power_ready_dungeon: bool) -> Array:
 	var listings: Array = shop_system.get_listings().duplicate(true)

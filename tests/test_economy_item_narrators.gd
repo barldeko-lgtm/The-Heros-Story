@@ -28,6 +28,7 @@ func _init() -> void:
 	check(economy.describe_market_sale("Герой", {"sold_count": 0, "gold_gained": 0}) == "Герой посетил рынок, но продавать было нечего.", "Empty market wording")
 	check(economy.describe_no_purchase("Герой") == "Герой осмотрел магазин, но достаточно выгодных покупок не нашёл.", "No purchase wording")
 	check(economy.describe_purchase_failed("Герой") == "Герой не смог завершить выбранную покупку.", "Failed purchase wording")
+	check(economy.describe_skill_training("Герой", {"skill_id": "power_strike", "new_level": 2, "price_paid": 500}) == "Герой улучшил «Мощный удар» до уровня 2 за 500 золота.", "Skill training wording")
 	check(economy.describe_stock([]) == "Магазин: белые — нет; зелёные — нет.", "Empty stock wording")
 	check(economy.describe_stock([{"item_instance": item}, {"item_instance": null}]) == "Магазин: белые — пояс; зелёные — нет.", "Stock slots and vacancies")
 	var slots := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield", "necklace", "earrings", "ring_1", "ring_2", "belt", "unknown"]

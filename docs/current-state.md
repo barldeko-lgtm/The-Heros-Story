@@ -84,6 +84,7 @@ Personality is already used by real gameplay:
 - current QuestScore also uses established Courage, Morality, and Greed influences;
 - Noble deals the existing +10% conditional damage to Monster-category enemies;
 - Devious deals the existing +10% conditional damage to Humanoid-category enemies;
+- established Curious makes the hero prefer affordable Skill Level training before meaningful equipment, while established Conservative reverses that order; a neutral Curiosity axis keeps the Warrior default of Skill Level first;
 - temporary events can perform **Formative** decisions that move hidden axes without reading general personality;
 - temporary events can perform **Expressive** decisions that read established personality without reinforcing that same general trait.
 
@@ -121,7 +122,7 @@ Current ordinary mobs mostly use physical attacks; elemental mitigation exists, 
 ### Power Strike
 
 - learned automatically at compressed hero Level 5;
-- learned at Skill Level 1; combat now supports Skill Levels 1–10 even though paid city training is not wired into the economy loop yet;
+- learned at Skill Level 1; combat supports Skill Levels 1–10 and unlocked higher ranks can now be bought in the post-market city routine;
 - autonomous use when its Rage/cooldown conditions are satisfied;
 - replaces the next normal attack opportunity;
 - cannot miss but may critically hit;
@@ -131,7 +132,7 @@ Current ordinary mobs mostly use physical attacks; elemental mitigation exists, 
 ### Battle Guard
 
 - learned automatically at compressed hero Level 10;
-- learned at Skill Level 1; combat now supports Skill Levels 1–10 even though paid city training is not wired into the economy loop yet;
+- learned at Skill Level 1; combat supports Skill Levels 1–10 and unlocked higher ranks can now be bought in the post-market city routine;
 - autonomous defensive activation after HP falls to the current threshold;
 - no Rage cost and no shield requirement;
 - lasts 10 seconds with a 60-second cooldown;
@@ -139,7 +140,9 @@ Current ordinary mobs mostly use physical attacks; elemental mitigation exists, 
 - Skill Level scales base remaining-damage reduction evenly from 25% at Skill Level 1 to 45% at Skill Level 10;
 - scales with WIS separately through its own ability-specific formula.
 
-The approved working Skill Level cost curve now starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Actual autonomous city purchase/training and Curious/Conservative spending priority are not implemented yet. Protector/Slayer specialization abilities are also not implemented yet.
+The approved working Skill Level cost curve starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Autonomous city training is live after the market-sale step and shares one optional-development budget with meaningful equipment after required dungeon preparation is protected. Established Curious buys an affordable unlocked Skill Level before optional equipment; established Conservative buys meaningful affordable equipment first; neutral uses the Warrior default of Skill Level first. The lower-priority category is still allowed on a later tick, and if the preferred category has no valid affordable purchase the same tick falls through to the other category without adding an empty delay. Every successful rank or equipment purchase still consumes its own shopping world tick. Protector/Slayer specialization abilities are not implemented yet.
+
+Current runtime rank availability uses the working five-level cadence exactly: Power Strike unlocks SL2 / SL3 / SL4 at hero levels 10 / 15 / 20, while Battle Guard unlocks SL2 / SL3 / SL4 at hero levels 15 / 20 / 25, continuing by the same interval up to Skill Level 10.
 
 ## Death and resurrection
 
@@ -233,7 +236,9 @@ choose quest
 → real return travel
 → turn in for Gold
 → dedicated market/sale tick
-→ autonomous equipment shopping, one purchase per shopping tick
+→ Curious/neutral: Skill Level first; Conservative: meaningful equipment first
+→ fall through to the other category when the preferred category has no valid affordable purchase
+→ one successful Skill Level or equipment purchase per shopping tick
 → evaluate known local dungeon readiness
 → prepare missing dungeon potions if needed
 → dungeon or next ordinary activity
@@ -429,7 +434,10 @@ Current shop behaviour:
 - purchased positions remain empty until the next refresh;
 - successful ordinary quest turn-in schedules a separate market/sale tick;
 - unequipped priced ordinary equipment is automatically sold on that market tick;
-- equipment buying happens only afterward in `SHOPPING`;
+- `SHOPPING` uses established Curious/Conservative personality to choose whether Skill Level training or meaningful equipment is evaluated first; neutral defaults to Skill Level first;
+- the lower-priority category remains valid and is checked on the same tick when the preferred category has no affordable valid purchase;
+- one successful rank or equipment purchase consumes one full shopping world tick; another purchase must wait for the next tick;
+- Gold required for a feasible Power-ready dungeon potion loadout is protected from both Skill Level training and optional equipment spending;
 - at most one equipment item may be bought per shopping world tick;
 - ordinary equipment must meet the current meaningful-upgrade threshold and still improve the real virtual-equip build;
 - replaced equipped gear is sold immediately during a shop purchase rather than routed back through Inventory;
@@ -566,6 +574,7 @@ Currently shows:
 
 - pending primary-attribute points with five +1 allocation controls;
 - live hero combat/progression information;
+- a compact Skills panel showing the current Power Strike and Battle Guard Skill Levels (or that the ability is not learned yet);
 - all four personality axes;
 - developer-only exact signed hidden personality values and threshold markers.
 
@@ -649,8 +658,6 @@ The most important incomplete areas are:
 - later equipment/potion progression content beyond the currently live Starting City tiers;
 - two-handed / complete legal hand-configuration content breadth;
 - full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;
-- autonomous city purchase/training for the already-supported higher Skill Levels;
-- Curious/Conservative spending priority;
 - player-facing ordinary quest-guidance selection UI;
 - full Hero Diary coverage and episode grouping;
 - player-facing Explanatory Log;

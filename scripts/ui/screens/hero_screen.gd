@@ -13,6 +13,8 @@ const PRIMARY_ATTRIBUTE_DISPLAY_NAMES := {
 var simulation
 var attribute_points_label: Label
 var attribute_buttons: Dictionary = {}
+var power_strike_level_label: Label
+var battle_guard_level_label: Label
 var personality_axis_bars: Dictionary = {}
 var personality_axis_markers: Dictionary = {}
 var personality_axis_value_labels: Dictionary = {}
@@ -22,11 +24,13 @@ func setup(live_simulation) -> void:
 
 func _ready() -> void:
 	create_attribute_allocation_panel()
+	create_skills_panel()
 	create_personality_panel()
 	refresh()
 
 func refresh() -> void:
 	update_attribute_allocation_panel()
+	update_skills_panel()
 	update_personality_panel()
 
 func create_attribute_allocation_panel() -> void:
@@ -60,6 +64,33 @@ func create_attribute_allocation_panel() -> void:
 		button.pressed.connect(on_allocate_attribute_pressed.bind(attribute_id))
 		content.add_child(button)
 		attribute_buttons[attribute_id] = button
+
+func create_skills_panel() -> void:
+	var panel := PanelContainer.new()
+	panel.name = "SkillsPanel"
+	apply_panel_style(panel)
+	panel.position = Vector2(973.0, 108.0)
+	panel.size = Vector2(300.0, 150.0)
+	add_child(panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "Навыки"
+	title.add_theme_font_size_override("font_size", 22)
+	content.add_child(title)
+
+	power_strike_level_label = Label.new()
+	power_strike_level_label.name = "PowerStrikeLevelLabel"
+	power_strike_level_label.add_theme_font_size_override("font_size", 17)
+	content.add_child(power_strike_level_label)
+
+	battle_guard_level_label = Label.new()
+	battle_guard_level_label.name = "BattleGuardLevelLabel"
+	battle_guard_level_label.add_theme_font_size_override("font_size", 17)
+	content.add_child(battle_guard_level_label)
 
 func create_personality_panel() -> void:
 	var panel := PanelContainer.new()
@@ -214,6 +245,17 @@ func update_attribute_allocation_panel() -> void:
 		attribute_buttons[attribute_id].text = "+1 %s   (сейчас %d)" % [PRIMARY_ATTRIBUTE_DISPLAY_NAMES[attribute_id], current_value]
 		attribute_buttons[attribute_id].disabled = pending_points <= 0 or in_combat
 
+func update_skills_panel() -> void:
+	if power_strike_level_label == null or battle_guard_level_label == null:
+		return
+	power_strike_level_label.text = get_skill_level_text("Мощный удар", simulation.hero_state.power_strike_skill_level)
+	battle_guard_level_label.text = get_skill_level_text("Боевой заслон", simulation.hero_state.battle_guard_skill_level)
+
+func get_skill_level_text(skill_name: String, skill_level: int) -> String:
+	if skill_level <= 0:
+		return "%s: не изучен" % skill_name
+	return "%s: ур. %d / 10" % [skill_name, skill_level]
+
 func apply_panel_style(panel: PanelContainer) -> void:
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("232830")
@@ -254,4 +296,3 @@ func apply_secondary_button_style(button: Button) -> void:
 	button.add_theme_stylebox_override("pressed", create_menu_button_style(Color("20262e"), Color("d5dbe3"), 1))
 	button.add_theme_stylebox_override("focus", create_menu_button_style(Color("414c5b"), Color("d5dbe3"), 2))
 	button.add_theme_stylebox_override("disabled", create_menu_button_style(Color("292e35"), Color("4d5560"), 0))
-

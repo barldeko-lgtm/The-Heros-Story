@@ -437,6 +437,10 @@ Reads price data for definitions/generated items and returns reference or resale
 
 Owns automatic liquidation of eligible unequipped ordinary equipment from Inventory and returns a structured sale result.
 
+### `scripts/economy/skill_training_system.gd`
+
+Owns current purchased Skill Level progression. It reads hero-level rank availability from `HeroProgression`, applies the shared rank-cost table, selects an affordable unlocked next rank in deterministic base-skill order, spends Gold and advances that learned rank. It does not advance world time, buy equipment, calculate dungeon-preparation reserve, or write narrative text.
+
 ### `scripts/model/definitions/shop_definition.gd`
 ### `scripts/model/definitions/shop_stock_band_definition.gd`
 ### `data/shops/starting_city_shop.tres`
@@ -450,7 +454,7 @@ Owns mutable current shop stock, deterministic refresh, purchased vacancies and 
 
 ### `scripts/economy/spending_evaluator.gd`
 
-Owns autonomous equipment-purchase evaluation. It compares affordable candidates using current upgrade rules and may receive a protected-Gold budget from Simulation.
+Owns autonomous optional-development preference plus equipment-purchase evaluation. Established Conservative selects equipment-before-training; Curious and neutral use Skill-Level-first. It also compares affordable equipment candidates using current upgrade rules and may receive a protected-Gold budget from Simulation.
 
 It evaluates; it does not directly mutate live equipment or Gold.
 
@@ -465,7 +469,7 @@ Central Belt capacity/potion-eligibility and potential-healing utility rules. It
 
 ### `scripts/economy/dungeon_preparation_budget.gd`
 
-Read-only economic policy protecting dungeon potion preparation from optional equipment spending. Calculates the remaining equipment budget from a supplied loadout plan and filters Belt purchases that would make the new full loadout unaffordable.
+Read-only economic policy protecting dungeon potion preparation from optional development spending. Calculates the remaining Gold budget for Skill Level training / ordinary equipment from a supplied loadout plan and filters Belt purchases that would make the new full loadout unaffordable.
 
 Simulation supplies known-dungeon Power readiness and retains city-state transitions; `PotionPreparationSystem` still owns loadout calculations, purchases and consumption. The policy never changes Gold, stock, equipment, Inventory or prepared slots.
 

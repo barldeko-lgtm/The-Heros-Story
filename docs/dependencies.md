@@ -148,7 +148,8 @@ Never introduce separate HeroPower and MobPower formulas.
 Current Warrior ability ownership crosses progression/state/combat without merging those responsibilities:
 
 ```text
-HeroProgression unlocks / advances learned Skill Levels
+HeroProgression learns Skill Level 1 and defines hero-level rank availability
+→ SkillTrainingSystem purchases unlocked higher Skill Levels with Gold
 → HeroState stores learned Skill Levels
 → Simulation supplies the current learned levels + relevant hero attributes when a fight starts
 → CombatSession owns fight-local Rage and the live ability timelines
@@ -159,6 +160,7 @@ Contracts:
 
 - Rage is fight-local `CombatSession` state and is not carried between fights in `HeroState`;
 - ability unlock/progression state belongs to hero progression/state, not to `CombatSession`;
+- `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it does not grant Skill Level 1 or invent hero-level gates;
 - `CombatSession` decides autonomous use of already-learned combat abilities during the duel;
 - ability-specific WIS scaling belongs to the ability/combat implementation rather than a fake generic WIS stat conversion in `StatResolver`;
 - narrative identifies special actions from structured combat facts/action ids rather than inferring them from damage numbers.
@@ -570,8 +572,11 @@ successful quest turn-in
 → VISITING_MARKET
 → EquipmentSaleSystem
 → SHOPPING
-→ SpendingEvaluator
-→ ShopSystem transaction
+→ SpendingEvaluator reads established Curious / Conservative preference
+   → Curious or neutral: SkillTrainingSystem first, then equipment
+   → Conservative: equipment first, then SkillTrainingSystem
+→ preferred category has no valid affordable purchase: evaluate the lower-priority category on the same tick
+→ successful SkillTrainingSystem or ShopSystem transaction ends this world tick and remains in SHOPPING when another optional purchase is possible
 → repeat while another valid purchase exists
 → dungeon readiness / potion preparation or next activity
 ```
@@ -586,20 +591,27 @@ successful quest turn-in
 
 ### SpendingEvaluator contract
 
-`SpendingEvaluator` evaluates purchases; it does not mutate Gold/equipment.
+`SpendingEvaluator` evaluates purchase-category priority and equipment purchases; it does not mutate Gold/equipment.
 
 It may use:
 
 - affordability;
 - current ordinary upgrade rules;
 - `EquipmentEvaluator` results;
+- established Curious / Conservative personality for category ordering;
 - a protected-Gold budget supplied by Simulation when a Power-ready dungeon needs mandatory potion preparation.
 
 Belt candidates continue through the Belt-specific utility rule rather than the ordinary equipment comparison path.
 
+### SkillTrainingSystem contract
+
+`SkillTrainingSystem` owns higher-rank training transactions, not world-time progression. Category order is supplied by the autonomous spending policy: established Curious and neutral Warrior behaviour check training before equipment; established Conservative checks meaningful equipment before training. The lower-priority category is not forbidden. If the preferred category has no valid affordable purchase, Simulation evaluates the other category on the same tick, so a failed preference check never adds empty world time.
+
+Training receives the same protected optional-spending Gold budget used for normal equipment, so a feasible mandatory potion loadout for a Power-ready dungeon remains reserved. When more than one rank is available, the current deterministic base-skill order is used among affordable candidates; each later purchase requires its own world tick. After a successful equipment purchase, SHOPPING must remain active when either another valid equipment purchase or an affordable unlocked Skill Level still exists, so Conservative can exhaust its preferred equipment category and then continue into training instead of ending the city phase early.
+
 ### Dungeon preparation budget policy
 
-`DungeonPreparationBudget` owns the read-only economic protection rule: reserve the missing potion purchase cost of a feasible current loadout, and reject Belt candidates whose post-purchase Gold cannot fill their resulting capacity. Already owned potions count through the existing `PotionPreparationSystem` planner.
+`DungeonPreparationBudget` owns the read-only economic protection rule: reserve the missing potion purchase cost of a feasible current loadout from optional development spending, and reject Belt candidates whose post-purchase Gold cannot fill their resulting capacity. Already owned potions count through the existing `PotionPreparationSystem` planner.
 
 Simulation supplies current-region known-dungeon Power readiness and keeps its public budget/listing/plan methods. No ready dungeon means no preparation reserve/filter; an unaffordable current loadout retains the existing unrestricted-budget behaviour. Filtering preserves listing indices and never mutates real shop stock or hero state. Actual potion purchasing, travel and world-tick transitions remain outside this policy.
 

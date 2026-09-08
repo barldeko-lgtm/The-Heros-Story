@@ -3,12 +3,16 @@ extends RefCounted
 
 const EquipmentEvaluatorScript = preload("res://scripts/hero/equipment_evaluator.gd")
 const ItemPriceCalculatorScript = preload("res://scripts/economy/item_price_calculator.gd")
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
 const SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER: float = 1.20
 const POWER_EPSILON: float = 0.000001
 
 var equipment_evaluator = EquipmentEvaluatorScript.new()
 var item_price_calculator = ItemPriceCalculatorScript.new()
+
+func prefers_equipment_before_skill_training(traits: Array[String]) -> bool:
+	return traits.has(HeroTraitsScript.CONSERVATIVE)
 
 func select_best_equipment_purchase(hero_state, listings: Array, available_gold_override: int = -1) -> Dictionary:
 	var best_result: Dictionary = {}

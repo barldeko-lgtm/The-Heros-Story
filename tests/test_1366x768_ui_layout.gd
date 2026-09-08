@@ -35,6 +35,7 @@ func run_test() -> void:
 
 	var hero_panel := main_ui.hero_details_label.get_parent() as PanelContainer
 	var attribute_panel := main_ui.find_child("AttributeAllocationPanel", true, false) as PanelContainer
+	var skills_panel := main_ui.find_child("SkillsPanel", true, false) as PanelContainer
 	var personality_panel := main_ui.find_child("PersonalityAxesPanel", true, false) as PanelContainer
 	var opponent_panel := main_ui.opponent_details_label.get_parent() as PanelContainer
 	var statistics_panel := main_ui.combat_statistics_label.get_parent() as PanelContainer
@@ -49,6 +50,8 @@ func run_test() -> void:
 	if not require(hero_rect.size.x == 320.0 and hero_rect.end.y <= float(TARGET_SIZE.y) - 16.0, "Hero panel must keep its width and fit inside the taller viewport."):
 		return
 	if not require(attribute_panel != null and attribute_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Primary-attribute allocation controls must fit inside the dedicated Hero screen at 1366x768."):
+		return
+	if not require(skills_panel != null and skills_panel.get_rect().end.x <= float(TARGET_SIZE.x) - 32.0 and skills_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Skill Levels must fit beside the Hero development panels at 1366x768."):
 		return
 		if not require(personality_panel != null and personality_panel.get_rect().end.y <= float(TARGET_SIZE.y) - 16.0, "Live personality axes must fit inside the dedicated Hero screen at 1366x768."):
 			return

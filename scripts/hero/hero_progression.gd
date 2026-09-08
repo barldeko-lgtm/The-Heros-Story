@@ -13,6 +13,10 @@ const BASE_EXPERIENCE_TO_NEXT_LEVEL: int = 1000
 const EXPERIENCE_INCREASE_PER_LEVEL: int = 500
 const POWER_STRIKE_UNLOCK_LEVEL: int = 5
 const BATTLE_GUARD_UNLOCK_LEVEL: int = 10
+const MAX_SKILL_LEVEL: int = 10
+const SKILL_LEVEL_INTERVAL: int = 5
+const POWER_STRIKE_SKILL_ID := "power_strike"
+const BATTLE_GUARD_SKILL_ID := "battle_guard"
 const PRIMARY_ATTRIBUTE_IDS := ["strength", "dexterity", "intelligence", "constitution", "wisdom"]
 
 func get_experience_required_for_next_level(current_level: int) -> int:
@@ -39,6 +43,19 @@ func apply_level_up(hero_state) -> void:
 		hero_state.power_strike_skill_level = 1
 	if hero_state.level >= BATTLE_GUARD_UNLOCK_LEVEL and hero_state.battle_guard_skill_level == 0:
 		hero_state.battle_guard_skill_level = 1
+
+func get_max_unlocked_skill_level(skill_id: String, hero_level: int) -> int:
+	var unlock_level: int = get_skill_unlock_level(skill_id)
+	if unlock_level <= 0 or hero_level < unlock_level:
+		return 0
+	var additional_ranks: int = floori(float(hero_level - unlock_level) / float(SKILL_LEVEL_INTERVAL))
+	return mini(MAX_SKILL_LEVEL, 1 + additional_ranks)
+
+func get_skill_unlock_level(skill_id: String) -> int:
+	match skill_id:
+		POWER_STRIKE_SKILL_ID: return POWER_STRIKE_UNLOCK_LEVEL
+		BATTLE_GUARD_SKILL_ID: return BATTLE_GUARD_UNLOCK_LEVEL
+	return -1
 
 func allocate_primary_attribute(hero_state, attribute_id: String) -> bool:
 	if hero_state.pending_primary_attribute_points <= 0:

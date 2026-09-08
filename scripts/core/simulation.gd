@@ -41,6 +41,7 @@ const EquipmentRewardSystemScript = preload("res://scripts/loot/equipment_reward
 const ItemGeneratorScript = preload("res://scripts/items/item_generator.gd")
 const ItemInstanceScript = preload("res://scripts/model/runtime/item_instance.gd")
 const EquipmentSaleSystemScript = preload("res://scripts/economy/equipment_sale_system.gd")
+const SkillTrainingSystemScript = preload("res://scripts/economy/skill_training_system.gd")
 const ShopSystemScript = preload("res://scripts/economy/shop_system.gd")
 const SpendingEvaluatorScript = preload("res://scripts/economy/spending_evaluator.gd")
 const PotionPreparationSystemScript = preload("res://scripts/economy/potion_preparation_system.gd")
@@ -119,6 +120,7 @@ var loot_generator = LootGeneratorScript.new()
 var item_generator = ItemGeneratorScript.new()
 var equipment_reward_system
 var equipment_sale_system = EquipmentSaleSystemScript.new()
+var skill_training_system
 var spending_evaluator = SpendingEvaluatorScript.new()
 var potion_preparation_system = PotionPreparationSystemScript.new()
 var dungeon_preparation_budget = DungeonPreparationBudgetScript.new()
@@ -170,6 +172,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	god_state = GodStateScript.new()
 	god_system = GodSystemScript.new(god_state)
 	equipment_reward_system = EquipmentRewardSystemScript.new(loot_generator, item_generator, equipment_evaluator)
+	skill_training_system = SkillTrainingSystemScript.new(hero_progression)
 	shop_system = ShopSystemScript.new(DefaultStartingCityShop, item_generator, simulation_seed + SHOP_RNG_SEED_OFFSET)
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
@@ -758,14 +761,45 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	if hero_state.loop_state != HeroState.SHOPPING:
 		return empty_result
 
+	var equipment_first: bool = spending_evaluator.prefers_equipment_before_skill_training(get_hero_traits())
+	if equipment_first:
+		var conservative_equipment: Dictionary = get_best_equipment_purchase()
+		if not conservative_equipment.is_empty():
+			return purchase_equipment_candidate(completed_tick, conservative_equipment)
+		var conservative_training: Dictionary = try_purchase_skill_training(completed_tick)
+		if bool(conservative_training.get("purchased", false)):
+			return conservative_training
+	else:
+		var preferred_training: Dictionary = try_purchase_skill_training(completed_tick)
+		if bool(preferred_training.get("purchased", false)):
+			return preferred_training
+		var preferred_equipment: Dictionary = get_best_equipment_purchase()
+		if not preferred_equipment.is_empty():
+			return purchase_equipment_candidate(completed_tick, preferred_equipment)
+
 	debug_log.record_event(completed_tick, get_shop_stock_debug_text())
-	var equipment_gold_budget: int = get_equipment_purchase_gold_budget()
-	var purchase_listings: Array = get_equipment_purchase_listings_with_dungeon_prep_safety()
-	var best_purchase: Dictionary = spending_evaluator.select_best_equipment_purchase(hero_state, purchase_listings, equipment_gold_budget)
-	if best_purchase.is_empty():
-		debug_log.record_event(completed_tick, economy_narrator.describe_no_purchase(hero_state.hero_name))
-		finish_shopping_phase(completed_tick)
-		return empty_result
+	debug_log.record_event(completed_tick, economy_narrator.describe_no_purchase(hero_state.hero_name))
+	finish_shopping_phase(completed_tick)
+	return empty_result
+
+func try_purchase_skill_training(completed_tick: int) -> Dictionary:
+	var result: Dictionary = skill_training_system.purchase_next_affordable_upgrade(
+		hero_state,
+		get_optional_spending_gold_budget()
+	)
+	if bool(result.get("purchased", false)):
+		debug_log.record_event(completed_tick, economy_narrator.describe_skill_training(hero_state.hero_name, result))
+	return result
+
+func get_best_equipment_purchase() -> Dictionary:
+	return spending_evaluator.select_best_equipment_purchase(
+		hero_state,
+		get_equipment_purchase_listings_with_dungeon_prep_safety(),
+		get_equipment_purchase_gold_budget()
+	)
+
+func purchase_equipment_candidate(completed_tick: int, best_purchase: Dictionary) -> Dictionary:
+	debug_log.record_event(completed_tick, get_shop_stock_debug_text())
 
 	var previous_max_hp: float = combat_stats.max_hp
 	var result: Dictionary = shop_system.purchase_listing(
@@ -783,13 +817,14 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	result["power_gain"] = float(best_purchase.get("power_gain", 0.0))
 	debug_log.record_event(completed_tick, economy_narrator.describe_purchase(hero_state.hero_name, result, best_purchase))
 
-	if spending_evaluator.select_best_equipment_purchase(
-		hero_state,
-		get_equipment_purchase_listings_with_dungeon_prep_safety(),
-		get_equipment_purchase_gold_budget()
-	).is_empty():
+	if not has_affordable_optional_purchase():
 		finish_shopping_phase(completed_tick)
 	return result
+
+func has_affordable_optional_purchase() -> bool:
+	if not skill_training_system.select_affordable_upgrade(hero_state, get_optional_spending_gold_budget()).is_empty():
+		return true
+	return not get_best_equipment_purchase().is_empty()
 
 func get_equipment_purchase_listings_with_dungeon_prep_safety() -> Array:
 	return dungeon_preparation_budget.filter_equipment_listings(
@@ -797,7 +832,10 @@ func get_equipment_purchase_listings_with_dungeon_prep_safety() -> Array:
 	)
 
 func get_equipment_purchase_gold_budget() -> int:
-	return dungeon_preparation_budget.get_equipment_gold_budget(hero_state.gold, get_ready_dungeon_potion_plan())
+	return get_optional_spending_gold_budget()
+
+func get_optional_spending_gold_budget() -> int:
+	return dungeon_preparation_budget.get_optional_spending_gold_budget(hero_state.gold, get_ready_dungeon_potion_plan())
 
 func get_ready_dungeon_potion_plan() -> Dictionary:
 	var dungeon = get_power_ready_dungeon()

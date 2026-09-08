@@ -28,10 +28,21 @@ func run() -> void:
 	await process_frame
 	check(ui.hero_screen.visible and ui.hero_button.text == "НАЗАД" and ui.inventory_close_button.visible, "Hero navigation unchanged")
 	var panel = ui.hero_screen.get_node("AttributeAllocationPanel")
+	var skills = ui.hero_screen.get_node("SkillsPanel")
 	var personality = ui.hero_screen.get_node("PersonalityAxesPanel")
 	check(panel.position == Vector2(411, 108) and panel.size == Vector2(544, 360), "Attribute panel geometry preserved")
+	check(skills.position == Vector2(973, 108) and skills.size == Vector2(300, 150), "Skill panel fits beside hero development without moving existing panels")
 	check(personality.position == Vector2(411, 472) and personality.size == Vector2(544, 280), "Personality panel geometry preserved")
 	var hero = ui.simulation.hero_state
+	var power_strike_label := skills.find_child("PowerStrikeLevelLabel", true, false) as Label
+	var battle_guard_label := skills.find_child("BattleGuardLevelLabel", true, false) as Label
+	check(power_strike_label != null and power_strike_label.text == "Мощный удар: не изучен", "Locked Power Strike is shown clearly")
+	check(battle_guard_label != null and battle_guard_label.text == "Боевой заслон: не изучен", "Locked Battle Guard is shown clearly")
+	hero.power_strike_skill_level = 3
+	hero.battle_guard_skill_level = 2
+	ui.hero_screen.refresh()
+	check(power_strike_label.text == "Мощный удар: ур. 3 / 10", "Power Strike level refreshes from HeroState")
+	check(battle_guard_label.text == "Боевой заслон: ур. 2 / 10", "Battle Guard level refreshes from HeroState")
 	hero.personality_axis_values["courage"] = 35
 	hero.personality_traits_by_axis["courage"] = ""
 	ui.update_personality_panel()

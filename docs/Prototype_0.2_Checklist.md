@@ -36,7 +36,7 @@ Status:
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - 🟡 Elemental mitigation exists, but current ordinary content is still effectively physical.
-- ⬜ Autonomous purchase of the already-supported Skill Levels 2–10 / training economy.
+- ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick with the approved price curve.
 - ⬜ Protector ability: Shield Bash.
 - ⬜ Slayer ability: Crippling Blows.
 
@@ -119,8 +119,8 @@ Status:
 - ✅ Starting City Level 5 / 10 healing potions, persistent inventory, full-Belt preparation and dungeon-only consumption are live.
 - ✅ Missing dungeon potions are bought in the current dedicated preparation tick; already-owned complete loadouts do not invent an extra purchase tick.
 - ⬜ Mid-Level City shop bands and later potion tiers.
-- ⬜ Skill Level purchasing/training.
-- ⬜ Curious ↔ Conservative spending priority.
+- ✅ Skill Level purchasing/training uses protected optional-spending Gold and adds no extra tick when no rank can be bought.
+- ✅ Curious ↔ Conservative spending priority: Curious/neutral prefer Skill Levels first, Conservative prefers meaningful equipment first, and both may fall through to the other category.
 
 ## 10. God influence
 
@@ -200,7 +200,6 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
 4. Finish expanding the temporary-event population from 13 toward the ~15–20 target and complete the remaining travel-interception context where needed.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
-6. Implement Skill Level training and Curious/Conservative spending priority.
-7. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
-8. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
-9. Add Save/Load and run long-duration Prototype 0.2 validation through the intended compressed level range.
+6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
+7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
+8. Add Save/Load and run long-duration Prototype 0.2 validation through the intended compressed level range.

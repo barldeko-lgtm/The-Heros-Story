@@ -16,6 +16,19 @@ func describe_no_purchase(hero_name: String) -> String:
 func describe_purchase_failed(hero_name: String) -> String:
 	return "%s не смог завершить выбранную покупку." % hero_name
 
+func describe_skill_training(hero_name: String, result: Dictionary) -> String:
+	var skill_name: String
+	match str(result.get("skill_id", "")):
+		"power_strike": skill_name = "Мощный удар"
+		"battle_guard": skill_name = "Боевой заслон"
+		_: skill_name = "неизвестный навык"
+	return "%s улучшил «%s» до уровня %d за %d золота." % [
+		hero_name,
+		skill_name,
+		int(result.get("new_level", 0)),
+		int(result.get("price_paid", 0)),
+	]
+
 func describe_purchase(hero_name: String, result: Dictionary, best_purchase: Dictionary) -> String:
 	var purchased_item = result["item_instance"]
 	var log_text: String
@@ -72,4 +85,3 @@ func get_shop_slot_debug_name(equipment_slot: String) -> String:
 		"ring_2": return "кольцо 2"
 		"belt": return "пояс"
 	return equipment_slot
-
