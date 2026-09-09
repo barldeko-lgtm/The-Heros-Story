@@ -55,7 +55,7 @@ func run() -> void:
 	check(not ui.attribute_buttons["strength"].disabled, "Allocation enabled with a point")
 	ui.attribute_buttons["strength"].pressed.emit()
 	check(hero.strength == strength + 1 and hero.pending_primary_attribute_points == 0, "Click routes allocation through Simulation")
-	check(ui.attribute_buttons["strength"].disabled and ui.hero_details_label.text.contains("Сила: %d" % (hero.strength + hero.equipment.get_strength_bonus())), "Allocation refreshes screen and main summary")
+	check(ui.attribute_buttons["strength"].disabled and ui.hero_details_label.get_parsed_text().contains("Сила:%d" % (hero.strength + hero.equipment.get_strength_bonus())), "Allocation refreshes screen and main summary")
 	var tick: int = ui.simulation.world_clock.world_tick
 	var gold: int = hero.gold
 	var rng_state = ui.simulation.seeded_rng.get_rng().state

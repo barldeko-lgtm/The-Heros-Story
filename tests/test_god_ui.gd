@@ -32,7 +32,7 @@ func run_test() -> void:
 	god_panel.refresh()
 	assert(god_panel.combat_buff_button.text.contains("Боёв: 5"), "Active buff button must show remaining fights.")
 	assert(god_panel.combat_buff_button.text.contains("КД: 120"), "Active buff button must show cooldown counting from activation.")
-	assert(main_ui.hero_details_label.text.contains("Физ. урон: %.0f" % main_ui.simulation.base_combat_stats.attack), "Hero UI must keep displaying base physical Damage while buffed.")
+	assert(main_ui.hero_details_label.get_parsed_text().contains("Физ. урон:%.0f" % main_ui.simulation.base_combat_stats.attack), "Hero UI must keep displaying base physical Damage while buffed.")
 	assert(main_ui.hero_details_label.text.contains("Божественное благословение: +15% физ. урона (5 боёв)"), "Hero UI must display the temporary +15% Physical Damage separately.")
 	assert(main_ui.hero_details_label.text.contains("Бонус черты: +10% урона монстрам"), "Hero UI must explain Noble's conditional damage bonus separately.")
 

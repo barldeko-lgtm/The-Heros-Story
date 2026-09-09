@@ -32,8 +32,10 @@ func connect_sources() -> void:
 func apply_tabs_style() -> void:
 	var tabs_panel_style := StyleBoxFlat.new()
 	tabs_panel_style.bg_color = Color("232830")
-	tabs_panel_style.border_color = Color("7b8694")
-	tabs_panel_style.set_border_width_all(2)
+	tabs_panel_style.border_color = Color("495462")
+	tabs_panel_style.set_border_width_all(1)
+	# Keep the previous two-pixel inset despite the thinner visual border.
+	tabs_panel_style.set_content_margin_all(2.0)
 	tabs_panel_style.set_corner_radius_all(10)
 	add_theme_stylebox_override("panel", tabs_panel_style)
 	var tab_bar := get_tab_bar()

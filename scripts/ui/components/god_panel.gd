@@ -147,12 +147,12 @@ func on_vision_pressed() -> void:
 func apply_panel_style(panel: PanelContainer) -> void:
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("232830")
-	panel_style.border_color = Color("7b8694")
-	panel_style.set_border_width_all(2)
+	panel_style.border_color = Color("495462")
+	panel_style.set_border_width_all(1)
 	panel_style.set_corner_radius_all(12)
-	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.30)
-	panel_style.shadow_size = 6
-	panel_style.shadow_offset = Vector2(0.0, 3.0)
+	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.15)
+	panel_style.shadow_size = 2
+	panel_style.shadow_offset = Vector2(0.0, 1.0)
 	panel_style.content_margin_left = 16.0
 	panel_style.content_margin_right = 16.0
 	panel_style.content_margin_top = 14.0

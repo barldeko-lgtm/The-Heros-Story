@@ -7,14 +7,13 @@ const InventoryScreenScene = preload("res://scenes/ui/screens/inventory_screen.t
 const MapScreenScene = preload("res://scenes/ui/screens/map_screen.tscn")
 const GodPanelScene = preload("res://scenes/ui/components/god_panel.tscn")
 const NarrativePanelScene = preload("res://scenes/ui/components/narrative_panel.tscn")
-const HERO_TEXT_CONTENT_WIDTH: float = preload("res://scripts/ui/components/hero_summary_panel.gd").HERO_TEXT_CONTENT_WIDTH
 const PRIMARY_ATTRIBUTE_DISPLAY_NAMES = preload("res://scripts/ui/screens/hero_screen.gd").PRIMARY_ATTRIBUTE_DISPLAY_NAMES
 var simulation_seed: int = int(Time.get_unix_time_from_system())
 var simulation
 var time_progress_bar: ProgressBar
 var tick_counter_label: Label
 var hero_summary_panel: Control
-var hero_details_label: Label:
+var hero_details_label: RichTextLabel:
 	get:
 		return hero_summary_panel.hero_details_label
 var pending_attribute_indicator: Label:
@@ -49,6 +48,7 @@ var inventory_button: Button
 var map_button: Button
 var inventory_close_button: Button
 var mini_mode: Node
+var background: ColorRect
 
 func _init(initial_simulation = null) -> void:
 	simulation = initial_simulation if initial_simulation != null else SimulationScript.new(simulation_seed, null, [], true)
@@ -110,8 +110,8 @@ func refresh_visible_screen() -> void:
 		inventory_screen.refresh()
 
 func create_background() -> void:
-	var background := ColorRect.new()
-	background.color = Color("d9dde2")
+	background = ColorRect.new()
+	background.color = Color("191e26")
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
@@ -146,12 +146,12 @@ func add_to_main_screen(control: Control) -> void:
 func apply_panel_style(panel: PanelContainer) -> void:
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("232830")
-	panel_style.border_color = Color("7b8694")
-	panel_style.set_border_width_all(2)
+	panel_style.border_color = Color("495462")
+	panel_style.set_border_width_all(1)
 	panel_style.set_corner_radius_all(12)
-	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.30)
-	panel_style.shadow_size = 6
-	panel_style.shadow_offset = Vector2(0.0, 3.0)
+	panel_style.shadow_color = Color(0.0, 0.0, 0.0, 0.15)
+	panel_style.shadow_size = 2
+	panel_style.shadow_offset = Vector2(0.0, 1.0)
 	panel_style.content_margin_left = 16.0
 	panel_style.content_margin_right = 16.0
 	panel_style.content_margin_top = 14.0
@@ -274,6 +274,7 @@ func set_map_screen_open(is_open: bool) -> void:
 	set_active_screen("map" if is_open else "main")
 
 func set_active_screen(screen_id: String) -> void:
+	background.color = Color("191e26") if screen_id == "main" else Color("d9dde2")
 	var hero_is_open: bool = screen_id == "hero"
 	var inventory_is_open: bool = screen_id == "inventory"
 	var map_is_open: bool = screen_id == "map"
@@ -396,9 +397,6 @@ func update_combat_statistics_panel() -> void:
 func update_hero_panel() -> void:
 	hero_summary_panel.update_hero_panel()
 
-func get_state_spacer(state_display_name: String) -> String:
-	return hero_summary_panel.get_state_spacer(state_display_name)
-
 func get_state_display_name(loop_state: String) -> String:
 	return hero_summary_panel.get_state_display_name(loop_state)
 
@@ -428,7 +426,7 @@ func create_tick_indicator() -> void:
 	tick_counter_label.custom_minimum_size = Vector2(110.0, 18.0)
 	tick_counter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	tick_counter_label.add_theme_font_size_override("font_size", 16)
-	tick_counter_label.add_theme_color_override("font_color", Color("242a31"))
+	tick_counter_label.add_theme_color_override("font_color", Color("b6c0cc"))
 	tick_counter_label.text = "Тик: 0"
 	indicator.add_child(tick_counter_label)
 

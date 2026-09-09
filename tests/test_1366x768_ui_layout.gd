@@ -33,7 +33,7 @@ func run_test() -> void:
 	await process_frame
 	await process_frame
 
-	var hero_panel := main_ui.hero_details_label.get_parent() as PanelContainer
+	var hero_panel := main_ui.hero_summary_panel.hero_panel as PanelContainer
 	var attribute_panel := main_ui.find_child("AttributeAllocationPanel", true, false) as PanelContainer
 	var skills_panel := main_ui.find_child("SkillsPanel", true, false) as PanelContainer
 	var personality_panel := main_ui.find_child("PersonalityAxesPanel", true, false) as PanelContainer
@@ -113,7 +113,7 @@ func run_test() -> void:
 		return
 	if not require(absf(top_menu.get_rect().get_center().x - float(TARGET_SIZE.x) * 0.5) <= 1.0, "Top menu must remain centered in the wider viewport."):
 		return
-	if not require(main_ui.hero_details_label.text.contains("Состояние: Выбирает квест\n\nКвест:"), "A one-line hero state must reserve one blank line before the quest row."):
+	if not require(main_ui.hero_summary_panel.activity_label.text == "Выбирает квест" and main_ui.hero_summary_panel.quest_label.text.begins_with("Квест:"), "Activity and quest have separate card rows."):
 		return
 	if not require(main_ui.pending_attribute_indicator != null and not main_ui.pending_attribute_indicator.visible, "Pending-attribute indicator must stay hidden while there are no free points."):
 		return
@@ -127,7 +127,7 @@ func run_test() -> void:
 		return
 	main_ui.simulation.hero_state.loop_state = HeroState.DUNGEON_BETWEEN_FIGHTS
 	main_ui.update_hero_panel()
-	if not require(main_ui.hero_details_label.text.contains("Состояние: В данже — готовится к следующему бою\nКвест:"), "A wrapped hero state must consume the reserved second line instead of shifting later rows."):
+	if not require(main_ui.hero_summary_panel.activity_label.text == "В данже — готовится к следующему бою", "A long activity is retained by the wrapping card label."):
 		return
 	main_ui.simulation.hero_state.pending_primary_attribute_points = 1
 	main_ui.set_active_screen("hero")

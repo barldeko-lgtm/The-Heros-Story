@@ -24,28 +24,21 @@ func run() -> void:
 	var summary = ui.hero_summary_panel
 	check(summary.simulation == ui.simulation, "Summary uses existing live simulation")
 	check(ui.hero_details_label == summary.hero_details_label and ui.pending_attribute_indicator == summary.pending_attribute_indicator, "Compatibility references expose live controls")
-	var panel = ui.hero_details_label.get_parent()
-	check(panel is PanelContainer and panel.position == Vector2(32, 80) and panel.size.x == 320, "Panel geometry and label parent preserved")
+	var panel = summary.hero_panel
+	check(panel is PanelContainer and panel.position == Vector2(32, 80) and panel.size.x == 320, "Panel remains in the left column")
 	check(panel.global_position == Vector2(32, 80), "Wrapper does not shift panel")
-	check(ui.hero_details_label.get_theme_font_size("font_size") == 14 and ui.hero_details_label.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART, "Text layout preserved")
-	check(ui.hero_details_label.text.contains("Состояние: Выбирает квест\n\nКвест:"), "Short state reserves blank line")
+	check(ui.hero_details_label is RichTextLabel and ui.hero_details_label.fit_content, "Grouped detail body fits its content")
+	check(summary.activity_label.text == "Выбирает квест", "Short activity is displayed")
 	ui.simulation.hero_state.loop_state = HeroState.DUNGEON_BETWEEN_FIGHTS
 	ui.update_hero_panel()
-	check(ui.hero_details_label.text.contains("Состояние: В данже — готовится к следующему бою\nКвест:"), "Long state keeps existing spacing")
+	check(summary.activity_label.text == "В данже — готовится к следующему бою", "Long activity is retained")
 	check(not ui.pending_attribute_indicator.visible, "Plus initially hidden")
 	ui.simulation.hero_state.pending_primary_attribute_points = 1
 	ui.update_pending_attribute_indicator()
 	var indicator = ui.pending_attribute_indicator
 	check(indicator.name == "PendingAttributeIndicator" and indicator.visible and indicator.text == "+" and indicator.get_theme_color("font_color") == Color("ff3030"), "Plus appearance preserved")
 	check(indicator.tooltip_text == "Есть нераспределённые очки характеристик" and indicator.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Tooltip and input behavior preserved")
-	var lines: int = 3
-	if not load("res://scripts/hero/hero_traits.gd").get_conditional_damage_bonus_text(ui.simulation.get_hero_traits()).is_empty():
-		lines += 1
-	if ui.simulation.get_combat_buff_fights_remaining() > 0:
-		lines += 1
-	var font: Font = ui.hero_details_label.get_theme_font("font")
-	var expected = panel.global_position + Vector2(286, 14 + font.get_height(14) * lines - 2)
-	check(indicator.global_position.is_equal_approx(expected), "Plus follows exact level-line geometry")
+	check(indicator.get_parent() == summary.level_label.get_parent(), "Plus belongs to level row rather than a calculated text offset")
 	var tick: int = ui.simulation.world_clock.world_tick
 	var rng_state = ui.simulation.seeded_rng.get_rng().state
 	var gold: int = ui.simulation.hero_state.gold
@@ -66,5 +59,5 @@ func run() -> void:
 	ui.queue_free()
 	await process_frame
 	if failures == 0:
-		print("PASS: Hero summary preserves text spacing, geometry, plus, navigation and read-only presentation")
+		print("PASS: Hero summary preserves ownership, plus, navigation and read-only presentation")
 	quit(0 if failures == 0 else 1)
