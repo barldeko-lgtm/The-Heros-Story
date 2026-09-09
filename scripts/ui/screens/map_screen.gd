@@ -5,6 +5,7 @@ const MapDefinitionResource = preload("res://data/map/prototype_02_map.tres")
 const HexMapScript = preload("res://scripts/world/hex_map.gd")
 const HexMapImageDecoderScript = preload("res://scripts/world/hex_map_image_decoder.gd")
 const MapTileVisualsScript = preload("res://scripts/ui/map_tile_visuals.gd")
+const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HEX_TILE_SIZE: Vector2 = Vector2(158.0, 140.0)
 const HEX_HALF_WIDTH: float = HEX_TILE_SIZE.x * 0.5
 const HEX_HALF_HEIGHT: float = HEX_TILE_SIZE.y * 0.5
@@ -46,8 +47,8 @@ const TERRAIN_DISPLAY_NAMES: Dictionary = {
 	"forest": "Лес",
 	"hill": "Холмы",
 	"road": "Дорога",
-	"starting_city": "Стартовый город",
-	"mid_city": "Средний город",
+	"starting_city": HeroStateScript.STARTING_CITY_NAME,
+	"mid_city": HeroStateScript.MID_CITY_NAME,
 }
 
 const REGION_DISPLAY_NAMES: Dictionary = {
@@ -451,8 +452,8 @@ func _draw() -> void:
 	draw_quest_markers()
 	draw_dungeon_markers()
 	draw_hero_marker()
-	draw_city_label(map_definition.starting_city_center, "СТАРТОВЫЙ ГОРОД", Color("3d2e22"), Vector2(-72.0, 68.0))
-	draw_city_label(map_definition.mid_city_center, "СРЕДНИЙ ГОРОД", Color("302a40"), Vector2(-65.0, -58.0))
+	draw_city_label(map_definition.starting_city_center, HeroStateScript.STARTING_CITY_NAME.to_upper(), Color("3d2e22"), Vector2(-72.0, 68.0))
+	draw_city_label(map_definition.mid_city_center, HeroStateScript.MID_CITY_NAME.to_upper(), Color("302a40"), Vector2(-65.0, -58.0))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func draw_hex_visual(cell: Vector2i, center: Vector2, terrain_id: String) -> void:

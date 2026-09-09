@@ -37,7 +37,7 @@ func run_test() -> void:
 	var attribute_panel := main_ui.find_child("AttributeAllocationPanel", true, false) as PanelContainer
 	var skills_panel := main_ui.find_child("SkillsPanel", true, false) as PanelContainer
 	var personality_panel := main_ui.find_child("PersonalityAxesPanel", true, false) as PanelContainer
-	var opponent_panel := main_ui.opponent_details_label.get_parent() as PanelContainer
+	var opponent_panel := main_ui.opponent_panel as PanelContainer
 	var statistics_panel := main_ui.combat_statistics_label.get_parent() as PanelContainer
 	var speed_controls := main_ui.find_child("SpeedControls", true, false) as HBoxContainer
 	var top_menu := main_ui.find_child("TopMenu", true, false) as HBoxContainer
@@ -101,13 +101,13 @@ func run_test() -> void:
 		var courage_value_label := courage_axis.find_child("CurrentValueLabel", true, false) as Label
 		if not require(courage_value_label.text == "+35", "The floating debug label must update when formative movement changes a live axis value."):
 			return
-		if not require(opponent_rect.size == Vector2(320.0, 400.0), "Opponent panel must keep its original size."):
+		if not require(opponent_rect.size == Vector2(320.0, 280.0), "Opponent panel must use its compact size."):
 			return
 	if not require(is_equal_approx(opponent_rect.end.x, float(TARGET_SIZE.x) - SIDE_MARGIN), "Right panels must keep a 32px screen margin."):
 		return
 	if not require(opponent_rect.position.x - god_rect.end.x >= PANEL_GAP, "God panel must not overlap the opponent panel."):
 		return
-	if not require(main_ui.narrative_panel.size.x == main_ui.god_panel.size.x, "Log panel must match the full width of the divine-skill panel."):
+	if not require(main_ui.narrative_panel.size.x == 624.0 and main_ui.narrative_panel.position.x == 371.0, "Story panel must use the expanded center-column width."):
 		return
 	if not require(speed_controls.position.y - statistics_rect.end.y >= 32.0, "Combat statistics must stay clear of speed controls."):
 		return

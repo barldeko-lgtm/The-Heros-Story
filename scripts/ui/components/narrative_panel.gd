@@ -1,6 +1,8 @@
 class_name NarrativePanel
 extends TabContainer
 
+const MainButtonStyle = preload("res://scripts/ui/main_screen_button_style.gd")
+
 var simulation
 var log_text_edit: TextEdit
 var diary_text_edit: TextEdit
@@ -38,13 +40,9 @@ func apply_tabs_style() -> void:
 	tabs_panel_style.set_content_margin_all(2.0)
 	tabs_panel_style.set_corner_radius_all(10)
 	add_theme_stylebox_override("panel", tabs_panel_style)
-	var tab_bar := get_tab_bar()
-	tab_bar.add_theme_font_size_override("font_size", 16)
-	tab_bar.add_theme_color_override("font_selected_color", Color.WHITE)
-	tab_bar.add_theme_color_override("font_unselected_color", Color("aeb5bf"))
-	tab_bar.add_theme_stylebox_override("tab_selected", create_menu_button_style(Color("3d4653"), Color("bdc6d1"), 1))
-	tab_bar.add_theme_stylebox_override("tab_unselected", create_menu_button_style(Color("272d35"), Color("626d7b"), 0))
-	tab_bar.add_theme_stylebox_override("tab_hovered", create_menu_button_style(Color("343d49"), Color("929dab"), 1))
+	# TabContainer forwards its own theme to the internal TabBar.
+	add_theme_font_size_override("font_size", 16)
+	MainButtonStyle.apply_tabs(self)
 
 func create_tabs() -> void:
 	log_text_edit = create_read_only_text_edit()
@@ -115,7 +113,7 @@ func create_read_only_text_edit() -> TextEdit:
 	var text_edit := TextEdit.new()
 	text_edit.editable = false
 	text_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	text_edit.add_theme_font_size_override("font_size", 16)
+	text_edit.add_theme_font_size_override("font_size", 15)
 	text_edit.add_theme_color_override("font_readonly_color", Color("e1e5ea"))
 	var text_style := StyleBoxFlat.new()
 	text_style.bg_color = Color("171b21")
@@ -128,18 +126,3 @@ func create_read_only_text_edit() -> TextEdit:
 	text_style.content_margin_bottom = 8.0
 	text_edit.add_theme_stylebox_override("read_only", text_style)
 	return text_edit
-
-func create_menu_button_style(background_color: Color, border_color: Color, shadow_size: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = background_color
-	style.border_color = border_color
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(9)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
-	style.shadow_size = shadow_size
-	style.shadow_offset = Vector2(0.0, 2.0)
-	style.content_margin_left = 14.0
-	style.content_margin_right = 14.0
-	style.content_margin_top = 8.0
-	style.content_margin_bottom = 8.0
-	return style

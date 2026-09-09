@@ -13,7 +13,7 @@ func _init() -> void:
 	assert(sim.diary.entries.size() == 1 and sim.world_clock.world_tick == 0)
 	sim.advance_time(1.0)
 	assert(sim.world_clock.world_tick == 1)
-	assert(sim.diary.get_text().contains("небольшого городка"), "Arrival remains visible after the first tick.")
+	assert(sim.diary.get_text().contains("Дорнвальд") and sim.diary.get_text().contains("небольшой город"), "Starting arrival must name Dornwald and remain visible after the first tick.")
 	assert(sim.hero_state.active_quest != null)
 	assert(sim.world_state.hero_position == sim.hex_map.definition.starting_city_center)
 	var arrival: String = sim.diary.entries[0]
@@ -23,6 +23,6 @@ func _init() -> void:
 	var legacy = load("res://scripts/core/simulation.gd").new(12345, null)
 	legacy.advance_time(10.0)
 	assert(legacy.hero_state.active_quest != null)
-	assert(not legacy.diary.get_text().contains("небольшого городка"))
-	print("PASS: immediate tick-zero arrival, guild state, autonomous first quest, legacy unchanged.")
+	assert(not legacy.diary.get_text().contains("Дорнвальд"))
+	print("PASS: immediate tick-zero Dornwald arrival, guild state, autonomous first quest, legacy unchanged.")
 	quit()

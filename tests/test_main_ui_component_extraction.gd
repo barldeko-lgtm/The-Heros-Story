@@ -34,7 +34,7 @@ func run_test() -> void:
 	assert(god_panel.get_script().resource_path == GOD_SCRIPT_PATH, "GodPanel must own its extracted presentation script.")
 	assert(narrative_panel.get_script().resource_path == NARRATIVE_SCRIPT_PATH, "NarrativePanel must own its extracted presentation script.")
 	assert(god_panel.position == Vector2(423.0, 80.0) and god_panel.size == Vector2(544.0, 235.0), "GodPanel must keep its size at the centered 1366px layout position.")
-	assert(narrative_panel.position == Vector2(423.0, 380.0) and narrative_panel.size == Vector2(544.0, 310.0), "NarrativePanel must use the expanded center-column space without overlapping bottom controls.")
+	assert(narrative_panel.position == Vector2(371.0, 368.0) and narrative_panel.size == Vector2(624.0, 326.0), "NarrativePanel must use the expanded center-column space without overlapping bottom controls.")
 	assert(main_ui.time_progress_bar.custom_minimum_size == Vector2(390.0, 18.0), "The world-tick progress strip must use the compact half-height layout.")
 	assert(main_ui.time_progress_bar.size.y <= 22.0, "The world-tick progress strip must stay compact after Godot resolves container minimum sizes.")
 	var speed_controls := main_ui.main_screen.get_node("SpeedControls") as HBoxContainer
@@ -45,7 +45,7 @@ func run_test() -> void:
 	assert(not god_panel.combat_buff_button.disabled, "Combat blessing must remain available at startup.")
 	god_panel.combat_buff_button.pressed.emit()
 	assert(main_ui.simulation.get_combat_buff_fights_remaining() == 5, "Extracted GodPanel must still send blessing commands through Simulation.")
-	assert(god_panel.combat_buff_button.text.contains("Боёв: 5"), "Extracted GodPanel must refresh blessing status immediately.")
+	assert(god_panel.combat_buff_button.get_node("ActionDetail").text.contains("Боёв: 5"), "Extracted GodPanel must refresh blessing status immediately.")
 
 	var log_text_edit := narrative_panel.log_text_edit as TextEdit
 	var diary_text_edit := narrative_panel.diary_text_edit as TextEdit

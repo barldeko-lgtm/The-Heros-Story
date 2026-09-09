@@ -18,7 +18,7 @@ func run() -> void:
 	await process_frame
 	var background: ColorRect = ui.get_child(0)
 	check(background.color == Color("191e26"), "Main background must be muted dark blue-gray")
-	for panel in [ui.hero_summary_panel.hero_panel, ui.god_panel, ui.opponent_details_label.get_parent(), ui.combat_statistics_label.get_parent()]:
+	for panel in [ui.hero_summary_panel.hero_panel, ui.god_panel, ui.opponent_panel, ui.combat_statistics_label.get_parent()]:
 		var style: StyleBoxFlat = panel.get_theme_stylebox("panel")
 		check(style.bg_color == Color("232830"), "Panel fill stays unchanged")
 		check(style.border_color == Color("495462") and style.border_width_left == 1, "Subtle one-pixel panel border")

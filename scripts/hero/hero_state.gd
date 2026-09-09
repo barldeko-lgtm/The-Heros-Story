@@ -30,6 +30,8 @@ const ARRIVED_IN_CITY := "ARRIVED_IN_CITY"
 
 const STARTING_CITY_ID := "starting_city"
 const MID_CITY_ID := "mid_city"
+const STARTING_CITY_NAME := "Дорнвальд"
+const MID_CITY_NAME := "Арден"
 
 signal state_changed
 

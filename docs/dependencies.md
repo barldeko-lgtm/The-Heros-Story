@@ -100,7 +100,7 @@ MainUI owns the mini-mode entry button; its child `mini_window_mode.gd` temporar
 Normal launch: StartupFlow → BackgroundScreen (selection only) → ClassSelectionScreen (explicit Warrior selection; three locked alternatives) → Simulation constructed with complete background answers → existing MainUI using that same Simulation.
 
 - Neither setup screen owns or advances world time; no Simulation exists until the second Next, which is guarded by a valid Warrior choice.
-- Simulation owns the one-time background-created arrival: creation at tick 0 enters VISITING_GUILD at the existing Starting City center and records narrator-produced text before MainUI binds; the first completed world tick enters ordinary autonomous quest selection. No UI-generated diary entries, additional map route, or changes to legacy no-background fixture timing.
+- Simulation owns the one-time background-created arrival: creation at tick 0 enters VISITING_GUILD at **Дорнвальд** (Starting City) center and records narrator-produced text naming the city before MainUI binds; the first completed world tick enters ordinary autonomous quest selection. No UI-generated diary entries, additional map route, or changes to legacy no-background fixture timing.
 - HeroBackground validates all answer indices before mutation, assigns the authored attribute points, and resets/applies personality through TraitDevelopment rather than duplicating threshold rules.
 - HeroState.background_answers records the applied selection and prevents applying another background to the same hero.
 - Simulation applies background before its first StatResolver pass/full-HP initialization. Questionnaire points never enter the level-up pending-points pool.
@@ -360,12 +360,14 @@ Prototype 0.2 currently uses a deliberately simple temporary relocation gate:
 
 ```text
 hero reaches Level 13
-→ finish current activity and normal Starting City sale/shopping
-→ Simulation chooses Mid-Level City relocation at the next safe city decision point
+→ finish current activity and normal Дорнвальд sale/shopping
+→ Simulation chooses Арден relocation at the next safe city decision point
 → TravelSystem executes the real route to mid_city_center
 → HeroState.current_city_id remains starting_city during travel
 → physical arrival changes current_city_id to mid_city
-→ ARRIVED_IN_CITY placeholder state until Mid-Level City gameplay is connected
+→ the arrival tick records one Арден Diary passage and remains ARRIVED_IN_CITY
+→ the following tick enters VISITING_GUILD
+→ until Арден's own quest context exists, VISITING_GUILD waits instead of using Дорнвальд's board
 ```
 
 Contracts:
@@ -374,7 +376,7 @@ Contracts:
 - after shopping is exhausted, relocation takes priority over starting another Starting Region dungeon or ordinary quest;
 - `TravelSystem` only executes the already chosen destination and does not own the Level-13 rule;
 - supported temporary events may interrupt `TRAVEL_TO_CITY` through the existing suspend/resume contract; an event death before arrival leaves Starting City as the current city, so the Level-13 relocation can be attempted again after recovery;
-- Mid-Level City must not reuse the Starting City quest board before its own gameplay context is implemented.
+- Арден must not reuse the Дорнвальд quest board before its own gameplay context is implemented.
 
 ## Temporary events
 
@@ -869,9 +871,17 @@ High-value integration coverage includes:
 
 If a refactor changes a hand-off named in this document, update or add the closest deterministic test rather than relying only on visual testing.
 
+## Divine-action secondary labels
+
+GodPanel retains the original Button nodes and command callbacks. refresh computes the same disabled states and detail strings; set_action_text puts the title in Button.text and the second line in its ActionDetail Label, also preserving the full string in the tooltip. The label ignores mouse input and cannot intercept clicks. Consumers that inspect costs or cooldowns read ActionDetail.text, not Button.text. No resource-cost or ability-availability rule moved into the new formatting helper.
+
+## Main-screen button/tab appearance
+
+MainUI, GodPanel and NarrativePanel opt into main_screen_button_style.gd; it owns only visual overrides, never disabled/toggle values or gameplay callbacks. Current navigation is highlighted without changing toggle_mode or pressed signals. Tab appearance must be applied to TabContainer itself: Godot forwards the owner theme to its internal TabBar and can overwrite direct child overrides. Legacy MainUI secondary-button styles remain for the mini-window Expand control; no global Theme replacement affects setup or other local screens.
+
 ## Hero summary presentation
 
-MainUI → HeroSummaryPanel.setup(existing Simulation) → main hero text and pending-attribute indicator. MainUI keeps visible-screen refresh scheduling and GodPanel/HeroScreen signal routing through its compatible update_hero_panel wrapper. HeroSummaryPanel only reads current state and formats existing values; state labels, wrapping spacer and plus coordinates are presentation-owned. The original separately scheduled plus update is preserved. `tests/test_hero_summary_extraction.gd` covers geometry, state spacing, compatibility, indicator and navigation.
+MainUI → HeroSummaryPanel.setup(existing Simulation) → structured hero card. MainUI retains visible-screen scheduling and GodPanel/HeroScreen signal routing through update_hero_panel. HP reads get_current_hero_hp (including live combat); other stat values retain the prior base-stat sources, with conditional bonuses described separately. XP/level/gold read HeroState. Card refresh updates bars, labels, rich-text details and the pending-point indicator without advancing time or consuming RNG. The plus lives in the level HBox rather than using calculated text-line coordinates. The detail body scrolls independently within the fixed card; it retains all prior statistics, bonuses and Seed. hero_details_label now exposes a RichTextLabel, hero_panel owns geometry; obsolete state-spacer accessors were removed. tests/test_hero_card.gd and tests/test_hero_summary_extraction.gd cover rendering, indicator, navigation and read-only ownership.
 
 ## Hero development screen presentation
 

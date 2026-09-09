@@ -21,8 +21,11 @@ var narrative_rng: RandomNumberGenerator
 func _init(initial_narrative_rng: RandomNumberGenerator) -> void:
 	narrative_rng = initial_narrative_rng
 
-func describe_new_game_arrival(hero_name: String) -> String:
-	return "%s добрался до небольшого городка. Здесь начинается его жизнь искателя приключений. Помня об Илье и данном себе обещании, он направился в гильдию авантюристов за первым заданием." % hero_name
+func describe_new_game_arrival(hero_name: String, city_name: String) -> String:
+	return "%s прибыл в %s — небольшой город, где начинается его жизнь искателя приключений. Помня об Илье и данном себе обещании, он направился в гильдию авантюристов за первым заданием." % [hero_name, city_name]
+
+func describe_city_arrival(hero_name: String, city_name: String) -> String:
+	return "%s прибыл в %s. Здесь было куда больше жизни: торговые обозы, солдаты, наёмники и люди со всего региона. Но разговоры у ворот были тревожными — окрестности становились всё опаснее, а городской гарнизон уже не успевал справляться со всеми угрозами." % [hero_name, city_name]
 
 func describe_quest_event(event) -> String:
 	if event == null or event.quest_definition == null:

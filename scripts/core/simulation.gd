@@ -201,7 +201,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	world_clock.tick_completed.connect(on_world_tick_completed)
 	if not hero_state.background_answers.is_empty() and autonomous_quest_choice:
 		hero_state.loop_state = HeroState.VISITING_GUILD
-		var arrival_text: String = diary_narrator.describe_new_game_arrival(hero_state.hero_name)
+		var arrival_text: String = diary_narrator.describe_new_game_arrival(hero_state.hero_name, HeroState.STARTING_CITY_NAME)
 		diary.add_entry(world_clock.world_tick, arrival_text)
 		debug_log.record_event(world_clock.world_tick, arrival_text)
 
@@ -597,7 +597,8 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		advance_city_relocation_tick(completed_tick)
 		return
 	if hero_state.loop_state == HeroState.ARRIVED_IN_CITY:
-		debug_log.record_tick(completed_tick)
+		hero_state.loop_state = HeroState.VISITING_GUILD
+		debug_log.record_event(completed_tick, "%s осмотрелся в %s и направился в гильдию авантюристов за работой." % [hero_state.hero_name, HeroState.MID_CITY_NAME])
 		return
 	if hero_state.loop_state == HeroState.DUNGEON_COMPLETED:
 		push_error("Completed dungeon must transition immediately into return travel.")
@@ -615,6 +616,9 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.DOING_QUEST or hero_state.loop_state == HeroState.DOING_DUNGEON:
 		return
 	if hero_state.loop_state == HeroState.VISITING_GUILD:
+		if hero_state.current_city_id == HeroState.MID_CITY_ID:
+			debug_log.record_tick(completed_tick)
+			return
 		hero_state.loop_state = HeroState.CHOOSING_QUEST
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and try_start_mid_city_relocation(completed_tick):
 		return
@@ -897,9 +901,11 @@ func try_start_mid_city_relocation(completed_tick: int) -> bool:
 	hero_state.loop_state = HeroState.TRAVEL_TO_CITY
 	debug_log.record_event(
 		completed_tick,
-		"%s достиг %d уровня и отправился в Средний город. Путь: %d гексов." % [
+		"%s достиг %d уровня и отправился из %s в %s. Путь: %d гексов." % [
 			hero_state.hero_name,
 			MID_CITY_RELOCATION_LEVEL,
+			HeroState.STARTING_CITY_NAME,
+			HeroState.MID_CITY_NAME,
 			travel_system.get_remaining_steps(),
 		]
 	)
@@ -915,9 +921,11 @@ func advance_city_relocation_tick(completed_tick: int) -> void:
 		hero_state.loop_state = HeroState.ARRIVED_IN_CITY
 		travel_system.clear_travel()
 		pending_event_instance = null
-		debug_log.record_event(completed_tick, "%s прибыл в Средний город." % hero_state.hero_name)
+		var arrival_text: String = diary_narrator.describe_city_arrival(hero_state.hero_name, HeroState.MID_CITY_NAME)
+		diary.add_entry(completed_tick, arrival_text)
+		debug_log.record_event(completed_tick, arrival_text)
 		return
-	debug_log.record_event(completed_tick, "%s идёт в Средний город. Осталось гексов: %d." % [hero_state.hero_name, int(result.get("remaining_steps", 0))])
+	debug_log.record_event(completed_tick, "%s идёт в %s. Осталось гексов: %d." % [hero_state.hero_name, HeroState.MID_CITY_NAME, int(result.get("remaining_steps", 0))])
 	begin_pending_event_if_ready(completed_tick)
 
 func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:

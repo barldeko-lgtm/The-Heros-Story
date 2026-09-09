@@ -35,6 +35,7 @@ If the task is about...
 - **God abilities** → `scripts/god/`;
 - **debug narration / Diary** → `scripts/narrative/` and `data/narrative/`;
 - **player/developer presentation** → `scripts/ui/` and `scenes/ui/`;
+- **shared main-screen button/tab appearance** → `scripts/ui/main_screen_button_style.gd`, used by MainUI, GodPanel and NarrativePanel; `tests/test_main_button_style.gd` checks styling and preserved interaction;
 - **mini-window status grouping, enter/expand and native window restoration** → `scripts/ui/mini_window_mode.gd`, created by `main_ui.gd`; focused coverage in `tests/test_mini_window_mode.gd` and `tests/test_mini_window_status.gd`;
 - **regression coverage** → `tests/`.
 
@@ -107,7 +108,7 @@ Owns, among other things:
 
 - hero identity and current HP/progression state;
 - current autonomous loop-state id;
-- current normal-city context id (`starting_city` / `mid_city`);
+- current normal-city context id (`starting_city` / `mid_city`) plus the shared authored display names **Дорнвальд** / **Арден**;
 - primary attributes and pending player-distributed points;
 - hidden personality-axis values and established trait per axis;
 - learned Warrior ability Skill Levels;
@@ -595,7 +596,7 @@ It may issue approved gameplay commands through Simulation but must not own game
 ### `scenes/ui/components/hero_summary_panel.tscn`
 ### `scripts/ui/components/hero_summary_panel.gd`
 
-Owns main-screen hero summary construction, exact text/state-spacing presentation and pending-attribute plus placement. A mouse-ignoring full-screen Control keeps the original panel and indicator coordinates. Receives the live Simulation, never advances time or owns gameplay. MainUI retains original refresh timing, signal connections, and compatible label/update/state-text accessors.
+Owns the structured main-screen hero card: name/class/traits, level and pending-point plus, gold, live HP/XP bars with numbers, separate activity/quest labels, and a scrollable rich-text detail body grouped into attributes, combat and resistances, retaining bonuses and Seed. The card remains at (32, 80), width 320, with a fixed 640 height; overflow is confined to the detail body. Receives the existing Simulation and never advances gameplay. MainUI retains refresh/signal routing and exposes the rich-text hero_details_label; hero_panel is the explicit geometry/style reference. Focused coverage: tests/test_hero_card.gd and tests/test_hero_summary_extraction.gd.
 
 ### `scenes/ui/screens/hero_screen.tscn`
 ### `scripts/ui/screens/hero_screen.gd`

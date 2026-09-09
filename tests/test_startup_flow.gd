@@ -97,7 +97,7 @@ func run() -> void:
 	startup.class_screen.next_button.pressed.emit()
 	assert(startup.simulation == simulation and simulation.hero_state.strength == 6)
 	assert(simulation.hero_state.loop_state == "VISITING_GUILD")
-	assert(simulation.diary.get_text().contains("Илье"))
+	assert(simulation.diary.get_text().contains("Илье") and simulation.diary.get_text().contains("Дорнвальд"))
 	if OS.get_cmdline_user_args().has("--capture-startup"):
 		await process_frame
 		await RenderingServer.frame_post_draw

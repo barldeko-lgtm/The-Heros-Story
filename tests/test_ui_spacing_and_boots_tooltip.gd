@@ -16,7 +16,7 @@ func run_test() -> void:
 	get_root().add_child(main_ui)
 	await process_frame
 
-	var opponent_panel := main_ui.opponent_details_label.get_parent() as PanelContainer
+	var opponent_panel := main_ui.opponent_panel as PanelContainer
 	var statistics_panel := main_ui.combat_statistics_label.get_parent() as PanelContainer
 	var speed_controls := main_ui.find_child("SpeedControls", true, false) as HBoxContainer
 	assert(opponent_panel.size.y <= 400.0, "Opponent panel must be slightly shorter than the old 430px draft.")

@@ -165,8 +165,8 @@ If the application is closed, simulation stops. Prototype 0.2 is **not** an offl
 
 Prototype 0.2 contains exactly two normal cities:
 
-1. **Starting City** — supports early progression and safer ordinary opportunities;
-2. **Mid-Level City** — supports stronger activities and becomes increasingly attractive as the hero develops.
+1. **Dornwald / Дорнвальд (Starting City)** — supports early progression and safer ordinary opportunities;
+2. **Arden / Арден (Mid-Level City)** — a larger regional center that supports stronger activities and increasingly serious threats beyond the capacity of routine military response.
 
 The Mid-Level City is not unlocked by an arbitrary level gate. The world may be physically reachable earlier, but the hero should normally remain near the safer city until current strength, known opportunities, goals, personality, and expected value make travel worthwhile.
 
@@ -214,6 +214,8 @@ This fixed level gate is intentionally a prototype simplification. A later long-
 Reaching this condition does not instantly teleport the hero or force a move during another activity. The hero finishes the current activity, reaches a normal decision point, then evaluates travelling to another known city.
 
 After arriving, the destination becomes the hero’s new current city context.
+
+The first physical arrival in Arden uses the arrival world tick only to establish the new city context and record a one-time Diary passage about the larger city and the pressure on its garrison. On the following world tick the hero heads to Arden's adventurers guild. Ordinary Arden quest selection may begin only after Arden's own city quest context is connected; it must never fall back to Dornwald's board.
 
 ---
 
@@ -289,7 +291,7 @@ The approved fixed sequence has four questions:
 
 Each of questions 2–4 represents every personality axis once; questions 3–4 use the opposite sides from question 2. Opposite shifts cancel on their shared axis; every final starting axis remains within ±20. The same attribute can be chosen in multiple episodes. These are the approved initial tuning values.
 
-The eventual presentation uses a separate screen per question. The debug build instead displays all questions/answers and their bonuses on one screen for fast testing. Next requires one selected answer for every question and leads to a story/class-selection screen. Childhood friend Илья dies in a monster attack; the hero seeks training and revenge. Four classes are shown (Warrior, Archer, Mage, Assassin), but only Warrior is selectable in Prototype 0.2. Explicit Warrior selection enables Next. Training is narrative only. Immediately upon entering the game (tick 0), arrival in the Starting City is narrated and the hero heads to the adventurers guild; the first completed tick uses real autonomous quest selection. Only the second Next creates the simulation, applies the background once and starts the game. No world time passes during either setup screen.
+The eventual presentation uses a separate screen per question. The debug build instead displays all questions/answers and their bonuses on one screen for fast testing. Next requires one selected answer for every question and leads to a story/class-selection screen. Childhood friend Илья dies in a monster attack; the hero seeks training and revenge. Four classes are shown (Warrior, Archer, Mage, Assassin), but only Warrior is selectable in Prototype 0.2. Explicit Warrior selection enables Next. Training is narrative only. Immediately upon entering the game (tick 0), arrival in **Dornwald / Дорнвальд** is narrated and the hero heads to the adventurers guild; the first completed tick uses real autonomous quest selection. Only the second Next creates the simulation, applies the background once and starts the game. No world time passes during either setup screen.
 
 A starting personality shift must be deliberately smaller than the amount required to create an established visible trait by itself. A biography answer may therefore make the hero begin somewhat closer to Brave, Cautious, Noble, Devious, Greedy, Generous, Curious, or Conservative without immediately labeling the hero with that trait.
 

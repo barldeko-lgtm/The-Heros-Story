@@ -1,5 +1,7 @@
 extends Control
 
+const MainButtonStyle = preload("res://scripts/ui/main_screen_button_style.gd")
+
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const HeroSummaryPanelScene = preload("res://scenes/ui/components/hero_summary_panel.tscn")
 const HeroScreenScene = preload("res://scenes/ui/screens/hero_screen.tscn")
@@ -19,6 +21,10 @@ var hero_details_label: RichTextLabel:
 var pending_attribute_indicator: Label:
 	get:
 		return hero_summary_panel.pending_attribute_indicator
+var opponent_panel: PanelContainer
+var opponent_name_label: Label
+var opponent_hp_bar: ProgressBar
+var opponent_hp_label: Label
 var opponent_details_label: Label
 var combat_statistics_label: Label
 var attribute_points_label: Label:
@@ -83,7 +89,7 @@ func create_mini_mode() -> void:
 	button.position = Vector2(1006.0, 20.0)
 	button.custom_minimum_size = Vector2(150.0, 42.0)
 	button.add_theme_font_size_override("font_size", 18)
-	apply_secondary_button_style(button)
+	MainButtonStyle.apply_button(button)
 	button.pressed.connect(mini_mode.enter_mini_mode)
 	add_child(button)
 	add_child(mini_mode)
@@ -212,13 +218,7 @@ func create_top_menu() -> void:
 		button.tooltip_text = "Раздел пока не реализован"
 		button.custom_minimum_size = Vector2(150.0, 42.0)
 		button.add_theme_font_size_override("font_size", 18)
-		button.add_theme_color_override("font_color", Color("f4f4f4"))
-		button.add_theme_color_override("font_hover_color", Color.WHITE)
-		button.add_theme_color_override("font_pressed_color", Color.WHITE)
-		button.add_theme_stylebox_override("normal", create_menu_button_style(Color("303744"), Color("697586"), 3))
-		button.add_theme_stylebox_override("hover", create_menu_button_style(Color("414b5c"), Color("aeb8c7"), 4))
-		button.add_theme_stylebox_override("pressed", create_menu_button_style(Color("202630"), Color("d8dee8"), 1))
-		button.add_theme_stylebox_override("focus", create_menu_button_style(Color("414b5c"), Color("d8dee8"), 3))
+		MainButtonStyle.apply_button(button)
 		top_menu.add_child(button)
 		if button_text == "ГЕРОЙ":
 			hero_button = button
@@ -282,6 +282,9 @@ func set_active_screen(screen_id: String) -> void:
 	hero_screen.visible = hero_is_open
 	inventory_screen.visible = inventory_is_open
 	map_screen.visible = map_is_open
+	MainButtonStyle.set_navigation_selected(hero_button, hero_is_open)
+	MainButtonStyle.set_navigation_selected(inventory_button, inventory_is_open)
+	MainButtonStyle.set_navigation_selected(map_button, map_is_open)
 	hero_button.text = "НАЗАД" if hero_is_open else "ГЕРОЙ"
 	hero_button.tooltip_text = "Вернуться на главный экран" if hero_is_open else "Открыть развитие героя"
 	inventory_button.text = "НАЗАД" if inventory_is_open else "ИНВЕНТАРЬ"
@@ -308,7 +311,7 @@ func create_speed_controls() -> void:
 		button.button_pressed = speed == 1
 		button.custom_minimum_size = Vector2(52.0, 38.0)
 		button.add_theme_font_size_override("font_size", 15)
-		apply_secondary_button_style(button)
+		MainButtonStyle.apply_button(button)
 		button.pressed.connect(set_time_scale.bind(float(speed)))
 		speed_controls.add_child(button)
 		speed_buttons[float(speed)] = button
@@ -336,39 +339,52 @@ func update_attribute_allocation_panel() -> void:
 	hero_screen.update_attribute_allocation_panel()
 
 func create_opponent_panel() -> void:
-	var panel := PanelContainer.new()
-	apply_panel_style(panel)
-	panel.position = Vector2(1014.0, 80.0)
-	panel.size = Vector2(320.0, 400.0)
-	add_to_main_screen(panel)
-
+	opponent_panel = PanelContainer.new()
+	opponent_panel.name = "OpponentPanel"
+	apply_panel_style(opponent_panel)
+	opponent_panel.position = Vector2(1014.0, 80.0)
+	opponent_panel.size = Vector2(320.0, 280.0)
+	add_to_main_screen(opponent_panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 8)
+	opponent_panel.add_child(content)
+	opponent_name_label = Label.new()
+	opponent_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	opponent_name_label.add_theme_font_size_override("font_size", 18)
+	content.add_child(opponent_name_label)
+	opponent_hp_bar = hero_summary_panel.create_resource_bar(content, Color("a64e59"))
+	opponent_hp_bar.step = 0.0
+	opponent_hp_label = hero_summary_panel.add_bar_text(opponent_hp_bar)
 	opponent_details_label = Label.new()
 	opponent_details_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	opponent_details_label.add_theme_font_size_override("font_size", 16)
-	panel.add_child(opponent_details_label)
+	content.add_child(opponent_details_label)
 
 func update_opponent_panel() -> void:
-	if simulation.active_combat_session == null:
-		opponent_details_label.text = "Противник\n\nСейчас боя нет."
+	var fighting: bool = simulation.active_combat_session != null
+	opponent_hp_bar.visible = fighting
+	opponent_details_label.visible = fighting
+	if not fighting:
+		opponent_name_label.text = "Противник\nСейчас боя нет."
+		opponent_hp_bar.value = 0
+		opponent_hp_label.text = ""
+		opponent_details_label.text = ""
 		return
-
 	var stats = simulation.get_current_opponent_stats()
-	opponent_details_label.text = "%s\n\nHP: %.1f / %.1f\n\nАтака: %.1f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила противника: %.2f" % [
-		simulation.get_current_opponent_name(),
-		simulation.get_current_opponent_hp(),
-		stats.max_hp,
-		stats.attack,
-		stats.attack_speed,
-		stats.crit_chance * 100.0,
-		stats.crit_damage * 100.0,
-		simulation.get_current_opponent_power()
+	opponent_name_label.text = simulation.get_current_opponent_name()
+	opponent_hp_bar.max_value = stats.max_hp
+	opponent_hp_bar.value = simulation.get_current_opponent_hp()
+	opponent_hp_label.text = "HP: %.1f / %.1f" % [simulation.get_current_opponent_hp(), stats.max_hp]
+	opponent_details_label.text = "Атака: %.1f\nСкорость атаки: %.2f\nШанс крита: %.0f%%\nКрит. урон: %.0f%%\nСила противника: %.2f" % [
+		stats.attack, stats.attack_speed, stats.crit_chance * 100.0,
+		stats.crit_damage * 100.0, simulation.get_current_opponent_power()
 	]
 
 func create_combat_statistics_panel() -> void:
 	var panel := PanelContainer.new()
 	apply_panel_style(panel)
-	panel.position = Vector2(1014.0, 500.0)
-	panel.size = Vector2(320.0, 120.0)
+	panel.position = Vector2(1014.0, 380.0)
+	panel.size = Vector2(320.0, 220.0)
 	add_to_main_screen(panel)
 
 	combat_statistics_label = Label.new()
@@ -377,22 +393,23 @@ func create_combat_statistics_panel() -> void:
 	panel.add_child(combat_statistics_label)
 
 func update_combat_statistics_panel() -> void:
+	var total: int = 0
+	var wins: int = 0
+	var losses: int = 0
+	for result in simulation.combat_results_by_mob.values():
+		total += int(result.get("total", 0))
+		wins += int(result.get("wins", 0))
+		losses += int(result.get("losses", 0))
+	var overall_rate: float = 100.0 * wins / total if total > 0 else 0.0
+	var text := "Статистика боёв\nВсего: %d · Побед: %d · Поражений: %d\nПобеды: %.1f%%" % [total, wins, losses, overall_rate]
 	var stats: Dictionary = simulation.get_current_combat_results()
 	if stats.is_empty():
-		combat_statistics_label.text = "Статистика боёв\n\nПока боёв нет."
-		return
-
-	var total: int = stats["total"]
-	var wins: int = stats["wins"]
-	var losses: int = stats["losses"]
-	var win_rate: float = 100.0 * float(wins) / float(total)
-	combat_statistics_label.text = "Статистика боёв — %s\nБои: %d\nПобеды: %d\nПоражения: %d\nWinrate: %.1f%%" % [
-		stats["display_name"],
-		total,
-		wins,
-		losses,
-		win_rate,
-	]
+		text += "\n\nПротив этого врага: пока боёв нет."
+	else:
+		var mob_total: int = int(stats["total"])
+		var rate: float = 100.0 * int(stats["wins"]) / mob_total if mob_total > 0 else 0.0
+		text += "\n\nПротив: %s\nБои: %d · Побед: %d · Поражений: %d\nПобеды: %.1f%%" % [stats["display_name"], mob_total, stats["wins"], stats["losses"], rate]
+	combat_statistics_label.text = text
 
 func update_hero_panel() -> void:
 	hero_summary_panel.update_hero_panel()
