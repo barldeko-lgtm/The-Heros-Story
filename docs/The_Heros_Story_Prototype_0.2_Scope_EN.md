@@ -205,11 +205,11 @@ The hero normally treats the current city as their local base and chooses ordina
 
 The hero does not constantly compare ordinary quest offers from every city in the world. Travelling to another city / region is a separate autonomous activity.
 
-For Prototype 0.2, the main progression trigger for leaving the current city is:
+For the current Prototype 0.2 implementation, relocation deliberately uses a simpler temporary progression trigger:
 
-> **when the current city no longer provides ordinary quests that are meaningfully appropriate for the hero’s current strength and progression, the hero begins looking for new opportunities in another known city / region.**
+> **when the hero reaches Level 13, the hero prepares to leave Starting City for Mid-Level City at the next normal safe-city decision point.**
 
-Ordinary quest suitability uses the personality-adjusted MobPower window defined in Section 13.1. When the current city's active offers no longer contain quests inside that window, this contributes directly to the relocation condition described here.
+This fixed level gate is intentionally a prototype simplification. A later long-term-goal / opportunity-driven relocation model may replace it after Prototype 0.2; ordinary quest-board randomness must not currently cause an early move merely because one board rotation has no suitable offer.
 
 Reaching this condition does not instantly teleport the hero or force a move during another activity. The hero finishes the current activity, reaches a normal decision point, then evaluates travelling to another known city.
 
@@ -1326,9 +1326,9 @@ Event resolution remains deterministic and explainable except for explicit seede
 
 ### 13.4. Leaving a City / Region
 
-Relocation follows the progression trigger defined in Section 5.
+Relocation follows the temporary Prototype 0.2 Level-13 trigger defined in Section 5.
 
-The hero begins looking for a new city / region when the current city no longer provides ordinary quests meaningfully appropriate for the hero's current strength and progression.
+The hero begins the move only after reaching Level 13 and then reaching a normal safe-city decision point. A temporarily poor ordinary quest-board roll does not itself trigger relocation in the current prototype.
 
 This is a progression condition, not a global score comparison between:
 
@@ -1472,33 +1472,29 @@ This cooldown is strict in the current Prototype 0.2 rule: a blocked template is
 
 After an ordinary quest is completed, its template remains unavailable for **50 world ticks counted from quest completion**. When that cooldown expires, the template becomes eligible to return to its normal city / strength-band pool. Eligibility does not itself create an offer; the template can return only on a later shared board refresh.
 
-### 14.5. Hero Outgrowing a City's Current Opportunities
+### 14.5. Temporary Lack of Suitable Current Offers
 
 The hero evaluates the **currently active offers**, not hypothetical future rolls from the entire city pool.
 
 This is intentional.
 
-If the hero has become strong enough that lower and middle offers are no longer meaningfully appropriate, the hero may depend primarily on the city's higher-strength offers.
+The current Prototype 0.2 relocation implementation does **not** use temporary exhaustion of the active board as its trigger. The hero may temporarily have no suitable active offer and still remain based in Starting City while below Level 13.
 
-If those suitable higher-strength offers are completed and no other currently active suitable quest remains, the hero may conclude that the current city no longer offers worthwhile ordinary work and begin the relocation behavior defined in Section 5.
+Once Level 13 is reached, the separate relocation rule in Section 5 takes over at the next normal safe-city decision point.
 
 Example:
 
 ```text
-The hero has outgrown lower and middle quest bands.
+The hero is below Level 13.
+The current 4 / 4 / 4 board happens to contain no suitable offer.
+→ Hero does not relocate because of this roll.
+→ Hero waits for the normal board lifecycle / later suitable opportunity.
 
-Two higher-strength offers are currently suitable.
-→ Hero completes them.
-
-Their quest templates are temporarily unavailable.
-No other active offer is meaningfully appropriate.
-→ Hero may decide that the city currently has no suitable ordinary work.
-→ At the next valid decision point, relocation may begin.
+The hero reaches Level 13.
+→ At the next normal safe-city decision point, the separate relocation rule begins the move to Mid-Level City.
 ```
 
-The hero does **not** inspect unavailable or future quest templates and wait merely because the city might eventually regenerate a suitable quest.
-
-This creates a natural reason for an autonomous hero to move onward after exhausting the best opportunities currently available to them.
+The current fixed Level-13 gate deliberately decouples relocation from board-roll randomness. The richer future long-term-goal / opportunity model may revisit how the hero interprets exhausted local opportunities, but that is not part of the present Prototype 0.2 trigger.
 
 ### 14.6. No Hero-Level Scaling
 
@@ -4915,7 +4911,7 @@ Replace the Prototype 0 single-city quest board with the approved Prototype 0.2 
 - one shared 50-world-tick full-board refresh cycle; accepted offers leave vacancies until that shared refresh;
 - temporary template unavailability after use;
 - hero evaluation of active offers only;
-- city relocation when the hero has exhausted worthwhile currently available ordinary work under the approved progression rules.
+- city relocation at the current temporary Level-13 Prototype 0.2 gate, with richer opportunity/goal-driven relocation deferred.
 
 Keep ordinary quest selection owned by `QuestEvaluator`; do not introduce a universal global activity score.
 

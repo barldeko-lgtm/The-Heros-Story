@@ -109,6 +109,8 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.DUNGEON_BETWEEN_FIGHTS: return "В данже — готовится к следующему бою"
 		HeroState.DUNGEON_COMPLETED: return "Данж пройден"
 		HeroState.DUNGEON_RETURNING_TO_CITY: return "Возвращается в город после данжа"
+		HeroState.TRAVEL_TO_CITY: return "Переезжает в другой город"
+		HeroState.ARRIVED_IN_CITY: return "В новом городе"
 		HeroState.DEAD_RESPAWNING: return "Мёртв — тиков до возрождения: %d" % simulation.get_respawn_ticks_remaining()
 		HeroState.RECOVERING_IN_CITY: return "Восстанавливается в городе"
 	return loop_state

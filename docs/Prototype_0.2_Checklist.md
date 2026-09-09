@@ -60,8 +60,8 @@ Status:
 - ✅ Travel interruption/resumption works for ordinary quest travel plus outbound and completed-return ordinary-dungeon travel, including event-owned detours.
 - 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
 - ⬜ Full city runtime/context system.
-- ⬜ Autonomous relocation from Starting City to Mid-Level City.
-- ⬜ Mid-Level City as a complete gameplay/economy/quest context.
+- 🟡 Autonomous relocation from Starting City to Mid-Level City is live with the temporary Level-13 trigger and real map travel; richer long-term-goal logic is deferred.
+- ⬜ Mid-Level City as a complete gameplay/economy/quest context; current arrival intentionally stops before reusing Starting City content.
 
 ## 5. Ordinary quests and quest board
 
@@ -73,7 +73,7 @@ Status:
 - ✅ Current quest-board working tuning is live at up to 12 offers / 4 per strength band, with deterministic rerolls every 50 ticks and vacancies left until the next shared refresh.
 - ⬜ 15 Mid-Level City ordinary quest templates.
 - ⬜ City-local quest pools across both cities.
-- ⬜ "Hero outgrew this city" relocation trigger from the current active opportunities.
+- 🟡 Prototype 0.2 currently uses the simpler fixed Level-13 relocation trigger instead of active-offer exhaustion; the richer progression/goal rule is deferred.
 
 ## 6. Temporary events
 
@@ -197,7 +197,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Replace the debug all-in-one questionnaire layout with separate question pages when needed; actual class-selection content is still absent.
-3. Make the Mid-Level City a real gameplay context, add its ordinary quests/shop content, and implement autonomous relocation.
+3. Make the Mid-Level City a real gameplay context behind the now-live Level-13 relocation/arrival foundation, including its own ordinary quests and shop content.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.

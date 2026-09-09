@@ -12,6 +12,10 @@ The most recent gameplay-content work expanded the Starting Region temporary-eve
 
 The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
 
+## Mini-window mode (approved out-of-scope slice)
+
+The in-game **МИНИ-ОКНО** button switches the application to a fixed 240×40, borderless, always-on-top native window. Its client area contains one 16px status label with a black outline and a 28×28 expand-icon button on the right (tooltip: **Развернуть**). A small red, black-outlined + immediately left of Expand appears while pending_primary_attribute_points > 0 and disappears when none remain; it is only an indicator, not an allocation button. The 240×40 size is unchanged. The same Simulation continues at the selected speed; no HP, alerts or gameplay controls are shown. Status groups are Делает квест / В городе / Восстанавливается / Переезжает / Возвращается (normal dark text), Идёт в данж / В событии (yellow), В данже / В бою / Данж: бой / Событие: бой (orange), and Мёртв (red). Death takes priority; combat labels require a live CombatSession and its actual owner. At ×0 the activity stays visible, with no Pause label. Expand restores the previous UI screen and window geometry/mode/constraints/stretch/topmost state. Drag the blank background to move the mini window using native OS dragging. Its last position is remembered independently of the normal window for this MainUI lifetime (not saved across application restarts). Expand restores the original OS frame; ordinary OS minimization remains separate from mini mode. Available after character creation, not on setup screens.
+
 ## Simulation and world time
 
 Implemented:
@@ -188,7 +192,7 @@ Travel uses the approved current scale:
 
 Ordinary selected quests use real placed targets and real outbound/return routes. Temporary events can suspend a quest route or either leg of an ordinary-dungeon trip, resolve their own activity/detour, and then rebuild the interrupted route from the hero's new position.
 
-City-to-city autonomous relocation is not implemented yet.
+City-to-city autonomous relocation now has its first Prototype 0.2 implementation. The current temporary trigger is deliberately simple: once the autonomous hero has reached **Level 13**, the next safe Starting City decision point after the current activity/city shopping starts a real `TravelSystem` route to the Mid-Level City center. The move does not interrupt an active quest, dungeon, event, return trip, market sale, or successful shopping purchase. Starting City remains the authoritative current city until physical arrival; on arrival `HeroState.current_city_id` changes to Mid-Level City. Because the second city quest/economy context is not wired yet, the hero then stops in the explicit `ARRIVED_IN_CITY` state instead of incorrectly reusing Starting City content. This fixed Level-13 rule is a Prototype 0.2 simplification; a richer long-term-goal-driven relocation model is deferred.
 
 ## Ordinary quests and quest board
 
@@ -239,10 +243,11 @@ choose quest
 → dedicated market/sale tick
 → Curious/neutral: Skill Level first; Conservative: meaningful equipment first
 → fall through to the other category when the preferred category has no valid affordable purchase
-→ one successful Skill Level or equipment purchase per shopping tick
-→ evaluate known local dungeon readiness
-→ prepare missing dungeon potions if needed
-→ dungeon or next ordinary activity
+	→ one successful Skill Level or equipment purchase per shopping tick
+	→ if Level 13 has been reached: begin real relocation to Mid-Level City
+	→ otherwise evaluate known local dungeon readiness
+	→ prepare missing dungeon potions if needed
+	→ dungeon or next ordinary activity
 ```
 
 Defeat follows:
@@ -655,7 +660,7 @@ The most important incomplete areas are:
 
 - separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
 - Mid-Level City as a complete quest/economy gameplay context;
-- autonomous city relocation;
+- full Mid-Level City gameplay after the now-live Level-13 relocation/arrival foundation;
 - Mid-Level City ordinary quests/content;
 - the remaining temporary-event population toward the 15–20 target;
 - two Mid Region ordinary dungeons;

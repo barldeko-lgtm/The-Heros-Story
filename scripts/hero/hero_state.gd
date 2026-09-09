@@ -25,6 +25,11 @@ const EVENT_ACTIVE := "EVENT_ACTIVE"
 const EVENT_COMBAT := "EVENT_COMBAT"
 const DEAD_RESPAWNING := "DEAD_RESPAWNING"
 const RECOVERING_IN_CITY := "RECOVERING_IN_CITY"
+const TRAVEL_TO_CITY := "TRAVEL_TO_CITY"
+const ARRIVED_IN_CITY := "ARRIVED_IN_CITY"
+
+const STARTING_CITY_ID := "starting_city"
+const MID_CITY_ID := "mid_city"
 
 signal state_changed
 
@@ -58,6 +63,7 @@ var personality_traits_by_axis: Dictionary = {
 	"curiosity": "",
 }
 var loop_state: String = CHOOSING_QUEST
+var current_city_id: String = STARTING_CITY_ID
 var active_quest
 var active_effects: Array[Dictionary] = []
 var equipment = EquipmentScript.new()

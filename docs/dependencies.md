@@ -91,6 +91,10 @@ Important invariants:
 
 The completed `CombatResult` returns to `Simulation`, which routes it to the current activity owner.
 
+## Mini-window presentation boundary
+
+MainUI owns the mini-mode entry button; its child `mini_window_mode.gd` temporarily hides direct ordinary CanvasItems and displays a single status label with Expand. MainUI refreshes this label immediately after advancing Simulation, instead of refreshing hidden normal UI. MiniWindowMode owns the presentation-only grouping of HeroState.loop_state plus active_combat_session/active_combat_context; it never parses diary text or advances gameplay. Death overrides combat; a stale combat context without a live session never shows a fight. The label ignores mouse input so dragging still reaches the panel. MainUI itself keeps processing the same Simulation: no reparenting, recreation, pause, speed change, or second clock. Restore uses the captured per-control visibility and native window settings, including borderless and content_scale_size (disabled only while mini-sized). On exit, capture mini position before restoring normal window geometry; on re-entry, apply it after mini size/flags. Mini position is session-local, separate from the normal-window snapshot, with no disk persistence. The blank panel requests native window dragging on left press; the icon button consumes its own input without starting a drag. On Windows, set the resize/topmost flags before assigning mini client size because changing window decorations can alter client dimensions.
+
 ## New-game background and startup boundary
 
 Normal launch: StartupFlow → BackgroundScreen (selection only) → ClassSelectionScreen (explicit Warrior selection; three locked alternatives) → Simulation constructed with complete background answers → existing MainUI using that same Simulation.
@@ -349,6 +353,28 @@ QuestPool, DungeonSystem and EventSystem each use their own placement/lifecycle 
 It does not choose destinations.
 
 Quest and dungeon runners use the shared travel system instead of implementing their own pathfinding. Event detours use the same system while preserving the interrupted destination where applicable.
+
+### Current city-relocation hand-off
+
+Prototype 0.2 currently uses a deliberately simple temporary relocation gate:
+
+```text
+hero reaches Level 13
+→ finish current activity and normal Starting City sale/shopping
+→ Simulation chooses Mid-Level City relocation at the next safe city decision point
+→ TravelSystem executes the real route to mid_city_center
+→ HeroState.current_city_id remains starting_city during travel
+→ physical arrival changes current_city_id to mid_city
+→ ARRIVED_IN_CITY placeholder state until Mid-Level City gameplay is connected
+```
+
+Contracts:
+
+- Level 13 never interrupts an already active quest, dungeon, temporary event, return journey, sale tick or successful shopping tick;
+- after shopping is exhausted, relocation takes priority over starting another Starting Region dungeon or ordinary quest;
+- `TravelSystem` only executes the already chosen destination and does not own the Level-13 rule;
+- supported temporary events may interrupt `TRAVEL_TO_CITY` through the existing suspend/resume contract; an event death before arrival leaves Starting City as the current city, so the Level-13 relocation can be attempted again after recovery;
+- Mid-Level City must not reuse the Starting City quest board before its own gameplay context is implemented.
 
 ## Temporary events
 

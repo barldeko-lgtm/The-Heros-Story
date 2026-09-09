@@ -68,6 +68,7 @@ const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
 const MIN_DIARY_EQUIPMENT_RARITY: int = DiaryRecorderScript.MIN_DIARY_EQUIPMENT_RARITY
+const MID_CITY_RELOCATION_LEVEL: int = 13
 
 var world_clock = WorldClockScript.new()
 var debug_log = DebugLogScript.new()
@@ -592,6 +593,12 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.DUNGEON_RETURNING_TO_CITY:
 		advance_dungeon_return_tick(completed_tick)
 		return
+	if hero_state.loop_state == HeroState.TRAVEL_TO_CITY:
+		advance_city_relocation_tick(completed_tick)
+		return
+	if hero_state.loop_state == HeroState.ARRIVED_IN_CITY:
+		debug_log.record_tick(completed_tick)
+		return
 	if hero_state.loop_state == HeroState.DUNGEON_COMPLETED:
 		push_error("Completed dungeon must transition immediately into return travel.")
 		debug_log.record_tick(completed_tick)
@@ -609,6 +616,8 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		return
 	if hero_state.loop_state == HeroState.VISITING_GUILD:
 		hero_state.loop_state = HeroState.CHOOSING_QUEST
+	if hero_state.loop_state == HeroState.CHOOSING_QUEST and try_start_mid_city_relocation(completed_tick):
+		return
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
 		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
 		return
@@ -865,9 +874,51 @@ func get_power_ready_dungeon():
 	return null
 
 func finish_shopping_phase(completed_tick: int) -> void:
+	if try_start_mid_city_relocation(completed_tick):
+		return
 	if try_start_discovered_dungeon_trip(completed_tick):
 		return
 	hero_state.loop_state = HeroState.CHOOSING_QUEST
+
+func should_relocate_to_mid_city() -> bool:
+	if not autonomous_quest_choice or hero_state == null:
+		return false
+	if hero_state.current_city_id != HeroState.STARTING_CITY_ID:
+		return false
+	return hero_state.level >= MID_CITY_RELOCATION_LEVEL
+
+func try_start_mid_city_relocation(completed_tick: int) -> bool:
+	if not should_relocate_to_mid_city():
+		return false
+	if world_state.hero_position != hex_map.definition.starting_city_center:
+		return false
+	if not travel_system.begin_travel(hex_map.definition.mid_city_center):
+		return false
+	hero_state.loop_state = HeroState.TRAVEL_TO_CITY
+	debug_log.record_event(
+		completed_tick,
+		"%s достиг %d уровня и отправился в Средний город. Путь: %d гексов." % [
+			hero_state.hero_name,
+			MID_CITY_RELOCATION_LEVEL,
+			travel_system.get_remaining_steps(),
+		]
+	)
+	return true
+
+func advance_city_relocation_tick(completed_tick: int) -> void:
+	if hero_state.loop_state != HeroState.TRAVEL_TO_CITY:
+		return
+	var result: Dictionary = travel_system.advance_one_tick()
+	assert(bool(result.get("moved", false)) or bool(result.get("arrived", false)), "Active city relocation must either move one hex or already be at the destination city.")
+	if bool(result.get("arrived", false)):
+		hero_state.current_city_id = HeroState.MID_CITY_ID
+		hero_state.loop_state = HeroState.ARRIVED_IN_CITY
+		travel_system.clear_travel()
+		pending_event_instance = null
+		debug_log.record_event(completed_tick, "%s прибыл в Средний город." % hero_state.hero_name)
+		return
+	debug_log.record_event(completed_tick, "%s идёт в Средний город. Осталось гексов: %d." % [hero_state.hero_name, int(result.get("remaining_steps", 0))])
+	begin_pending_event_if_ready(completed_tick)
 
 func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 	if dungeon_system == null or dungeon_runner == null:
@@ -1187,10 +1238,11 @@ func on_hero_position_changed(cell: Vector2i) -> void:
 		return
 	if not [
 		HeroState.TRAVEL_TO_QUEST,
-		HeroState.RETURNING_TO_CITY,
-		HeroState.TRAVEL_TO_DUNGEON,
-		HeroState.DUNGEON_RETURNING_TO_CITY,
-	].has(hero_state.loop_state):
+			HeroState.RETURNING_TO_CITY,
+			HeroState.TRAVEL_TO_DUNGEON,
+			HeroState.DUNGEON_RETURNING_TO_CITY,
+			HeroState.TRAVEL_TO_CITY,
+		].has(hero_state.loop_state):
 		return
 	pending_event_instance = event_system.find_encounter_at_hex(cell)
 

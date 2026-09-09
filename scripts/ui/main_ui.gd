@@ -48,6 +48,7 @@ var hero_button: Button
 var inventory_button: Button
 var map_button: Button
 var inventory_close_button: Button
+var mini_mode: Node
 
 func _init(initial_simulation = null) -> void:
 	simulation = initial_simulation if initial_simulation != null else SimulationScript.new(simulation_seed, null, [], true)
@@ -71,12 +72,30 @@ func _ready() -> void:
 	update_combat_statistics_panel()
 	god_panel.refresh()
 	inventory_screen.refresh()
+	create_mini_mode()
+
+func create_mini_mode() -> void:
+	mini_mode = preload("res://scripts/ui/mini_window_mode.gd").new()
+	mini_mode.name = "MiniWindowMode"
+	var button := Button.new()
+	button.name = "MiniModeButton"
+	button.text = "МИНИ-ОКНО"
+	button.position = Vector2(1006.0, 20.0)
+	button.custom_minimum_size = Vector2(150.0, 42.0)
+	button.add_theme_font_size_override("font_size", 18)
+	apply_secondary_button_style(button)
+	button.pressed.connect(mini_mode.enter_mini_mode)
+	add_child(button)
+	add_child(mini_mode)
 
 func _process(delta: float) -> void:
 	simulation.advance_time(delta)
 	refresh_visible_screen()
 
 func refresh_visible_screen() -> void:
+	if mini_mode != null and mini_mode.active:
+		mini_mode.refresh_status()
+		return
 	update_pending_attribute_indicator()
 	if main_screen.is_visible_in_tree():
 		time_progress_bar.value = simulation.world_clock.tick_progress * 100.0

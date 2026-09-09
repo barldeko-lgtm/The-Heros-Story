@@ -23,7 +23,7 @@ If the task is about...
 - **resolved hero stats** → `scripts/hero/stat_resolver.gd`;
 - **combat rules** → `scripts/combat/`;
 - **shared Hero/Mob Power** → `scripts/combat/power_calculator.gd`;
-- **world map / routes / occupancy** → `scripts/world/` plus `data/map/`;
+- **world map / routes / occupancy / current city relocation** → `scripts/world/` plus `data/map/`, coordinated by `scripts/core/simulation.gd`;
 - **ordinary quest content** → `data/quests/` and `data/mobs/`;
 - **quest board / autonomous selection** → `scripts/quests/quest_pool.gd` and `quest_evaluator.gd`;
 - **quest execution** → `scripts/quests/quest_runner.gd`;
@@ -35,6 +35,7 @@ If the task is about...
 - **God abilities** → `scripts/god/`;
 - **debug narration / Diary** → `scripts/narrative/` and `data/narrative/`;
 - **player/developer presentation** → `scripts/ui/` and `scenes/ui/`;
+- **mini-window status grouping, enter/expand and native window restoration** → `scripts/ui/mini_window_mode.gd`, created by `main_ui.gd`; focused coverage in `tests/test_mini_window_mode.gd` and `tests/test_mini_window_status.gd`;
 - **regression coverage** → `tests/`.
 
 ## Project root
@@ -106,6 +107,7 @@ Owns, among other things:
 
 - hero identity and current HP/progression state;
 - current autonomous loop-state id;
+- current normal-city context id (`starting_city` / `mid_city`);
 - primary attributes and pending player-distributed points;
 - hidden personality-axis values and established trait per axis;
 - learned Warrior ability Skill Levels;
@@ -240,6 +242,8 @@ It does not roll RNG, reserve cells or create an activity.
 Owns one active route toward an already chosen destination and advances the hero through `WorldState` along `HexMap` routes.
 
 Supports suspension/resumption and event detours. It never chooses quests, dungeons, events or city relocation goals.
+
+Current Prototype 0.2 city relocation is chosen by `Simulation` at the Level-13 safe-city decision boundary and then executed by this same normal route system. Mid-Level City gameplay itself is still a later city-context task.
 
 ## Ordinary quests
 
