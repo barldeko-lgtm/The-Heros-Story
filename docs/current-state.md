@@ -10,7 +10,7 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region 4/4/4 rotating board.
 
 ## Main-screen surface polish
 
@@ -183,7 +183,7 @@ On ordinary quest combat death:
 - no XP is granted for the killing mob;
 - no quest-completion Gold is granted;
 - XP/levels already earned earlier remain;
-- the hero returns to the safe Starting City context;
+- the hero returns to the safe center of the authoritative current city (Дорнвальд or Арден);
 - natural resurrection waits exactly **100 world ticks**;
 - resurrection returns the hero at exactly **1 HP**;
 - city recovery restores 20% MaxHP per world tick;
@@ -216,7 +216,7 @@ Travel uses the approved current scale:
 
 Ordinary selected quests use real placed targets and real outbound/return routes. Temporary events can suspend a quest route or either leg of an ordinary-dungeon trip, resolve their own activity/detour, and then rebuild the interrupted route from the hero's new position.
 
-City-to-city autonomous relocation now has its first Prototype 0.2 implementation. The two authored city names are **Дорнвальд** (Starting City) and **Арден** (Mid-Level City). The current temporary trigger is deliberately simple: once the autonomous hero has reached **Level 13**, the next safe Дорнвальд decision point after the current activity/city shopping starts a real `TravelSystem` route to Арден's center. The move does not interrupt an active quest, dungeon, event, return trip, market sale, or successful shopping purchase. Дорнвальд remains the authoritative current city until physical arrival. On the arrival tick `HeroState.current_city_id` changes to Арден and a single one-time Diary entry describes the larger regional center and the pressure on its garrison. On the following world tick the hero enters `VISITING_GUILD`; until Арден's own quest context is connected, that state deliberately waits rather than reusing Дорнвальд's board. This fixed Level-13 rule is a Prototype 0.2 simplification; a richer long-term-goal-driven relocation model is deferred.
+City-to-city autonomous relocation now has its first Prototype 0.2 implementation. The two authored city names are **Дорнвальд** (Starting City) and **Арден** (Mid-Level City). The current temporary trigger is deliberately simple: once the autonomous hero has reached **Level 13**, the next safe Дорнвальд decision point after the current activity/city shopping starts a real `TravelSystem` route to Арден's center. The move does not interrupt an active quest, dungeon, event, return trip, market sale, or successful shopping purchase. Дорнвальд remains the authoritative current city until physical arrival. On the arrival tick `HeroState.current_city_id` changes to Арден, the active ordinary `QuestPool` switches to the Mid Region local content/placement context, and a single one-time Diary entry describes the larger regional center and the pressure on its garrison. On the following world tick the hero enters `VISITING_GUILD`; the next normal tick may select an Arden quest from the local board. This fixed Level-13 rule is a Prototype 0.2 simplification; a richer long-term-goal-driven relocation model is deferred.
 
 ## Ordinary quests and quest board
 
@@ -227,6 +227,17 @@ The Starting City currently has:
 - explicit 8 lower / 7 middle / 7 higher strength-band membership;
 - authored real map-placement constraints for every current quest;
 - runtime `QuestOffer` instances with concrete rolled enemy count, reward, target hex, and real route distance.
+
+Arden currently has:
+
+- **26 ordinary Mid Region mob definitions** numbered `0101`–`0126`, approximately 300→900 Power;
+- **26 matching ordinary quest templates**, split 9 lower / 8 middle / 9 higher;
+- ordinary target placement constrained to **3–7 hexes** from Arden across plains, forest, hills, and selected road-tagged locations;
+- the same up-to-12 **4 / 4 / 4** rotating-board lifecycle as Дорнвальд, but with its own deterministic board/placement RNG streams and Mid Region reservations;
+- ordinary quest return/death routing through Arden's real city center, including natural resurrection/recovery and subsequent local quest selection;
+- first five transition mobs retaining the existing ilvl 10 ordinary equipment source; later Arden equipment-drop tiers remain pending the actual ilvl 15/20/25 item/drop content.
+
+The Arden mobs currently grant authored XP from **240 to 720** across the roster. Their attacks remain physical-only for this first slice.
 
 Ordinary quest selection is autonomous and uses the current dedicated flow:
 
@@ -668,13 +679,14 @@ For ordinary changes, narrow deterministic tests are preferred over running the 
 
 These are intentional or transitional and should not be silently "fixed" back to older behaviour:
 
-- the Starting City quest board currently uses the working 4/4/4 cap (up to 12 offers total); this remains a balance value to validate before/with city-relocation tuning;
+- both current city-local ordinary quest boards use the working 4/4/4 cap (up to 12 offers total per active local board); this remains a balance value to validate in playtesting;
 - the current ordinary quest completion cooldown is 50 world ticks;
 - direct legacy/headless Simulation construction without background answers retains 1–2 seeded established traits; normal new games use the questionnaire;
 - `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
 - ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
-- current normal attacks/content are effectively physical even though elemental mitigation exists;
+- current normal attacks/content are effectively physical even though elemental mitigation exists; the new Arden mob roster is also intentionally physical-only for now, with selected enemies intended to receive Fire / Cold / Lightning attacks in a later targeted pass;
+- Arden's ordinary quest context is live, but its dedicated equipment shop / later item tiers, potions, local events and ordinary dungeons are not; after an Arden quest the current interim city routine allows normal sale and unlocked Skill Level training but deliberately does not buy from Дорнвальд's equipment stock;
 - unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
 - the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
 
@@ -683,9 +695,8 @@ These are intentional or transitional and should not be silently "fixed" back to
 The most important incomplete areas are:
 
 - separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
-- Mid-Level City as a complete quest/economy gameplay context;
-- full Mid-Level City gameplay after the now-live Level-13 relocation/arrival foundation;
-- Mid-Level City ordinary quests/content;
+- Mid-Level City as a complete economy/dungeon/event gameplay context beyond its now-live ordinary quest loop;
+- Arden equipment-shop / ilvl 15/20/25 item and potion progression;
 - the remaining temporary-event population toward the 15–20 target;
 - two Mid Region ordinary dungeons;
 - first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;

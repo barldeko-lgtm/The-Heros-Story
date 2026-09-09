@@ -25,13 +25,13 @@ var active_taken_offer
 var template_cooldown_until_tick: Dictionary = {}
 var last_board_refresh_tick: int = 0
 
-func _init(initial_quests: Array = [], initial_rng: RandomNumberGenerator = null) -> void:
+func _init(initial_quests: Array = [], initial_rng: RandomNumberGenerator = null, quest_directory: String = DEFAULT_QUEST_DIRECTORY) -> void:
 	random_number_generator = initial_rng
 	if random_number_generator == null:
 		random_number_generator = RandomNumberGenerator.new()
 		random_number_generator.seed = 1
 	if initial_quests.is_empty():
-		reload_from_directory()
+		reload_from_directory(quest_directory)
 	else:
 		set_available_quests(initial_quests)
 

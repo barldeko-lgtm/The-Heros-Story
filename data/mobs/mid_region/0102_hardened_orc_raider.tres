@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+[ext_resource type="Resource" path="res://data/loot/ironward_vanguard_ilvl20_drop_table.tres" id="2_drop_table"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+equipment_drop_table = ExtResource("2_drop_table")
+id = "hardened_orc_raider"
+display_name = "Закалённый орк-налётчик"
+category = 0
+max_hp = 1260.0
+attack = 95.0
+attack_speed = 1.02
+accuracy = 120.0
+dodge = 12.0
+armor = 20.0
+block = 0.0
+crit_chance = 0.13
+crit_damage = 1.78
+experience_reward = 250

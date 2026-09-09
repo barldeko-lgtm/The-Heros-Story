@@ -67,12 +67,13 @@ Status:
 
 - ✅ 22 / 22 Starting City ordinary quest templates with real map-placement constraints and concrete runtime targets.
 - ✅ Starting City strength-band split: 8 lower / 7 middle / 7 higher.
+- ✅ Arden ordinary-mob roster is authored as 26 distinct `0101`–`0126` definitions on the approved non-linear 300→900 Power curve, with matching local ordinary quests.
 - ✅ Autonomous `Hard Filter → QuestScore → best valid quest` selection.
 - ✅ Real travel to quest target, combat/recovery loop, real return travel, turn-in and Gold reward.
 - ✅ Shared 50-world-tick full-board refresh and strict 50-world-tick completed-template cooldown.
 - ✅ Current quest-board working tuning is live at up to 12 offers / 4 per strength band, with deterministic rerolls every 50 ticks and vacancies left until the next shared refresh.
-- ⬜ 15 Mid-Level City ordinary quest templates.
-- ⬜ City-local quest pools across both cities.
+- ✅ 26 Mid-Level City / Arden ordinary quest templates (`0101`–`0126`), split 9 lower / 8 middle / 9 higher with 3–7-hex Mid Region placement.
+- ✅ City-local ordinary quest pools across both cities; physical arrival in Arden switches board content/placement and QuestRunner return/death routing to the Mid Region city center.
 - 🟡 Prototype 0.2 currently uses the simpler fixed Level-13 relocation trigger instead of active-offer exhaustion; the richer progression/goal rule is deferred.
 
 ## 6. Temporary events

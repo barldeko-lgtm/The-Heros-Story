@@ -64,6 +64,9 @@ const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
 const EVENT_PLACEMENT_RNG_SEED_OFFSET: int = 500003
 const EVENT_RESOLUTION_RNG_SEED_OFFSET: int = 600003
 const NARRATIVE_RNG_SEED_OFFSET: int = 700003
+const MID_QUEST_BOARD_RNG_SEED_OFFSET: int = 800003
+const MID_QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 900003
+const MID_CITY_QUEST_DIRECTORY: String = "res://data/quests/mid_city"
 const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
@@ -427,11 +430,11 @@ func advance_active_combat(available_seconds: float) -> float:
 				collect_mob_equipment_drop(fought_mob_definition)
 			if event != null and event.event_type == QuestEventScript.HERO_DIED:
 				pending_quest_equipment_drops.clear()
-				var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+				var _assert_set_hero_position_ok_5: bool = world_state.set_hero_position(get_current_city_center())
 				assert(_assert_set_hero_position_ok_5, "Dead hero must return to the current city map position for resurrection.")
-				refresh_finished_quest_offer_if_needed(event, combat_world_tick)
-				debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
-				record_quest_diary_event(event, combat_world_tick)
+			refresh_finished_quest_offer_if_needed(event, combat_world_tick)
+			debug_log.record_combat_event(quest_narrator.describe(event), combat_world_tick)
+			record_quest_diary_event(event, combat_world_tick)
 
 		if hero_state.level != previous_level:
 			debug_log.record_combat_event("%s повысил уровень: %d → %d." % [hero_state.hero_name, previous_level, hero_state.level], combat_world_tick)
@@ -616,9 +619,6 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.DOING_QUEST or hero_state.loop_state == HeroState.DOING_DUNGEON:
 		return
 	if hero_state.loop_state == HeroState.VISITING_GUILD:
-		if hero_state.current_city_id == HeroState.MID_CITY_ID:
-			debug_log.record_tick(completed_tick)
-			return
 		hero_state.loop_state = HeroState.CHOOSING_QUEST
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and try_start_mid_city_relocation(completed_tick):
 		return
@@ -780,6 +780,12 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	}
 	if hero_state.loop_state != HeroState.SHOPPING:
 		return empty_result
+	if hero_state.current_city_id == HeroState.MID_CITY_ID:
+		var mid_city_training: Dictionary = try_purchase_skill_training(completed_tick)
+		if bool(mid_city_training.get("purchased", false)):
+			return mid_city_training
+		finish_shopping_phase(completed_tick)
+		return empty_result
 
 	var equipment_first: bool = spending_evaluator.prefers_equipment_before_skill_training(get_hero_traits())
 	if equipment_first:
@@ -918,6 +924,8 @@ func advance_city_relocation_tick(completed_tick: int) -> void:
 	assert(bool(result.get("moved", false)) or bool(result.get("arrived", false)), "Active city relocation must either move one hex or already be at the destination city.")
 	if bool(result.get("arrived", false)):
 		hero_state.current_city_id = HeroState.MID_CITY_ID
+		var _assert_mid_quest_context_ok: bool = activate_mid_city_quest_context()
+		assert(_assert_mid_quest_context_ok, "Physical arrival in Arden must activate the Mid Region ordinary quest context.")
 		hero_state.loop_state = HeroState.ARRIVED_IN_CITY
 		travel_system.clear_travel()
 		pending_event_instance = null
@@ -1217,6 +1225,31 @@ func consume_combat_buff_fight() -> void:
 func guide_hero_to_quest(quest_id: String) -> bool:
 	var available_quests: Array = [] if quest_pool == null else quest_pool.get_available_quests()
 	return god_system.guide_hero_to_quest(quest_id, autonomous_quest_choice, available_quests)
+
+func get_current_city_center() -> Vector2i:
+	if hero_state != null and hero_state.current_city_id == HeroState.MID_CITY_ID:
+		return hex_map.definition.mid_city_center
+	return hex_map.definition.starting_city_center
+
+func activate_mid_city_quest_context() -> bool:
+	if not autonomous_quest_choice or hex_map == null or world_state == null or quest_runner == null:
+		return false
+	if quest_pool != null and quest_pool.active_taken_offer != null:
+		return false
+
+	var board_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + MID_QUEST_BOARD_RNG_SEED_OFFSET).get_rng()
+	var placement_rng: RandomNumberGenerator = SeededRngScript.new(simulation_seed + MID_QUEST_PLACEMENT_RNG_SEED_OFFSET).get_rng()
+	var mid_quest_pool = QuestPoolScript.new([], board_rng, MID_CITY_QUEST_DIRECTORY)
+	if not mid_quest_pool.configure_map_placement(hex_map, world_state, hex_map.MID_REGION_ID, hex_map.definition.mid_city_center, placement_rng):
+		return false
+
+	if quest_pool != null:
+		quest_pool.release_available_offer_map_targets()
+	quest_pool = mid_quest_pool
+	quest_runner.quest_definition = null
+	quest_runner.city_center = hex_map.definition.mid_city_center
+	last_quest_selection.clear()
+	return true
 
 func get_current_region_id() -> String:
 	if hex_map == null or world_state == null:

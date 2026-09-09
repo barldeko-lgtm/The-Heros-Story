@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "cave_ogre"
+display_name = "Пещерный огр"
+category = 0
+max_hp = 2050.0
+attack = 187.0
+attack_speed = 0.80
+accuracy = 112.0
+dodge = 4.0
+armor = 34.0
+block = 0.0
+crit_chance = 0.09
+crit_damage = 1.92
+experience_reward = 400

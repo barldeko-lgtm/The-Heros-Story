@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "road_bandit_chief"
+display_name = "Главарь дорожных разбойников"
+category = 0
+max_hp = 1320.0
+attack = 167.5
+attack_speed = 1.22
+accuracy = 155.0
+dodge = 28.0
+armor = 22.0
+block = 20.0
+crit_chance = 0.20
+crit_damage = 1.78
+experience_reward = 420

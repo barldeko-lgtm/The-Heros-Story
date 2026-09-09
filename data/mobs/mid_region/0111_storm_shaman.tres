@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "storm_shaman"
+display_name = "Шаман грозы"
+category = 0
+max_hp = 1050.0
+attack = 207.0
+attack_speed = 1.18
+accuracy = 158.0
+dodge = 20.0
+armor = 14.0
+block = 0.0
+crit_chance = 0.21
+crit_damage = 1.85
+experience_reward = 380

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "storm_lizard"
+display_name = "Грозовой ящер"
+category = 1
+max_hp = 1680.0
+attack = 236.0
+attack_speed = 1.28
+accuracy = 168.0
+dodge = 34.0
+armor = 20.0
+block = 0.0
+crit_chance = 0.22
+crit_damage = 1.82
+experience_reward = 565

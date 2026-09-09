@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "stone_golem"
+display_name = "Каменный голем"
+category = 1
+max_hp = 2600.0
+attack = 245.0
+attack_speed = 0.70
+accuracy = 118.0
+dodge = 0.0
+armor = 70.0
+block = 0.0
+crit_chance = 0.03
+crit_damage = 1.65
+experience_reward = 500

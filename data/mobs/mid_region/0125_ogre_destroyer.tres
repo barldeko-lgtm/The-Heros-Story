@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "ogre_destroyer"
+display_name = "Огр-разрушитель"
+category = 0
+max_hp = 2650.0
+attack = 343.0
+attack_speed = 0.88
+accuracy = 135.0
+dodge = 4.0
+armor = 44.0
+block = 0.0
+crit_chance = 0.16
+crit_damage = 2.05
+experience_reward = 695

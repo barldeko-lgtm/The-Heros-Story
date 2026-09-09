@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="QuestDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/quest_definition.gd" id="1_quest_definition"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0122_black_knight.tres" id="2_mob"]
+
+[resource]
+script = ExtResource("1_quest_definition")
+id = "black_knight_old_bridge"
+strength_band = "higher"
+display_name = "Чёрный рыцарь у старого моста"
+mob_definition = ExtResource("2_mob")
+mob_count_min = 2
+mob_count_max = 3
+distance_km_min = 15
+distance_km_max = 21
+placement_distance_hex_min = 5
+placement_distance_hex_max = 7
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+gold_per_mob_min = 166
+gold_per_mob_max = 172

@@ -74,7 +74,7 @@ Prototype 0.2 must include, at minimum:
 - a small authored hex map covering both cities and their surrounding areas;
 - travel between cities and to local activities;
 - changing city quest offers;
-- approximately **15–22 ordinary quest templates per city**; the current Starting City uses 22 while the not-yet-authored Mid-Level City still targets 15 unless later balance testing justifies the same expansion;
+- authored ordinary quest pools sized for each city's progression needs; the current approved counts are **22 Starting City quests** and **26 Mid-Level City / Arden quests**;
 - current working tuning of up to **12 simultaneously active ordinary quest offers per city**;
 - quest offer expiration and replacement;
 - approximately **15–20 handcrafted temporary events total** across the two-city world;
@@ -1395,7 +1395,7 @@ The current Starting City has:
 - up to **9 active quest offers** at the same time;
 - one shared quest-board rotation cycle that rerolls the current offers over time.
 
-The Mid-Level City is not yet authored. Its current content target remains **15 ordinary quest templates**, but it must use the same three-band rotating-board model; its final template count may be expanded later if long-run balance shows the same need.
+The Mid-Level City / Arden ordinary pool is authored as **26 ordinary quest templates** and uses the same three-band rotating-board model as the Starting City.
 
 Quest templates are authored content definitions. Active offers are runtime instances generated from those templates.
 
@@ -1438,7 +1438,7 @@ The current working active quest board contains up to twelve ordinary quest offe
 - up to **4 middle-strength offers**;
 - up to **4 higher-strength offers**.
 
-Each Starting City band draws only from the quest templates assigned to that band. The future Mid-Level City uses the same rule against however many templates are authored for each of its three bands.
+Each city's band draws only from the quest templates assigned to that local city pool. The current Starting City split is 8 / 7 / 7, while Arden uses 9 / 8 / 9.
 
 If a band temporarily cannot provide four valid offers, the board may contain fewer than twelve total offers.
 
@@ -2389,6 +2389,8 @@ For Prototype 0.2 ordinary quest content, the three relative-strength quest band
 | Mid-Level City | Lower | 15 |
 | Mid-Level City | Middle | 20 |
 | Mid-Level City | Higher | 25 |
+
+Arden deliberately begins with five **transition mobs** that overlap the top of Dornwald's Power range. Those five sources keep **ilvl 10** equipment drops so arrival in the second city does not immediately force an equipment-tier jump. The normal Arden ilvl 15 / 20 / 25 mapping applies to its later ordinary quest bands once those later item tiers and their ordinary drop sources are authored.
 
 This mapping is source-driven, not hero-scaled.
 

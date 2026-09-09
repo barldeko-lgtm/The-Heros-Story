@@ -367,7 +367,8 @@ hero reaches Level 13
 → physical arrival changes current_city_id to mid_city
 → the arrival tick records one Арден Diary passage and remains ARRIVED_IN_CITY
 → the following tick enters VISITING_GUILD
-→ until Арден's own quest context exists, VISITING_GUILD waits instead of using Дорнвальд's board
+→ physical arrival also switches the active QuestPool/placement origin and QuestRunner return center to Арден / Mid Region
+→ the next normal guild decision may select from Арден's local 4/4/4 board
 ```
 
 Contracts:
@@ -376,7 +377,8 @@ Contracts:
 - after shopping is exhausted, relocation takes priority over starting another Starting Region dungeon or ordinary quest;
 - `TravelSystem` only executes the already chosen destination and does not own the Level-13 rule;
 - supported temporary events may interrupt `TRAVEL_TO_CITY` through the existing suspend/resume contract; an event death before arrival leaves Starting City as the current city, so the Level-13 relocation can be attempted again after recovery;
-- Арден must not reuse the Дорнвальд quest board before its own gameplay context is implemented.
+- city-local ordinary quest content must never leak across cities: Дорнвальд uses the root Starting City quest directory/Starting Region origin, while Арден uses `data/quests/mid_city/` and `mid_city_center` / Mid Region placement;
+- ordinary quest completion, cancellation/death, natural resurrection/recovery, and the next quest selection must preserve the authoritative current city. In particular an Арден quest death returns to `mid_city_center`, not the historical `starting_city_center` hardcode.
 
 ## Temporary events
 

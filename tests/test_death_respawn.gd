@@ -17,12 +17,16 @@ func _init() -> void:
 	simulation.quest_runner.quest_definition.mob_definition.attack = 500.0
 	simulation.quest_runner.quest_definition.mob_definition.crit_chance = 0.0
 
-	simulation.advance_time(30.0)
-	assert(simulation.hero_state.loop_state == HeroState.DOING_QUEST, "The hero must reach the quest before the lethal fight.")
+	var travel_guard: int = 0
+	while simulation.hero_state.loop_state != HeroState.DOING_QUEST and travel_guard < 10:
+		simulation.advance_time(10.0)
+		travel_guard += 1
+	assert(travel_guard < 10 and simulation.hero_state.loop_state == HeroState.DOING_QUEST, "The hero must reach the quest before the lethal fight.")
 
+	var fight_start_tick: int = simulation.world_clock.world_tick
 	simulation.advance_time(2.0)
 	assert(simulation.active_combat_session == null, "The lethal fight must finish.")
-	assert(simulation.world_clock.world_tick == 4, "A defeated fight must still consume exactly one world tick.")
+	assert(simulation.world_clock.world_tick == fight_start_tick + 1, "A defeated fight must still consume exactly one world tick.")
 	assert(simulation.hero_state.loop_state == HeroState.DEAD_RESPAWNING, "Defeat must enter DEAD_RESPAWNING.")
 	assert(is_zero_approx(simulation.hero_state.current_hp), "Dead hero HP must be clamped to zero.")
 	assert(simulation.hero_state.active_quest == null, "Death must cancel the active quest.")
@@ -46,7 +50,8 @@ func _init() -> void:
 
 	simulation.advance_time(40.0)
 	assert(simulation.hero_state.loop_state == HeroState.RECOVERING_IN_CITY, "Four recovery ticks must not fully heal a level-2 Warrior resurrected at 1 HP.")
-	assert(is_equal_approx(simulation.hero_state.current_hp, 121.0), "City recovery must add 20% MaxHP per world tick.")
+	var expected_hp_after_four_ticks: float = minf(simulation.combat_stats.max_hp, 1.0 + simulation.combat_stats.max_hp * 0.80)
+	assert(is_equal_approx(simulation.hero_state.current_hp, expected_hp_after_four_ticks), "City recovery must add 20% MaxHP per world tick.")
 
 	simulation.advance_time(10.0)
 	assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Full city recovery must return the hero to quest selection.")

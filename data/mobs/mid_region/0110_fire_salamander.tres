@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "fire_salamander"
+display_name = "Огненная саламандра"
+category = 1
+max_hp = 1180.0
+attack = 179.5
+attack_speed = 1.20
+accuracy = 135.0
+dodge = 22.0
+armor = 10.0
+block = 0.0
+crit_chance = 0.16
+crit_damage = 1.72
+experience_reward = 365

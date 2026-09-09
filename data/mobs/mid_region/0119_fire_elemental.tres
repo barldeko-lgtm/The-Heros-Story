@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "fire_elemental"
+display_name = "Огненный элементаль"
+category = 1
+max_hp = 1500.0
+attack = 262.5
+attack_speed = 1.25
+accuracy = 160.0
+dodge = 26.0
+armor = 18.0
+block = 0.0
+crit_chance = 0.20
+crit_damage = 1.88
+experience_reward = 545

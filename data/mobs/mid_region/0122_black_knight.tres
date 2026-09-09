@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "black_knight"
+display_name = "Чёрный рыцарь"
+category = 0
+max_hp = 1900.0
+attack = 222.5
+attack_speed = 1.05
+accuracy = 180.0
+dodge = 20.0
+armor = 65.0
+block = 50.0
+crit_chance = 0.18
+crit_damage = 1.95
+experience_reward = 615

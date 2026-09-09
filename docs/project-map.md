@@ -248,7 +248,7 @@ Current Prototype 0.2 city relocation is chosen by `Simulation` at the Level-13 
 
 ## Ordinary quests
 
-### `scripts/model/definitions/quest_definition.gd` / `data/quests/*.tres`
+### `scripts/model/definitions/quest_definition.gd` / `data/quests/*.tres` / `data/quests/mid_city/*.tres`
 
 Immutable ordinary-quest templates.
 
@@ -262,7 +262,7 @@ One rolled runtime offer created from a template. Owns the concrete enemy count/
 
 ### `scripts/quests/quest_pool.gd`
 
-Owns quest-template discovery, the currently available board, creation/removal/refresh of runtime offers, per-template eligibility/cooldown state and current board-offer map reservations.
+Owns quest-template discovery from the supplied city-local directory, the currently available board, creation/removal/refresh of runtime offers, per-template eligibility/cooldown state and current board-offer map reservations.
 
 It does not score offers or execute the accepted quest. Current board-size/timing deviations are documented in `current-state.md` rather than duplicated here.
 
@@ -649,10 +649,10 @@ Exact pixel sizes, offsets and temporary visual placeholders belong in the UI co
 
 ### Ordinary mobs and quests
 
-- `data/mobs/` — current ordinary mob cards.
-- `data/quests/` — current Starting City ordinary quest templates.
-- `data/mobs/mid_region/` — future Mid Region mob content scaffold.
-- `data/quests/mid_city/` — future Mid-Level City ordinary quest scaffold.
+- `data/mobs/` — current Дорнвальд / Starting Region ordinary mob cards.
+- `data/quests/` — current Дорнвальд ordinary quest templates; the root-directory loader intentionally ignores the `mid_city/` subdirectory.
+- `data/mobs/mid_region/` — current Арден / Mid Region ordinary mob cards, numbered `0101`–`0126`.
+- `data/quests/mid_city/` — current Арден ordinary quest templates, numbered `0101`–`0126`; Simulation switches to this directory/local placement context on physical arrival in Арден.
 - `data/quests/specialization/` — future specialization-quest scaffold.
 
 Quest code discovers content by directory rather than hard-coding every individual quest filename.

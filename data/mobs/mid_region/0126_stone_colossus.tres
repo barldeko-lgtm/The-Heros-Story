@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "stone_colossus"
+display_name = "Каменный исполин"
+category = 1
+max_hp = 3600.0
+attack = 296.0
+attack_speed = 0.72
+accuracy = 125.0
+dodge = 0.0
+armor = 95.0
+block = 25.0
+crit_chance = 0.05
+crit_damage = 1.80
+experience_reward = 720

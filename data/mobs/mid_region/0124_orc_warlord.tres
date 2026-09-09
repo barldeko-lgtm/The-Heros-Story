@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "orc_warlord"
+display_name = "Орк-воевода"
+category = 0
+max_hp = 2050.0
+attack = 239.0
+attack_speed = 1.10
+accuracy = 185.0
+dodge = 18.0
+armor = 55.0
+block = 45.0
+crit_chance = 0.20
+crit_damage = 2.00
+experience_reward = 665
