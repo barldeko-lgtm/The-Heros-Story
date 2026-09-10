@@ -477,13 +477,24 @@ This is the first **equipment-only** slice of the intended `QuestLoot` flow, not
 
 ## Economy, shop, Belt and potions
 
-Starting City has one functional equipment shop with three progression bands:
+The two normal cities now have separate functional equipment shops. Дорнвальд keeps three progression bands:
 
 - ilvl 1;
 - compressed ilvl 5;
 - compressed ilvl 10.
 
-Each band currently rolls 6 White + 2 Green distinct-slot equipment listings, for up to **24 equipment listings** when fully stocked.
+Each Дорнвальд band currently rolls 6 White + 2 Green distinct-slot equipment listings, for up to **24 equipment listings** when fully stocked.
+
+Physical arrival in Арден replaces the active shop with its city-local ilvl 15/20/25 stock. The ilvl 15 Azure Dawnplate band uses the ten currently supplied armor/accessory slots and rolls 6 White + 2 Green listings. The ilvl 20 Crimson Thornplate and ilvl 25 Gilded Wyrm bands currently have only the five supplied armor slots and each rolls all 5 White + 2 Green listings, for **22 Arden equipment listings** in total. No missing weapons, shields, accessories, overlays or mob-drop sources are synthesized: Azure ilvl 15 armor has the supplied paper-doll overlays, while jewelry and ilvl 20/25 armor are icon-only until their own assets exist.
+
+Current White / Green reference prices are:
+
+- ilvl 10: 900 / 2700 Gold;
+- ilvl 15: 1350 / 4050 Gold;
+- ilvl 20: 2300 / 6900 Gold;
+- ilvl 25: 3600 / 10800 Gold.
+
+The earlier ilvl 1 and compressed ilvl 5 prices remain 100 / 300 and 500 / 1500 Gold. Green remains exactly three times White, and ordinary resale remains 10% of the reference value.
 
 Current shop behaviour:
 
@@ -510,7 +521,7 @@ The Belt is a real equipment slot with:
 
 ### Healing potions
 
-Current live Starting City potion tiers are:
+Both current city shops expose the same two live potion tiers:
 
 - compressed Level 5: 100 HP for 100 Gold;
 - compressed Level 10: 150 HP for 200 Gold.

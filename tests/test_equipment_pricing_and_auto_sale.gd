@@ -34,7 +34,16 @@ func _init() -> void:
 	assert(price_calculator.get_sell_price_for_level_and_rarity(5, 0) == 50, "Compressed ilvl 5 White sell value must preserve 50 Gold.")
 	assert(price_calculator.get_sell_price_for_level_and_rarity(5, 1) == 150, "Compressed ilvl 5 Green sell value must preserve 150 Gold.")
 	assert(price_calculator.get_sell_price_for_level_and_rarity(5, 2) == 450, "Compressed ilvl 5 Rare sell value must preserve 450 Gold.")
-	assert(price_calculator.get_reference_shop_value(15, 0) < 0, "Undefined price tiers must not silently invent a value.")
+	var approved_white_green_prices := {
+		10: [900, 2700],
+		15: [1350, 4050],
+		20: [2300, 6900],
+		25: [3600, 10800],
+	}
+	for item_level in approved_white_green_prices:
+		assert(price_calculator.get_reference_shop_value(item_level, 0) == approved_white_green_prices[item_level][0], "White shop price must match the approved city progression.")
+		assert(price_calculator.get_reference_shop_value(item_level, 1) == approved_white_green_prices[item_level][1], "Green shop price must remain exactly three times White.")
+	assert(price_calculator.get_reference_shop_value(30, 0) < 0, "Undefined price tiers must not silently invent a value.")
 
 	var simulation_script: Script = load("res://scripts/core/simulation.gd")
 	var simulation = simulation_script.new(1)

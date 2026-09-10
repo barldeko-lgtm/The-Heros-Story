@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_price_table")
-item_levels = Array[int]([1, 5, 10])
-white_reference_values = Array[int]([100, 500, 1000])
+item_levels = Array[int]([1, 5, 10, 15, 20, 25])
+white_reference_values = Array[int]([100, 500, 900, 1350, 2300, 3600])
 uncommon_multiplier = 3.0
 rare_multiplier = 9.0
 sell_fraction = 0.10

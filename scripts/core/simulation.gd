@@ -49,6 +49,7 @@ const DungeonPreparationBudgetScript = preload("res://scripts/economy/dungeon_pr
 
 const DefaultInitialQuest = preload("res://data/quests/0001_goblin_road_problem.tres")
 const DefaultStartingCityShop = preload("res://data/shops/starting_city_shop.tres")
+const DefaultMidCityShop = preload("res://data/shops/arden_shop.tres")
 const DefaultMapDefinition = preload("res://data/map/prototype_02_map.tres")
 const DefaultStartingArmorDefinitions := [
 	preload("res://data/items/starting_equipment/worn_shirt.tres"),
@@ -58,6 +59,7 @@ const DefaultStartingArmorDefinitions := [
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
+const MID_CITY_SHOP_RNG_SEED_OFFSET: int = 100019
 const QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 200003
 const DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 300003
 const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
@@ -786,12 +788,6 @@ func advance_shop_purchase_tick(completed_tick: int) -> Dictionary:
 	}
 	if hero_state.loop_state != HeroState.SHOPPING:
 		return empty_result
-	if hero_state.current_city_id == HeroState.MID_CITY_ID:
-		var mid_city_training: Dictionary = try_purchase_skill_training(completed_tick)
-		if bool(mid_city_training.get("purchased", false)):
-			return mid_city_training
-		finish_shopping_phase(completed_tick)
-		return empty_result
 
 	var equipment_first: bool = spending_evaluator.prefers_equipment_before_skill_training(get_hero_traits())
 	if equipment_first:
@@ -932,6 +928,7 @@ func advance_city_relocation_tick(completed_tick: int) -> void:
 		hero_state.current_city_id = HeroState.MID_CITY_ID
 		var _assert_mid_quest_context_ok: bool = activate_mid_city_quest_context()
 		assert(_assert_mid_quest_context_ok, "Physical arrival in Arden must activate the Mid Region ordinary quest context.")
+		shop_system = ShopSystemScript.new(DefaultMidCityShop, item_generator, simulation_seed + MID_CITY_SHOP_RNG_SEED_OFFSET)
 		hero_state.loop_state = HeroState.ARRIVED_IN_CITY
 		travel_system.clear_travel()
 		pending_event_instance = null

@@ -381,6 +381,7 @@ hero reaches Level 13
 → the arrival tick records one Арден Diary passage and remains ARRIVED_IN_CITY
 → the following tick enters VISITING_GUILD
 → physical arrival also switches the active QuestPool/placement origin and QuestRunner return center to Арден / Mid Region
+→ physical arrival replaces the active ShopSystem with Арден's city-local shop definition and deterministic stock stream
 → the next normal guild decision may select from Арден's local 4/4/4 board
 ```
 
@@ -390,7 +391,7 @@ Contracts:
 - after shopping is exhausted, relocation takes priority over starting another Starting Region dungeon or ordinary quest;
 - `TravelSystem` only executes the already chosen destination and does not own the Level-13 rule;
 - supported temporary events may interrupt `TRAVEL_TO_CITY` through the existing suspend/resume contract; an event death before arrival leaves Starting City as the current city, so the Level-13 relocation can be attempted again after recovery;
-- city-local ordinary quest content must never leak across cities: Дорнвальд uses the root Starting City quest directory/Starting Region origin, while Арден uses `data/quests/mid_city/` and `mid_city_center` / Mid Region placement;
+- city-local ordinary quest and shop content must never leak across cities: Дорнвальд uses the root Starting City quest directory/Starting Region origin and its ilvl 1/5/10 shop, while Арден uses `data/quests/mid_city/`, `mid_city_center` / Mid Region placement and its ilvl 15/20/25 shop;
 - ordinary quest completion, cancellation/death, natural resurrection/recovery, and the next quest selection must preserve the authoritative current city. In particular an Арден quest death returns to `mid_city_center`, not the historical `starting_city_center` hardcode.
 
 ## Temporary events
@@ -664,6 +665,8 @@ Simulation supplies current-region known-dungeon Power readiness and keeps its p
 `ShopSystem` owns mutable stock, deterministic refresh, vacancies and purchase transactions.
 
 It uses shared `ItemGenerator`/price data rather than embedding duplicate generated stats or price formulas into shop stock.
+
+One active `ShopSystem` represents the authoritative current-city shop. `Simulation` may replace it only at the physical city-arrival hand-off; the city definition, current listings, refresh tick and RNG state then remain part of the normal snapshot graph.
 
 Replacing an equipped item in a shop transaction follows the current shop replacement/sale flow rather than routing the replaced item through the ordinary retained-inventory path.
 

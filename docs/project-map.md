@@ -452,9 +452,10 @@ Owns current purchased Skill Level progression. It reads hero-level rank availab
 ### `scripts/model/definitions/shop_definition.gd`
 ### `scripts/model/definitions/shop_stock_band_definition.gd`
 ### `data/shops/starting_city_shop.tres`
+### `data/shops/arden_shop.tres`
 ### `data/shops/bands/*.tres`
 
-Immutable shop configuration: authored equipment stock bands plus fixed consumable availability.
+Immutable city-local shop configuration: authored equipment stock bands plus fixed consumable availability. Дорнвальд owns ilvl 1/5/10 stock; Арден owns the supplied ilvl 15 Azure Dawnplate, ilvl 20 Crimson Thornplate and ilvl 25 Gilded Wyrm Common/Uncommon definitions. Physical Арден arrival switches the active `ShopSystem` through `Simulation`; unavailable visual slots are not filled with placeholders.
 
 ### `scripts/economy/shop_system.gd`
 

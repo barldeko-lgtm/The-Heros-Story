@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/shop_stock_band_definition.gd" id="1_band"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_helmet.tres" id="item_0_0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_cuirass.tres" id="item_0_1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_gauntlets.tres" id="item_0_2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_legguards.tres" id="item_0_3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sabatons.tres" id="item_0_4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_helmet_uncommon.tres" id="item_1_0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_cuirass_uncommon.tres" id="item_1_1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_gauntlets_uncommon.tres" id="item_1_2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_legguards_uncommon.tres" id="item_1_3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sabatons_uncommon.tres" id="item_1_4"]
+
+[resource]
+script = ExtResource("1_band")
+item_level = 20
+white_listings = 5
+uncommon_listings = 2
+item_definitions = Array[Resource]([ExtResource("item_0_0"), ExtResource("item_0_1"), ExtResource("item_0_2"), ExtResource("item_0_3"), ExtResource("item_0_4"), ExtResource("item_1_0"), ExtResource("item_1_1"), ExtResource("item_1_2"), ExtResource("item_1_3"), ExtResource("item_1_4")])
