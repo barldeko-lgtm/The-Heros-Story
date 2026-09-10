@@ -13,10 +13,17 @@ func run() -> void:
 	root.size = Vector2i(1366, 768)
 	var startup = load(path).instantiate()
 	startup.simulation_seed = 12345
+	startup.save_directory = "res://.godot/startup-test-" + str(Time.get_ticks_usec())
 	root.add_child(startup)
 	await process_frame
 	await process_frame
 	assert(startup.simulation == null and startup.game_ui == null)
+	assert(startup.start_menu.visible and not startup.background_screen.visible)
+	assert(startup.continue_button.disabled)
+	startup.new_game_button.pressed.emit()
+	await process_frame
+	await process_frame
+	assert(not startup.start_menu.visible)
 	assert(startup.background_screen.visible and not startup.class_screen.visible)
 	var screen = startup.background_screen
 	assert(startup.get_node("StartupBackground").color == Color("d9dde2"), "Startup uses the main-screen background.")

@@ -15,6 +15,9 @@ It is intentionally not a second gameplay specification. Current implemented beh
 
 If the task is about...
 
+- **snapshot schema / detached restore** → `scripts/core/simulation_snapshot.gd`;
+- **manual/auto files, integrity and backup rotation** → `scripts/core/save_store.gd`;
+- **save/load UI and autosave scheduling** → `scripts/ui/save_controller.gd`, attached by `startup_flow.gd`;
 - **overall simulation flow** → `scripts/core/simulation.gd`;
 - **world ticks / pause / speed** → `scripts/core/world_clock.gd`;
 - **hero mutable state** → `scripts/hero/hero_state.gd`;
@@ -42,7 +45,7 @@ If the task is about...
 ## Project root
 
 - `project.godot` — Godot project configuration and main-scene registration.
-- `scenes/main/startup.tscn` — normal application root: background questionnaire → story and Warrior selection (three locked classes) → game.
+- `scenes/main/startup.tscn` — normal application root: New Game / Continue → background questionnaire → story and Warrior selection (three locked classes) → game; Continue restores a saved simulation without reapplying creation.
 - `scenes/main/main.tscn` — direct MainUI scene retained for isolated game-UI use/tests; normal startup injects its newly created Simulation into MainUI.
 - `.github/workflows/tests.yml` — GitHub Actions test workflow.
 - `assets/` — visual source assets and shaders used by current UI.

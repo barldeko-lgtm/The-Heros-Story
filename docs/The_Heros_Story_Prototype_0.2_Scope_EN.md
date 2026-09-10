@@ -4136,11 +4136,14 @@ UI must remain separate from gameplay logic.
 
 Prototype 0.2 requires persistent progress.
 
-The normal player-facing model is one continuing hero history rather than save-scumming through multiple manual branches.
+The current approved player-facing model uses two rolling slots: one manual save and one autosave. This replaces the original single-rolling-save proposal for the current implementation stage.
 
 Working save model:
 
-- one rolling main save;
+- one manual slot, written only by Save with overwrite confirmation;
+- one independent rolling autosave slot;
+- Continue loads the newest valid candidate; Load offers Manual and Autosave;
+- New Game confirms replacing Autosave after hero creation; Manual is preserved;
 - automatic save approximately every **10 real minutes** while the game is running;
 - automatic save when the player normally exits / closes the game;
 - additional milestone autosaves only for a small number of major progression events.
@@ -4152,7 +4155,7 @@ Current major milestone autosaves:
 
 Additional milestone autosaves should be added only when testing shows a clear need. Prototype 0.2 should not save after every minor action, combat, purchase, or ordinary quest event.
 
-Debug / test builds may expose additional manual save, load, checkpoint, or state-inspection tools when useful for development and reproduction of problems. These tools do not change the normal player-facing one-rolling-save model.
+Debug / test builds may expose additional manual save, load, checkpoint, or state-inspection tools when useful for development and reproduction of problems. These tools do not add extra player-facing slots to the two-slot model.
 
 Prototype 0.2 has no offline simulation.
 
@@ -4990,7 +4993,7 @@ A functional developer UI should remain available throughout development for tes
 
 Implement and validate:
 
-- one rolling main save;
+- two independent rolling slots: manual and autosave;
 - autosave approximately every 10 real minutes while the game is running;
 - save on normal exit / game close;
 - milestone autosave after successful dungeon completion;

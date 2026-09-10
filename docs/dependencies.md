@@ -10,6 +10,16 @@ It is intentionally not a balance sheet or a second gameplay specification.
 
 Use this file when changing a system that hands state or decisions to another system.
 
+## Persistence boundary
+
+`startup_flow.gd` owns session replacement through `save_controller.gd`; MainUI only emits Save/Load requests. Snapshots are captured synchronously after a completed simulation update, never from UI widgets. Loading constructs and validates a detached simulation before replacing MainUI, so every screen binds to the restored live owners. Creation bonuses are not reapplied to the restored state; wall time does not advance simulation on load.
+
+`save_store.gd` reads primitive Variant data only (never executable object deserialization), verifies a SHA-256 envelope, and keeps independent manual/auto files and prior-copy backups. Temporary writes are verified before replacing a target; a corrupt primary never overwrites a valid backup. File format and snapshot schema have independent versions; incompatible data is rejected rather than partly loaded. UI tests must override `startup.save_directory` to a unique project `.godot/` directory, never touch real `user://saves`.
+
+`simulation_snapshot.gd` requires the complete serialized script-property set for the current schema; adding/removing persisted runtime fields needs an explicit compatibility/version decision, not silent constructor-default fallback. Hydration validates values and rebuilds typed arrays before `Object.set` (Godot can silently refuse an untyped Array). Saved questionnaire bonuses/history are restored, not replayed. Both world-position and world-clock callbacks reconnect after hydration. Whole-graph round-trip/continuation comparisons cover history and shared owners, not only HP/Gold.
+
+New-game overwrite confirmation belongs after questionnaire/class selection and before creating/attaching a fresh simulation. Only an existing autosave triggers it; cancellation keeps the selected answers and class without writing either slot. Manual overwrite and load replacement have separate confirmations. A failed normal-close autosave must cancel exit and expose its error.
+
 ## Global architectural invariants
 
 Preserve these boundaries unless an explicit approved redesign says otherwise:

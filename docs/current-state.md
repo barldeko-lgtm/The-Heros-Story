@@ -10,7 +10,17 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, and save/load is still absent. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region 4/4/4 rotating board.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, while two-slot save/load is now connected. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region 4/4/4 rotating board.
+
+## Start menu and persistent saves
+
+Startup offers New Game and Continue (enabled when a readable save candidate exists). New Game opens the questionnaire and class selection first; completing class selection asks before replacing an existing autosave. Cancellation stays on class selection without writing. The manual slot is preserved. No simulation exists before creation is accepted.
+
+The running game menu exposes Save, Load and Return to Game and pauses simulation. Save writes one manual slot with overwrite confirmation. Load offers independent Manual/Autosave slots with hero, level and timestamp, then asks before discarding current progress. Continue tries newest candidates first. Loading binds a new MainUI to a detached restored simulation; invalid snapshots leave the running game intact. No offline time is applied.
+
+Initial creation, ten real minutes, normal close and increased completed-dungeon count trigger autosaves. Specialization is not implemented, so its milestone is not connected yet. Normal-close write failure leaves the game open and paused with an error. Files have integrity checks, verified temporary writes and prior-copy backups; save timestamps increase across both slots. Tests use isolated project `.godot/` directories, never player slots. Focused tests: `test_save_store.gd`, `test_save_ui.gd`, `test_save_confirmations.gd`, `test_save_close_probe.gd`, `test_simulation_snapshot.gd`, `test_snapshot_validation.gd`, `test_snapshot_scenarios.gd`, `test_save_dungeon_milestone.gd`.
+
+Snapshot restoration rejects missing/unknown serialized properties, malformed containers/references/RNG and incompatible property types. Typed arrays are reconstructed explicitly, preserving Diary/Log entries and questionnaire answers rather than silently retaining empty defaults. Event instances receive a valid construction resource before saved state is hydrated. Regression scenarios compare the complete captured graph immediately after load and after identical dungeon combat, event completion and death-to-recovery continuation. A real completed-dungeon fixture verifies one restorable milestone autosave. This is targeted persistence coverage, not full long-run Prototype 0.2 validation.
 
 ## Main-screen surface polish
 
@@ -591,7 +601,6 @@ Current behaviour:
 Still missing from the Diary:
 
 - episode grouping;
-- persistent save/load history;
 - additional phrase variants;
 - level-up / trait-change / remaining dungeon detail / specialization / other important divine-intervention coverage;
 - the rest of the required Prototype 0.2 diary sources.
@@ -707,7 +716,6 @@ The most important incomplete areas are:
 - full Hero Diary coverage and episode grouping;
 - player-facing Explanatory Log;
 - finished player-facing screens/presentation;
-- save/load and persistent diary/history;
 - long-run Prototype 0.2 balance/soak validation through the intended approximately level-25–30 progression.
 
 When this document conflicts with current code or a more recently approved design change, verify the repository and the Prototype 0.2 Scope rather than restoring older behaviour from historical chats.

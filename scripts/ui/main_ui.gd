@@ -1,5 +1,8 @@
 extends Control
 
+signal save_requested
+signal load_requested
+
 const MainButtonStyle = preload("res://scripts/ui/main_screen_button_style.gd")
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
@@ -55,6 +58,7 @@ var map_button: Button
 var inventory_close_button: Button
 var mini_mode: Node
 var background: ColorRect
+var game_menu: AcceptDialog
 
 func _init(initial_simulation = null) -> void:
 	simulation = initial_simulation if initial_simulation != null else SimulationScript.new(simulation_seed, null, [], true)
@@ -95,7 +99,8 @@ func create_mini_mode() -> void:
 	add_child(mini_mode)
 
 func _process(delta: float) -> void:
-	simulation.advance_time(delta)
+	if game_menu == null or not game_menu.visible:
+		simulation.advance_time(delta)
 	refresh_visible_screen()
 
 func refresh_visible_screen() -> void:
@@ -232,6 +237,41 @@ func create_top_menu() -> void:
 			map_button = button
 			map_button.tooltip_text = "Открыть карту"
 			map_button.pressed.connect(on_map_button_pressed)
+
+		elif button_text == "МЕНЮ":
+			button.tooltip_text = "Открыть меню игры"
+			button.pressed.connect(open_game_menu)
+
+func open_game_menu() -> void:
+	if game_menu == null:
+		game_menu = AcceptDialog.new()
+		game_menu.name = "GameMenu"
+		game_menu.title = "Меню игры"
+		game_menu.ok_button_text = "Вернуться в игру"
+		game_menu.min_size = Vector2i(340, 220)
+		var content := VBoxContainer.new()
+		content.add_theme_constant_override("separation", 12)
+		for caption in ["Сохранить", "Загрузить"]:
+			var button := Button.new()
+			button.text = caption
+			button.custom_minimum_size.y = 42
+			button.disabled = save_requested.get_connections().is_empty()
+			button.tooltip_text = "Сохранить в ручной слот" if caption == "Сохранить" else "Выбрать сохранение"
+			button.pressed.connect(func():
+				if caption == "Сохранить":
+					save_requested.emit()
+				else:
+					load_requested.emit()
+			)
+			MainButtonStyle.apply_button(button)
+			content.add_child(button)
+		var hint := Label.new()
+		hint.text = "Ручной слот и автосохранение"
+		hint.add_theme_font_size_override("font_size", 13)
+		content.add_child(hint)
+		game_menu.add_child(content)
+		add_child(game_menu)
+	game_menu.popup_centered()
 
 func create_inventory_close_button() -> void:
 	inventory_close_button = Button.new()
