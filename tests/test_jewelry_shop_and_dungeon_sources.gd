@@ -51,7 +51,7 @@ func run_test() -> void:
 	var epic_necklace_roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon, ScriptedRng.new([0.249999], [7]))
 	assert(int(epic_necklace_roll["rarity"]) == 3 and epic_necklace_roll["item_definition"].equipment_slot == "necklace", "Dungeon jewelry must preserve the configured 25% Epic override.")
 	var epic_necklace = load("res://scripts/items/item_generator.gd").new().generate(epic_necklace_roll["item_definition"], 5, ScriptedRng.new([0.5], [0, 0, 0, 0]), 3)
-	assert(epic_necklace != null and epic_necklace.affixes.size() == 3 and is_equal_approx(epic_necklace.get_stat_bonus("fire_resistance"), 20.0 + epic_necklace.affixes[0]["value"]), "Epic dungeon jewelry must combine its inherent Resistance with three generated affixes.")
+	assert(epic_necklace != null and epic_necklace.affixes.size() == 3 and is_equal_approx(epic_necklace.get_stat_bonus("fire_resistance"), 10.0 + epic_necklace.affixes[0]["value"]), "Epic dungeon jewelry must combine its inherent Resistance with three generated affixes.")
 
 	assert(shop_band.item_level == 5 and shop_band.white_listings == 6 and shop_band.uncommon_listings == 2, "Adding Belt must not change the compressed ilvl 5 shop's 6 White / 2 Green listing counts.")
 	var definitions_by_rarity := {0: [], 1: []}

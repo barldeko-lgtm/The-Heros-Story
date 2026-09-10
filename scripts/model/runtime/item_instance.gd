@@ -86,11 +86,11 @@ func append_base_stat_lines(lines: Array[String]) -> void:
 	if get_base_stat("block") != 0.0:
 		lines.append("Базовый блок: +%.2f" % get_base_stat("block"))
 	if get_base_stat("fire_resistance") != 0.0:
-		lines.append("Базовое сопротивление огню: +%.2f" % get_base_stat("fire_resistance"))
+		lines.append("Базовое сопротивление огню: +%.2f%%" % get_base_stat("fire_resistance"))
 	if get_base_stat("cold_resistance") != 0.0:
-		lines.append("Базовое сопротивление холоду: +%.2f" % get_base_stat("cold_resistance"))
+		lines.append("Базовое сопротивление холоду: +%.2f%%" % get_base_stat("cold_resistance"))
 	if get_base_stat("lightning_resistance") != 0.0:
-		lines.append("Базовое сопротивление молнии: +%.2f" % get_base_stat("lightning_resistance"))
+		lines.append("Базовое сопротивление молнии: +%.2f%%" % get_base_stat("lightning_resistance"))
 
 func get_base_stat(stat_id: String) -> float:
 	return float(base_stats.get(stat_id, 0.0))
@@ -108,9 +108,9 @@ func format_affix_line(affix: Dictionary) -> String:
 		"crit_damage_percentage_point": return "Сила крита: +%.2f%%" % value
 		"attack_speed_percent": return "Скорость атаки: +%.2f%%" % value
 		"cast_speed_percent": return "Скорость применения: +%.2f%%" % value
-		"elemental_resistance": return "Сопротивление стихии: +%.2f" % value
-		"fire_resistance": return "Сопротивление огню: +%.2f" % value
-		"cold_resistance": return "Сопротивление холоду: +%.2f" % value
-		"lightning_resistance": return "Сопротивление молнии: +%.2f" % value
+		"elemental_resistance": return "Сопротивление стихии: +%.2f%%" % value
+		"fire_resistance": return "Сопротивление огню: +%.2f%%" % value
+		"cold_resistance": return "Сопротивление холоду: +%.2f%%" % value
+		"lightning_resistance": return "Сопротивление молнии: +%.2f%%" % value
 		"block": return "Блок: +%.2f" % value
 	return "%s: +%.2f" % [stat_id, value]

@@ -12,6 +12,7 @@ const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd"
 @export var id: String
 @export var display_name: String
 @export var category: Category = Category.MONSTER
+@export_enum("physical", "fire", "cold", "lightning") var attack_damage_type: String = "physical"
 @export var max_hp: float = 1.0
 @export var attack: float = 1.0
 @export var attack_speed: float = 1.0
@@ -46,4 +47,4 @@ func get_combat_stats() -> RefCounted:
 
 func get_power() -> float:
 	var power_calculator = PowerCalculatorScript.new()
-	return power_calculator.calculate(get_combat_stats())
+	return power_calculator.calculate(get_combat_stats(), attack_damage_type)

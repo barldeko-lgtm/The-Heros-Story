@@ -401,13 +401,23 @@ The final Armor cap, if one is required, is still a balance decision and should 
 
 For each element:
 
-`Final Elemental Damage = Raw Elemental Damage × 100 / (100 + Matching Resistance)`
+Elemental Resistance is stored and presented as a direct percentage-point reduction.
 
-Resistance values cannot be negative.
+`Final Elemental Damage = Raw Elemental Damage × (1 - min(Matching Resistance, 75) / 100)`
+
+Resistance values cannot be negative. One displayed point of Fire / Cold / Lightning Resistance means one percentage point of reduction against that matching element.
 
 Damage reduction from one elemental resistance is capped at:
 
 > **75%**
+
+The Prototype 0.2 Warrior starts with an inherent baseline of:
+
+- **10% Fire Resistance**;
+- **10% Cold Resistance**;
+- **10% Lightning Resistance**.
+
+These are base hero combat stats, not equipment bonuses. Jewelry and other future Resistance sources add on top of this baseline before the normal 75% per-element combat cap is applied.
 
 Prototype 0.2 content must contain real sources of Fire, Cold, and Lightning damage. A resistance that never matters in actual combat is not meaningfully implemented.
 
@@ -453,7 +463,7 @@ For physical damage:
 
 For elemental damage:
 
-`FinalElementalDamageAfterBlock = (RawElementalDamage × 0.25) × 100 / (100 + MatchingResistance)`
+`FinalElementalDamageAfterBlock = (RawElementalDamage × 0.25) × (1 - min(MatchingResistance, 75) / 100)`
 
 Prototype 0.2 uses the following shared Block conversion:
 
@@ -505,11 +515,18 @@ Equivalent form:
 
 The resulting offensive term is:
 
-`EffectiveDPS = RawDPS × AccuracyFactor`
+`EffectiveDPS = RawDPS × AccuracyFactor × DamageTypePowerFactor`
 
 or in one line:
 
-`EffectiveDPS = PhysicalDamage × (AttackSpeed / 2) × CritModifier × AccuracyFactor`
+`EffectiveDPS = Damage × (AttackSpeed / 2) × CritModifier × AccuracyFactor × DamageTypePowerFactor`
+
+For the current Prototype 0.2 universal Power estimate:
+
+- Physical ordinary damage uses `DamageTypePowerFactor = 1.00`;
+- Fire, Cold, and Lightning ordinary damage use `DamageTypePowerFactor = 1.20`.
+
+This is an evaluation weight inside Power only. It does **not** increase real combat damage. It represents the current tuning assumption that elemental offense is more valuable because matching Resistance is narrower than general Armor.
 
 ### Defensive Power Term
 
@@ -523,11 +540,11 @@ For each incoming damage type, calculate the fraction of damage remaining after 
 
 `PhysicalTaken = 100 / (100 + Armor)`
 
-`FireTaken = 100 / (100 + FireResistance)`
+`FireTaken = 1 - min(FireResistance, 75) / 100`
 
-`ColdTaken = 100 / (100 + ColdResistance)`
+`ColdTaken = 1 - min(ColdResistance, 75) / 100`
 
-`LightningTaken = 100 / (100 + LightningResistance)`
+`LightningTaken = 1 - min(LightningResistance, 75) / 100`
 
 The current reference incoming-damage mix is:
 
@@ -2122,15 +2139,15 @@ For Prototype 0.2, the five normal armor slots currently use the same base-Armor
 
 The current working inherent base-stat control points are:
 
-| Item level / tier | Armor base Armor | Sword base Damage | Sword Attack Speed bonus | Shield base Block | Belt base Health | Jewelry base Resistance |
+| Item level / tier | Armor base Armor | Sword base Damage | Sword Attack Speed bonus | Shield base Block | Belt base Health | Jewelry base Resistance % |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 5 | 10 | +0.10 | 10 | 30 | 15 |
-| 5 | 7 | 13 | +0.10 | 13 | 40 | 20 |
-| 10 | 10 | 17 | +0.10 | 17 | 50 | 25 |
-| 15 | 12 | 22 | +0.10 | 22 | 65 | 35 |
-| 20 | 15 | 30 | +0.10 | 30 | 85 | 45 |
-| 25 | 20 | 40 | +0.10 | 40 | 110 | 60 |
-| 30 | 25 | 50 | +0.10 | 50 | 145 | 80 |
+| 1 | 5 | 10 | +0.10 | 10 | 30 | — |
+| 5 | 7 | 13 | +0.10 | 13 | 40 | 10 |
+| 10 | 10 | 17 | +0.10 | 17 | 50 | 12 |
+| 15 | 12 | 22 | +0.10 | 22 | 65 | 15 |
+| 20 | 15 | 30 | +0.10 | 30 | 85 | 18 |
+| 25 | 20 | 40 | +0.10 | 40 | 110 | 22 |
+| 30 | 25 | 50 | +0.10 | 50 | 145 | 26 |
 
 These are inherent base properties and therefore remain the same across all rarities of the same item type and item level.
 
@@ -2150,7 +2167,9 @@ Jewelry uses one inherent elemental Resistance chosen when the item is generated
 - Cold Resistance;
 - Lightning Resistance.
 
-The resistance type may vary randomly between otherwise comparable jewelry items. The **amount** is determined only by item level / tier and does not increase merely because the item has higher rarity.
+The resistance type may vary randomly between otherwise comparable jewelry items. The **amount** is a direct percentage-point reduction, is determined only by item level / tier, and does not increase merely because the item has higher rarity. Total matching Resistance is capped at 75% during damage resolution.
+
+Jewelry does **not** exist at item level 1. The current implemented inherent-Resistance curve starts at item level 5. For later progression planning, the approved continuation is **30% at ilvl 35** and **35% at ilvl 40**; those two item tiers are balancing targets only until corresponding equipment content is actually authored.
 
 The Belt remains a special item type whose potion rules are defined separately in Section 26.
 
@@ -2279,7 +2298,7 @@ The current working costs are:
 | +1 percentage point Critical Damage | 7 |
 | +1% Attack Speed | 30 |
 | +1% Cast Speed | 30, provisional |
-| +1 elemental Resistance | 5 |
+| +1 percentage point elemental Resistance | 34.708333 |
 | +1 Block | 13 |
 
 These are **approximate generation weights**, not universal claims that one point of each stat always has the same combat value in every build or encounter.
@@ -2294,6 +2313,21 @@ Accuracy and elemental Resistance remain strongly context-sensitive:
 - one elemental Resistance becomes much more valuable in encounters dominated by its matching damage type.
 
 Therefore these stats should not be forced into exact universal Power equality merely to make the generation table numerically symmetrical.
+
+The current Resistance-affix cost is intentionally calibrated against the future ilvl-40 target while leaving the general modifier-budget progression unchanged. With the current +30% adjacent-tier budget rule, projected Green budgets of 377 at ilvl 35 and 490 at ilvl 40 produce the following **nominal Blue/Rare per-affix** Resistance values before the normal item-wide ±5% budget roll:
+
+| Item level | Blue/Rare Resistance from one matching affix |
+| ---: | ---: |
+| 5 | 1.9% |
+| 10 | 2.5% |
+| 15 | 3.2% |
+| 20 | 4.2% |
+| 25 | 5.5% |
+| 30 | 7.1% |
+| 35* | 9.2% |
+| 40* | 12.0% |
+
+\* ilvl 35/40 are future balancing points, not currently authored equipment tiers.
 
 `Block` uses the shared combat formula:
 

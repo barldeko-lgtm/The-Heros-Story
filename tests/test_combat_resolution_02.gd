@@ -40,7 +40,21 @@ func _init() -> void:
 	assert(block_actions[0].was_blocked, "The deterministic low roll must trigger Block at 50 percent chance.")
 	assert(is_equal_approx(block_actions[0].damage, 12.5), "Block must leave 25 percent before 100 Armor halves the remainder.")
 
-	print("PASS: Real combat uses Prototype 0.2 hit, Dodge, Block, and Armor formulas.")
+	var elemental_target = make_stats()
+	elemental_target.max_hp = 1000.0
+	elemental_target.attack_speed = 0.01
+	elemental_target.armor = 1000.0
+	elemental_target.fire_resistance = 40.0
+	var elemental_mob = make_stats()
+	elemental_mob.attack = 100.0
+	elemental_mob.attack_speed = 2.0
+	var elemental_session = CombatSessionScript.new(elemental_target, elemental_mob, make_rng(1))
+	var elemental_actions: Array = elemental_session.advance(1.0, "fire")
+	assert(elemental_actions.size() == 1 and elemental_actions[0].attacker_id == "mob", "The elemental probe must resolve one mob attack.")
+	assert(elemental_actions[0].damage_type == "fire", "Elemental mob attacks must preserve their authored damage type in CombatAction.")
+	assert(is_equal_approx(elemental_actions[0].damage, 60.0), "40 percent Fire Resistance must reduce a 100 Fire hit to 60 even against very high Armor.")
+
+	print("PASS: Real combat uses hit, Dodge, Crit/Block, Armor, and authored elemental damage types with direct-percent Resistance.")
 	quit()
 
 func make_stats():

@@ -19,9 +19,12 @@ func _init() -> void:
 	assert(is_equal_approx(combat_stats.accuracy, 50.0), "Starting Warrior Accuracy must be 50.")
 	assert(is_equal_approx(combat_stats.dodge, 10.0), "Starting Warrior Dodge must be 10.")
 	assert(is_equal_approx(combat_stats.armor, 2.5), "Starting Warrior Armor must be 2.5.")
+	assert(is_equal_approx(combat_stats.fire_resistance, 10.0), "Starting Warrior Fire Resistance must be 10%.")
+	assert(is_equal_approx(combat_stats.cold_resistance, 10.0), "Starting Warrior Cold Resistance must be 10%.")
+	assert(is_equal_approx(combat_stats.lightning_resistance, 10.0), "Starting Warrior Lightning Resistance must be 10%.")
 	assert(is_equal_approx(combat_stats.crit_chance, 0.125), "Starting Warrior crit chance must be 12.5%.")
 	assert(is_equal_approx(combat_stats.crit_damage, 1.55), "Starting Warrior crit damage must be 155%.")
-	assert(absf(power_calculator.calculate(combat_stats) - 46.04) < 0.01, "Prototype 0.2 Power must reflect all resolved starting stats.")
+	assert(absf(power_calculator.calculate(combat_stats) - 46.754258) < 0.01, "Prototype 0.2 Power must reflect all resolved starting stats, including innate elemental Resistances.")
 
 	print("PASS: StatResolver and PowerCalculator calculate starting Warrior stats.")
 	quit()

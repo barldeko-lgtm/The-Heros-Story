@@ -93,6 +93,8 @@ The current generic primary-stat effects are centralized through `StatResolver`:
 - INT currently has no generic Warrior combat conversion;
 - WIS currently scales Warrior abilities through their own formulas rather than a universal combat-stat bonus.
 
+The Warrior also has an inherent **10% Fire / 10% Cold / 10% Lightning Resistance** baseline before equipment. Equipment Resistance adds on top of these base values and the normal 75% per-element combat cap still applies.
+
 XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights.
 
 The lightweight starting questionnaire is live in the normal new-game entry flow. All four questions are shown together in a compact debug screen with visible bonuses; one answer per question is required. The first Next opens the childhood-friend loss/training story and four class options: Warrior is selectable; Archer, Mage and Assassin are visibly unavailable. The second Next creates the Warrior simulation and opens the existing game UI. No simulation/world time exists before that point.
@@ -146,7 +148,7 @@ Implemented combat features include:
 - current Noble/Devious conditional damage bonuses;
 - temporary divine Physical Damage blessing.
 
-Current ordinary mobs mostly use physical attacks; elemental mitigation exists, but the current content still lacks real elemental-damage encounters.
+Current ordinary mobs mostly use physical attacks. Arden now contains eight ordinary elemental attackers: Fire Salamander, Storm Shaman, Ice Monitor Lizard, Battle Mage Mercenary, Orc Shaman, Fire Elemental, Storm Lizard, and Ice Elemental. Their real raw Attack is temporarily tuned 20% below the previously approved physical-profile value, while the shared Power estimate values elemental offense at ×1.20 inside its EffectiveDPS term. This Power weight does not increase actual combat damage. Fire/Cold/Lightning ignore Armor, retain normal Accuracy/Dodge/Crit/Block interaction, and are reduced by the matching direct-percentage Resistance up to the 75% cap.
 
 ### Rage
 
@@ -247,7 +249,7 @@ Arden currently has:
 - ordinary quest return/death routing through Arden's real city center, including natural resurrection/recovery and subsequent local quest selection;
 - first five transition mobs retaining the existing ilvl 10 ordinary equipment source; later Arden equipment-drop tiers remain pending the actual ilvl 15/20/25 item/drop content.
 
-The Arden mobs currently grant authored XP from **240 to 720** across the roster. Their attacks remain physical-only for this first slice.
+The Arden mobs currently grant authored XP from **240 to 720** across the roster. Eight ordinary Arden mobs now use authored Fire / Cold / Lightning basic attacks; those attacks use the normal hit/crit/block path, ignore Armor, and are reduced by the matching direct-percent Resistance capped at 75%. Their raw Attack is temporarily 20% lower than the original physical baseline, while elemental offense is valued at ×1.20 inside the shared Power estimate only.
 
 Ordinary quest selection is autonomous and uses the current dedicated flow:
 
@@ -438,7 +440,7 @@ The current build has three live core visual/progression families:
 - compressed ilvl 5 `Страж Железного Следа` / Ironwake Sentinel;
 - compressed ilvl 10 `Авангард Железного Оплота` / Ironward Vanguard.
 
-Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; later 15 / 20 / 25 / 30 content is not yet built out.
+Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. Jewelry starts at ilvl 5 rather than ilvl 1. Current jewelry base Resistance tuning is 10 / 12 / 15 / 18 / 22 / 26% for ilvl 5 / 10 / 15 / 20 / 25 / 30, with future balancing targets of 30% at ilvl 35 and 35% at ilvl 40. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; later 15 / 20 / 25 / 30 content is not yet built out.
 
 Every new hero also begins with three fixed Common ilvl 1 starting-clothes items:
 

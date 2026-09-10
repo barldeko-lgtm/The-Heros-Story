@@ -23,8 +23,8 @@ static func calculate_physical_taken(armor: float) -> float:
 	return 100.0 / (100.0 + maxf(0.0, armor))
 
 static func calculate_elemental_taken(resistance: float) -> float:
-	var uncapped_taken := 100.0 / (100.0 + maxf(0.0, resistance))
-	return maxf(uncapped_taken, 1.0 - ELEMENTAL_REDUCTION_CAP)
+	var reduction := minf(maxf(0.0, resistance) / 100.0, ELEMENTAL_REDUCTION_CAP)
+	return 1.0 - reduction
 
 static func calculate_block_chance(block: float) -> float:
 	var safe_block := maxf(0.0, block)

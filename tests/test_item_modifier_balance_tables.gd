@@ -28,7 +28,10 @@ func _init() -> void:
 		"crit_damage_percentage_point": 7.0,
 		"attack_speed_percent": 30.0,
 		"cast_speed_percent": 30.0,
-		"elemental_resistance": 5.0,
+		"elemental_resistance": 34.708333,
+		"fire_resistance": 34.708333,
+		"cold_resistance": 34.708333,
+		"lightning_resistance": 34.708333,
 		"block": 13.0,
 	}
 	for stat_id in expected_costs:
@@ -39,6 +42,13 @@ func _init() -> void:
 	assert(is_equal_approx(base_stats.get_sword_attack_speed_bonus(5), 0.10), "Sword base Attack Speed bonus must remain +0.10.")
 	assert(is_equal_approx(base_stats.get_shield_block(5), 13.0), "ilvl 5 shield base Block must preserve the former ilvl 10 value of 13.")
 	assert(is_equal_approx(base_stats.get_armor(10), 10.0), "ilvl 10 armor must preserve the former ilvl 20 value of 10.")
+	assert(base_stats.get_jewelry_resistance(1) < 0.0, "Jewelry must not have a valid ilvl 1 base Resistance tier.")
+	var expected_jewelry_resistance := {5: 10.0, 10: 12.0, 15: 15.0, 20: 18.0, 25: 22.0, 30: 26.0}
+	for item_level in expected_jewelry_resistance:
+		assert(is_equal_approx(base_stats.get_jewelry_resistance(item_level), expected_jewelry_resistance[item_level]), "Jewelry base Resistance must match the approved direct-percent curve at ilvl %d." % item_level)
+	var resistance_cost: float = stat_costs.get_stat_cost("fire_resistance")
+	var projected_blue_ilvl40_affix: float = 490.0 * 0.85 / resistance_cost
+	assert(absf(projected_blue_ilvl40_affix - 12.0) <= 0.001, "The Resistance cost must project one nominal Blue ilvl 40 Resistance affix to 12 percent.")
 
-	print("PASS: Item modifier budgets, base stats, and stat costs match the current Prototype 0.2 Scope.")
+	print("PASS: Item modifier budgets, nerfed jewelry Resistance bases, and Resistance affix costs match the current Prototype 0.2 Scope.")
 	quit()

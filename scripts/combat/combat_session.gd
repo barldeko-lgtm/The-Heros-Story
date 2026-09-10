@@ -72,7 +72,7 @@ func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, init
 	hero_next_attack_time = maxf(0.0, hero_attack_interval - HERO_OPENING_ADVANTAGE_SECONDS)
 	mob_next_attack_time = mob_attack_interval
 
-func advance(delta_seconds: float) -> Array:
+func advance(delta_seconds: float, mob_damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL) -> Array:
 	if is_finished:
 		return []
 
@@ -107,7 +107,7 @@ func advance(delta_seconds: float) -> Array:
 				add_rage(CRITICAL_HIT_RAGE if hero_hit.is_critical else NORMAL_HIT_RAGE)
 			hero_next_attack_time += hero_attack_interval
 		if mob_attacks_now:
-			var mob_hit = create_hit("mob", mob_stats, hero_stats)
+			var mob_hit = create_hit("mob", mob_stats, hero_stats, 1.0, false, NORMAL_ATTACK_ID, mob_damage_type)
 			if mob_hit.did_hit and is_battle_guard_active():
 				mob_hit.damage *= get_battle_guard_multiplier()
 			mob_hit.time_seconds = elapsed_seconds
@@ -131,10 +131,10 @@ func advance(delta_seconds: float) -> Array:
 func get_result():
 	return CombatResultScript.new(hero_remaining_hp > 0.0, hero_remaining_hp, mob_remaining_hp, elapsed_seconds, actions)
 
-func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: CombatStats, damage_multiplier: float = 1.0, guaranteed_hit: bool = false, action_id: String = NORMAL_ATTACK_ID):
+func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: CombatStats, damage_multiplier: float = 1.0, guaranteed_hit: bool = false, action_id: String = NORMAL_ATTACK_ID, damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL):
 	var dodge_chance := DamageResolverScript.calculate_dodge_chance(attacker_stats.accuracy, target_stats.dodge)
 	if not guaranteed_hit and dodge_chance > 0.0 and random_number_generator.randf() < dodge_chance:
-		return CombatActionScript.new(attacker_id, 0.0, 0.0, false, false, false, DamageResolverScript.DAMAGE_TYPE_PHYSICAL, action_id)
+		return CombatActionScript.new(attacker_id, 0.0, 0.0, false, false, false, damage_type, action_id)
 	var is_critical := attacker_stats.crit_chance > 0.0 and random_number_generator.randf() < attacker_stats.crit_chance
 	var damage := attacker_stats.attack
 	if is_critical:
@@ -144,12 +144,22 @@ func create_hit(attacker_id: String, attacker_stats: CombatStats, target_stats: 
 	var was_blocked := block_chance > 0.0 and random_number_generator.randf() < block_chance
 	damage = DamageResolverScript.calculate_mitigated_damage(
 		damage,
-		DamageResolverScript.DAMAGE_TYPE_PHYSICAL,
+		damage_type,
 		target_stats.armor,
-		0.0,
+		get_matching_resistance(target_stats, damage_type),
 		was_blocked
 	)
-	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical, true, was_blocked, DamageResolverScript.DAMAGE_TYPE_PHYSICAL, action_id)
+	return CombatActionScript.new(attacker_id, 0.0, damage, is_critical, true, was_blocked, damage_type, action_id)
+
+func get_matching_resistance(target_stats: CombatStats, damage_type: String) -> float:
+	match damage_type:
+		DamageResolverScript.DAMAGE_TYPE_FIRE:
+			return target_stats.fire_resistance
+		DamageResolverScript.DAMAGE_TYPE_COLD:
+			return target_stats.cold_resistance
+		DamageResolverScript.DAMAGE_TYPE_LIGHTNING:
+			return target_stats.lightning_resistance
+	return 0.0
 
 func can_use_power_strike() -> bool:
 	return power_strike_skill_level > 0 and rage >= POWER_STRIKE_RAGE_COST and elapsed_seconds + TIME_EPSILON >= power_strike_ready_time

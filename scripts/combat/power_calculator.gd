@@ -8,8 +8,9 @@ const PHYSICAL_DAMAGE_WEIGHT: float = 0.70
 const FIRE_DAMAGE_WEIGHT: float = 0.10
 const COLD_DAMAGE_WEIGHT: float = 0.10
 const LIGHTNING_DAMAGE_WEIGHT: float = 0.10
+const ELEMENTAL_OFFENSE_MULTIPLIER: float = 1.20
 
-func calculate(combat_stats) -> float:
+func calculate(combat_stats, damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL) -> float:
 	var crit_chance := clampf(combat_stats.crit_chance, 0.0, 1.0)
 	var crit_damage := maxf(1.0, combat_stats.crit_damage)
 	var crit_modifier := 1.0 + crit_chance * (crit_damage - 1.0)
@@ -17,6 +18,8 @@ func calculate(combat_stats) -> float:
 	var accuracy := maxf(0.0, combat_stats.accuracy)
 	var accuracy_factor := 1.5 * (accuracy + 100.0) / (accuracy + 150.0)
 	var effective_dps := raw_dps * accuracy_factor
+	if damage_type != DamageResolverScript.DAMAGE_TYPE_PHYSICAL:
+		effective_dps *= ELEMENTAL_OFFENSE_MULTIPLIER
 
 	var physical_taken := DamageResolverScript.calculate_physical_taken(combat_stats.armor)
 	var fire_taken := DamageResolverScript.calculate_elemental_taken(combat_stats.fire_resistance)

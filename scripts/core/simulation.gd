@@ -288,7 +288,10 @@ func get_current_opponent_power() -> float:
 	var opponent_stats = get_current_opponent_stats()
 	if opponent_stats == null:
 		return 0.0
-	return power_calculator.calculate(opponent_stats)
+	var damage_type: String = "physical"
+	if active_combat_mob_definition != null:
+		damage_type = active_combat_mob_definition.attack_damage_type
+	return power_calculator.calculate(opponent_stats, damage_type)
 
 func record_combat_result(mob_definition: Resource, hero_won: bool) -> String:
 	var mob_id: String = mob_definition.id
@@ -394,7 +397,10 @@ func start_combat_session(mob_definition: Resource, combat_context: String, star
 
 func advance_active_combat(available_seconds: float) -> float:
 	var previous_elapsed_seconds: float = active_combat_session.elapsed_seconds
-	var actions = active_combat_session.advance(available_seconds)
+	var mob_damage_type: String = "physical"
+	if active_combat_mob_definition != null:
+		mob_damage_type = active_combat_mob_definition.attack_damage_type
+	var actions = active_combat_session.advance(available_seconds, mob_damage_type)
 	for action in actions:
 		if active_combat_context == COMBAT_CONTEXT_EVENT:
 			debug_log.record_combat_event(event_narrator.describe_combat_action(action, hero_state.hero_name, active_combat_mob_definition), get_active_combat_world_tick())

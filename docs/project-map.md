@@ -97,7 +97,7 @@ Plain resolved combat-stat container shared by hero and mobs: HP, attack, attack
 
 ### `scripts/model/definitions/mob_definition.gd`
 
-Immutable mob card: identity/category, authored base combat values, XP/Gold fields and optional equipment-drop source. Converts itself to `CombatStats` and uses the shared `PowerCalculator` for Power.
+Immutable mob card: identity/category, authored ordinary-attack damage type, base combat values, XP/Gold fields and optional equipment-drop source. Converts its numeric values to `CombatStats` and uses the shared `PowerCalculator` for Power while supplying its authored damage type so elemental offense can receive the current shared evaluation weight.
 
 Concrete ordinary mobs live under `data/mobs/`; dungeon-only mobs live beside their owning dungeon content.
 

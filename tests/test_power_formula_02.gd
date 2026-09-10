@@ -20,9 +20,10 @@ func _init() -> void:
 	reference.attack_speed = 1.0
 	reference.crit_chance = 0.25
 	reference.crit_damage = 2.0
-	reference.fire_resistance = 100.0
-	reference.cold_resistance = 100.0
-	reference.lightning_resistance = 100.0
+	# 50% direct resistance preserves the old reference profile's 50% elemental taken value.
+	reference.fire_resistance = 50.0
+	reference.cold_resistance = 50.0
+	reference.lightning_resistance = 50.0
 	assert(absf(calculator.calculate(reference) - 433.012701892) < 0.0001, "The approved fixed reference profile must have Power approximately 433.013.")
 
 	var blocked_reference = copy_stats(reference)
@@ -31,8 +32,11 @@ func _init() -> void:
 
 	var duplicate_reference = copy_stats(reference)
 	assert(is_equal_approx(calculator.calculate(reference), calculator.calculate(duplicate_reference)), "The same CombatStats must always produce the same shared Power for heroes and mobs.")
+	var physical_power: float = calculator.calculate(reference, "physical")
+	var elemental_power: float = calculator.calculate(reference, "fire")
+	assert(absf(elemental_power - physical_power * sqrt(1.20)) < 0.0001, "Elemental damage must count as 20 percent stronger offense inside the shared Power formula.")
 
-	print("PASS: Prototype 0.2 shared Power formula includes offense, mitigation, Dodge, Resistances, and Block.")
+	print("PASS: Prototype 0.2 shared Power formula includes offense, elemental offense weighting, mitigation, Dodge, Resistances, and Block.")
 	quit()
 
 func make_stats():

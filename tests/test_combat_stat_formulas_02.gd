@@ -17,16 +17,18 @@ func _init() -> void:
 
 	assert(is_equal_approx(resolver_script.calculate_physical_taken(100.0), 0.50), "100 Armor must leave 50 percent physical damage.")
 	assert(is_equal_approx(resolver_script.calculate_physical_taken(0.0), 1.0), "Zero Armor must leave all physical damage.")
-	assert(is_equal_approx(resolver_script.calculate_elemental_taken(100.0), 0.50), "100 Resistance must leave 50 percent elemental damage.")
+	assert(is_equal_approx(resolver_script.calculate_elemental_taken(40.0), 0.60), "40 percent Resistance must leave 60 percent elemental damage.")
 	assert(is_equal_approx(resolver_script.calculate_elemental_taken(-50.0), 1.0), "Negative Resistance must be treated as zero.")
-	assert(is_equal_approx(resolver_script.calculate_elemental_taken(1000000.0), 0.25), "Elemental damage reduction must be capped at 75 percent.")
+	assert(is_equal_approx(resolver_script.calculate_elemental_taken(75.0), 0.25), "75 percent Resistance must leave 25 percent elemental damage.")
+	assert(is_equal_approx(resolver_script.calculate_elemental_taken(1000000.0), 0.25), "Elemental damage reduction must remain capped at 75 percent.")
 
 	assert(is_equal_approx(resolver_script.calculate_block_chance(200.0), 0.50), "200 Block must reach the 50 percent BlockChance cap.")
 	assert(is_equal_approx(resolver_script.calculate_block_chance(-10.0), 0.0), "Negative Block must be treated as zero.")
 	assert(is_equal_approx(resolver_script.calculate_block_multiplier(200.0), 0.625), "50 percent BlockChance with 75 percent reduction must produce a 0.625 expected multiplier.")
 	assert(is_equal_approx(resolver_script.calculate_mitigated_damage(100.0, "physical", 100.0, 0.0, false), 50.0), "100 Armor must reduce a 100 physical hit to 50.")
 	assert(is_equal_approx(resolver_script.calculate_mitigated_damage(100.0, "physical", 100.0, 0.0, true), 12.5), "Block must leave 25 percent before Armor.")
-	assert(is_equal_approx(resolver_script.calculate_mitigated_damage(100.0, "fire", 0.0, 100.0, true), 12.5), "Block must apply before elemental Resistance.")
+	assert(is_equal_approx(resolver_script.calculate_mitigated_damage(100.0, "fire", 999.0, 40.0, false), 60.0), "Elemental damage must ignore Armor and use the matching direct-percent Resistance.")
+	assert(is_equal_approx(resolver_script.calculate_mitigated_damage(100.0, "fire", 999.0, 40.0, true), 15.0), "Block must apply before direct-percent elemental Resistance.")
 
 	print("PASS: Prototype 0.2 hit, mitigation, Resistance, and Block formulas are centralized.")
 	quit()

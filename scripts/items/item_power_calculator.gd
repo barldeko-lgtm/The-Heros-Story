@@ -13,9 +13,9 @@ const REFERENCE_ATTACK: float = 100.0
 const REFERENCE_ATTACK_SPEED: float = 1.0
 const REFERENCE_CRIT_CHANCE: float = 0.25
 const REFERENCE_CRIT_DAMAGE: float = 2.0
-const REFERENCE_FIRE_RESISTANCE: float = 100.0
-const REFERENCE_COLD_RESISTANCE: float = 100.0
-const REFERENCE_LIGHTNING_RESISTANCE: float = 100.0
+const REFERENCE_FIRE_RESISTANCE: float = 50.0
+const REFERENCE_COLD_RESISTANCE: float = 50.0
+const REFERENCE_LIGHTNING_RESISTANCE: float = 50.0
 const REFERENCE_BLOCK: float = 0.0
 
 static func get_reference_power() -> float:

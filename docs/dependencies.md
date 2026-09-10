@@ -150,11 +150,14 @@ Hero and mobs share one Power formula:
 
 ```text
 CombatStats
+ + authored ordinary damage type when relevant
 → PowerCalculator
 → Power
 ```
 
 Never introduce separate HeroPower and MobPower formulas.
+
+The shared calculator currently applies an elemental-offense evaluation factor of ×1.20 to Fire/Cold/Lightning EffectiveDPS and ×1.00 to Physical. HeroPower and ItemPower keep the default Physical factor unless their evaluated ordinary attack is explicitly elemental in future content. `MobDefinition.get_power()` is the authoritative ordinary-mob entry because it supplies the mob's authored `attack_damage_type`; live opponent Power presentation must preserve that same input rather than recalculating from bare `CombatStats` and losing the damage type.
 
 `ItemPower` may also use `PowerCalculator` against its approved reference profile, but it remains an item rating. It is not added to hero Power and must not become a second runtime Power formula.
 

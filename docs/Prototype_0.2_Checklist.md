@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-08**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-10**.
 
 This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
@@ -35,7 +35,7 @@ Status:
 - ✅ Level 10 Battle Guard is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from 25% to 45% base reduction plus separate WIS scaling.
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
-- 🟡 Elemental mitigation exists, but current ordinary content is still effectively physical.
+- ✅ Fire/Cold/Lightning ordinary attacks are live in Arden; elemental hits keep Accuracy/Dodge/Crit/Block, ignore Armor, use direct-percentage matching Resistance (75% cap), and receive the current ×1.20 elemental-offense weight inside shared Power. The Warrior now also has an innate 10% Fire / Cold / Lightning Resistance baseline before equipment.
 - ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick with the approved price curve.
 - ⬜ Protector ability: Shield Bash.
 - ⬜ Slayer ability: Crippling Blows.
@@ -59,9 +59,9 @@ Status:
 - ✅ Map Screen shows terrain, both city clusters, road, hero, current quest targets, dungeon markers, temporary-event footprints, zoom and panning.
 - ✅ Travel interruption/resumption works for ordinary quest travel plus outbound and completed-return ordinary-dungeon travel, including event-owned detours.
 - 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
-- ⬜ Full city runtime/context system.
+- 🟡 City-local runtime/context switching now exists for Дорнвальд and Арден ordinary quests; the full per-city economy/dungeon/event context is still incomplete.
 - 🟡 Autonomous relocation from Starting City to Mid-Level City is live with the temporary Level-13 trigger and real map travel; richer long-term-goal logic is deferred.
-- ⬜ Mid-Level City as a complete gameplay/economy/quest context; current arrival intentionally stops before reusing Starting City content.
+- 🟡 Арден is now a live local ordinary-quest context after arrival; its shop/economy, local events and Mid Region dungeons are still missing.
 
 ## 5. Ordinary quests and quest board
 
@@ -83,7 +83,7 @@ Status:
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
 - ✅ Events can suspend/resume an ordinary quest route or either leg of an ordinary-dungeon trip, and can use their own real travel objective.
 - 🟡 Current event framework is functional and the Starting Region now has a complete first-city batch of 15 authored events, but Mid Region event content and the final two-region distribution remain incomplete.
-- ⬜ Approximately **15–20 handcrafted events total** across both regions.
+- 🟡 The current total is **15 handcrafted events**, all in the Starting Region; Mid Region event content and the final two-region distribution are still missing.
 
 ## 7. Ordinary dungeons
 
@@ -142,7 +142,7 @@ Status:
 - 🟡 Ordinary quest Diary wording already lives in external narrative data with variant arrays and per-quest override support, but only one phrase per category is currently authored.
 - 🟡 Diary UI updates live and stays scrolled to the newest entry.
 - ⬜ Remaining required Diary sources include levels, visible trait changes, specialization, remaining divine/progression milestones and other important progression moments.
-- ⬜ Diary episode grouping and persistent history/save integration.
+- 🟡 Diary episode grouping is still missing; current Diary/Log history is preserved by save/load.
 - ⬜ Player-facing Explanatory Log and its UI.
 
 ## 12. UI
@@ -152,7 +152,7 @@ Status:
 - 🟡 Inventory Screen is a strong functional first pass with paper doll, all 12 equipment slots, retained gear and potion display.
 - 🟡 Map Screen is functional but still needs final route/destination and hidden-information presentation.
 - 🟡 God panel and Log/Diary presentation are functional; ordinary quest-guidance UI is still missing.
-- 🟡 Debug questionnaire is live on one screen, followed by an empty class-selection screen with Next; separate question pages and actual class choices remain deferred.
+- 🟡 Debug questionnaire is live on one screen; the following class screen shows Warrior plus three visibly locked future classes. Separate question pages and non-Warrior class implementations remain deferred.
 - ⬜ Finished player-facing Hero/Main/Diary presentation.
 - ⬜ Player-facing Explanatory Log UI.
 - ⬜ Menu Screen.
@@ -167,28 +167,29 @@ Status:
 
 ## 14. Save / load / persistence
 
-- ⬜ One rolling main save with periodic autosave and save on normal exit.
-- ⬜ Major milestone saves for dungeon completion and specialization.
-- ⬜ Full required simulation-state serialization, including hero progression/personality, equipment/inventory, world/activity state, dungeon memory, God state, Diary and reproducible RNG continuation.
-- ⬜ Save/load status through the Menu Screen.
+- ✅ Two independent rolling slots are live: Manual and Autosave; Continue selects the newest valid candidate and Load exposes both slots.
+- ✅ Autosave is live after new-game creation, approximately every 10 real minutes, on normal close, and after an increased completed-dungeon count.
+- 🟡 Major dungeon-completion autosave is live; specialization autosave remains pending because specialization itself is not implemented.
+- ✅ The current simulation snapshot preserves the required live graph including progression/personality, equipment/inventory, world/activity state, dungeon/event state, God state, Diary/Log history and deterministic RNG continuation.
+- 🟡 Save/Load/Return controls are live in the current running-game menu; final Menu Screen presentation is still incomplete.
 - 🚫 Offline simulation while the game is closed.
 
 ## 15. Prototype 0.2 content targets at a glance
 
 | Content | Current | Prototype 0.2 target |
 |---|---:|---:|
-| Normal cities | 2 on map / 1 complete | 2 complete |
-| Ordinary quest templates | 22 | 37 current target (22 + 15) |
+| Normal cities | 2 on map / 1 complete + Arden ordinary-quest context | 2 complete |
+| Ordinary quest templates | 48 (22 + 26) | 48 current approved target (22 + 26) |
 | Handcrafted temporary events | 15 | ~15–20 across both regions |
 | Ordinary dungeons | 2 | 4 |
 | First specialization paths | 0 | 2 |
 | Specialization dungeon variants | 0 | 2 |
-| Base Warrior abilities | 2 at Skill Level 1 | 2 + purchasable ranks |
+| Base Warrior abilities | 2 + purchasable Skill Levels 2–10 | 2 + purchasable ranks |
 | First-specialization abilities | 0 | 2 |
 | Personality axes | 4 live | 4 |
 | Visual armor families | 3 | at least 5–6 |
 | Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
-| Main playable progression | early-game systems live | compressed level ~1–30 |
+| Main playable progression | Starting City + Arden ordinary-quest slice live | compressed level ~1–30 |
 
 The current ordinary quest-board tuning is up to 12 offers / 4 per strength band. This 4/4/4 value is deliberately still treated as balance tuning and may be adjusted after first-to-second-city transition testing.
 
@@ -197,10 +198,10 @@ The current ordinary quest-board tuning is up to 12 offers / 4 per strength band
 This is a progress-oriented list, not automatic permission or a fixed implementation order:
 
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
-2. Replace the debug all-in-one questionnaire layout with separate question pages when needed; actual class-selection content is still absent.
-3. Make the Mid-Level City a real gameplay context behind the now-live Level-13 relocation/arrival foundation, including its own ordinary quests and shop content.
+2. Replace the debug all-in-one questionnaire layout with separate question pages when needed and later implement the currently locked non-Warrior classes outside the present Warrior slice.
+3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival and Arden ordinary-quest foundation, especially its shop/economy content.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
-8. Add Save/Load and run long-duration Prototype 0.2 validation through the intended compressed level range.
+8. Extend persistence only for still-missing future systems such as specialization, then run long-duration Prototype 0.2 validation through the intended compressed level range.

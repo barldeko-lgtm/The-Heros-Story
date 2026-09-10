@@ -148,7 +148,7 @@ func update_hero_panel() -> void:
 	for entry in [["Физ. урон", "%.0f" % stats.attack], ["Точность", "%.0f" % stats.accuracy], ["Уклонение", "%.0f" % stats.dodge], ["Броня", "%d (−%.1f%%)" % [armor, reduction]], ["Блок", "%.0f" % stats.block], ["Скорость атаки", "%.2f" % stats.attack_speed], ["Шанс крита", "%.0f%%" % (stats.crit_chance * 100.0)], ["Крит. урон", "%.0f%%" % (stats.crit_damage * 100.0)], ["Сила героя", "%.2f" % simulation.get_hero_power()]]:
 		text += detail_row(entry[0], entry[1])
 	text += "[/table]\n" + section_title("СОПРОТИВЛЕНИЯ")
-	text += "[color=#9eabbc]Огонь / Холод / Молния:[/color] [color=#edf0f4]%.0f / %.0f / %.0f[/color]\n" % [stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance]
+	text += "[color=#9eabbc]Огонь / Холод / Молния:[/color] [color=#edf0f4]%.0f%% / %.0f%% / %.0f%%[/color]\n" % [stats.fire_resistance, stats.cold_resistance, stats.lightning_resistance]
 	var trait_bonus: String = HeroTraitsScript.get_conditional_damage_bonus_text(simulation.get_hero_traits())
 	if not trait_bonus.is_empty():
 		text += "\n[color=#d9bd7d]Бонус черты: %s[/color]\n" % trait_bonus
