@@ -95,7 +95,7 @@ The current generic primary-stat effects are centralized through `StatResolver`:
 
 The Warrior also has an inherent **10% Fire / 10% Cold / 10% Lightning Resistance** baseline before equipment. Equipment Resistance adds on top of these base values and the normal 75% per-element combat cap still applies.
 
-XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights.
+XP progression is functional, excess XP carries over, and a mid-quest level-up refreshes the hero's resolved persistent combat stats before later fights. The current progression curve starts at **500 XP for Level 1 → 2**; the next requirement increases are **+500 / +600 / +700**, then **+800 per level through the Level-13 requirement**, and **+1000 per level after Level 13**. Current control points are 500 XP at Level 1, 3100 at Level 5, 9500 at Level 13, 10500 at Level 14, and 24500 at Level 28.
 
 The lightweight starting questionnaire is live in the normal new-game entry flow. All four questions are shown together in a compact debug screen with visible bonuses; one answer per question is required. The first Next opens the childhood-friend loss/training story and four class options: Warrior is selectable; Archer, Mage and Assassin are visibly unavailable. The second Next creates the Warrior simulation and opens the existing game UI. No simulation/world time exists before that point.
 

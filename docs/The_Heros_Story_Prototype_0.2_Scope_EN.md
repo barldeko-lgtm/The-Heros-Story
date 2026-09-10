@@ -361,7 +361,23 @@ The exact size of this immediate reward remains a provisional balance value.
 
 If the hero completes the first specialization later than the normal compressed level-20 milestone, delayed specialization-directed growth is not permanently lost. The missing post-20 specialization points are granted when the specialization becomes active.
 
-Exact XP requirements, primary-attribute coefficients, questionnaire bonuses, and level pace remain tuning values to be balanced so a normal Prototype 0.2 playthrough can meaningfully reach the compressed level-25–30 range.
+The current approved XP requirement curve is intentionally faster at the very beginning and then slows progression so the hero has more time to obtain, compare, and purchase equipment before leaving each progression band.
+
+XP required to advance from the current hero level to the next is:
+
+| Current hero level | XP to next level |
+| ---: | ---: |
+| 1 | 500 |
+| 2 | 1000 |
+| 3 | 1600 |
+| 4 | 2300 |
+| 5 | 3100 |
+| 6–13 | previous requirement +800 per level |
+| 14+ | previous requirement +1000 per level |
+
+Therefore the Level-13 requirement is **9500 XP**, Level 14 requires **10500 XP**, and Level 28 requires **24500 XP**. Enemy XP rewards remain source/content tuning and do not increase merely because an enemy belongs to a later city; enemies of comparable Power should grant broadly comparable XP.
+
+Primary-attribute coefficients, questionnaire bonuses, and the overall level pace remain balance values that may still be tuned so a normal Prototype 0.2 playthrough can meaningfully reach the compressed level-25–30 range.
 
 ---
 

@@ -22,7 +22,7 @@ Status:
 - ✅ STR / DEX / INT / CON / WIS, XP, levels, excess-XP carryover and pending player-distributed primary-attribute points.
 - ✅ Before specialization, each level grants +1 fixed Warrior STR and +4 player-distributed primary-attribute points; unspent points remain pending and provide no benefit until spent.
 - ✅ Player-facing allocation of pending primary-attribute points works without directly commanding hero behaviour.
-- 🟡 Progression mechanics work, but full compressed level 1–30 content/balance is incomplete.
+- 🟡 Progression mechanics work and the current XP curve is tuned to 500 XP at Level 1, early +500/+600/+700 steps, +800 requirement growth through Level 13, then +1000 per level; full compressed level 1–30 balance/soak validation is still incomplete.
 - ✅ Four-question starting background assigns exactly three attribute points and mild hidden personality biases through selected answers.
 - ⬜ Post-specialization attribute growth/reward rules.
 - ⬜ Long-run Prototype 0.2 balance/soak validation.

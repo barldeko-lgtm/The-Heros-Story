@@ -12,8 +12,13 @@ const BASE_LIGHTNING_RESISTANCE: float = 10.0
 
 const FIXED_WARRIOR_STRENGTH_PER_LEVEL: int = 1
 const PLAYER_PRIMARY_ATTRIBUTE_POINTS_PER_LEVEL: int = 4
-const BASE_EXPERIENCE_TO_NEXT_LEVEL: int = 1000
-const EXPERIENCE_INCREASE_PER_LEVEL: int = 500
+const BASE_EXPERIENCE_TO_NEXT_LEVEL: int = 500
+const LEVEL_2_EXPERIENCE_TO_NEXT_LEVEL: int = 1000
+const LEVEL_3_EXPERIENCE_TO_NEXT_LEVEL: int = 1600
+const LEVEL_4_EXPERIENCE_TO_NEXT_LEVEL: int = 2300
+const EXPERIENCE_INCREASE_THROUGH_LEVEL_13: int = 800
+const EXPERIENCE_INCREASE_AFTER_LEVEL_13: int = 1000
+const LATE_EXPERIENCE_START_LEVEL: int = 13
 const POWER_STRIKE_UNLOCK_LEVEL: int = 5
 const BATTLE_GUARD_UNLOCK_LEVEL: int = 10
 const MAX_SKILL_LEVEL: int = 10
@@ -23,7 +28,18 @@ const BATTLE_GUARD_SKILL_ID := "battle_guard"
 const PRIMARY_ATTRIBUTE_IDS := ["strength", "dexterity", "intelligence", "constitution", "wisdom"]
 
 func get_experience_required_for_next_level(current_level: int) -> int:
-	return BASE_EXPERIENCE_TO_NEXT_LEVEL + maxi(0, current_level - 1) * EXPERIENCE_INCREASE_PER_LEVEL
+	if current_level <= 1:
+		return BASE_EXPERIENCE_TO_NEXT_LEVEL
+	if current_level == 2:
+		return LEVEL_2_EXPERIENCE_TO_NEXT_LEVEL
+	if current_level == 3:
+		return LEVEL_3_EXPERIENCE_TO_NEXT_LEVEL
+	if current_level == 4:
+		return LEVEL_4_EXPERIENCE_TO_NEXT_LEVEL
+	if current_level <= LATE_EXPERIENCE_START_LEVEL:
+		return LEVEL_4_EXPERIENCE_TO_NEXT_LEVEL + (current_level - 4) * EXPERIENCE_INCREASE_THROUGH_LEVEL_13
+	var level_13_requirement: int = LEVEL_4_EXPERIENCE_TO_NEXT_LEVEL + (LATE_EXPERIENCE_START_LEVEL - 4) * EXPERIENCE_INCREASE_THROUGH_LEVEL_13
+	return level_13_requirement + (current_level - LATE_EXPERIENCE_START_LEVEL) * EXPERIENCE_INCREASE_AFTER_LEVEL_13
 
 func add_experience(hero_state, experience_amount: int) -> int:
 	assert(experience_amount >= 0, "Experience reward must not be negative.")

@@ -12,13 +12,22 @@ func _init() -> void:
 	var hero_progression: RefCounted = hero_progression_script.new()
 	var stat_resolver: RefCounted = stat_resolver_script.new()
 
-	hero_state.experience = 950
+	assert(hero_state.experience_to_next_level == 500, "Level 1 must require 500 XP for level 2.")
+	assert(hero_progression.get_experience_required_for_next_level(2) == 1000, "Level 2 must require 1000 XP for level 3.")
+	assert(hero_progression.get_experience_required_for_next_level(3) == 1600, "Level 3 must require 1600 XP for level 4.")
+	assert(hero_progression.get_experience_required_for_next_level(4) == 2300, "Level 4 must require 2300 XP for level 5.")
+	assert(hero_progression.get_experience_required_for_next_level(5) == 3100, "Level 5 must begin the +800 XP progression step.")
+	assert(hero_progression.get_experience_required_for_next_level(13) == 9500, "Level 13 must require 9500 XP for level 14.")
+	assert(hero_progression.get_experience_required_for_next_level(14) == 10500, "After level 13, each next requirement must increase by 1000 XP.")
+	assert(hero_progression.get_experience_required_for_next_level(28) == 24500, "Level 28 must require 24500 XP for level 29.")
+
+	hero_state.experience = 450
 	var levels_gained: int = hero_progression.add_experience(hero_state, 50)
 
-	assert(levels_gained == 1, "Reaching 1000 XP must grant exactly one level.")
+	assert(levels_gained == 1, "Reaching 500 XP must grant exactly one level.")
 	assert(hero_state.level == 2, "The Warrior must reach level 2.")
 	assert(hero_state.experience == 0, "Spent XP must be removed after level-up.")
-	assert(hero_state.experience_to_next_level == 1500, "Level 2 must require 1500 XP for the next level.")
+	assert(hero_state.experience_to_next_level == 1000, "Level 2 must require 1000 XP for the next level.")
 	assert(hero_state.strength == 6, "Each Warrior level must automatically grant exactly +1 Strength.")
 	assert(hero_state.dexterity == 5, "Player-guided Dexterity must not be assigned automatically.")
 	assert(hero_state.constitution == 5, "Player-guided Constitution must not be assigned automatically.")
@@ -40,11 +49,11 @@ func _init() -> void:
 	assert(hero_state.pending_primary_attribute_points == 0, "Spending all four points must empty the pending pool.")
 	assert(not hero_progression.allocate_primary_attribute(hero_state, "intelligence"), "No attribute may increase when no pending points remain.")
 
-	levels_gained = hero_progression.add_experience(hero_state, 3550)
+	levels_gained = hero_progression.add_experience(hero_state, 2650)
 	assert(levels_gained == 2, "Large XP rewards must support multiple level-ups.")
 	assert(hero_state.level == 4, "Two more level-ups must reach level 4.")
 	assert(hero_state.experience == 50, "Excess XP must carry over after multiple level-ups.")
-	assert(hero_state.experience_to_next_level == 2500, "Level 4 must require 2500 XP for the next level.")
+	assert(hero_state.experience_to_next_level == 2300, "Level 4 must require 2300 XP for the next level.")
 	assert(hero_state.strength == 9, "Two later levels must add only their fixed Warrior Strength before player spending.")
 	assert(hero_state.pending_primary_attribute_points == 8, "Two later levels must add eight new pending player points.")
 
