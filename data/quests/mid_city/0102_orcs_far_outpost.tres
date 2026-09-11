@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "orcs_far_outpost"
-strength_band = "lower"
+strength_band = "transition"
 display_name = "Орки у дальнего кордона"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 3

@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-10**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-11**.
 
 This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
@@ -71,8 +71,8 @@ Status:
 - ✅ Autonomous `Hard Filter → QuestScore → best valid quest` selection.
 - ✅ Real travel to quest target, combat/recovery loop, real return travel, turn-in and Gold reward.
 - ✅ Shared 50-world-tick full-board refresh and strict 50-world-tick completed-template cooldown.
-- ✅ Current quest-board working tuning is live at up to 12 offers / 4 per strength band, with deterministic rerolls every 50 ticks and vacancies left until the next shared refresh.
-- ✅ 26 Mid-Level City / Arden ordinary quest templates (`0101`–`0126`), split 9 lower / 8 middle / 9 higher with 3–7-hex Mid Region placement.
+- ✅ Current quest-board working tuning is live at up to 12 offers per city: Дорнвальд uses 4/4/4 across three bands, while Арден uses 3/3/3/3 across four loot-aligned bands; deterministic rerolls still occur every 50 ticks and vacancies remain until the next shared refresh.
+- ✅ 26 Mid-Level City / Arden ordinary quest templates (`0101`–`0126`), split 5 transition / 4 lower / 8 middle / 9 higher with 3–7-hex Mid Region placement and band boundaries aligned to ilvl 10/15/20/25 mob drops.
 - ✅ City-local ordinary quest pools across both cities; physical arrival in Arden switches board content/placement and QuestRunner return/death routing to the Mid Region city center.
 - 🟡 Prototype 0.2 currently uses the simpler fixed Level-13 relocation trigger instead of active-offer exhaustion; the richer progression/goal rule is deferred.
 
@@ -104,12 +104,12 @@ Status:
 - ✅ Ring candidates evaluate both ring positions; Belt uses its separate potion-utility comparison.
 - ✅ Current Starting City equipment progression is live at compressed ilvl 1 / 5 / 10.
 - ✅ Three current visual families: Rustchain Initiate, Ironwake Sentinel, Ironward Vanguard, including five armor paper-doll overlays.
-- ✅ Source-driven ordinary mob drops and autonomous equip/inventory routing.
+- ✅ Source-driven ordinary mob drops and autonomous equip/inventory routing across both cities: Arden keeps five ilvl 10 transition mobs, then uses Azure Dawnplate ilvl 15 / Crimson Thornplate ilvl 20 / Gilded Wyrm ilvl 25 by strength band at the normal 5% drop chance and 70/25/5 rarity split.
 - 🟡 Inventory is a functional first pass: 36 retained equipment items plus separate persistent potion counts/visual bottle slots.
 - ✅ Ordinary quest equipment `QuestLoot` flow is live: mob drops wait until objective completion, all found equipment is reviewed in one dedicated tick, unreviewed equipment is lost on quest death, and reviewed items become normal permanent Equipment/Inventory before the return trip.
 - ⬜ General trophy/backpack carried-loot handling beyond ordinary equipment.
 - ⬜ Full legal two-handed / hand-configuration content and evaluation.
-- ⬜ Remaining 2–3+ visual armor families and later equipment tiers required for the full 0.2 content target.
+- 🟡 Six visual armor families now exist across the two-city progression; later Arden families still lack some weapon/shield/accessory and overlay breadth, so the full equipment-content target is not complete.
 
 ## 9. Economy, shops, Belt and healing potions
 
@@ -187,11 +187,11 @@ Status:
 | Base Warrior abilities | 2 + purchasable Skill Levels 2–10 | 2 + purchasable ranks |
 | First-specialization abilities | 0 | 2 |
 | Personality axes | 4 live | 4 |
-| Visual armor families | 3 | at least 5–6 |
+| Visual armor families | 6 | at least 5–6 |
 | Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
 | Main playable progression | Starting City + Arden ordinary-quest slice live | compressed level ~1–30 |
 
-The current ordinary quest-board tuning is up to 12 offers / 4 per strength band. This 4/4/4 value is deliberately still treated as balance tuning and may be adjusted after first-to-second-city transition testing.
+The current ordinary quest-board tuning is up to 12 offers per city: 4/4/4 in Дорнвальд and 3/3/3/3 in Арден. These values are deliberately still treated as balance tuning and may be adjusted after transition testing.
 
 ## 16. Major remaining Prototype 0.2 blocks
 

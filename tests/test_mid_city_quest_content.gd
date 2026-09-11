@@ -8,11 +8,11 @@ const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
 const MapDefinition = preload("res://data/map/prototype_02_map.tres")
 
 const EXPECTED_QUESTS := [
-	{"file": "0101_ogre_stone_road.tres", "id": "ogre_stone_road", "mob": "ogre_veteran", "name": "Огр у каменной дороги", "band": "lower", "count": Vector2i(2, 3), "hex": Vector2i(3, 4), "gold": Vector2i(58, 62)},
-	{"file": "0102_orcs_far_outpost.tres", "id": "orcs_far_outpost", "mob": "hardened_orc_raider", "name": "Орки у дальнего кордона", "band": "lower", "count": Vector2i(3, 5), "hex": Vector2i(3, 5), "gold": Vector2i(38, 41)},
-	{"file": "0103_troll_deep_thicket.tres", "id": "troll_deep_thicket", "mob": "mature_forest_troll", "name": "Тролль в глубокой чаще", "band": "lower", "count": Vector2i(2, 4), "hex": Vector2i(3, 5), "gold": Vector2i(54, 58)},
-	{"file": "0104_band_on_trade_road.tres", "id": "band_on_trade_road", "mob": "veteran_bandit", "name": "Банда на торговом тракте", "band": "lower", "count": Vector2i(4, 6), "hex": Vector2i(3, 5), "gold": Vector2i(33, 37)},
-	{"file": "0105_roar_from_grey_hills.tres", "id": "roar_from_grey_hills", "mob": "old_mountain_beast", "name": "Рёв с серых холмов", "band": "lower", "count": Vector2i(3, 5), "hex": Vector2i(4, 5), "gold": Vector2i(44, 48)},
+	{"file": "0101_ogre_stone_road.tres", "id": "ogre_stone_road", "mob": "ogre_veteran", "name": "Огр у каменной дороги", "band": "transition", "count": Vector2i(2, 3), "hex": Vector2i(3, 4), "gold": Vector2i(58, 62)},
+	{"file": "0102_orcs_far_outpost.tres", "id": "orcs_far_outpost", "mob": "hardened_orc_raider", "name": "Орки у дальнего кордона", "band": "transition", "count": Vector2i(3, 5), "hex": Vector2i(3, 5), "gold": Vector2i(38, 41)},
+	{"file": "0103_troll_deep_thicket.tres", "id": "troll_deep_thicket", "mob": "mature_forest_troll", "name": "Тролль в глубокой чаще", "band": "transition", "count": Vector2i(2, 4), "hex": Vector2i(3, 5), "gold": Vector2i(54, 58)},
+	{"file": "0104_band_on_trade_road.tres", "id": "band_on_trade_road", "mob": "veteran_bandit", "name": "Банда на торговом тракте", "band": "transition", "count": Vector2i(4, 6), "hex": Vector2i(3, 5), "gold": Vector2i(33, 37)},
+	{"file": "0105_roar_from_grey_hills.tres", "id": "roar_from_grey_hills", "mob": "old_mountain_beast", "name": "Рёв с серых холмов", "band": "transition", "count": Vector2i(3, 5), "hex": Vector2i(4, 5), "gold": Vector2i(44, 48)},
 	{"file": "0106_pack_far_pastures.tres", "id": "pack_far_pastures", "mob": "warg_pack_leader", "name": "Стая у дальних пастбищ", "band": "lower", "count": Vector2i(4, 6), "hex": Vector2i(3, 5), "gold": Vector2i(37, 41)},
 	{"file": "0107_berserker_burned_camp.tres", "id": "berserker_burned_camp", "mob": "orc_berserker", "name": "Берсерк у выжженного лагеря", "band": "lower", "count": Vector2i(3, 5), "hex": Vector2i(4, 5), "gold": Vector2i(49, 54)},
 	{"file": "0108_mercenaries_south_road.tres", "id": "mercenaries_south_road", "mob": "hardened_mercenary", "name": "Наёмники на южной дороге", "band": "lower", "count": Vector2i(4, 6), "hex": Vector2i(3, 6), "gold": Vector2i(41, 46)},
@@ -42,7 +42,7 @@ func _init() -> void:
 	var finder = ActivityPlacementFinderScript.new()
 	var seen_ids := {}
 	var seen_mobs := {}
-	var band_counts := {"lower": 0, "middle": 0, "higher": 0}
+	var band_counts := {"transition": 0, "lower": 0, "middle": 0, "higher": 0}
 	var terrain_usage := {"forest": 0, "plains": 0, "hill": 0, "road": 0}
 	var previous_xp: int = -1
 
@@ -51,7 +51,7 @@ func _init() -> void:
 		assert(quest != null, "Arden quest resource must exist: %s" % expected["file"])
 		assert(quest.id == expected["id"] and quest.display_name == expected["name"], "Arden quest identity/name must match the approved table: %s" % expected["file"])
 		assert(quest.mob_definition != null and quest.mob_definition.id == expected["mob"], "Each Arden quest must reference its matching 0101-0126 mob: %s" % quest.id)
-		assert(quest.strength_band == expected["band"], "Arden quest band must match the approved 9/8/9 split: %s" % quest.id)
+		assert(quest.strength_band == expected["band"], "Arden quest band must match the approved loot-aligned 5/4/8/9 split: %s" % quest.id)
 		assert(Vector2i(quest.mob_count_min, quest.mob_count_max) == expected["count"], "Arden quest mob-count range must match the approved table: %s" % quest.id)
 		assert(Vector2i(quest.placement_distance_hex_min, quest.placement_distance_hex_max) == expected["hex"], "Arden quest hex-distance range must match the approved table: %s" % quest.id)
 		assert(Vector2i(quest.gold_per_mob_min, quest.gold_per_mob_max) == expected["gold"], "Arden quest Gold-per-mob range must match the approved table: %s" % quest.id)
@@ -87,7 +87,7 @@ func _init() -> void:
 		previous_xp = quest.mob_definition.experience_reward
 
 	assert(seen_ids.size() == 26 and seen_mobs.size() == 26, "Arden must expose exactly 26 one-to-one ordinary mob/quest pairs.")
-	assert(band_counts == {"lower": 9, "middle": 8, "higher": 9}, "Arden ordinary quests must use the approved 9 lower / 8 middle / 9 higher split.")
+	assert(band_counts == {"transition": 5, "lower": 4, "middle": 8, "higher": 9}, "Arden ordinary quests must use the approved loot-aligned 5 transition / 4 lower / 8 middle / 9 higher split.")
 	assert(terrain_usage["forest"] >= 5 and terrain_usage["plains"] >= 5 and terrain_usage["hill"] >= 8 and terrain_usage["road"] >= 5, "Arden quest locations must preserve a broad mix of forest, plains, hills and road problems.")
 
 	for probe_seed in [11, 37, 101, 777, 2026, 9401]:
@@ -99,7 +99,7 @@ func _init() -> void:
 		var selected_ids_before_placement: Array[String] = []
 		for pending_offer in pool.get_available_quests():
 			selected_ids_before_placement.append(pending_offer.id)
-		assert(pool.configure_map_placement(hex_map, world_state, hex_map.MID_REGION_ID, hex_map.definition.mid_city_center, placement_rng), "Arden's 4/4/4 board must fit on unique valid Mid Region targets for sampled seeds.")
+		assert(pool.configure_map_placement(hex_map, world_state, hex_map.MID_REGION_ID, hex_map.definition.mid_city_center, placement_rng), "Arden's 3/3/3/3 board must fit on unique valid Mid Region targets for sampled seeds.")
 		var offers: Array = pool.get_available_quests()
 		if offers.size() != 12:
 			var placed_ids: Array[String] = []
@@ -108,8 +108,8 @@ func _init() -> void:
 			print("Arden placement failure seed=%d selected=%s placed=%s" % [probe_seed, selected_ids_before_placement, placed_ids])
 			quit(1)
 			return
-		assert(offers.size() == 12, "Arden must expose the full current 4/4/4 board when all bands have enough templates.")
-		var offer_bands := {"lower": 0, "middle": 0, "higher": 0}
+		assert(offers.size() == 12, "Arden must expose the full current 3/3/3/3 board when all bands have enough templates.")
+		var offer_bands := {"transition": 0, "lower": 0, "middle": 0, "higher": 0}
 		var targets := {}
 		for offer in offers:
 			offer_bands[offer.template.strength_band] += 1
@@ -119,7 +119,7 @@ func _init() -> void:
 			var target_hex = hex_map.get_hex(offer.target_hex)
 			assert(target_hex != null and target_hex.region_id == hex_map.MID_REGION_ID, "Every Arden board target must stay in Mid Region.")
 			assert(offer.map_distance_steps >= offer.template.placement_distance_hex_min and offer.map_distance_steps <= offer.template.placement_distance_hex_max, "Arden offer route distance must obey its authored range.")
-		assert(offer_bands == {"lower": 4, "middle": 4, "higher": 4}, "Every Arden board roll must preserve the current 4/4/4 composition.")
+		assert(offer_bands == {"transition": 3, "lower": 3, "middle": 3, "higher": 3}, "Every Arden board roll must preserve the current 3/3/3/3 composition.")
 
-	print("PASS: Arden has 26 authored 0101-0126 quests with approved rewards/counts, 3-7-hex terrain placement, XP, and a valid local 4/4/4 board.")
+	print("PASS: Arden has 26 authored 0101-0126 quests in four loot-aligned bands with approved rewards/counts, 3-7-hex terrain placement, XP, and a valid local 3/3/3/3 board.")
 	quit()

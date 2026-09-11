@@ -85,7 +85,8 @@ func assert_definition_file_sets() -> void:
 				continue
 			expected_files.append(expected.path.get_file())
 			expected_files.append(expected.path.get_file().replace(".tres", "_uncommon.tres"))
-		assert(actual_files.size() == int(expected_by_family[family]) * 2, "Arden visual family must contain exactly its Common and Uncommon supplied-visual resources, with no Rare or placeholder files.")
+			expected_files.append(expected.path.get_file().replace(".tres", "_rare.tres"))
+		assert(actual_files.size() == int(expected_by_family[family]) * 3, "Arden visual family must contain its Common/Uncommon shop definitions plus matching Rare mob-drop definitions, with no placeholder files.")
 		for resource_file in actual_files:
 			assert(expected_files.has(resource_file), "Arden visual family must not contain an unapproved resource: %s/%s" % [family, resource_file])
 

@@ -1,6 +1,7 @@
 class_name QuestDefinition
 extends Resource
 
+const STRENGTH_BAND_TRANSITION: String = "transition"
 const STRENGTH_BAND_LOWER: String = "lower"
 const STRENGTH_BAND_MIDDLE: String = "middle"
 const STRENGTH_BAND_HIGHER: String = "higher"
@@ -8,7 +9,7 @@ const STRENGTH_BAND_HIGHER: String = "higher"
 @export var id: String
 @export var display_name: String
 @export var mob_definition: Resource
-@export_enum("lower", "middle", "higher") var strength_band: String = STRENGTH_BAND_LOWER
+@export_enum("transition", "lower", "middle", "higher") var strength_band: String = STRENGTH_BAND_LOWER
 @export var diary_text: QuestDiaryTextDefinition
 
 # Immutable template ranges. A QuestOffer owns the concrete rolled values.

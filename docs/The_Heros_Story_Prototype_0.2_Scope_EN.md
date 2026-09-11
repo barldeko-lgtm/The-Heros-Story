@@ -1425,10 +1425,10 @@ Prototype 0.2 uses local city-based quest pools.
 The current Starting City has:
 
 - **22 ordinary quest templates** in its local pool;
-- up to **9 active quest offers** at the same time;
+- up to **12 active quest offers** at the same time;
 - one shared quest-board rotation cycle that rerolls the current offers over time.
 
-The Mid-Level City / Arden ordinary pool is authored as **26 ordinary quest templates** and uses the same three-band rotating-board model as the Starting City.
+The Mid-Level City / Arden ordinary pool is authored as **26 ordinary quest templates** and uses four loot-aligned bands: **5 transition / 4 lower / 8 middle / 9 higher**. These correspond respectively to the current ilvl 10 / 15 / 20 / 25 ordinary-mob equipment sources.
 
 Quest templates are authored content definitions. Active offers are runtime instances generated from those templates.
 
@@ -1447,7 +1447,7 @@ A `QuestOffer` is one concrete currently available opportunity and may contain:
 - the board cycle in which the offer was generated, if runtime diagnostics require it;
 - other runtime parameters required by that quest type.
 
-### 14.1. Three Strength Bands
+### 14.1. Local Strength Bands
 
 The current Starting City's 22 ordinary quest templates are divided into three **approximate strength bands**:
 
@@ -1461,23 +1461,39 @@ They are not permanent player-facing difficulty tiers and do not imply level sca
 
 A quest's band is primarily determined by the strength of the mobs and encounters used by that quest.
 
-The purpose of the three bands is to make the active board naturally contain opportunities at different strength levels rather than allowing random rotation to fill the entire board with nearly identical weak or strong quests.
+The purpose of the bands is to make the active board naturally contain opportunities at different strength levels rather than allowing random rotation to fill the entire board with nearly identical weak or strong quests.
+
+Arden uses a fourth, lowest **transition** band so its quest-pool boundaries line up with its four current ordinary-mob loot tiers:
+
+- `0101`–`0105`: transition band → ilvl 10 source;
+- `0106`–`0109`: lower band → Azure Dawnplate ilvl 15;
+- `0110`–`0117`: middle band → Crimson Thornplate ilvl 20;
+- `0118`–`0126`: higher band → Gilded Wyrm ilvl 25.
 
 ### 14.2. Active Quest Board Composition
 
-The current working active quest board contains up to twelve ordinary quest offers:
+The current working active quest board contains up to twelve ordinary quest offers per city.
+
+Starting City uses:
 
 - up to **4 lower-strength offers**;
 - up to **4 middle-strength offers**;
 - up to **4 higher-strength offers**.
 
-Each city's band draws only from the quest templates assigned to that local city pool. The current Starting City split is 8 / 7 / 7, while Arden uses 9 / 8 / 9.
+Arden uses:
 
-If a band temporarily cannot provide four valid offers, the board may contain fewer than twelve total offers.
+- up to **3 transition offers**;
+- up to **3 lower-strength offers**;
+- up to **3 middle-strength offers**;
+- up to **3 higher-strength offers**.
+
+Each city's band draws only from the quest templates assigned to that local city pool. The current Starting City split is 8 / 7 / 7, while Arden uses 5 / 4 / 8 / 9.
+
+If a band temporarily cannot provide its normal valid-offer count, the board may contain fewer than twelve total offers.
 
 The system does **not** fill the missing slot by taking an extra quest from another strength band merely to maintain twelve offers.
 
-The current **4 / 4 / 4** composition is a working Prototype 0.2 tuning value chosen for transition testing. It may be adjusted later without changing the three-band architecture or shared board lifecycle.
+The current **4 / 4 / 4** Starting City and **3 / 3 / 3 / 3** Arden compositions are working Prototype 0.2 tuning values. They may be adjusted later without changing the shared board lifecycle.
 
 ### 14.3. Shared Quest-Board Rotation
 
@@ -1487,7 +1503,7 @@ Each city's ordinary quest board uses one shared refresh interval of:
 
 At each shared refresh boundary, all ordinary offers still present on that city's board are discarded and the board is rolled again from the currently eligible templates.
 
-The new roll again attempts to produce up to four lower-strength, four middle-strength, and four higher-strength offers. Missing slots are not filled from another band.
+The new roll again attempts to produce the current city-local composition: up to 4 / 4 / 4 offers in Starting City or 3 / 3 / 3 / 3 offers in Arden. Missing slots are not filled from another band.
 
 When the hero accepts an offer, that offer immediately stops being an active board offer. Its vacated board slot remains empty until the next shared board refresh; accepting, completing, cancelling, or turning in one quest does **not** trigger an immediate one-slot replacement.
 
@@ -1501,7 +1517,7 @@ When a quest template has recently been used and is not yet eligible to generate
 
 Prototype 0.2 must support this temporary unavailability so the board does not instantly regenerate the exact same completed quest.
 
-Therefore the number of currently available offers in a strength band can temporarily fall below four.
+Therefore the number of currently available offers in a strength band can temporarily fall below that city's normal per-band cap (four in Starting City, three in Arden).
 
 This cooldown is strict in the current Prototype 0.2 rule: a blocked template is not allowed to return early merely to fill a missing board slot.
 
@@ -2440,7 +2456,7 @@ For Prototype 0.2 ordinary quest content, the three relative-strength quest band
 | Mid-Level City | Middle | 20 |
 | Mid-Level City | Higher | 25 |
 
-Arden deliberately begins with five **transition mobs** that overlap the top of Dornwald's Power range. Those five sources keep **ilvl 10** equipment drops so arrival in the second city does not immediately force an equipment-tier jump. The normal Arden ilvl 15 / 20 / 25 mapping applies to its later ordinary quest bands once those later item tiers and their ordinary drop sources are authored.
+Arden deliberately begins with five **transition mobs** that overlap the top of Dornwald's Power range. Those five sources keep **ilvl 10** equipment drops so arrival in the second city does not immediately force an equipment-tier jump. Within the current 26-mob Arden roster, `0106`–`0109` use the remaining lower-band **ilvl 15** source, `0110`–`0117` use the middle-band **ilvl 20** source, and `0118`–`0126` use the higher-band **ilvl 25** source. A source exposes only the equipment slots for which that tier currently has authored item definitions; missing weapons, shields, accessories, or overlays are not synthesized merely to fill a drop pool.
 
 This mapping is source-driven, not hero-scaled.
 

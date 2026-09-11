@@ -8,8 +8,11 @@ const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const ActivityPlacementFinderScript = preload("res://scripts/world/activity_placement_finder.gd")
 const BOARD_REFRESH_INTERVAL_TICKS: int = 50
 const COMPLETED_TEMPLATE_COOLDOWN_TICKS: int = 50
-const STRENGTH_BANDS: Array[String] = ["lower", "middle", "higher"]
-const MAX_OFFERS_PER_STRENGTH_BAND: int = 4
+const STRENGTH_BAND_TRANSITION: String = "transition"
+const STRENGTH_BANDS: Array[String] = [STRENGTH_BAND_TRANSITION, "lower", "middle", "higher"]
+const DEFAULT_STRENGTH_BANDS: Array[String] = ["lower", "middle", "higher"]
+const DEFAULT_MAX_OFFERS_PER_STRENGTH_BAND: int = 4
+const FOUR_BAND_MAX_OFFERS_PER_STRENGTH_BAND: int = 3
 
 var available_quests: Array = []
 var quest_templates: Array[Resource] = []
@@ -44,7 +47,7 @@ func configure_map_placement(initial_hex_map, initial_world_state, region_id: St
 	if placement_random_number_generator == null:
 		placement_random_number_generator = RandomNumberGenerator.new()
 		placement_random_number_generator.seed = 1
-	return assign_map_targets_to_current_offers()
+	return assign_map_targets_to_current_offers(0)
 
 func has_map_placement_context() -> bool:
 	return placement_hex_map != null and placement_world_state != null and not placement_region_id.is_empty() and placement_hex_map.is_valid_cell(placement_distance_origin)
@@ -100,13 +103,15 @@ func reload_from_directory(quest_directory: String = DEFAULT_QUEST_DIRECTORY) ->
 func refresh_board(current_tick: int) -> bool:
 	release_available_offer_map_targets()
 	available_quests.clear()
-	for strength_band in STRENGTH_BANDS:
+	var board_strength_bands: Array[String] = get_board_strength_bands()
+	var max_offers_per_band: int = get_max_offers_per_strength_band()
+	for strength_band in board_strength_bands:
 		var eligible_templates: Array = get_eligible_templates_for_band(strength_band, current_tick)
-		var selected_templates: Array = select_templates_for_board(eligible_templates)
+		var selected_templates: Array = select_templates_for_board(eligible_templates, max_offers_per_band)
 		for quest_template in selected_templates:
 			available_quests.append(create_offer(quest_template, QuestOfferScript.INVALID_TARGET_HEX, false))
 	if has_map_placement_context():
-		var _assert_assign_map_targets_to_current_offers_ok_1: bool = assign_map_targets_to_current_offers()
+		var _assert_assign_map_targets_to_current_offers_ok_1: bool = assign_map_targets_to_current_offers(current_tick)
 		assert(_assert_assign_map_targets_to_current_offers_ok_1, "Current quest board could not be placed on unique valid map hexes.")
 	last_board_refresh_tick = current_tick
 	return true
@@ -134,13 +139,25 @@ func get_eligible_templates_for_band(strength_band: String, current_tick: int) -
 		result.append(quest_template)
 	return result
 
-func select_templates_for_board(eligible_templates: Array) -> Array:
-	if eligible_templates.size() <= MAX_OFFERS_PER_STRENGTH_BAND:
+func get_board_strength_bands() -> Array[String]:
+	return STRENGTH_BANDS.duplicate() if has_transition_strength_band() else DEFAULT_STRENGTH_BANDS.duplicate()
+
+func get_max_offers_per_strength_band() -> int:
+	return FOUR_BAND_MAX_OFFERS_PER_STRENGTH_BAND if has_transition_strength_band() else DEFAULT_MAX_OFFERS_PER_STRENGTH_BAND
+
+func has_transition_strength_band() -> bool:
+	for quest_template in quest_templates:
+		if str(quest_template.strength_band) == STRENGTH_BAND_TRANSITION:
+			return true
+	return false
+
+func select_templates_for_board(eligible_templates: Array, max_offers: int = DEFAULT_MAX_OFFERS_PER_STRENGTH_BAND) -> Array:
+	if eligible_templates.size() <= max_offers:
 		return eligible_templates.duplicate()
 
 	var remaining_templates: Array = eligible_templates.duplicate()
 	var selected_templates: Array = []
-	while selected_templates.size() < MAX_OFFERS_PER_STRENGTH_BAND:
+	while selected_templates.size() < max_offers:
 		var selected_index: int = random_number_generator.randi_range(0, remaining_templates.size() - 1)
 		selected_templates.append(remaining_templates[selected_index])
 		remaining_templates.remove_at(selected_index)
@@ -216,9 +233,11 @@ func create_offer(quest_template: Resource, excluded_target: Vector2i = QuestOff
 		assert(_assert_place_offer_on_map_ok_3, "Quest offer could not be placed on the current map: %s" % quest_template.id)
 	return offer
 
-func assign_map_targets_to_current_offers() -> bool:
+func assign_map_targets_to_current_offers(current_tick: int = 0) -> bool:
 	if not has_map_placement_context():
 		return false
+	if has_transition_strength_band():
+		return assign_four_band_map_targets(current_tick)
 	var pending_offers: Array = []
 	for offer in available_quests:
 		if offer != null and offer.has_method("has_map_target") and not offer.has_map_target():
@@ -259,6 +278,98 @@ func assign_map_targets_to_current_offers() -> bool:
 			var remaining_candidates: Array[Vector2i] = candidates_by_offer[remaining_offer]
 			remaining_candidates.erase(reserved_target)
 	return true
+
+func assign_four_band_map_targets(current_tick: int) -> bool:
+	var pending_offers: Array = []
+	for offer in available_quests:
+		if offer != null and offer.has_method("has_map_target") and not offer.has_map_target():
+			pending_offers.append(offer)
+	if pending_offers.is_empty():
+		return true
+
+	var candidates_by_offer: Dictionary = {}
+	for offer in pending_offers:
+		var candidates: Array[Vector2i] = get_offer_map_candidates(offer)
+		shuffle_map_candidates(candidates)
+		candidates_by_offer[offer] = candidates
+
+	var target_to_offer: Dictionary = {}
+	var offer_to_target: Dictionary = {}
+	for offer in pending_offers:
+		var visited_targets: Dictionary = {}
+		try_match_offer_to_unique_target(offer, candidates_by_offer, target_to_offer, offer_to_target, visited_targets)
+
+	var reserved_offers: Array = []
+	for offer in pending_offers:
+		if not offer_to_target.has(offer):
+			continue
+		if not reserve_offer_target(offer, offer_to_target[offer]):
+			for reserved_offer in reserved_offers:
+				release_offer_map_target(reserved_offer)
+			return false
+		reserved_offers.append(offer)
+
+	for offer in pending_offers:
+		if offer_to_target.has(offer):
+			continue
+		available_quests.erase(offer)
+		try_replace_unplaced_offer_from_same_band(offer, current_tick)
+	return true
+
+func try_replace_unplaced_offer_from_same_band(unplaced_offer, current_tick: int) -> bool:
+	var strength_band: String = str(unplaced_offer.template.strength_band)
+	var selected_template_ids: Dictionary = {}
+	for current_offer in available_quests:
+		selected_template_ids[current_offer.id] = true
+
+	var alternatives: Array = []
+	for quest_template in get_eligible_templates_for_band(strength_band, current_tick):
+		if not selected_template_ids.has(quest_template.id):
+			alternatives.append(quest_template)
+
+	while not alternatives.is_empty():
+		var alternative_index: int = random_number_generator.randi_range(0, alternatives.size() - 1)
+		var alternative_template: Resource = alternatives.pop_at(alternative_index)
+		var alternative_offer = create_offer(alternative_template, QuestOfferScript.INVALID_TARGET_HEX, false)
+		var candidates: Array[Vector2i] = get_offer_map_candidates(alternative_offer)
+		if candidates.is_empty():
+			continue
+		var target_index: int = placement_random_number_generator.randi_range(0, candidates.size() - 1)
+		if not reserve_offer_target(alternative_offer, candidates[target_index]):
+			continue
+		available_quests.append(alternative_offer)
+		return true
+	return false
+
+func try_match_offer_to_unique_target(
+	offer,
+	candidates_by_offer: Dictionary,
+	target_to_offer: Dictionary,
+	offer_to_target: Dictionary,
+	visited_targets: Dictionary
+) -> bool:
+	for target_hex in candidates_by_offer.get(offer, []):
+		if visited_targets.has(target_hex):
+			continue
+		visited_targets[target_hex] = true
+		if not target_to_offer.has(target_hex) or try_match_offer_to_unique_target(
+			target_to_offer[target_hex],
+			candidates_by_offer,
+			target_to_offer,
+			offer_to_target,
+			visited_targets
+		):
+			target_to_offer[target_hex] = offer
+			offer_to_target[offer] = target_hex
+			return true
+	return false
+
+func shuffle_map_candidates(candidates: Array[Vector2i]) -> void:
+	for index in range(candidates.size() - 1, 0, -1):
+		var swap_index: int = placement_random_number_generator.randi_range(0, index)
+		var value: Vector2i = candidates[index]
+		candidates[index] = candidates[swap_index]
+		candidates[swap_index] = value
 
 func get_offer_map_candidates(offer, excluded_target: Vector2i = QuestOfferScript.INVALID_TARGET_HEX) -> Array[Vector2i]:
 	var candidates: Array[Vector2i] = activity_placement_finder.find_valid_centers(

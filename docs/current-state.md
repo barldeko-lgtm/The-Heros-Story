@@ -10,7 +10,7 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, while two-slot save/load is now connected. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region 4/4/4 rotating board.
+The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, while two-slot save/load is now connected. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -243,11 +243,11 @@ The Starting City currently has:
 Arden currently has:
 
 - **26 ordinary Mid Region mob definitions** numbered `0101`–`0126`, approximately 300→900 Power;
-- **26 matching ordinary quest templates**, split 9 lower / 8 middle / 9 higher;
+- **26 matching ordinary quest templates**, split into four loot-aligned bands: 5 transition / 4 lower / 8 middle / 9 higher;
 - ordinary target placement constrained to **3–7 hexes** from Arden across plains, forest, hills, and selected road-tagged locations;
-- the same up-to-12 **4 / 4 / 4** rotating-board lifecycle as Дорнвальд, but with its own deterministic board/placement RNG streams and Mid Region reservations;
+- an up-to-12 **3 / 3 / 3 / 3** rotating-board composition across those four bands, with its own deterministic board/placement RNG streams and Mid Region reservations;
 - ordinary quest return/death routing through Arden's real city center, including natural resurrection/recovery and subsequent local quest selection;
-- first five transition mobs retaining the existing ilvl 10 ordinary equipment source; later Arden equipment-drop tiers remain pending the actual ilvl 15/20/25 item/drop content.
+- first five transition-band mobs retaining the existing ilvl 10 ordinary equipment source; lower-band mobs (`0106`–`0109`) use Azure Dawnplate ilvl 15 drops, middle-band mobs (`0110`–`0117`) use Crimson Thornplate ilvl 20 drops, and higher-band mobs (`0118`–`0126`) use Gilded Wyrm ilvl 25 drops. All four Arden ordinary-mob sources use the normal 5% equipment-drop chance and 70% Common / 25% Uncommon / 5% Rare rarity split.
 
 The Arden mobs currently grant authored XP from **240 to 720** across the roster. Eight ordinary Arden mobs now use authored Fire / Cold / Lightning basic attacks; those attacks use the normal hit/crit/block path, ignore Armor, and are reduced by the matching direct-percent Resistance capped at 75%. Their raw Attack is temporarily 20% lower than the original physical baseline, while elemental offense is valued at ×1.20 inside the shared Power estimate only.
 
@@ -259,11 +259,11 @@ Ordinary quest selection is autonomous and uses the current dedicated flow:
 
 ### Current quest-board tuning
 
-The current working Prototype 0.2 board cap is **up to 12 offers total, with up to 4 offers per strength band**. This 4 / 4 / 4 composition is an explicit tuning step before Mid-Level City relocation testing and may be adjusted again after playtesting.
+The current working Prototype 0.2 board cap is **up to 12 offers total per city**. Дорнвальд keeps three strength bands with up to **4 / 4 / 4** offers; Арден uses four loot-aligned bands with up to **3 / 3 / 3 / 3** offers.
 
 Current runtime behaviour:
 
-- each shared board roll selects up to 4 different currently eligible templates from each strength band;
+- each shared board roll selects up to 4 different currently eligible templates per Дорнвальд band, or up to 3 per Арден band;
 - missing slots in one band are not filled from another band;
 - accepted offers leave the board immediately;
 - the accepted active quest keeps its real target reservation independently of later board refreshes;
@@ -468,6 +468,15 @@ Ordinary mob equipment drops currently use:
 - lower Starting City band → ilvl 1 source;
 - middle band → compressed ilvl 5 source;
 - higher band → compressed ilvl 10 source.
+
+Arden ordinary mob equipment drops continue that source-driven progression with one deliberate transition overlap:
+
+- first five lower-band transition mobs (`0101`–`0105`) → existing ilvl 10 Ironward Vanguard source;
+- remaining lower-band mobs (`0106`–`0109`) → ilvl 15 Azure Dawnplate source;
+- middle-band mobs (`0110`–`0117`) → ilvl 20 Crimson Thornplate source;
+- higher-band mobs (`0118`–`0126`) → ilvl 25 Gilded Wyrm source.
+
+The current Crimson Thornplate and Gilded Wyrm families contain only the five supplied armor slots, while Azure Dawnplate additionally contains the supplied jewelry/Belt slots. Mob drop tables do not synthesize missing weapons, shields, accessories, or overlays. Rare/Blue drop definitions reuse each supplied set's existing visual assets and are not added to normal city-shop stock.
 
 During an ordinary quest, a successful equipment-drop roll now creates the concrete generated `ItemInstance` at the defeated mob, but does **not** immediately evaluate/equip it. Found quest equipment waits in the current adventure buffer until the main mob objective is complete. Before return travel, if at least one equipment item was found, the hero spends exactly **one world tick** reviewing the entire accumulated equipment batch through the existing `EquipmentEvaluator` / Equipment / Inventory routing. The review costs one tick regardless of item count; if no equipment dropped, the extra phase is skipped completely. A quest combat death clears still-unreviewed equipment rather than allowing it to leak into a later quest.
 

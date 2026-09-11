@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/equipment_drop_table_definition.gd" id="1_drop_table"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet.tres" id="c0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_cuirass.tres" id="c1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets.tres" id="c2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards.tres" id="c3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons.tres" id="c4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet_uncommon.tres" id="u0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_cuirass_uncommon.tres" id="u1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets_uncommon.tres" id="u2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards_uncommon.tres" id="u3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons_uncommon.tres" id="u4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet_rare.tres" id="r0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_cuirass_rare.tres" id="r1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets_rare.tres" id="r2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards_rare.tres" id="r3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons_rare.tres" id="r4"]
+
+[resource]
+script = ExtResource("1_drop_table")
+drop_chance = 0.05
+item_level = 25
+common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4")])
+uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4")])
+rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4")])

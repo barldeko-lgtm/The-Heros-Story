@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_quest_definition")
 id = "band_on_trade_road"
-strength_band = "lower"
+strength_band = "transition"
 display_name = "Банда на торговом тракте"
 mob_definition = ExtResource("2_mob")
 mob_count_min = 4

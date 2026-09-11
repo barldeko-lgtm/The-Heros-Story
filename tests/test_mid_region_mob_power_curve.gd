@@ -58,8 +58,11 @@ func _init() -> void:
 			var physical_baseline_power: float = load("res://scripts/combat/power_calculator.gd").new().calculate(mob.get_combat_stats())
 			assert(absf(mob_power - physical_baseline_power * sqrt(1.20)) <= 0.01, "Elemental Arden mob Power must value its offense 20 percent higher inside the shared formula: %s" % mob.id)
 
-		if index < 5:
-			assert(mob.equipment_drop_table != null and mob.equipment_drop_table.item_level == 10, "The five transition mobs must keep ilvl 10 equipment drops: %s" % mob.id)
+			if index < 5:
+				assert(mob.equipment_drop_table != null and mob.equipment_drop_table.item_level == 10, "The five transition mobs must keep ilvl 10 equipment drops: %s" % mob.id)
+			else:
+				var expected_drop_ilvl: int = 15 if index < 9 else (20 if index < 17 else 25)
+				assert(mob.equipment_drop_table != null and mob.equipment_drop_table.item_level == expected_drop_ilvl, "Later Arden mobs must use the equipment tier assigned to their local strength band: %s" % mob.id)
 
 	assert(seen_ids.size() == 26 and seen_profiles.size() == 26, "Arden must contain exactly 26 distinct approved ordinary mob profiles.")
 	print("PASS: Arden keeps its physical baseline curve while elemental mobs use 20 percent lower raw attack and 20 percent higher offense weighting in Power.")

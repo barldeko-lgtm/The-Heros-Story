@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=32 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/equipment_drop_table_definition.gd" id="1_drop_table"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet.tres" id="c0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_cuirass.tres" id="c1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_gauntlets.tres" id="c2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_legguards.tres" id="c3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sabatons.tres" id="c4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_pendant.tres" id="c5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_earrings.tres" id="c6"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_1.tres" id="c7"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_2.tres" id="c8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_belt.tres" id="c9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet_uncommon.tres" id="u0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_cuirass_uncommon.tres" id="u1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_gauntlets_uncommon.tres" id="u2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_legguards_uncommon.tres" id="u3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sabatons_uncommon.tres" id="u4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_pendant_uncommon.tres" id="u5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_earrings_uncommon.tres" id="u6"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_1_uncommon.tres" id="u7"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_2_uncommon.tres" id="u8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_belt_uncommon.tres" id="u9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet_rare.tres" id="r0"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_cuirass_rare.tres" id="r1"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_gauntlets_rare.tres" id="r2"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_legguards_rare.tres" id="r3"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sabatons_rare.tres" id="r4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_pendant_rare.tres" id="r5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_earrings_rare.tres" id="r6"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_1_rare.tres" id="r7"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_2_rare.tres" id="r8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_belt_rare.tres" id="r9"]
+
+[resource]
+script = ExtResource("1_drop_table")
+drop_chance = 0.05
+item_level = 15
+common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5"), ExtResource("c6"), ExtResource("c7"), ExtResource("c8"), ExtResource("c9")])
+uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7"), ExtResource("u8"), ExtResource("u9")])
+rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4"), ExtResource("r5"), ExtResource("r6"), ExtResource("r7"), ExtResource("r8"), ExtResource("r9")])
