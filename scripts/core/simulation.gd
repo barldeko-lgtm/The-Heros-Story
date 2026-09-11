@@ -250,7 +250,7 @@ func refresh_combat_stats() -> void:
 	combat_stats = stat_resolver.resolve(hero_state, true)
 
 func get_hero_power() -> float:
-	return power_calculator.calculate(base_combat_stats)
+	return power_calculator.calculate_hero(base_combat_stats, hero_state)
 
 func get_hero_traits() -> Array[String]:
 	return trait_development.get_established_traits(hero_state)

@@ -673,17 +673,17 @@ The starting 5 WIS therefore provides no free skill-scaling bonus. Only WIS gain
 
 For Power Strike, the current WIS coefficient is:
 
-> **`PowerStrikeWISCoefficient = 2.0`**
+> **`PowerStrikeWISCoefficient = 2.5`**
 
 The final Power Strike damage multiplier is:
 
-> **`FinalPowerStrikeMultiplier = BaseSkillMultiplier + 2.0 × WisdomFactor`**
+> **`FinalPowerStrikeMultiplier = BaseSkillMultiplier + 2.5 × WisdomFactor`**
 
 `BaseSkillMultiplier` continues to come from Power Strike Skill Level, from **1.50 at Skill Level 1** to **2.50 at Skill Level 10**.
 
 WIS therefore improves Power Strike specifically through the ability multiplier, while STR continues to improve the hero's underlying physical Damage and Critical Damage and consequently strengthens both normal attacks and weapon-based abilities.
 
-The coefficient `2.0` belongs specifically to Power Strike. Other abilities use the same shared `WisdomFactor` but may have different WIS coefficients according to their effect and balance role.
+The coefficient `2.5` belongs specifically to Power Strike. Other abilities use the same shared `WisdomFactor` but may have different WIS coefficients according to their effect and balance role.
 
 Autonomous baseline:
 
@@ -701,7 +701,7 @@ Current working rules:
 
 - cooldown: **60 seconds**;
 - duration: **10 seconds**;
-- may be activated only while the Warrior is at **75% MaxHP or lower**;
+- may be activated only while the Warrior is at **80% MaxHP or lower**;
 - while active, reduces the remaining incoming damage according to Skill Level.
 
 Battle Guard mitigation is applied **after** the normal defensive resolution of the incoming hit.
@@ -742,23 +742,23 @@ Battle Guard uses the same shared Wisdom model as other Warrior abilities:
 
 Its current WIS coefficient is:
 
-> **`BattleGuardWISCoefficient = 0.15`**
+> **`BattleGuardWISCoefficient = 0.30`**
 
 Final damage reduction is:
 
-> **`FinalDamageReduction = BaseDamageReduction + 0.15 × WisdomFactor`**
+> **`FinalDamageReduction = BaseDamageReduction + 0.30 × WisdomFactor`**
 
 The resulting remaining-damage multiplier is:
 
 > **`BattleGuardMultiplier = 1 - FinalDamageReduction`**
 
-The starting 5 WIS therefore adds no free bonus. At very high WIS, the Wisdom contribution approaches but does not reach an additional **15 percentage points** of damage reduction.
+The starting 5 WIS therefore adds no free bonus. At very high WIS, the Wisdom contribution approaches but does not reach an additional **30 percentage points** of damage reduction.
 
 Battle Guard does not replace, bypass, or weaken Block, Armor, or elemental Resistances. Its reduction is applied after those defenses have resolved.
 
 Autonomous baseline:
 
-> **if Battle Guard is off cooldown, its effect is not already active, and current HP is 75% MaxHP or lower, the hero uses it at the next valid combat opportunity.**
+> **if Battle Guard is off cooldown, its effect is not already active, and current HP is 80% MaxHP or lower, the hero uses it at the next valid combat opportunity.**
 
 This deliberately keeps the first Warrior defensive behavior deterministic and understandable instead of attempting to predict future burst damage.
 
@@ -767,7 +767,7 @@ This deliberately keeps the first Warrior defensive behavior deterministic and u
 For Prototype 0.2, base Warrior ability use begins with simple deterministic rules:
 
 - **Power Strike:** use when at least 30 Rage is available and the 10-second cooldown is ready;
-- **Battle Guard:** use when HP is 75% MaxHP or lower and the 60-second cooldown is ready.
+- **Battle Guard:** use when HP is 80% MaxHP or lower and the 60-second cooldown is ready.
 
 Later abilities or specialization abilities may require more situational combat evaluation, but these two base abilities do not need unnecessary decision complexity merely to appear autonomous.
 
@@ -3275,7 +3275,7 @@ Its fixed combat rules remain:
 - no Rage cost;
 - cooldown **60 sec**;
 - duration **10 sec**;
-- may activate only at **75% MaxHP or lower**;
+- may activate only at **80% MaxHP or lower**;
 - no shield requirement;
 - mitigation is applied after Block and Armor / elemental Resistance.
 
@@ -3300,6 +3300,23 @@ remaining damage × 0.55
 ```
 
 Cooldown, duration, activation threshold, and Rage cost do not improve with Skill Level in Prototype 0.2.
+
+#### Working HeroPower Valuation for the Two Base Warrior Abilities
+
+For current balance planning, the two implemented base Warrior abilities use the following provisional HeroPower valuation:
+
+- learning **Power Strike Skill Level 1** contributes **+4.0% HeroPower**;
+- every purchased Power Strike rank after Skill Level 1 contributes a further **+0.75% HeroPower**;
+- learning **Battle Guard Skill Level 1** contributes **+4.5% HeroPower**;
+- every purchased Battle Guard rank after Skill Level 1 contributes a further **+0.40% HeroPower**.
+
+The current provisional aggregate valuation for Wisdom, after both base Warrior abilities are learned, is:
+
+> **approximately +0.20% HeroPower per WIS above the starting value of 5**
+
+This WIS value is a temporary planning estimate for the current two-ability Warrior kit, not a universal generic stat conversion. It may be recalibrated when Protector / Slayer specialization abilities are implemented and their own WIS scaling becomes part of the real combat kit.
+
+These HeroPower valuation bonuses are now wired into the shared runtime `PowerCalculator` as one additive permanent Hero multiplier. Hero quest eligibility, virtual equipment comparison, and displayed HeroPower all use the same skill/WIS-aware result, while MobPower and ItemPower continue to use the same underlying CombatStats Power formula without Warrior ability bonuses.
 
 ### 27.3. Specialization Abilities
 

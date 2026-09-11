@@ -22,7 +22,7 @@ func evaluate(hero_state, candidate_item) -> Dictionary:
 		return result
 
 	var current_stats = stat_resolver.resolve(hero_state, false)
-	result["current_power"] = power_calculator.calculate(current_stats)
+	result["current_power"] = power_calculator.calculate_hero(current_stats, hero_state)
 	var authored_slot: String = candidate_item.definition.equipment_slot
 	var target_slots: Array[String] = [authored_slot]
 	if authored_slot in RING_SLOTS:
@@ -34,7 +34,7 @@ func evaluate(hero_state, candidate_item) -> Dictionary:
 	for target_slot in target_slots:
 		var candidate_equipment = hero_state.equipment.duplicate_with_replacement(candidate_item, target_slot)
 		var candidate_stats = stat_resolver.resolve(hero_state, false, candidate_equipment)
-		var candidate_power: float = power_calculator.calculate(candidate_stats)
+		var candidate_power: float = power_calculator.calculate_hero(candidate_stats, hero_state)
 		if candidate_power > best_candidate_power + POWER_EPSILON:
 			best_candidate_power = candidate_power
 			best_target_slot = target_slot

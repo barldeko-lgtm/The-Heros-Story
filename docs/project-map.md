@@ -197,9 +197,9 @@ Shared combat formulas for hit chance, Armor/Resistance mitigation and Block beh
 
 ### `scripts/combat/power_calculator.gd`
 
-Single shared Power calculation for `CombatStats`.
+Single shared Power calculation for `CombatStats`, plus the current permanent Warrior skill/WIS HeroPower valuation layered through `calculate_hero(...)`.
 
-Do not create a separate HeroPower or MobPower formula elsewhere. Hero, mob and virtual equipment comparisons ultimately rely on this shared calculation.
+Do not create a separate HeroPower or MobPower formula elsewhere. Hero, mob and virtual equipment comparisons ultimately rely on this shared calculator; MobPower/ItemPower use the base path, while HeroPower and virtual hero loadouts use the Hero-aware path.
 
 ## World map, placement and travel
 
@@ -644,7 +644,7 @@ It does not generate narrative or gameplay outcomes.
 
 - `assets/hero/` — base hero presentation art.
 - `assets/items/icons/` — equipment/consumable icons.
-- `assets/items/overlays/` — armor paper-doll overlays.
+- `assets/items/overlays/` — equipment paper-doll overlays, including supported armor, weapon and shield layers.
 - `assets/shaders/` — current item/UI shaders.
 
 Exact pixel sizes, offsets and temporary visual placeholders belong in the UI code/assets rather than this document.

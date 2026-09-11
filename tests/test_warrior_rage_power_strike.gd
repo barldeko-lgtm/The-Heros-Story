@@ -48,7 +48,7 @@ func _init() -> void:
 	guaranteed_session.rage = 30
 	var guaranteed_action = guaranteed_session.advance(1.5)[0]
 	assert(guaranteed_action.action_id == POWER_STRIKE_ID and guaranteed_action.did_hit, "Power Strike must bypass the ordinary hit roll.")
-	assert(is_equal_approx(guaranteed_action.damage, 25.0), "105 Wisdom must raise the Skill Level 1 multiplier from x1.50 to x2.50.")
+	assert(is_equal_approx(guaranteed_action.damage, 27.5), "105 Wisdom must raise the Skill Level 1 multiplier from x1.50 to x2.75.")
 
 	var max_rank_session = combat_simulator.create_session(hero_stats, high_dodge_mob, null, 1.0, 10, 5)
 	max_rank_session.rage = 30

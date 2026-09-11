@@ -69,6 +69,8 @@ The basic gameplay loop should not be blocked by ordinary neutral or mildly nega
 
 ## Named Faction Characters
 
+The approved working direction for faction warfare is that a faction hero gathers available troops and leaves a city to attack a hostile city. Armies exist for these campaigns; a permanent layer of independently roaming military detachments is not currently planned. Army formation, commander decisions, and battle resolution remain open design questions.
+
 Major factions may have **important persistent characters in the world**: commanders, rulers, renowned warriors, mages, and other significant figures.
 
 They do not need to be simulated with the same depth as the main hero. Their role is to be recognizable participants in the history of the world and, when appropriate, to contribute to the strength and resilience of their faction.
@@ -102,6 +104,8 @@ The exact rules for retreat, death, succession, resource loss, and their contrib
 > **Named NPCs should be part of the history of the world, not merely unusually durable enemies.**
 
 ## NPC Adventurers — Optional Future Layer
+
+**Neutral NPC adventurers are deferred as a possible future expansion.** They are not required for the first version of autonomous factions or for cities to handle local threats without the main hero. Their decision logic, progression, and participation in clearing threats are not being specified at this stage. This deferral does not apply to the named faction heroes who lead military campaigns.
 
 In the future, the world may include a small number of **autonomous NPC adventurers** who live simplified adventuring lives of their own.
 
@@ -145,6 +149,34 @@ The player does not need to see this internal structure directly. They should se
 > **The internal map exists to create circumstances around the hero, not to turn the game into a hidden grand strategy.**
 
 ## Faction Borders and Wars
+
+### Autonomous Outcomes and Variation Between Playthroughs
+
+Faction development and warfare must proceed without the main hero's participation. Equivalent starting conditions should permit different factions to win across playthroughs with different random developments. A stronger faction should have an advantage and win more often under otherwise comparable conditions, but greater initial strength must not guarantee victory.
+
+Variation should emerge from actual changes in the simulated world, including different local threats and their consequences for cities. Randomness must not deliberately favor the losing faction or force factions to take turns winning and recovering. Exact victory probabilities are not fixed.
+
+### City Prosperity and Military Strength
+
+City prosperity affects the city's economic and military capabilities. Local monsters, bandits, and other threats hinder development and require military strength to be assigned to local protection. Safer surroundings allow more strength to be made available for faction warfare.
+
+Prosperity and local threat are distinct: a prosperous city can still face a serious threat. Their numerical scales and exact effects on income, troop support, and replenishment remain undefined.
+
+Troops are accounted for in cities and in armies on campaign. Troops assigned to a campaign cannot simultaneously defend their home city. Total faction military strength is derived from its existing forces; there is no additional independently accumulating faction-wide pool that duplicates those troops.
+
+Strength committed to local protection is occupied, not automatically lost. Rules for casualties, replenishment, and the division between garrison, local protection, clearing operations, and campaigns will be defined later.
+
+### Local Threats and Autonomous City Responses
+
+Threat sources, such as bandit camps and monster lairs, appear and develop with random differences between regions. These differences should persist long enough to affect prosperity and the troops available for war, rather than amount only to rapidly averaging numerical noise.
+
+Cities autonomously allocate forces to contain threats and clear their sources. These actions take military effort and time, but do not require separately moving patrols or neutral adventurers. The exact allocation and clearing rules remain open.
+
+The main hero and city operations affect the same regional threats. Defeating monsters or bandits reduces local danger; eliminating a source has a longer-lasting effect by reducing further threat generation. A threat cleared by either participant must not remain separately active for the other.
+
+This creates a mechanical route for the hero to improve a city's circumstances and free military strength for faction conflicts while choosing activities autonomously. **Even at peak progression, the main hero must not be able to destroy entire armies alone.** Specific opportunities to influence military events remain to be designed.
+
+### Borders and War-Related Opportunities
 
 When the territories or spheres of influence of **hostile factions meet**, the surrounding area may become a conflict zone.
 
@@ -306,5 +338,19 @@ The concrete internal representation of time — ticks, seconds, conceptual hour
 How this time is presented to the player belongs to `UI_and_Presentation_System_Design_v0.1.md`.
 
 ## Migration note
+
+### Open Faction Design Questions
+
+- prosperity scale and its exact effects on income, troop support, and replenishment;
+- military strength limits and replenishment formulas;
+- allocation of forces between garrisons, local threats, clearing operations, and campaigns;
+- threat appearance, growth, persistence, and removal rules;
+- faction and commander target selection, army formation, and campaign decisions;
+- battles, sieges, city capture, and conditions for ending wars;
+- concrete forms of the main hero's participation in military events.
+
+Post-capture recovery, devastation or raiding effects, military supplies, a one-army limit, and numerical replenishment examples discussed during exploration remain proposals, not approved mechanics. No numerical examples or formulas from that discussion are binding design values.
+
+The faction direction recorded here is for a later stage beyond Prototype 0.2, without assignment to a specific release. Neutral adventurers remain an optional future expansion rather than a dependency of that stage.
 
 Post-Prototype systems listed here remain design territory, not implementation authorization.

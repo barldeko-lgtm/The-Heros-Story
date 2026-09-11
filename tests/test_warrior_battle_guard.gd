@@ -24,14 +24,14 @@ func _init() -> void:
 	var mob_stats: RefCounted = make_stats(combat_stats_script, 1000.0, 100.0, 1.0, 0.0)
 	var combat_simulator: RefCounted = combat_simulator_script.new()
 	var session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 5, hero_state.battle_guard_skill_level)
-	session.hero_remaining_hp = 760.0
+	session.hero_remaining_hp = 810.0
 	session.rage = 50
 
 	var threshold_actions: Array = session.advance(2.0)
 	assert(threshold_actions.size() == 2, "The threshold hit must be followed by one Battle Guard activation event.")
 	assert(threshold_actions[0].attacker_id == "mob", "The threshold-crossing hit must resolve before Battle Guard activates.")
 	assert(is_equal_approx(threshold_actions[0].damage, 100.0), "The threshold-crossing hit must not be reduced retroactively.")
-	assert(is_equal_approx(session.hero_remaining_hp, 660.0), "The full threshold hit must be applied before activation.")
+	assert(is_equal_approx(session.hero_remaining_hp, 710.0), "The full threshold hit must be applied before activation.")
 	assert(threshold_actions[1].action_id == BATTLE_GUARD_ID, "Battle Guard activation must be a distinct structured combat action.")
 	assert(session.is_battle_guard_active(), "Battle Guard must become active immediately after the threshold-crossing hit.")
 	assert(session.rage == 53, "Battle Guard must spend no Rage while the received hit still grants 3 Rage.")
@@ -39,7 +39,7 @@ func _init() -> void:
 	var protected_actions: Array = session.advance(2.0)
 	assert(protected_actions.size() == 1 and protected_actions[0].attacker_id == "mob", "The next incoming hit must resolve while Battle Guard is active.")
 	assert(is_equal_approx(protected_actions[0].damage, 75.0), "Skill Level 1 Battle Guard at starting Wisdom must reduce remaining incoming damage by 25%.")
-	assert(is_equal_approx(session.hero_remaining_hp, 585.0), "Only the post-mitigation Battle Guard damage must reach HP.")
+	assert(is_equal_approx(session.hero_remaining_hp, 635.0), "Only the post-mitigation Battle Guard damage must reach HP.")
 
 	session.advance(10.0)
 	assert(not session.is_battle_guard_active(), "Battle Guard must expire after 10 seconds.")
@@ -49,13 +49,13 @@ func _init() -> void:
 	assert(not has_action(cooldown_actions, BATTLE_GUARD_ID), "Battle Guard must not reactivate before its 60-second cooldown is ready.")
 
 	var wise_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 105, 1)
-	wise_session.hero_remaining_hp = 760.0
+	wise_session.hero_remaining_hp = 810.0
 	wise_session.advance(2.0)
 	var wise_protected_actions: Array = wise_session.advance(2.0)
-	assert(is_equal_approx(wise_protected_actions[0].damage, 67.5), "105 Wisdom must raise Battle Guard reduction from 25% to 32.5%.")
+	assert(is_equal_approx(wise_protected_actions[0].damage, 60.0), "105 Wisdom must raise Battle Guard reduction from 25% to 40%.")
 
 	var max_rank_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 5, 10)
-	max_rank_session.hero_remaining_hp = 760.0
+	max_rank_session.hero_remaining_hp = 810.0
 	max_rank_session.advance(2.0)
 	var max_rank_protected_actions: Array = max_rank_session.advance(2.0)
 	assert(is_equal_approx(max_rank_protected_actions[0].damage, 55.0), "Skill Level 10 Battle Guard at starting Wisdom must reduce remaining incoming damage by 45%.")
@@ -66,10 +66,10 @@ func _init() -> void:
 		assert(is_equal_approx(rank_session.get_battle_guard_multiplier(), 1.0 - expected_reduction), "Battle Guard Skill Levels must scale evenly from 25% to 45% reduction.")
 
 	var locked_session = combat_simulator.create_session(hero_stats, mob_stats, null, 1.0, 0, 105, 0)
-	locked_session.hero_remaining_hp = 760.0
+	locked_session.hero_remaining_hp = 810.0
 	var locked_actions: Array = locked_session.advance(4.0)
 	assert(not has_action(locked_actions, BATTLE_GUARD_ID), "Battle Guard must remain unavailable before it is learned.")
-	assert(is_equal_approx(locked_session.hero_remaining_hp, 560.0), "A Warrior without Battle Guard must take both incoming hits in full.")
+	assert(is_equal_approx(locked_session.hero_remaining_hp, 610.0), "A Warrior without Battle Guard must take both incoming hits in full.")
 
 	var narrator: RefCounted = quest_narrator_script.new()
 	var quest_definition: Resource = load("res://data/quests/0001_goblin_road_problem.tres")

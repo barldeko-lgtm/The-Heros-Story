@@ -167,18 +167,20 @@ Current ordinary mobs mostly use physical attacks. Arden now contains eight ordi
 - replaces the next normal attack opportunity;
 - cannot miss but may critically hit;
 - Skill Level scales the base multiplier evenly from ×1.50 at Skill Level 1 to ×2.50 at Skill Level 10;
-- scales with WIS separately through its ability-specific formula.
+- scales with WIS separately through its ability-specific formula using the current **2.5 WIS coefficient**.
 
 ### Battle Guard
 
 - learned automatically at compressed hero Level 10;
 - learned at Skill Level 1; combat supports Skill Levels 1–10 and unlocked higher ranks can now be bought in the post-market city routine;
-- autonomous defensive activation after HP falls to the current threshold;
+- autonomous defensive activation after HP falls to **80% MaxHP or lower**;
 - no Rage cost and no shield requirement;
 - lasts 10 seconds with a 60-second cooldown;
 - applies after ordinary Block/Armor/Resistance resolution;
 - Skill Level scales base remaining-damage reduction evenly from 25% at Skill Level 1 to 45% at Skill Level 10;
-- scales with WIS separately through its own ability-specific formula.
+- scales with WIS separately through its own ability-specific formula using the current **0.30 WIS coefficient**.
+
+HeroPower now includes the approved permanent valuation for the implemented base Warrior abilities through the shared `PowerCalculator`: Power Strike contributes **+4.0%** when learned plus **+0.75% per additional Skill Level**, while Battle Guard contributes **+4.5%** when learned plus **+0.40% per additional Skill Level**. With both base abilities learned, WIS contributes the current provisional aggregate value of **+0.20% HeroPower per point above WIS 5**. These bonuses are additive before the resulting total multiplier is applied to the normal CombatStats-based Power. Quest eligibility, equipment virtual evaluation and displayed HeroPower therefore all observe the same permanent skill/WIS valuation. The WIS valuation remains intentionally provisional until Protector / Slayer specialization abilities are implemented and measured.
 
 The approved working Skill Level cost curve starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Autonomous city training is live after the market-sale step and shares one optional-development budget with meaningful equipment after required dungeon preparation is protected. Established Curious buys an affordable unlocked Skill Level before optional equipment; established Conservative buys meaningful affordable equipment first; neutral uses the Warrior default of Skill Level first. The lower-priority category is still allowed on a later tick, and if the preferred category has no valid affordable purchase the same tick falls through to the other category without adding an empty delay. Every successful rank or equipment purchase still consumes its own shopping world tick. Protector/Slayer specialization abilities are not implemented yet.
 
@@ -439,6 +441,8 @@ The current build has three live core visual/progression families:
 - ilvl 1 `Посвящённый Ржавой Цепи` / Rustchain Initiate;
 - compressed ilvl 5 `Страж Железного Следа` / Ironwake Sentinel;
 - compressed ilvl 10 `Авангард Железного Оплота` / Ironward Vanguard.
+
+Rustchain Initiate now has supplied 441×800 paper-doll overlays for all seven core slots, including Main Hand sword and Off Hand shield. Above the base hero portrait, the inventory paper doll draws layers from back to front as Helmet → Pants → Boots → Chest → Weapon → Gloves → Shield; all quality variants of the same base item share that item's visual layer.
 
 Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. Jewelry starts at ilvl 5 rather than ilvl 1. Current jewelry base Resistance tuning is 10 / 12 / 15 / 18 / 22 / 26% for ilvl 5 / 10 / 15 / 20 / 25 / 30, with future balancing targets of 30% at ilvl 35 and 35% at ilvl 40. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; later 15 / 20 / 25 / 30 content is not yet built out.
 

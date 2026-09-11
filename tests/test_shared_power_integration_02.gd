@@ -7,7 +7,7 @@ const ItemPowerCalculatorScript = preload("res://scripts/items/item_power_calcul
 func _init() -> void:
 	var calculator = PowerCalculatorScript.new()
 	var simulation = SimulationScript.new(1)
-	assert(is_equal_approx(simulation.get_hero_power(), calculator.calculate(simulation.base_combat_stats)), "Simulation HeroPower must use the shared PowerCalculator.")
+	assert(is_equal_approx(simulation.get_hero_power(), calculator.calculate_hero(simulation.base_combat_stats, simulation.hero_state)), "Simulation HeroPower must use the shared PowerCalculator including permanent Warrior ability valuation.")
 
 	var goblin: Resource = load("res://data/mobs/0001_goblin.tres")
 	assert(goblin != null, "Goblin definition must load for mob Power integration.")

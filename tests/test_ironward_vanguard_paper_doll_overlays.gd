@@ -14,7 +14,7 @@ const OVERLAY_NODES := {
 	"pants": "HeroPantsOverlay",
 	"boots": "HeroBootsOverlay",
 }
-const DRAW_ORDER := ["pants", "boots", "chest", "gloves", "helmet"]
+const DRAW_ORDER := ["helmet", "pants", "boots", "chest", "gloves"]
 
 func _init() -> void:
 	call_deferred("run_test")

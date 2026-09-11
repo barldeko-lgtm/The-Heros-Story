@@ -44,11 +44,13 @@ const ICON_NODES := {
 	"shield": "ShieldEquipmentIcon",
 }
 const OVERLAY_NODES := {
+	"shield": "HeroShieldOverlay",
 	"helmet": "HeroHelmetOverlay",
 	"chest": "HeroChestOverlay",
 	"gloves": "HeroGlovesOverlay",
 	"pants": "HeroPantsOverlay",
 	"boots": "HeroBootsOverlay",
+	"weapon": "HeroWeaponOverlay",
 }
 
 class NoRollRng:
@@ -96,12 +98,8 @@ func run_test() -> void:
 				return
 			if not require(rustchain.icon_texture != null and rustchain.icon_texture.get_size() == Vector2(300, 300), "Every Rustchain item must use a supplied 300x300 icon."):
 				return
-			if slot in OVERLAY_NODES:
-				if not require(rustchain.hero_overlay_texture != null and rustchain.hero_overlay_texture.get_size() == Vector2(441, 800), "Every Rustchain armor piece must use a supplied 441x800 overlay."):
-					return
-			else:
-				if not require(rustchain.hero_overlay_texture == null, "Rustchain sword/shield must remain icon-only."):
-					return
+			if not require(rustchain.hero_overlay_texture != null and rustchain.hero_overlay_texture.get_size() == Vector2(441, 800), "Every supplied Rustchain equipment piece must use its 441x800 paper-doll overlay."):
+				return
 			rustchain_by_quality[quality].append(rustchain)
 			ironwake_by_quality[quality].append(ironwake)
 			ironward_by_quality[quality].append(ironward)
@@ -236,6 +234,14 @@ func run_test() -> void:
 		if not require(overlay != null and overlay.visible and overlay.texture == simulation.hero_state.equipment.get_item(slot).definition.hero_overlay_texture, "Paper doll must render the supplied Rustchain overlay for %s." % slot):
 			main_ui.free()
 			return
+	var expected_overlay_order := ["helmet", "pants", "boots", "chest", "weapon", "gloves", "shield"]
+	var previous_index: int = -1
+	for slot in expected_overlay_order:
+		var ordered_overlay := main_ui.find_child(OVERLAY_NODES[slot], true, false) as TextureRect
+		if not require(ordered_overlay.get_index() > previous_index, "Paper-doll draw order must follow the approved helmet, pants, boots, chest, weapon, gloves, shield sequence."):
+			main_ui.free()
+			return
+		previous_index = ordered_overlay.get_index()
 	main_ui.free()
 
 	print("PASS: Rustchain, Ironwake, and Ironward preserve their strength across compressed ilvl 1/5/10 tiers; first dungeon now reports ilvl 5.")

@@ -157,6 +157,8 @@ CombatStats
 
 Never introduce separate HeroPower and MobPower formulas.
 
+Permanent Warrior ability valuation is also owned by the same `PowerCalculator`. Hero callers use `calculate_hero(CombatStats, HeroState)`, which applies the approved learned-skill / Skill-Level / provisional WIS multiplier on top of the same base CombatStats Power. MobPower and ItemPower continue to use `calculate(...)` without this Hero-only multiplier. Equipment virtual evaluation must use the same `calculate_hero(...)` path for both current and candidate loadouts.
+
 The shared calculator currently applies an elemental-offense evaluation factor of ×1.20 to Fire/Cold/Lightning EffectiveDPS and ×1.00 to Physical. HeroPower and ItemPower keep the default Physical factor unless their evaluated ordinary attack is explicitly elemental in future content. `MobDefinition.get_power()` is the authoritative ordinary-mob entry because it supplies the mob's authored `attack_damage_type`; live opponent Power presentation must preserve that same input rather than recalculating from bare `CombatStats` and losing the damage type.
 
 `ItemPower` may also use `PowerCalculator` against its approved reference profile, but it remains an item rating. It is not added to hero Power and must not become a second runtime Power formula.
@@ -181,6 +183,7 @@ Contracts:
 - `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it does not grant Skill Level 1 or invent hero-level gates;
 - `CombatSession` decides autonomous use of already-learned combat abilities during the duel;
 - ability-specific WIS scaling belongs to the ability/combat implementation rather than a fake generic WIS stat conversion in `StatResolver`;
+- the current provisional WIS contribution to persistent HeroPower is a Power valuation owned by `PowerCalculator`, not a generic CombatStats conversion;
 - narrative identifies special actions from structured combat facts/action ids rather than inferring them from damage numbers.
 
 Exact current unlock levels, costs, cooldowns and multipliers live in `current-state.md`/Scope.

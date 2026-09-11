@@ -3,7 +3,7 @@ extends Control
 
 const HeroReferenceTexture = preload("res://assets/hero/hero_reference.png")
 const ItemQualityOutlineShader = preload("res://assets/shaders/item_quality_outline.gdshader")
-const HERO_OVERLAY_DRAW_ORDER: Array[String] = ["pants", "boots", "chest", "gloves", "helmet"]
+const HERO_OVERLAY_DRAW_ORDER: Array[String] = ["helmet", "pants", "boots", "chest", "weapon", "gloves", "shield"]
 const BASE_POTION_INVENTORY_SLOT_COUNT: int = 4
 
 var simulation
@@ -329,6 +329,8 @@ func get_equipment_icon_node_name(slot_id: String) -> String:
 
 func get_hero_overlay_node_name(slot_id: String) -> String:
 	match slot_id:
+		"weapon": return "HeroWeaponOverlay"
+		"shield": return "HeroShieldOverlay"
 		"helmet": return "HeroHelmetOverlay"
 		"chest": return "HeroChestOverlay"
 		"gloves": return "HeroGlovesOverlay"

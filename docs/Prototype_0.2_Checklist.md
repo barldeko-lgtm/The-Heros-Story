@@ -31,8 +31,8 @@ Status:
 
 - ✅ Live one-on-one automatic combat with Accuracy/Dodge, Armor, elemental Resistances, Block, Critical Chance/Damage and Attack Speed.
 - ✅ Fight-local Rage generation/cap/reset.
-- ✅ Level 5 Power Strike is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from ×1.50 to ×2.50 plus separate WIS scaling.
-- ✅ Level 10 Battle Guard is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from 25% to 45% base reduction plus separate WIS scaling.
+- ✅ Level 5 Power Strike is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from ×1.50 to ×2.50 plus separate WIS scaling with the current 2.5 coefficient.
+- ✅ Level 10 Battle Guard is learned at Skill Level 1; combat scaling supports Skill Levels 1–10 from 25% to 45% base reduction plus separate WIS scaling with the current 0.30 coefficient and an 80% MaxHP activation threshold.
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - ✅ Fire/Cold/Lightning ordinary attacks are live in Arden; elemental hits keep Accuracy/Dodge/Crit/Block, ignore Armor, use direct-percentage matching Resistance (75% cap), and receive the current ×1.20 elemental-offense weight inside shared Power. The Warrior now also has an innate 10% Fire / Cold / Lightning Resistance baseline before equipment.

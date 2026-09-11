@@ -32,11 +32,8 @@ func _init() -> void:
 			assert(definition.display_name.contains("Посвящённого Ржавой Цепи"), "Every new item must use the approved Russian family name.")
 			assert(definition.equipment_slot == slot, "Every Rustchain Initiate definition must keep its mapped equipment slot.")
 			assert(definition.quality == quality, "Every Rustchain Initiate definition must keep its mapped rarity.")
-			assert(definition.icon_texture != null, "Every new item must remain visible in inventory, including temporary sword/shield placeholders.")
-			if slot in ["helmet", "chest", "gloves", "pants", "boots"]:
-				assert(definition.hero_overlay_texture != null, "Every supplied armor piece must provide its hero overlay.")
-			else:
-				assert(definition.hero_overlay_texture == null, "Sword and shield must remain without hero overlays for this slice.")
+			assert(definition.icon_texture != null, "Every new item must remain visible in inventory.")
+			assert(definition.hero_overlay_texture != null, "Every supplied Rustchain item, including sword and shield, must provide its hero overlay.")
 			definitions_by_quality[quality].append(definition)
 
 	var drop_table: Resource = load(DROP_TABLE_PATH)
