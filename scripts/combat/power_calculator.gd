@@ -16,7 +16,7 @@ const BATTLE_GUARD_RANK_POWER_BONUS: float = 0.004
 const WISDOM_POWER_BONUS_PER_POINT: float = 0.002
 const BASE_WISDOM: int = 5
 
-func calculate(combat_stats, damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL) -> float:
+func calculate(combat_stats, damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL, incoming_damage_type: String = "") -> float:
 	var crit_chance := clampf(combat_stats.crit_chance, 0.0, 1.0)
 	var crit_damage := maxf(1.0, combat_stats.crit_damage)
 	var crit_modifier := 1.0 + crit_chance * (crit_damage - 1.0)
@@ -31,11 +31,12 @@ func calculate(combat_stats, damage_type: String = DamageResolverScript.DAMAGE_T
 	var fire_taken := DamageResolverScript.calculate_elemental_taken(combat_stats.fire_resistance)
 	var cold_taken := DamageResolverScript.calculate_elemental_taken(combat_stats.cold_resistance)
 	var lightning_taken := DamageResolverScript.calculate_elemental_taken(combat_stats.lightning_resistance)
-	var average_damage_taken := (
-		PHYSICAL_DAMAGE_WEIGHT * physical_taken
-		+ FIRE_DAMAGE_WEIGHT * fire_taken
-		+ COLD_DAMAGE_WEIGHT * cold_taken
-		+ LIGHTNING_DAMAGE_WEIGHT * lightning_taken
+	var average_damage_taken := get_defensive_damage_taken(
+		physical_taken,
+		fire_taken,
+		cold_taken,
+		lightning_taken,
+		incoming_damage_type
 	)
 	var reference_dodge_chance := DamageResolverScript.calculate_dodge_chance(REFERENCE_ATTACKER_ACCURACY, combat_stats.dodge)
 	var block_multiplier := DamageResolverScript.calculate_block_multiplier(combat_stats.block)
@@ -44,6 +45,26 @@ func calculate(combat_stats, damage_type: String = DamageResolverScript.DAMAGE_T
 		return 0.0
 	var effective_hp := maxf(0.0, combat_stats.max_hp) / defensive_denominator
 	return sqrt(effective_hp * effective_dps)
+
+func get_defensive_damage_taken(physical_taken: float, fire_taken: float, cold_taken: float, lightning_taken: float, incoming_damage_type: String) -> float:
+	match incoming_damage_type:
+		DamageResolverScript.DAMAGE_TYPE_PHYSICAL:
+			return physical_taken
+		DamageResolverScript.DAMAGE_TYPE_FIRE:
+			return fire_taken
+		DamageResolverScript.DAMAGE_TYPE_COLD:
+			return cold_taken
+		DamageResolverScript.DAMAGE_TYPE_LIGHTNING:
+			return lightning_taken
+		"":
+			return (
+				PHYSICAL_DAMAGE_WEIGHT * physical_taken
+				+ FIRE_DAMAGE_WEIGHT * fire_taken
+				+ COLD_DAMAGE_WEIGHT * cold_taken
+				+ LIGHTNING_DAMAGE_WEIGHT * lightning_taken
+			)
+	assert(false, "Unsupported incoming damage type for Power: %s" % incoming_damage_type)
+	return 1.0
 
 func calculate_hero(combat_stats, hero_state, damage_type: String = DamageResolverScript.DAMAGE_TYPE_PHYSICAL) -> float:
 	return calculate(combat_stats, damage_type) * get_hero_ability_power_multiplier(hero_state)

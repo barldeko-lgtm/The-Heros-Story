@@ -30,7 +30,7 @@ func _init() -> void:
 	var quests := [
 		make_quest("weak", 60.0, 10, MobDefinitionScript.Category.HUMANOID),
 		make_quest("middle", 75.0, 20, MobDefinitionScript.Category.MONSTER),
-		make_quest("strong", 90.0, 30, MobDefinitionScript.Category.MONSTER),
+		make_quest("strong", 85.0, 30, MobDefinitionScript.Category.MONSTER),
 	]
 	var result: Dictionary = evaluator.select_quest(quests, 100.0, [HeroTraitsScript.BRAVE, HeroTraitsScript.NOBLE, HeroTraitsScript.GREEDY])
 	var by_id := {}
@@ -52,15 +52,15 @@ func _init() -> void:
 	assert(is_equal_approx(cautious_by_id["strong"]["courage_modifier"], -0.30), "Cautious must dislike the strongest eligible enemy by 0.30.")
 
 	var too_weak_for_brave = make_quest("too_weak_for_brave", 55.0, 10, MobDefinitionScript.Category.MONSTER)
-	var brave_edge = make_quest("brave_edge", 98.0, 10, MobDefinitionScript.Category.MONSTER)
+	var brave_edge = make_quest("brave_edge", 97.0, 10, MobDefinitionScript.Category.MONSTER)
 	var brave_filter: Dictionary = evaluator.select_quest([too_weak_for_brave, brave_edge], 100.0, [HeroTraitsScript.BRAVE])
-	assert(is_equal_approx(brave_filter["hard_filter_minimum"], 60.0) and is_equal_approx(brave_filter["hard_filter_limit"], 100.0), "Brave must use the 60%-100% Power window.")
-	assert(brave_filter["eligible_count"] == 1 and brave_filter["selected_quest"].id == "brave_edge", "Brave must outgrow Power 55 while still accepting Power 98 at HeroPower 100.")
+	assert(is_equal_approx(brave_filter["hard_filter_minimum"], 57.0) and is_equal_approx(brave_filter["hard_filter_limit"], 97.0), "Brave must use the 57%-97% Power window.")
+	assert(brave_filter["eligible_count"] == 1 and brave_filter["selected_quest"].id == "brave_edge", "Brave must outgrow Power 55 while still accepting Power 97 at HeroPower 100.")
 
 	var cautious_edge = make_quest("cautious_edge", 52.0, 10, MobDefinitionScript.Category.MONSTER)
 	var too_strong_for_cautious = make_quest("too_strong_for_cautious", 92.0, 10, MobDefinitionScript.Category.MONSTER)
 	var cautious_filter: Dictionary = evaluator.select_quest([cautious_edge, too_strong_for_cautious], 100.0, [HeroTraitsScript.CAUTIOUS])
-	assert(is_equal_approx(cautious_filter["hard_filter_minimum"], 50.0) and is_equal_approx(cautious_filter["hard_filter_limit"], 90.0), "Cautious must use the Scope's 50%-90% Power window.")
+	assert(is_equal_approx(cautious_filter["hard_filter_minimum"], 47.0) and is_equal_approx(cautious_filter["hard_filter_limit"], 87.0), "Cautious must use the Scope's 47%-87% Power window.")
 	assert(cautious_filter["eligible_count"] == 1 and cautious_filter["selected_quest"].id == "cautious_edge", "Cautious must retain weaker work longer and reject Power 92 at HeroPower 100.")
 
 	print("PASS: Starting traits, QuestScore personality modifiers, and Brave/Cautious Hard Filter windows follow the approved formulas.")

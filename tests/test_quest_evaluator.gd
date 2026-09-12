@@ -18,8 +18,8 @@ func _init() -> void:
 		100.0
 	)
 
-	assert(is_equal_approx(result["hard_filter_minimum"], 55.0), "Standard Hard Filter minimum must be 55% of HeroPower.")
-	assert(is_equal_approx(result["hard_filter_limit"], 95.0), "Standard Hard Filter maximum must be 95% of HeroPower.")
+	assert(is_equal_approx(result["hard_filter_minimum"], 52.0), "Standard Hard Filter minimum must be 52% of HeroPower.")
+	assert(is_equal_approx(result["hard_filter_limit"], 92.0), "Standard Hard Filter maximum must be 92% of HeroPower.")
 	assert(result["eligible_count"] == 2, "Power 50 must be outgrown and Power 96 must be too dangerous when HeroPower is 100.")
 	assert(is_equal_approx(result["weakest_allowed_mob_power"], 60.0), "Weakest allowed mob must define recovery factor 1.")
 
@@ -43,7 +43,7 @@ func _init() -> void:
 	assert(is_equal_approx(map_evaluation["one_way_travel_ticks"], 3.0), "Map-backed QuestScore must use real route steps instead of legacy abstract distance.")
 	assert(is_equal_approx(map_evaluation["estimated_quest_ticks"], 11.0), "Map-backed quest estimate must count three real travel ticks each way.")
 
-	print("PASS: QuestEvaluator applies the standard 55%-95% Hard Filter window and uses real route steps for map-backed quest travel cost.")
+	print("PASS: QuestEvaluator applies the standard 52%-92% Hard Filter window and uses real route steps for map-backed quest travel cost.")
 	quit()
 
 func make_quest(quest_id: String, target_power: float, reward: int, distance: float, mob_count: int):

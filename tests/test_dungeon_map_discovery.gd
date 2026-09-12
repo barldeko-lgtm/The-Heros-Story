@@ -2,6 +2,16 @@ extends SceneTree
 
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 
+class ScriptedRng:
+	var float_values: Array[float] = []
+
+	func _init(initial_float_values: Array[float]) -> void:
+		float_values = initial_float_values.duplicate()
+
+	func randf() -> float:
+		assert(not float_values.is_empty(), "Scripted dungeon-discovery RNG ran out of values.")
+		return float_values.pop_front()
+
 func _init() -> void:
 	call_deferred("run_test")
 
@@ -9,6 +19,7 @@ func run_test() -> void:
 	get_root().size = Vector2i(1280, 720)
 	test_spawn_and_vision_discovery()
 	test_physical_hex_discovery()
+	test_nearby_discovery_chances_and_repeat_checks()
 	await test_map_visibility_boundary()
 	print("PASS: Automatically loaded ordinary dungeons spawn on real hidden map hexes, use translucent unknown markers, and become fully visible after discovery.")
 	quit()
@@ -55,6 +66,38 @@ func test_physical_hex_discovery() -> void:
 	assert(dungeon.discovered and dungeon.discovery_source == "hero_entered_hex", "Entering the exact dungeon hex must discover it immediately.")
 	assert(is_equal_approx(simulation.god_state.energy, energy_before), "Physical discovery must not spend Divine Energy.")
 
+func test_nearby_discovery_chances_and_repeat_checks() -> void:
+	var simulation = SimulationScript.new(7004, null)
+	var dungeon = find_dungeon(simulation, "abandoned_iron_mines")
+	assert(dungeon != null and not dungeon.discovered, "Nearby-discovery test requires one unknown dungeon.")
+	for other_dungeon in simulation.dungeon_system.get_all_dungeons():
+		if other_dungeon != dungeon and not other_dungeon.discovered:
+			other_dungeon.discover("test_setup")
+
+	assert(is_equal_approx(simulation.dungeon_system.get_nearby_discovery_chance(1, false), 0.40), "Normal radius-1 dungeon discovery chance must be 40 percent.")
+	assert(is_equal_approx(simulation.dungeon_system.get_nearby_discovery_chance(2, false), 0.10), "Normal radius-2 dungeon discovery chance must be 10 percent.")
+	assert(is_equal_approx(simulation.dungeon_system.get_nearby_discovery_chance(1, true), 0.50), "Curious radius-1 dungeon discovery chance must be 50 percent.")
+	assert(is_equal_approx(simulation.dungeon_system.get_nearby_discovery_chance(2, true), 0.15), "Curious radius-2 dungeon discovery chance must be 15 percent.")
+
+	var radius_one_cell: Vector2i = find_cell_at_distance(simulation, dungeon.target_hex, 1)
+	assert(radius_one_cell != Vector2i(-1, -1), "Nearby-discovery test requires a valid radius-1 cell.")
+	var first_attempt: Array = simulation.dungeon_system.discover_nearby(radius_one_cell, simulation.hex_map, ScriptedRng.new([0.90]), false)
+	assert(first_attempt.is_empty() and not dungeon.discovered, "A failed radius-1 roll must leave the dungeon unknown.")
+	var second_attempt: Array = simulation.dungeon_system.discover_nearby(radius_one_cell, simulation.hex_map, ScriptedRng.new([0.39]), false)
+	assert(second_attempt.has(dungeon) and dungeon.discovered, "Rechecking the same nearby cell must roll again and may discover the dungeon.")
+	assert(dungeon.discovery_source == "hero_nearby_radius_1", "Nearby discovery must record the radius that revealed the dungeon.")
+
+	var curious_simulation = SimulationScript.new(7005, null)
+	var curious_dungeon = find_dungeon(curious_simulation, "abandoned_iron_mines")
+	assert(curious_dungeon != null and not curious_dungeon.discovered, "Curious nearby-discovery test requires one unknown dungeon.")
+	for other_dungeon in curious_simulation.dungeon_system.get_all_dungeons():
+		if other_dungeon != curious_dungeon and not other_dungeon.discovered:
+			other_dungeon.discover("test_setup")
+	var radius_two_cell: Vector2i = find_cell_at_distance(curious_simulation, curious_dungeon.target_hex, 2)
+	assert(radius_two_cell != Vector2i(-1, -1), "Nearby-discovery test requires a valid radius-2 cell.")
+	var curious_attempt: Array = curious_simulation.dungeon_system.discover_nearby(radius_two_cell, curious_simulation.hex_map, ScriptedRng.new([0.149]), true)
+	assert(curious_attempt.has(curious_dungeon) and curious_dungeon.discovery_source == "hero_nearby_radius_2", "Curious must discover at radius 2 on a roll below 15 percent.")
+
 func test_map_visibility_boundary() -> void:
 	var simulation = SimulationScript.new(7003, null)
 	var dungeon = find_dungeon(simulation, "abandoned_iron_mines")
@@ -93,3 +136,9 @@ func find_dungeon(simulation, dungeon_id: String):
 		if dungeon != null and dungeon.definition != null and dungeon.definition.id == dungeon_id:
 			return dungeon
 	return null
+
+func find_cell_at_distance(simulation, center: Vector2i, wanted_distance: int) -> Vector2i:
+	for cell in simulation.hex_map.get_cells_within_radius(center, wanted_distance):
+		if simulation.hex_map.get_distance_steps(center, cell) == wanted_distance:
+			return cell
+	return Vector2i(-1, -1)

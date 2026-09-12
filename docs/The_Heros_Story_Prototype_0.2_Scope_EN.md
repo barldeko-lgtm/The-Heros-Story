@@ -237,7 +237,7 @@ The current provisional contribution of one attribute point is:
 | DEX | +10 Accuracy; +2 Dodge; +0.5 percentage points Critical Chance |
 | INT | +2 magical Damage; +20 Mana |
 | CON | +20 maximum Health; +0.5 Armor |
-| WIS | improves learned abilities through ability-specific scaling |
+| WIS | improves learned abilities through ability-specific scaling; improves ordinary quest post-fight recovery |
 
 **These coefficients are placeholder balancing values only. They were chosen as initial working numbers and are not approved final coefficients. They must be rebalanced against the full compressed level-1-to-30 progression, equipment scaling, enemy progression, and automated combat tests before Prototype 0.2 combat balance is considered final.**
 
@@ -251,6 +251,12 @@ Prototype 0.2 contains only the Warrior, so magical Damage and Mana are not requ
 
 WIS must have real meaning once Warrior abilities exist. Each ability owns its own Wisdom scaling rather than receiving one universal WIS bonus.
 
+For ordinary quest recovery between completed fights, WIS also has one separate non-combat pacing effect:
+
+> **`RecoveryPerTick = min(40%, 15% + WIS × 0.2 percentage points)`**
+
+This uses total current WIS, so the starting WIS 5 produces **16% MaxHP recovery per world tick**. This recovery applies only to the ordinary quest post-fight recovery state. It does not provide free healing between dungeon fights, does not add free recovery after temporary-event combat, and does not replace the separate city recovery rule after resurrection.
+
 Primary attributes belong to long-term hero development. Standard random equipment modifiers do **not** roll primary attributes; equipment primarily changes secondary combat stats.
 
 ---
@@ -262,6 +268,15 @@ Before STR and equipment modifiers are applied, the hero's base Critical Damage 
 > **150%**
 
 STR adds its Critical Damage bonus on top of this base value.
+
+### Base Health and Physical Damage
+
+Before CON, STR and equipment modifiers are applied, the Warrior's current Prototype 0.2 combat baseline is:
+
+- **300 MaxHP**;
+- **7 physical Damage**.
+
+With the symmetrical starting STR 5 and CON 5, this resolves to **400 MaxHP** and **17 physical Damage** before starting equipment or questionnaire bonuses.
 
 ### Starting Primary Attributes and Starting Questionnaire
 
@@ -562,16 +577,22 @@ For each incoming damage type, calculate the fraction of damage remaining after 
 
 `LightningTaken = 1 - min(LightningResistance, 75) / 100`
 
-The current reference incoming-damage mix is:
+The generic reference incoming-damage mix used by HeroPower and ItemPower is:
 
 - 70% physical;
 - 10% fire;
 - 10% cold;
 - 10% lightning.
 
-Therefore:
+Therefore, for that generic reference profile:
 
 `AverageDamageTaken = 0.70 × PhysicalTaken + 0.10 × FireTaken + 0.10 × ColdTaken + 0.10 × LightningTaken`
+
+Current Prototype 0.2 MobPower uses the same shared calculator with one additional contextual input: because the only implemented player class is the Warrior and its outgoing weapon/ability damage against mobs is Physical, a mob's defensive term is evaluated against **100% Physical incoming damage**:
+
+`MobDefensiveDamageTaken = PhysicalTaken`
+
+This does not create a separate MobPower formula. It supplies the current attacker's real ordinary damage type to the same defensive calculation so Armor is not artificially undervalued on mobs. If future classes or persistent non-Physical hero offense require another incoming profile, they must use the same contextual input rather than introducing another calculator.
 
 Effective survivability is:
 
@@ -587,9 +608,9 @@ The final current working formula is:
 
 `Power = sqrt(EffectiveHP × EffectiveDPS)`
 
-The exact same calculation must be used for hero and enemies. There must be one shared `PowerCalculator`; hero and enemy Power must not drift into separate formulas.
+The exact same calculation engine must be used for hero and enemies. There must be one shared `PowerCalculator`; hero and enemy Power must not drift into separate formulas. The calculator may receive different explicit combat-context inputs such as authored outgoing damage type or the current incoming damage type being defended against.
 
-The reference values — target Dodge `50`, attacker Accuracy `100`, and the `70/10/10/10` incoming-damage mix — are working tuning parameters for the universal Power estimate. They do not describe every actual opponent and may be rebalanced after automated combat testing, but they must remain centralized.
+The reference values — target Dodge `50`, attacker Accuracy `100`, and the generic `70/10/10/10` incoming-damage mix — are working tuning parameters and remain centralized. Current MobPower intentionally substitutes the Warrior's Physical incoming pressure for the generic defensive mix because that is the actual implemented player offense against mobs.
 
 Power is a universal estimate of general combat strength, not a guaranteed prediction of one specific matchup. Damage type, resistances, abilities, equipment requirements, and other matchup-specific mechanics can make two combatants with similar Power perform differently against one another.
 
@@ -1291,9 +1312,9 @@ The window compares the quest mob's shared `Power` with the hero's shared `Power
 
 | Hero risk profile | Minimum MobPower | Maximum MobPower |
 |---|---:|---:|
-| standard / neither Brave nor Cautious | **55% of HeroPower** | **95% of HeroPower** |
-| **Brave** | **60% of HeroPower** | **100% of HeroPower** |
-| **Cautious** | **50% of HeroPower** | **90% of HeroPower** |
+| standard / neither Brave nor Cautious | **52% of HeroPower** | **92% of HeroPower** |
+| **Brave** | **57% of HeroPower** | **97% of HeroPower** |
+| **Cautious** | **47% of HeroPower** | **87% of HeroPower** |
 
 Therefore personality affects quest eligibility **before** normal QuestScore ranking.
 
@@ -2043,6 +2064,16 @@ They may become known through:
 - divine Vision if that ability remains in the current 0.2 god kit.
 
 Discovery should use map knowledge rather than omniscient UI.
+
+The current implemented nearby-discovery tuning is checked on every hero movement step:
+
+- entering the dungeon's own hex discovers it with **100%** certainty;
+- at **radius 1**, a normal hero has **40%** discovery chance;
+- at **radius 2**, a normal hero has **10%** discovery chance;
+- an established **Curious** hero instead uses **50%** at radius 1 and **15%** at radius 2;
+- later movement through nearby hexes performs fresh checks rather than permanently exhausting that area after one failed roll.
+
+This discovery changes knowledge only and does not interrupt the hero's current activity. Tavern/city-information discovery remains an intended source but is not yet implemented in the current slice.
 
 ### 16.7. Current Starting Region Dungeon Content
 

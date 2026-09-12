@@ -63,6 +63,7 @@ const MID_CITY_SHOP_RNG_SEED_OFFSET: int = 100019
 const QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 200003
 const DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 300003
 const DUNGEON_VISION_RNG_SEED_OFFSET: int = 400003
+const DUNGEON_NEARBY_DISCOVERY_RNG_SEED_OFFSET: int = 450007
 const EVENT_PLACEMENT_RNG_SEED_OFFSET: int = 500003
 const EVENT_RESOLUTION_RNG_SEED_OFFSET: int = 600003
 const NARRATIVE_RNG_SEED_OFFSET: int = 700003
@@ -293,7 +294,7 @@ func get_current_opponent_power() -> float:
 	var damage_type: String = "physical"
 	if active_combat_mob_definition != null:
 		damage_type = active_combat_mob_definition.attack_damage_type
-	return power_calculator.calculate(opponent_stats, damage_type)
+	return power_calculator.calculate(opponent_stats, damage_type, "physical")
 
 func record_combat_result(mob_definition: Resource, hero_won: bool) -> String:
 	var mob_id: String = mob_definition.id
@@ -1274,7 +1275,16 @@ func use_divine_vision() -> bool:
 
 func on_hero_position_changed(cell: Vector2i) -> void:
 	if dungeon_system != null:
-		for discovered_dungeon in dungeon_system.discover_at_hex(cell):
+		var nearby_discovery_rng_seed: int = (
+			simulation_seed
+			+ DUNGEON_NEARBY_DISCOVERY_RNG_SEED_OFFSET
+			+ world_clock.world_tick * 7919
+			+ cell.x * 101
+			+ cell.y * 503
+		)
+		var nearby_discovery_rng: RandomNumberGenerator = SeededRngScript.new(nearby_discovery_rng_seed).get_rng()
+		var is_curious: bool = get_hero_traits().has(HeroTraitsScript.CURIOUS)
+		for discovered_dungeon in dungeon_system.discover_nearby(cell, hex_map, nearby_discovery_rng, is_curious):
 			record_dungeon_discovery(discovered_dungeon, "%s обнаружил" % hero_state.hero_name)
 	if not temporary_events_enabled or event_system == null or event_runner == null:
 		return

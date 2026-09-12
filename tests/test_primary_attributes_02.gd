@@ -19,8 +19,8 @@ func _init() -> void:
 	assert(hero_state.wisdom == 5, "Prototype 0.2 Warrior must start with 5 WIS.")
 
 	var starting_stats: RefCounted = stat_resolver.resolve(hero_state)
-	assert(is_equal_approx(starting_stats.max_hp, 200.0), "5 CON must add 100 MaxHP to the 100 base MaxHP.")
-	assert(is_equal_approx(starting_stats.attack, 15.0), "5 STR must add 10 physical Damage to the 5 base Damage.")
+	assert(is_equal_approx(starting_stats.max_hp, 400.0), "5 CON must add 100 MaxHP to the 300 base MaxHP.")
+	assert(is_equal_approx(starting_stats.attack, 17.0), "5 STR must add 10 physical Damage to the 7 base Damage.")
 	assert(is_equal_approx(starting_stats.accuracy, 50.0), "5 DEX must add 50 Accuracy.")
 	assert(is_equal_approx(starting_stats.dodge, 10.0), "5 DEX must add 10 Dodge.")
 	assert(is_equal_approx(starting_stats.armor, 2.5), "5 CON must add 2.5 Armor.")
@@ -40,8 +40,8 @@ func _init() -> void:
 	assert(hero_state.pending_primary_attribute_points == 4, "Level-up must bank four player-distributed primary-attribute points.")
 
 	var level_two_stats: RefCounted = stat_resolver.resolve(hero_state)
-	assert(is_equal_approx(level_two_stats.max_hp, 200.0), "Unspent player points must not change MaxHP.")
-	assert(is_equal_approx(level_two_stats.attack, 17.0), "Level 2 physical Damage must include only 6 STR before player allocation.")
+	assert(is_equal_approx(level_two_stats.max_hp, 400.0), "Unspent player points must not change MaxHP.")
+	assert(is_equal_approx(level_two_stats.attack, 19.0), "Level 2 physical Damage must include only 6 STR before player allocation.")
 	assert(is_equal_approx(level_two_stats.accuracy, 50.0), "Unspent DEX must not change Accuracy.")
 	assert(is_equal_approx(level_two_stats.dodge, 10.0), "Unspent DEX must not change Dodge.")
 	assert(is_equal_approx(level_two_stats.armor, 2.5), "Unspent CON must not change Armor.")

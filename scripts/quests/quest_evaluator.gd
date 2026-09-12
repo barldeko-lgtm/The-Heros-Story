@@ -3,12 +3,12 @@ extends RefCounted
 
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
-const STANDARD_MIN_POWER_RATIO: float = 0.55
-const STANDARD_MAX_POWER_RATIO: float = 0.95
-const BRAVE_MIN_POWER_RATIO: float = 0.60
-const BRAVE_MAX_POWER_RATIO: float = 1.00
-const CAUTIOUS_MIN_POWER_RATIO: float = 0.50
-const CAUTIOUS_MAX_POWER_RATIO: float = 0.90
+const STANDARD_MIN_POWER_RATIO: float = 0.52
+const STANDARD_MAX_POWER_RATIO: float = 0.92
+const BRAVE_MIN_POWER_RATIO: float = 0.57
+const BRAVE_MAX_POWER_RATIO: float = 0.97
+const CAUTIOUS_MIN_POWER_RATIO: float = 0.47
+const CAUTIOUS_MAX_POWER_RATIO: float = 0.87
 const FIGHT_TICKS_PER_MOB: float = 1.0
 const TURN_IN_TICKS: float = 1.0
 const SCORE_EPSILON: float = 0.000001

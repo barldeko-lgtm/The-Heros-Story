@@ -8,6 +8,7 @@ enum Category {
 
 const CombatStatsScript = preload("res://scripts/model/runtime/combat_stats.gd")
 const PowerCalculatorScript = preload("res://scripts/combat/power_calculator.gd")
+const DamageResolverScript = preload("res://scripts/combat/damage_resolver.gd")
 
 @export var id: String
 @export var display_name: String
@@ -47,4 +48,4 @@ func get_combat_stats() -> RefCounted:
 
 func get_power() -> float:
 	var power_calculator = PowerCalculatorScript.new()
-	return power_calculator.calculate(get_combat_stats(), attack_damage_type)
+	return power_calculator.calculate(get_combat_stats(), attack_damage_type, DamageResolverScript.DAMAGE_TYPE_PHYSICAL)

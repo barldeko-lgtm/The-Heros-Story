@@ -8,6 +8,11 @@ const DEFAULT_ORDINARY_DUNGEON_DIRECTORIES := [
 	"res://data/dungeons/starting_region",
 	"res://data/dungeons/mid_region",
 ]
+const NEARBY_DISCOVERY_RADIUS_ONE_CHANCE: float = 0.40
+const NEARBY_DISCOVERY_RADIUS_TWO_CHANCE: float = 0.10
+const CURIOUS_NEARBY_DISCOVERY_RADIUS_ONE_CHANCE: float = 0.50
+const CURIOUS_NEARBY_DISCOVERY_RADIUS_TWO_CHANCE: float = 0.15
+const MAX_NEARBY_DISCOVERY_RADIUS: int = 2
 
 var dungeon_definitions: Array[Resource] = []
 var dungeon_instances: Array = []
@@ -138,6 +143,38 @@ func discover_at_hex(cell: Vector2i, source: String = "hero_entered_hex") -> Arr
 		if instance.discover(source):
 			discovered_now.append(instance)
 	return discovered_now
+
+func discover_nearby(cell: Vector2i, current_hex_map, rng, is_curious: bool = false) -> Array:
+	var discovered_now: Array = []
+	if current_hex_map == null or rng == null:
+		return discovered_now
+
+	for instance in dungeon_instances:
+		if instance == null or instance.discovered or not instance.has_map_target():
+			continue
+		var distance: int = current_hex_map.get_distance_steps(cell, instance.target_hex)
+		if distance < 0 or distance > MAX_NEARBY_DISCOVERY_RADIUS:
+			continue
+		if distance == 0:
+			if instance.discover("hero_entered_hex"):
+				discovered_now.append(instance)
+			continue
+
+		var discovery_chance: float = get_nearby_discovery_chance(distance, is_curious)
+		if discovery_chance <= 0.0 or rng.randf() >= discovery_chance:
+			continue
+		var source := "hero_nearby_radius_%d" % distance
+		if instance.discover(source):
+			discovered_now.append(instance)
+	return discovered_now
+
+func get_nearby_discovery_chance(distance: int, is_curious: bool = false) -> float:
+	match distance:
+		1:
+			return CURIOUS_NEARBY_DISCOVERY_RADIUS_ONE_CHANCE if is_curious else NEARBY_DISCOVERY_RADIUS_ONE_CHANCE
+		2:
+			return CURIOUS_NEARBY_DISCOVERY_RADIUS_TWO_CHANCE if is_curious else NEARBY_DISCOVERY_RADIUS_TWO_CHANCE
+	return 0.0
 
 func reveal_random_unknown_in_region(region_id: String, rng: RandomNumberGenerator, source: String = "vision"):
 	if rng == null:

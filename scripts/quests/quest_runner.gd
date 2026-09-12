@@ -4,7 +4,9 @@ extends RefCounted
 const HeroRecoveryScript = preload("res://scripts/hero/hero_recovery.gd")
 
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
-const RECOVERY_PERCENT_OF_MAX_HP: float = 0.20
+const BASE_RECOVERY_PERCENT_OF_MAX_HP: float = 0.15
+const RECOVERY_PERCENT_PER_WISDOM: float = 0.002
+const MAX_RECOVERY_PERCENT_OF_MAX_HP: float = 0.40
 const RESPAWN_DURATION_TICKS: int = HeroRecoveryScript.RESPAWN_DURATION_TICKS
 const RESURRECTION_HP: float = HeroRecoveryScript.RESURRECTION_HP
 
@@ -42,10 +44,11 @@ func advance(hero_state, combat_stats: CombatStats = null, has_pending_quest_loo
 			if travel_ticks_remaining <= 0:
 				hero_state.loop_state = HeroState.DOING_QUEST
 				return QuestEventScript.new(QuestEventScript.HERO_ARRIVED_AT_QUEST, hero_state.hero_name, quest_definition)
-			return QuestEventScript.new(QuestEventScript.HERO_TRAVELLING_TO_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
+				return QuestEventScript.new(QuestEventScript.HERO_TRAVELLING_TO_QUEST, hero_state.hero_name, quest_definition, travel_ticks_remaining)
 		HeroState.RECOVERING_AFTER_FIGHT:
 			assert(combat_stats != null, "Quest recovery requires resolved hero CombatStats.")
-			hero_state.current_hp = minf(combat_stats.max_hp, hero_state.current_hp + combat_stats.max_hp * RECOVERY_PERCENT_OF_MAX_HP)
+			var recovery_percent: float = get_post_fight_recovery_percent(hero_state)
+			hero_state.current_hp = minf(combat_stats.max_hp, hero_state.current_hp + combat_stats.max_hp * recovery_percent)
 			if is_equal_approx(hero_state.current_hp, combat_stats.max_hp):
 				hero_state.current_hp = combat_stats.max_hp
 				if completed_mob_count >= quest_definition.mob_count:
@@ -83,6 +86,12 @@ func advance(hero_state, combat_stats: CombatStats = null, has_pending_quest_loo
 			HeroRecoveryScript.advance_city_recovery(hero_state, combat_stats)
 			return QuestEventScript.new(QuestEventScript.HERO_RECOVERING_IN_CITY, hero_state.hero_name, quest_definition, 0, 0, null, 0, 0, hero_state.current_hp, combat_stats.max_hp)
 	return null
+
+func get_post_fight_recovery_percent(hero_state) -> float:
+	if hero_state == null:
+		return BASE_RECOVERY_PERCENT_OF_MAX_HP
+	var wisdom: int = maxi(0, int(hero_state.wisdom))
+	return minf(MAX_RECOVERY_PERCENT_OF_MAX_HP, BASE_RECOVERY_PERCENT_OF_MAX_HP + float(wisdom) * RECOVERY_PERCENT_PER_WISDOM)
 
 func can_use_map_travel() -> bool:
 	return (

@@ -13,8 +13,8 @@ func _init() -> void:
 	var power_calculator: RefCounted = power_calculator_script.new()
 	var combat_stats: RefCounted = stat_resolver.resolve(hero_state)
 
-	assert(is_equal_approx(combat_stats.max_hp, 200.0), "Starting Warrior max HP must be 200.")
-	assert(is_equal_approx(combat_stats.attack, 15.0), "Starting Warrior physical Damage must be 15.")
+	assert(is_equal_approx(combat_stats.max_hp, 400.0), "Starting Warrior max HP must be 400.")
+	assert(is_equal_approx(combat_stats.attack, 17.0), "Starting Warrior physical Damage must be 17.")
 	assert(is_equal_approx(combat_stats.attack_speed, 1.10), "Starting Warrior attack speed must be 1.10.")
 	assert(is_equal_approx(combat_stats.accuracy, 50.0), "Starting Warrior Accuracy must be 50.")
 	assert(is_equal_approx(combat_stats.dodge, 10.0), "Starting Warrior Dodge must be 10.")
@@ -24,7 +24,7 @@ func _init() -> void:
 	assert(is_equal_approx(combat_stats.lightning_resistance, 10.0), "Starting Warrior Lightning Resistance must be 10%.")
 	assert(is_equal_approx(combat_stats.crit_chance, 0.125), "Starting Warrior crit chance must be 12.5%.")
 	assert(is_equal_approx(combat_stats.crit_damage, 1.55), "Starting Warrior crit damage must be 155%.")
-	assert(absf(power_calculator.calculate(combat_stats) - 46.754258) < 0.01, "Prototype 0.2 Power must reflect all resolved starting stats, including innate elemental Resistances.")
+	assert(absf(power_calculator.calculate(combat_stats) - 70.390654) < 0.01, "Prototype 0.2 Power must reflect all resolved starting stats, including innate elemental Resistances.")
 
 	print("PASS: StatResolver and PowerCalculator calculate starting Warrior stats.")
 	quit()

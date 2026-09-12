@@ -197,9 +197,9 @@ Shared combat formulas for hit chance, Armor/Resistance mitigation and Block beh
 
 ### `scripts/combat/power_calculator.gd`
 
-Single shared Power calculation for `CombatStats`, plus the current permanent Warrior skill/WIS HeroPower valuation layered through `calculate_hero(...)`.
+Single shared Power calculation for `CombatStats`, including an optional incoming-damage context for defensive valuation, plus the current permanent Warrior skill/WIS HeroPower valuation layered through `calculate_hero(...)`.
 
-Do not create a separate HeroPower or MobPower formula elsewhere. Hero, mob and virtual equipment comparisons ultimately rely on this shared calculator; MobPower/ItemPower use the base path, while HeroPower and virtual hero loadouts use the Hero-aware path.
+Do not create a separate HeroPower or MobPower formula elsewhere. Hero, mob and virtual equipment comparisons ultimately rely on this shared calculator; current MobPower evaluates defense against Physical Warrior offense, ItemPower keeps the generic mixed incoming reference, and HeroPower/virtual hero loadouts use the Hero-aware path.
 
 ## World map, placement and travel
 

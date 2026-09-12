@@ -91,7 +91,9 @@ The current generic primary-stat effects are centralized through `StatResolver`:
 - each DEX contributes +10 Accuracy, +2 Dodge, and +0.5 percentage points Critical Chance;
 - each CON contributes +20 MaxHP and +0.5 Armor;
 - INT currently has no generic Warrior combat conversion;
-- WIS currently scales Warrior abilities through their own formulas rather than a universal combat-stat bonus.
+- WIS currently scales Warrior abilities through their own formulas rather than a universal combat-stat bonus, and also improves ordinary quest post-fight recovery.
+
+The current Warrior combat baseline before primary attributes and equipment is **300 MaxHP** and **7 physical Damage**. With the symmetrical starting attributes at 5/5/5/5/5 and no equipment, this resolves to **400 MaxHP / 17 physical Damage** before the rest of the derived combat stats are applied.
 
 The Warrior also has an inherent **10% Fire / 10% Cold / 10% Lightning Resistance** baseline before equipment. Equipment Resistance adds on top of these base values and the normal 75% per-element combat cap still applies.
 
@@ -120,7 +122,7 @@ Normal new games use questionnaire-driven hidden biases without any established 
 
 Personality is already used by real gameplay:
 
-- ordinary quest Hard Filter risk windows are standard 55–95% MobPower/HeroPower, Brave 60–100%, and Cautious 50–90%;
+- ordinary quest Hard Filter risk windows are standard 52–92% MobPower/HeroPower, Brave 57–97%, and Cautious 47–87%;
 - current QuestScore also uses established Courage, Morality, and Greed influences;
 - Noble deals the existing +10% conditional damage to Monster-category enemies;
 - Devious deals the existing +10% conditional damage to Humanoid-category enemies;
@@ -149,6 +151,8 @@ Implemented combat features include:
 - temporary divine Physical Damage blessing.
 
 Current ordinary mobs mostly use physical attacks. Arden now contains eight ordinary elemental attackers: Fire Salamander, Storm Shaman, Ice Monitor Lizard, Battle Mage Mercenary, Orc Shaman, Fire Elemental, Storm Lizard, and Ice Elemental. Their real raw Attack is temporarily tuned 20% below the previously approved physical-profile value, while the shared Power estimate values elemental offense at ×1.20 inside its EffectiveDPS term. This Power weight does not increase actual combat damage. Fire/Cold/Lightning ignore Armor, retain normal Accuracy/Dodge/Crit/Block interaction, and are reduced by the matching direct-percentage Resistance up to the 75% cap.
+
+MobPower now evaluates a mob's defensive stats against the current Warrior's **physical outgoing damage** instead of using the generic 70/10/10/10 incoming reference mix for that side of the calculation. This keeps Armor valued according to how it actually protects current mobs from the Warrior while still using the same shared `PowerCalculator`. HeroPower and ItemPower retain the generic mixed incoming reference profile. The approved ordinary-mob Power curves themselves are unchanged: Dornwald remains 25→320 and Arden remains 300→900; authored mob HP/Attack were retuned downward where necessary so the corrected calculation still lands on the same target Power points. Elemental Arden mobs keep their existing temporary reduced raw Attack values; their retune was taken from HP instead.
 
 ### Rage
 
@@ -181,6 +185,8 @@ Current ordinary mobs mostly use physical attacks. Arden now contains eight ordi
 - scales with WIS separately through its own ability-specific formula using the current **0.30 WIS coefficient**.
 
 HeroPower now includes the approved permanent valuation for the implemented base Warrior abilities through the shared `PowerCalculator`: Power Strike contributes **+4.0%** when learned plus **+0.75% per additional Skill Level**, while Battle Guard contributes **+4.5%** when learned plus **+0.40% per additional Skill Level**. With both base abilities learned, WIS contributes the current provisional aggregate value of **+0.20% HeroPower per point above WIS 5**. These bonuses are additive before the resulting total multiplier is applied to the normal CombatStats-based Power. Quest eligibility, equipment virtual evaluation and displayed HeroPower therefore all observe the same permanent skill/WIS valuation. The WIS valuation remains intentionally provisional until Protector / Slayer specialization abilities are implemented and measured.
+
+Ordinary quest recovery after a won fight now restores **15% MaxHP per world tick + 0.2 percentage points per current WIS**, capped at **40% MaxHP per tick**. The starting WIS 5 therefore gives **16% MaxHP per tick**. This applies only to the ordinary quest `RECOVERING_AFTER_FIGHT` loop; dungeon between-fight healing remains potion-driven, event combat does not gain this free recovery, and city recovery after resurrection remains at its separate 20% MaxHP per tick rule.
 
 The approved working Skill Level cost curve starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Autonomous city training is live after the market-sale step and shares one optional-development budget with meaningful equipment after required dungeon preparation is protected. Established Curious buys an affordable unlocked Skill Level before optional equipment; established Conservative buys meaningful affordable equipment first; neutral uses the Warrior default of Skill Level first. The lower-priority category is still allowed on a later tick, and if the preferred category has no valid affordable purchase the same tick falls through to the other category without adding an empty delay. Every successful rank or equipment purchase still consumes its own shopping world tick. Protector/Slayer specialization abilities are not implemented yet.
 
@@ -390,7 +396,9 @@ Current dungeon flow includes:
 
 - deterministic real map placement and reservation;
 - hidden/known state;
-- discovery by physically reaching the dungeon hex or by Divine Vision;
+- discovery on every hero movement step: entering the dungeon hex is guaranteed, radius 1 rolls 40%, and radius 2 rolls 10%; an established Curious hero instead rolls 50% / 15% at radius 1 / 2;
+- nearby discovery is re-rolled on later movement steps rather than being limited to one attempt per surrounding hex;
+- Divine Vision can still reveal one random unknown dungeon in the current region;
 - dungeon discovery does not interrupt an activity already in progress;
 - post-quest market/shopping resolves before a known dungeon is considered;
 - real map travel to the dungeon;

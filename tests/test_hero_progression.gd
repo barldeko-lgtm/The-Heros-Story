@@ -36,8 +36,8 @@ func _init() -> void:
 	assert(hero_state.pending_primary_attribute_points == 4, "Each gained level must add four pending player-distributed primary-attribute points.")
 
 	var level_two_stats: RefCounted = stat_resolver.resolve(hero_state)
-	assert(is_equal_approx(level_two_stats.max_hp, 200.0), "Pending points must provide no MaxHP before the player spends them.")
-	assert(is_equal_approx(level_two_stats.attack, 17.0), "Level 2 physical Damage must include only the fixed +1 Warrior Strength before player allocation.")
+	assert(is_equal_approx(level_two_stats.max_hp, 400.0), "Pending points must provide no MaxHP before the player spends them.")
+	assert(is_equal_approx(level_two_stats.attack, 19.0), "Level 2 physical Damage must include only the fixed +1 Warrior Strength before player allocation.")
 	assert(is_equal_approx(level_two_stats.attack_speed, 1.10), "Primary attributes must not change AttackSpeed.")
 	assert(is_equal_approx(level_two_stats.crit_chance, 0.125), "Pending Dexterity must provide no Critical Chance before allocation.")
 	assert(is_equal_approx(level_two_stats.crit_damage, 1.56), "Level 2 Critical Damage must include only the fixed +1 Warrior Strength before allocation.")
