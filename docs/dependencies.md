@@ -385,7 +385,7 @@ hero reaches Level 13
 → the following tick enters VISITING_GUILD
 → physical arrival also switches the active QuestPool/placement origin and QuestRunner return center to Арден / Mid Region
 → physical arrival replaces the active ShopSystem with Арден's city-local shop definition and deterministic stock stream
-→ the next normal guild decision may select from Арден's local 4/4/4 board
+→ the next normal guild decision may select from Арден's local 3/3/3/3 board
 ```
 
 Contracts:
@@ -510,6 +510,10 @@ Specialization dungeons remain outside the ordinary-dungeon loader.
 It is not part of QuestScore and must not become a second quest evaluator.
 
 The failed-attempt runtime instance stores facts such as attempt-start Power and reached progress; the evaluator owns the rule that turns those facts into a retry requirement.
+
+### Dungeon trip selection boundary
+
+`DungeonTripSelection` evaluates supplied local candidates lazily and preserves their order. It delegates retry thresholds to DungeonEvaluator and loadout planning to PotionPreparationSystem. It returns candidate/plan or blocked facts, prioritizing the first retry-Power refusal over the first potion refusal only when no launch succeeds. Simulation executes preparation/launch and asks the same selection pass for the next candidate on launch failure. The pass owns no hero mutations, world time, RNG, logging or persistent state; no Simulation reference or snapshot-schema change is introduced. Its shared power-ready lookup also serves the existing economic-budget coordination.
 
 ### Potion readiness boundary
 

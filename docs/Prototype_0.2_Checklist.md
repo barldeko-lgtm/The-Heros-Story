@@ -61,7 +61,7 @@ Status:
 - 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
 - 🟡 City-local runtime/context switching now exists for Дорнвальд and Арден ordinary quests; the full per-city economy/dungeon/event context is still incomplete.
 - 🟡 Autonomous relocation from Starting City to Mid-Level City is live with the temporary Level-13 trigger and real map travel; richer long-term-goal logic is deferred.
-- 🟡 Арден is now a live local ordinary-quest context after arrival; its shop/economy, local events and Mid Region dungeons are still missing.
+- 🟡 Арден has local ordinary quests and its own equipment shop/economy after arrival; local events and Mid Region dungeons are still missing.
 
 ## 5. Ordinary quests and quest board
 
@@ -119,7 +119,8 @@ Status:
 - ✅ Belt is a real utility slot with rarity-based 1 / 2 / 3 / 4 potion capacity and Item-Level potion eligibility.
 - ✅ Starting City Level 5 / 10 healing potions, persistent inventory, full-Belt preparation and dungeon-only consumption are live.
 - ✅ Missing dungeon potions are bought in the current dedicated preparation tick; already-owned complete loadouts do not invent an extra purchase tick.
-- ⬜ Mid-Level City shop bands and later potion tiers.
+- ✅ Mid-Level City equipment shop bands at ilvl 15/20/25 are live with the currently supplied slots.
+- ✅ Arden adds Level 15/20/25 potions: 200/250/300 HP for 300/400/500 Gold, retaining Level 5/10 options.
 - ✅ Skill Level purchasing/training uses protected optional-spending Gold and adds no extra tick when no rank can be bought.
 - ✅ Curious ↔ Conservative spending priority: Curious/neutral prefer Skill Levels first, Conservative prefers meaningful equipment first, and both may fall through to the other category.
 
@@ -155,7 +156,7 @@ Status:
 - 🟡 Debug questionnaire is live on one screen; the following class screen shows Warrior plus three visibly locked future classes. Separate question pages and non-Warrior class implementations remain deferred.
 - ⬜ Finished player-facing Hero/Main/Diary presentation.
 - ⬜ Player-facing Explanatory Log UI.
-- ⬜ Menu Screen.
+- 🟡 Functional startup and running-game menus exist; final Menu Screen presentation remains incomplete.
 
 ## 13. First Warrior specialization
 
@@ -199,7 +200,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Replace the debug all-in-one questionnaire layout with separate question pages when needed and later implement the currently locked non-Warrior classes outside the present Warrior slice.
-3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival and Arden ordinary-quest foundation, especially its shop/economy content.
+3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival and Arden ordinary-quest foundation, especially local events and dungeons.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
 6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.

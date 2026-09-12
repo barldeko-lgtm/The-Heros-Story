@@ -247,7 +247,7 @@ Owns one active route toward an already chosen destination and advances the hero
 
 Supports suspension/resumption and event detours. It never chooses quests, dungeons, events or city relocation goals.
 
-Current Prototype 0.2 city relocation is chosen by `Simulation` at the Level-13 safe-city decision boundary and then executed by this same normal route system. Mid-Level City gameplay itself is still a later city-context task.
+Current Prototype 0.2 city relocation is chosen by `Simulation` at the Level-13 safe-city decision boundary and then executed by this same normal route system. Mid-Level City ordinary quests and its local equipment shop are live; local events and ordinary dungeons remain future work.
 
 ## Ordinary quests
 
@@ -352,6 +352,10 @@ It does not execute the expedition or combat.
 ### `scripts/dungeons/dungeon_evaluator.gd`
 
 Owns current dungeon readiness/retry Power evaluation from persistent attempt memory. It is separate from ordinary `QuestEvaluator` and QuestScore.
+
+### `scripts/dungeons/dungeon_trip_selection.gd`
+
+Owns a synchronous, lazy selection pass over supplied known local dungeon candidates: shared retry evaluation, potion-plan feasibility, original candidate order and Power-before-potion refusal explanation priority. Returns candidates/plans/facts without modifying gameplay. Receives explicit collaborators, never Simulation; exists only during a selection call and is not persisted. Simulation retains preparation, launch, state transitions and narration. A failed launch asks the same pass for the next candidate.
 
 ### `scripts/dungeons/dungeon_runner.gd`
 

@@ -11,7 +11,8 @@ func _init() -> void:
 	test_multiple_available_upgrades_take_separate_ticks()
 	test_dungeon_potion_budget_is_protected()
 	test_curiosity_axis_controls_purchase_order()
-	print("PASS: Skill training and equipment shopping follow Curious/Conservative priority, preserve neutral skill-first behaviour, and protect dungeon-potion Gold.")
+	test_conservative_requires_larger_equipment_upgrade()
+	print("PASS: Skill training and equipment shopping follow Curious/Conservative priority, Conservative uses a 25% equipment threshold, neutral keeps 20%, and dungeon-potion Gold stays protected.")
 	quit()
 
 func test_rank_availability_and_costs() -> void:
@@ -139,6 +140,14 @@ func test_curiosity_axis_controls_purchase_order() -> void:
 	conservative_fallback.hero_state.gold = 500
 	var fallback_result: Dictionary = conservative_fallback.advance_shop_purchase_tick(15)
 	assert(str(fallback_result.get("skill_id", "")) == HeroProgressionScript.POWER_STRIKE_SKILL_ID, "Conservative must fall back to an affordable Skill Level when the preferred equipment upgrade is not affordable.")
+
+func test_conservative_requires_larger_equipment_upgrade() -> void:
+	var evaluator = SimulationScript.new(9314).spending_evaluator
+	assert(is_equal_approx(evaluator.get_shop_itempower_threshold_multiplier([]), 1.20), "Neutral and non-Conservative heroes must keep the 20% shop ItemPower threshold.")
+	assert(is_equal_approx(evaluator.get_shop_itempower_threshold_multiplier([HeroTraitsScript.CONSERVATIVE]), 1.25), "Conservative must require a 25% shop ItemPower upgrade.")
+	assert(evaluator.passes_shop_itempower_threshold(100.0, 120.0, []), "A neutral hero must accept an item at exactly +20% ItemPower.")
+	assert(not evaluator.passes_shop_itempower_threshold(100.0, 124.99, [HeroTraitsScript.CONSERVATIVE]), "Conservative must reject an upgrade below +25% ItemPower.")
+	assert(evaluator.passes_shop_itempower_threshold(100.0, 125.0, [HeroTraitsScript.CONSERVATIVE]), "Conservative must accept an item at exactly +25% ItemPower.")
 
 func make_priority_test_simulation(seed_value: int, curiosity_trait: String):
 	var simulation = SimulationScript.new(seed_value)

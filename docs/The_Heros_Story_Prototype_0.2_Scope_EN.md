@@ -1342,6 +1342,13 @@ Kilometres are descriptive world distance. They must not be substituted directly
 
 Personality, reward, travel time, risk, current city context, and divine guidance may modify ordinary quest attractiveness only where explicitly defined by the quest-selection rules.
 
+For the established **Greedy ↔ Generous** axis, eligible quests compare their rolled Gold reward inside the current eligible set. The lowest eligible reward defines 0 and the highest defines the full personality modifier:
+
+- **Greedy:** `0 → +0.30 QuestScore` as Gold reward rises from the current minimum to maximum;
+- **Generous:** `0 → -0.30 QuestScore` over the same range, reducing the attraction of high personal material reward without making low-reward work automatically mandatory.
+
+If all eligible quests have the same Gold reward, neither side receives a reward-based modifier.
+
 The exact numerical strength of QuestScore personality modifiers remains a balance/tuning matter to be checked through simulation and developer-log output rather than treated as missing architecture.
 
 This quest-selection model must **not** automatically be reused for dungeons, events, relocation, shopping, or other activity types.
@@ -2830,6 +2837,8 @@ A hero with the established **Conservative** trait prefers:
 
 The Conservative hero prefers a clear, concrete equipment improvement before spending the same available development budget on training.
 
+In addition, an established Conservative hero requires a slightly larger shop replacement before spending Gold: the candidate must be at least **25% stronger by ItemPower** than the item being replaced. This stricter threshold expresses preference for proven equipment rather than frequent marginal replacement.
+
 #### Neutral Axis
 
 If neither Curious nor Conservative is currently established, the default Warrior economic preference is:
@@ -2855,6 +2864,12 @@ Conceptually:
 > **`CandidateItemPower >= CurrentItemPower × 1.20`**
 
 The `20%` threshold is an initial tuning value and may be changed after playtesting.
+
+Established **Conservative** is the current explicit exception:
+
+> **`CandidateItemPower >= CurrentItemPower × 1.25`**
+
+The Belt keeps its separate utility comparison and is not forced through this ordinary ItemPower replacement threshold.
 
 This comparison deliberately uses the strength of the **item being replaced**, not a percentage of the hero's total HeroPower.
 
@@ -3158,9 +3173,9 @@ The currently approved prices for the implemented Starting City potion tiers are
 | 5 | 100 Gold |
 | 10 | 200 Gold |
 
-Prices for the later compressed Level 15 / 20 / 25 potion tiers remain balance values to define when those tiers become active content.
+Approved Level 15 / 20 / 25 potion prices are 300 / 400 / 500 Gold respectively; healing is 200 / 250 / 300 HP.
 
-The current Starting City sells the Level 5 and Level 10 healing potions as fixed consumable availability separate from rotating equipment stock. Mid-Level City potion availability is deferred until that city economy is implemented.
+The current Starting City sells the Level 5 and Level 10 healing potions as fixed consumable availability separate from rotating equipment stock. Arden retains the Level 5/10 potions and additionally sells Level 15/20/25 potions as fixed consumables, independently of rotating equipment stock.
 
 They physically belong to the hero's inventory.
 

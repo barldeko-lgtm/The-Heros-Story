@@ -26,7 +26,7 @@ func _init() -> void:
 	assert(log_text.contains("Топ-3 из 3 подходящих:"), "Autonomous quest selection must show the top three eligible QuestScore candidates in the debug log.")
 	assert(log_text.contains("1. «valuable»") and log_text.contains("2. «middle»") and log_text.contains("3. «cheap»"), "Quest debug ranking must follow the actual QuestScore order.")
 	assert(log_text.contains("← выбран"), "The winning quest must be marked inside the top-three debug ranking.")
-	assert(log_text.contains("Расчёт выбранного: база") and log_text.contains("Смелость/Осторожность") and log_text.contains("Хитрость/Благородство") and log_text.contains("Жадность") and log_text.contains("Бог") and log_text.contains("итог"), "The winning quest log must expose every current QuestScore component.")
+	assert(log_text.contains("Расчёт выбранного: база") and log_text.contains("Смелость/Осторожность") and log_text.contains("Хитрость/Благородство") and log_text.contains("Жадность/Щедрость") and log_text.contains("Бог") and log_text.contains("итог"), "The winning quest log must expose every current QuestScore component.")
 
 	print("PASS: Simulation autonomously chooses a quest, logs the top three candidates and the winner's QuestScore breakdown, then QuestRunner executes it.")
 	quit()

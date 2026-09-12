@@ -824,7 +824,8 @@ func get_best_equipment_purchase() -> Dictionary:
 	return spending_evaluator.select_best_equipment_purchase(
 		hero_state,
 		get_equipment_purchase_listings_with_dungeon_prep_safety(),
-		get_equipment_purchase_gold_budget()
+		get_equipment_purchase_gold_budget(),
+		get_hero_traits()
 	)
 
 func purchase_equipment_candidate(completed_tick: int, best_purchase: Dictionary) -> Dictionary:
@@ -880,11 +881,9 @@ func get_power_ready_dungeon():
 	var current_region_id: String = get_current_region_id()
 	if current_region_id.is_empty():
 		return null
-	var current_hero_power: float = get_hero_power()
-	for candidate in dungeon_system.get_discovered_dungeons_in_region(current_region_id):
-		if bool(dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power).get("ready", false)):
-			return candidate
-	return null
+	return preload("res://scripts/dungeons/dungeon_trip_selection.gd").find_power_ready(
+		dungeon_system.get_discovered_dungeons_in_region(current_region_id), get_hero_power(), dungeon_evaluator
+	)
 
 func finish_shopping_phase(completed_tick: int) -> void:
 	if try_start_mid_city_relocation(completed_tick):
@@ -950,58 +949,38 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 	if candidates.is_empty():
 		return false
 	var current_hero_power: float = get_hero_power()
-	var first_blocked_readiness: Dictionary = {}
-	var first_blocked_dungeon = null
-	var first_potion_blocked_plan: Dictionary = {}
-	var first_potion_blocked_dungeon = null
-	for candidate in candidates:
-		var readiness: Dictionary = dungeon_evaluator.evaluate_retry_readiness(candidate, current_hero_power)
-		if bool(readiness.get("ready", false)):
-			var preparation_plan: Dictionary = potion_preparation_system.get_full_loadout_plan(hero_state, shop_system.get_healing_potion_definitions())
-			if not bool(preparation_plan.get("can_prepare", false)):
-				if first_potion_blocked_plan.is_empty():
-					first_potion_blocked_plan = preparation_plan
-					first_potion_blocked_dungeon = candidate
-				continue
-			if int(preparation_plan.get("purchase_cost", 0)) > 0:
-				pending_dungeon_preparation = candidate
-				hero_state.loop_state = HeroState.PREPARING_DUNGEON
-				debug_log.record_event(
-					completed_tick,
-					dungeon_narrator.describe_potion_purchase_started(
-						hero_state.hero_name,
-						candidate.definition.display_name,
-						int(preparation_plan.get("purchase_cost", 0))
-					)
-				)
-				return true
-			var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
-			if not begin_prepared_dungeon_trip(candidate, current_hero_power, preparation, completed_tick):
-				continue
+	var selection = preload("res://scripts/dungeons/dungeon_trip_selection.gd").new(
+		candidates, hero_state, current_hero_power, dungeon_evaluator,
+		potion_preparation_system, shop_system.get_healing_potion_definitions()
+	)
+	var decision: Dictionary = selection.select_next()
+	while not decision.is_empty():
+		var candidate = decision["dungeon"]
+		var preparation_plan: Dictionary = decision["plan"]
+		if int(preparation_plan.get("purchase_cost", 0)) > 0:
+			pending_dungeon_preparation = candidate
+			hero_state.loop_state = HeroState.PREPARING_DUNGEON
+			debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_purchase_started(
+				hero_state.hero_name, candidate.definition.display_name, int(preparation_plan.get("purchase_cost", 0))
+			))
 			return true
-		if first_blocked_readiness.is_empty() and str(readiness.get("reason", "")) == "retry_power_too_low":
-			first_blocked_readiness = readiness
-			first_blocked_dungeon = candidate
-	if first_blocked_dungeon != null:
-		debug_log.record_event(
-			completed_tick,
-			dungeon_narrator.describe_retry_postponed(
-				hero_state.hero_name,
-				first_blocked_dungeon.definition.display_name,
-				float(first_blocked_readiness.get("current_power", current_hero_power)),
-				float(first_blocked_readiness.get("required_power", 0.0))
-			)
-			)
-	elif first_potion_blocked_dungeon != null:
-		debug_log.record_event(
-			completed_tick,
-			dungeon_narrator.describe_potion_postponed(
-				hero_state.hero_name,
-				first_potion_blocked_dungeon.definition.display_name,
-				str(first_potion_blocked_plan.get("reason", "")),
-				int(first_potion_blocked_plan.get("capacity", 0))
-			)
-			)
+		var preparation: Dictionary = potion_preparation_system.prepare_full_loadout(hero_state, shop_system.get_healing_potion_definitions())
+		if begin_prepared_dungeon_trip(candidate, current_hero_power, preparation, completed_tick):
+			return true
+		decision = selection.select_next()
+	var blocked: Dictionary = selection.get_blocked_reason()
+	if blocked.get("kind", "") == "power":
+		var readiness: Dictionary = blocked["readiness"]
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_retry_postponed(
+			hero_state.hero_name, blocked["dungeon"].definition.display_name,
+			float(readiness.get("current_power", current_hero_power)), float(readiness.get("required_power", 0.0))
+		))
+	elif blocked.get("kind", "") == "potions":
+		var plan: Dictionary = blocked["plan"]
+		debug_log.record_event(completed_tick, dungeon_narrator.describe_potion_postponed(
+			hero_state.hero_name, blocked["dungeon"].definition.display_name,
+			str(plan.get("reason", "")), int(plan.get("capacity", 0))
+		))
 	return false
 
 func advance_dungeon_potion_purchase_tick(completed_tick: int) -> Dictionary:

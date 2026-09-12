@@ -6,6 +6,7 @@ const ItemPriceCalculatorScript = preload("res://scripts/economy/item_price_calc
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
 const SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER: float = 1.20
+const CONSERVATIVE_SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER: float = 1.25
 const POWER_EPSILON: float = 0.000001
 
 var equipment_evaluator = EquipmentEvaluatorScript.new()
@@ -14,7 +15,13 @@ var item_price_calculator = ItemPriceCalculatorScript.new()
 func prefers_equipment_before_skill_training(traits: Array[String]) -> bool:
 	return traits.has(HeroTraitsScript.CONSERVATIVE)
 
-func select_best_equipment_purchase(hero_state, listings: Array, available_gold_override: int = -1) -> Dictionary:
+func get_shop_itempower_threshold_multiplier(traits: Array[String]) -> float:
+	return CONSERVATIVE_SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER if traits.has(HeroTraitsScript.CONSERVATIVE) else SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER
+
+func passes_shop_itempower_threshold(current_item_power: float, candidate_item_power: float, traits: Array[String]) -> bool:
+	return candidate_item_power + POWER_EPSILON >= current_item_power * get_shop_itempower_threshold_multiplier(traits)
+
+func select_best_equipment_purchase(hero_state, listings: Array, available_gold_override: int = -1, traits: Array[String] = []) -> Dictionary:
 	var best_result: Dictionary = {}
 	if hero_state == null:
 		return best_result
@@ -40,7 +47,7 @@ func select_best_equipment_purchase(hero_state, listings: Array, available_gold_
 		var current_item_power: float = 0.0 if current_item == null else current_item.get_item_power()
 		var candidate_item_power: float = item_instance.get_item_power()
 		var is_belt: bool = item_instance.definition.equipment_slot == "belt"
-		if not is_belt and current_item != null and candidate_item_power + POWER_EPSILON < current_item_power * SHOP_ITEMPOWER_THRESHOLD_MULTIPLIER:
+		if not is_belt and current_item != null and not passes_shop_itempower_threshold(current_item_power, candidate_item_power, traits):
 			continue
 
 		var power_gain: float = float(equipment_evaluation.get("candidate_power", 0.0)) - float(equipment_evaluation.get("current_power", 0.0))

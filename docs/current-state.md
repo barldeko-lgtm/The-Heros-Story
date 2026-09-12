@@ -123,10 +123,10 @@ Normal new games use questionnaire-driven hidden biases without any established 
 Personality is already used by real gameplay:
 
 - ordinary quest Hard Filter risk windows are standard 52–92% MobPower/HeroPower, Brave 57–97%, and Cautious 47–87%;
-- current QuestScore also uses established Courage, Morality, and Greed influences;
+- current QuestScore also uses established Courage, Morality, and Greed/Generosity influences; Greedy adds up to +0.30 toward the highest Gold reward among eligible quests, while Generous mirrors this with up to -0.30 so material reward matters less;
 - Noble deals the existing +10% conditional damage to Monster-category enemies;
 - Devious deals the existing +10% conditional damage to Humanoid-category enemies;
-- established Curious makes the hero prefer affordable Skill Level training before meaningful equipment, while established Conservative reverses that order; a neutral Curiosity axis keeps the Warrior default of Skill Level first;
+- established Curious makes the hero prefer affordable Skill Level training before meaningful equipment, while established Conservative reverses that order and additionally requires shop replacement gear to be at least 25% stronger by ItemPower instead of the normal 20%; a neutral Curiosity axis keeps the Warrior default of Skill Level first;
 - temporary events can perform **Formative** decisions that move hidden axes without reading general personality;
 - temporary events can perform **Expressive** decisions that read established personality without reinforcing that same general trait.
 
@@ -379,7 +379,7 @@ If an event kills the hero while travelling toward a dungeon, that trip is cance
 
 If an event kills the hero while returning from an already completed dungeon, the dungeon remains completed and its granted completion rewards remain permanent; the interrupted return runtime is cleared and no new dungeon failed-attempt memory or retry-Power penalty is created.
 
-The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete; the current Starting Region pool provides 13 of that target.
+The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete; the current Starting Region pool contains 15 events; Mid Region content and the final two-region distribution remain incomplete.
 
 ## Ordinary dungeons
 
@@ -412,6 +412,10 @@ Current dungeon flow includes:
 - successful completion reward routing through the normal item-generation/equipment-evaluation systems;
 - completed dungeon removal from the active map;
 - real return travel to Starting City after success.
+
+### Dungeon selection ownership
+
+Candidate selection and refusal policy now live in `DungeonTripSelection`, with lazy ordered evaluation and continuation after a failed trip launch. Simulation retains purchases, state changes, travel start and narration. Behaviour, potion-purchase tick timing and save schema are unchanged. Focused coverage: `tests/test_dungeon_trip_selection.gd`.
 
 ### Dungeon readiness and retries
 
@@ -452,7 +456,7 @@ The current build has three live core visual/progression families:
 
 Rustchain Initiate now has supplied 441×800 paper-doll overlays for all seven core slots, including Main Hand sword and Off Hand shield. Above the base hero portrait, the inventory paper doll draws layers from back to front as Helmet → Pants → Boots → Chest → Weapon → Gloves → Shield; all quality variants of the same base item share that item's visual layer.
 
-Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. Jewelry starts at ilvl 5 rather than ilvl 1. Current jewelry base Resistance tuning is 10 / 12 / 15 / 18 / 22 / 26% for ilvl 5 / 10 / 15 / 20 / 25 / 30, with future balancing targets of 30% at ilvl 35 and 35% at ilvl 40. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; later 15 / 20 / 25 / 30 content is not yet built out.
+Jewelry/Belt content exists for compressed ilvl 5 and ilvl 10. Jewelry starts at ilvl 5 rather than ilvl 1. Current jewelry base Resistance tuning is 10 / 12 / 15 / 18 / 22 / 26% for ilvl 5 / 10 / 15 / 20 / 25 / 30, with future balancing targets of 30% at ilvl 35 and 35% at ilvl 40. The current first three equipment progression control points are therefore live at ilvl 1 / 5 / 10; Arden ilvl 15 / 20 / 25 content is partially authored as described below; ilvl 30 content remains missing.
 
 Every new hero also begins with three fixed Common ilvl 1 starting-clothes items:
 
@@ -528,7 +532,7 @@ Current shop behaviour:
 - one successful rank or equipment purchase consumes one full shopping world tick; another purchase must wait for the next tick;
 - Gold required for a feasible Power-ready dungeon potion loadout is protected from both Skill Level training and optional equipment spending;
 - at most one equipment item may be bought per shopping world tick;
-- ordinary equipment must meet the current meaningful-upgrade threshold and still improve the real virtual-equip build;
+- ordinary equipment must meet the current meaningful-upgrade threshold and still improve the real virtual-equip build: normally +20% ItemPower versus the replaced item, or +25% for an established Conservative hero;
 - replaced equipped gear is sold immediately during a shop purchase rather than routed back through Inventory;
 - Gold required for a Power-ready dungeon's mandatory potion loadout is protected from optional equipment spending.
 
@@ -542,7 +546,9 @@ The Belt is a real equipment slot with:
 
 ### Healing potions
 
-Both current city shops expose the same two live potion tiers:
+Дорнвальд exposes Level 5/10 potions. Арден retains these and adds Level 15 (200 HP / 300 Gold), Level 20 (250 HP / 400 Gold), and Level 25 (300 HP / 500 Gold), using supplied 300×300 icons. Potion resources/icons are named by their actual levels 5/10/15/20/25. Belt utility recognizes all five tiers; legal use still requires PotionLevel <= BeltLevel.
+
+The unchanged Starting City tiers are:
 
 - compressed Level 5: 100 HP for 100 Gold;
 - compressed Level 10: 150 HP for 200 Gold.
@@ -559,7 +565,7 @@ Before a current dungeon attempt:
 
 Inside the dungeon, multiple prepared potions may be consumed inside one between-fight preparation window. Ordinary-room healing avoids overheal; pre-boss preparation may accept overheal to reach full HP.
 
-Later potion tiers and prepared-Belt-slot visualization are still missing.
+Potion tiers through Level 25 are live; prepared-Belt-slot visualization remains missing.
 
 ## God influence
 
@@ -722,14 +728,14 @@ For ordinary changes, narrow deterministic tests are preferred over running the 
 
 These are intentional or transitional and should not be silently "fixed" back to older behaviour:
 
-- both current city-local ordinary quest boards use the working 4/4/4 cap (up to 12 offers total per active local board); this remains a balance value to validate in playtesting;
+- the current city-local ordinary quest boards use 4/4/4 in Дорнвальд and 3/3/3/3 in Арден (up to 12 offers total per active local board); this remains a balance value to validate in playtesting;
 - the current ordinary quest completion cooldown is 50 world ticks;
 - direct legacy/headless Simulation construction without background answers retains 1–2 seeded established traits; normal new games use the questionnaire;
 - `Simulation.new()` retains a fixed-Goblin compatibility path for older tests, while the real developer UI passes `null` to enable autonomous quest selection;
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
 - ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
-- current normal attacks/content are effectively physical even though elemental mitigation exists; the new Arden mob roster is also intentionally physical-only for now, with selected enemies intended to receive Fire / Cold / Lightning attacks in a later targeted pass;
-- Arden's ordinary quest context is live, but its dedicated equipment shop / later item tiers, potions, local events and ordinary dungeons are not; after an Arden quest the current interim city routine allows normal sale and unlocked Skill Level training but deliberately does not buy from Дорнвальд's equipment stock;
+- the Warrior attacks physically; eight Arden ordinary mobs use Fire / Cold / Lightning attacks with the temporary raw-Attack reduction and shared Power evaluation weight described above;
+- Arden's ordinary quests and dedicated ilvl 15/20/25 equipment shop/drop sources are live; local events and ordinary dungeons remain missing. Its city routine uses local shop stock, normal sale and unlocked Skill Level training;
 - unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
 - the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
 
@@ -739,11 +745,11 @@ The most important incomplete areas are:
 
 - separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
 - Mid-Level City as a complete economy/dungeon/event gameplay context beyond its now-live ordinary quest loop;
-- Arden equipment-shop / ilvl 15/20/25 item and potion progression;
+- remaining Arden equipment-slot/overlay breadth;
 - the remaining temporary-event population toward the 15–20 target;
 - two Mid Region ordinary dungeons;
 - first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;
-- later equipment/potion progression content beyond the currently live Starting City tiers;
+- remaining later equipment content; potion tiers through Level 25 are live;
 - two-handed / complete legal hand-configuration content breadth;
 - full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;
 - player-facing ordinary quest-guidance selection UI;

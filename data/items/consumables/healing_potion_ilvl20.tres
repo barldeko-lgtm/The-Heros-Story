@@ -5,9 +5,9 @@
 
 [resource]
 script = ExtResource("1_potion")
-id = "healing_potion_ilvl10"
-display_name = "Лечебное зелье II"
-potion_level = 10
-healing_amount = 150.0
-shop_price = 200
+id = "healing_potion_ilvl20"
+display_name = "Лечебное зелье IV"
+potion_level = 20
+healing_amount = 250.0
+shop_price = 400
 icon_texture = ExtResource("2_icon")

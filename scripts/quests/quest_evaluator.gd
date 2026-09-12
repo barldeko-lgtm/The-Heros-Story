@@ -92,8 +92,12 @@ func select_quest(available_quests: Array, hero_power: float, hero_traits: Array
 			morality_modifier = HeroTraitsScript.MORALITY_QUEST_MODIFIER
 
 		var greed_modifier: float = 0.0
-		if hero_traits.has(HeroTraitsScript.GREEDY) and maximum_reward != minimum_reward:
-			greed_modifier = HeroTraitsScript.GREED_MAX_MODIFIER * float(quest_definition.gold_reward - minimum_reward) / float(maximum_reward - minimum_reward)
+		if maximum_reward != minimum_reward:
+			var reward_normalized: float = float(quest_definition.gold_reward - minimum_reward) / float(maximum_reward - minimum_reward)
+			if hero_traits.has(HeroTraitsScript.GREEDY):
+				greed_modifier = HeroTraitsScript.GREED_MAX_MODIFIER * reward_normalized
+			elif hero_traits.has(HeroTraitsScript.GENEROUS):
+				greed_modifier = -HeroTraitsScript.GENEROSITY_MAX_MODIFIER * reward_normalized
 
 		var divine_modifier: float = 0.0
 		if not guided_quest_id.is_empty() and quest_definition.id == guided_quest_id:

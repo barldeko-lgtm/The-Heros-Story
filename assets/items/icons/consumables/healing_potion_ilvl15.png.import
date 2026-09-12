@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dldxogwb45brc"
-path="res://.godot/imported/healing_potion_ilvl20.png-1477ecc50aa1b1c393472f81b1ac1f49.ctex"
+uid="uid://cnr2x8tichlth"
+path="res://.godot/imported/healing_potion_ilvl15.png-6602e7f50a2d8f11b71180cc31ab228b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/items/icons/consumables/healing_potion_ilvl20.png"
-dest_files=["res://.godot/imported/healing_potion_ilvl20.png-1477ecc50aa1b1c393472f81b1ac1f49.ctex"]
+source_file="res://assets/items/icons/consumables/healing_potion_ilvl15.png"
+dest_files=["res://.godot/imported/healing_potion_ilvl15.png-6602e7f50a2d8f11b71180cc31ab228b.ctex"]
 
 [params]
 

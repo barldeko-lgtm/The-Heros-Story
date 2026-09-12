@@ -4,8 +4,8 @@
 [ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironwake_sentinel_ilvl1.tres" id="2_ilvl1_band"]
 [ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironward_vanguard_ilvl10.tres" id="3_ilvl10_band"]
 [ext_resource type="Resource" path="res://data/shops/bands/starting_city_ironward_vanguard_ilvl20.tres" id="4_ilvl20_band"]
-[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl10.tres" id="5_potion10"]
-[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl20.tres" id="6_potion20"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl5.tres" id="5_potion10"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl10.tres" id="6_potion20"]
 
 [resource]
 script = ExtResource("1_shop")

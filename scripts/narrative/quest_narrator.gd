@@ -65,7 +65,7 @@ func describe_quest_selection(event, selection_result: Dictionary) -> String:
 
 	if not selected_evaluation.is_empty():
 		lines.append(
-			"Расчёт выбранного: база %.2f | Смелость/Осторожность %s | Хитрость/Благородство %s | Жадность %s | Бог %s | итог %.2f." % [
+				"Расчёт выбранного: база %.2f | Смелость/Осторожность %s | Хитрость/Благородство %s | Жадность/Щедрость %s | Бог %s | итог %.2f." % [
 				float(selected_evaluation.get("base_attractiveness", 0.0)),
 				format_signed_modifier(float(selected_evaluation.get("courage_modifier", 0.0))),
 				format_signed_modifier(float(selected_evaluation.get("morality_modifier", 0.0))),

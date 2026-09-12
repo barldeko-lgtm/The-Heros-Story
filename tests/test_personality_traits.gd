@@ -44,6 +44,13 @@ func _init() -> void:
 	assert(is_equal_approx(by_id["weak"]["greed_modifier"], 0.0), "Greedy must not gain a modifier for the lowest reward.")
 	assert(is_equal_approx(by_id["strong"]["greed_modifier"], 0.30), "Greedy must gain 0.30 for the highest reward.")
 
+	var generous_result: Dictionary = evaluator.select_quest(quests, 100.0, [HeroTraitsScript.GENEROUS])
+	var generous_by_id := {}
+	for evaluation in generous_result["evaluations"]:
+		generous_by_id[evaluation["quest"].id] = evaluation
+	assert(is_equal_approx(generous_by_id["weak"]["greed_modifier"], 0.0), "Generous must not penalize the lowest-reward eligible quest.")
+	assert(is_equal_approx(generous_by_id["strong"]["greed_modifier"], -0.30), "Generous must reduce the highest-reward eligible quest by 0.30 QuestScore.")
+
 	var cautious_result: Dictionary = evaluator.select_quest(quests, 100.0, [HeroTraitsScript.CAUTIOUS])
 	var cautious_by_id := {}
 	for evaluation in cautious_result["evaluations"]:
@@ -63,7 +70,7 @@ func _init() -> void:
 	assert(is_equal_approx(cautious_filter["hard_filter_minimum"], 47.0) and is_equal_approx(cautious_filter["hard_filter_limit"], 87.0), "Cautious must use the Scope's 47%-87% Power window.")
 	assert(cautious_filter["eligible_count"] == 1 and cautious_filter["selected_quest"].id == "cautious_edge", "Cautious must retain weaker work longer and reject Power 92 at HeroPower 100.")
 
-	print("PASS: Starting traits, QuestScore personality modifiers, and Brave/Cautious Hard Filter windows follow the approved formulas.")
+	print("PASS: Starting traits, QuestScore personality modifiers including Greedy/Generous, and Brave/Cautious Hard Filter windows follow the approved formulas.")
 	quit()
 
 func assert_starting_axes_match_traits(simulation, traits: Array[String]) -> void:

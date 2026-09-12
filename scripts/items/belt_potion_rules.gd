@@ -2,8 +2,11 @@ class_name BeltPotionRules
 extends RefCounted
 
 const DefaultPotionDefinitions := [
+	preload("res://data/items/consumables/healing_potion_ilvl5.tres"),
 	preload("res://data/items/consumables/healing_potion_ilvl10.tres"),
+	preload("res://data/items/consumables/healing_potion_ilvl15.tres"),
 	preload("res://data/items/consumables/healing_potion_ilvl20.tres"),
+	preload("res://data/items/consumables/healing_potion_ilvl25.tres"),
 ]
 
 func get_capacity(belt_item) -> int:

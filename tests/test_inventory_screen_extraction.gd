@@ -72,17 +72,17 @@ func run_test() -> void:
 
 	var potion_definitions: Array = main_ui.simulation.shop_system.get_healing_potion_definitions()
 	assert(potion_definitions.size() == 2 and potion_definitions[0].icon_texture != null and potion_definitions[1].icon_texture != null, "Current healing potions must expose their supplied inventory sprites through data definitions.")
-	main_ui.simulation.hero_state.inventory.add_healing_potion(10, 2)
-	main_ui.simulation.hero_state.inventory.add_healing_potion(20, 1)
+	main_ui.simulation.hero_state.inventory.add_healing_potion(5, 2)
+	main_ui.simulation.hero_state.inventory.add_healing_potion(10, 1)
 	inventory_screen.refresh()
 	var potion_icon_1 := inventory_screen.find_child("HealingPotionInventoryIcon01", true, false) as TextureRect
 	var potion_icon_2 := inventory_screen.find_child("HealingPotionInventoryIcon02", true, false) as TextureRect
 	var potion_icon_3 := inventory_screen.find_child("HealingPotionInventoryIcon03", true, false) as TextureRect
 	var potion_icon_4 := inventory_screen.find_child("HealingPotionInventoryIcon04", true, false) as TextureRect
 	var potion_slot_2 := inventory_screen.find_child("PotionInventorySlot02", true, false) as PanelContainer
-	assert(potion_icon_1 != null and potion_icon_1.visible and potion_icon_1.texture == potion_definitions[0].icon_texture, "The first owned Level 10 potion must occupy its own visible slot.")
-	assert(potion_icon_2 != null and potion_icon_2.visible and potion_icon_2.texture == potion_definitions[0].icon_texture, "The second owned Level 10 potion must occupy a second visible slot instead of stacking.")
-	assert(potion_icon_3 != null and potion_icon_3.visible and potion_icon_3.texture == potion_definitions[1].icon_texture, "The owned Level 20 potion must occupy its own visible slot.")
+	assert(potion_icon_1 != null and potion_icon_1.visible and potion_icon_1.texture == potion_definitions[0].icon_texture, "The first owned Level 5 potion must occupy its own visible slot.")
+	assert(potion_icon_2 != null and potion_icon_2.visible and potion_icon_2.texture == potion_definitions[0].icon_texture, "The second owned Level 5 potion must occupy a second visible slot instead of stacking.")
+	assert(potion_icon_3 != null and potion_icon_3.visible and potion_icon_3.texture == potion_definitions[1].icon_texture, "The owned Level 10 potion must occupy its own visible slot.")
 	assert(potion_icon_4 != null and not potion_icon_4.visible, "Unused potion slots must remain empty placeholders.")
 	assert(inventory_screen.find_child("HealingPotionCount10", true, false) == null, "Potion UI must not render stack-count labels after switching to one bottle per slot.")
 	potion_slot_2.mouse_entered.emit()

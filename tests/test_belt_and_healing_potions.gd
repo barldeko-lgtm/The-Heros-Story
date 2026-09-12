@@ -28,8 +28,8 @@ func test_potion_data_and_belt_comparison() -> void:
 	assert(potion_definitions.size() == 2, "Starting City must expose exactly the currently approved ilvl 5 and ilvl 10 healing potions.")
 	assert(potion_definitions[0].potion_level == 5 and is_equal_approx(potion_definitions[0].healing_amount, 100.0) and potion_definitions[0].shop_price == 100, "ilvl 5 potion must heal 100 HP and cost 100 Gold.")
 	assert(potion_definitions[1].potion_level == 10 and is_equal_approx(potion_definitions[1].healing_amount, 150.0) and potion_definitions[1].shop_price == 200, "ilvl 10 potion must heal 150 HP and cost 200 Gold.")
-	assert(potion_definitions[0].icon_texture != null and potion_definitions[0].icon_texture.get_size() == Vector2(550.0, 550.0), "ilvl 5 potion must use the supplied 550x550 inventory sprite.")
-	assert(potion_definitions[1].icon_texture != null and potion_definitions[1].icon_texture.get_size() == Vector2(550.0, 550.0), "ilvl 10 potion must use the supplied 550x550 inventory sprite.")
+	assert(potion_definitions[0].icon_texture != null and potion_definitions[0].icon_texture.get_size() == Vector2(300.0, 300.0), "ilvl 5 potion must use the supplied 300x300 inventory sprite.")
+	assert(potion_definitions[1].icon_texture != null and potion_definitions[1].icon_texture.get_size() == Vector2(300.0, 300.0), "ilvl 10 potion must use the supplied 300x300 inventory sprite.")
 
 	var common_definition = load("%s/ironward_belt.tres" % BELT_DIR)
 	var uncommon_definition = load("%s/ironward_belt_uncommon.tres" % BELT_DIR)

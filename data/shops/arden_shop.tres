@@ -1,11 +1,15 @@
-[gd_resource type="Resource" script_class="ShopDefinition" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="ShopDefinition" load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/shop_definition.gd" id="1_shop"]
 [ext_resource type="Resource" path="res://data/shops/bands/arden_ilvl15.tres" id="2_ilvl15"]
 [ext_resource type="Resource" path="res://data/shops/bands/arden_ilvl20.tres" id="3_ilvl20"]
 [ext_resource type="Resource" path="res://data/shops/bands/arden_ilvl25.tres" id="4_ilvl25"]
-[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl10.tres" id="5_potion10"]
-[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl20.tres" id="6_potion20"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl5.tres" id="5_potion10"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl10.tres" id="6_potion20"]
+
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl15.tres" id="potion15"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl20.tres" id="potion20"]
+[ext_resource type="Resource" path="res://data/items/consumables/healing_potion_ilvl25.tres" id="potion25"]
 
 [resource]
 script = ExtResource("1_shop")
@@ -13,4 +17,4 @@ id = "arden_shop"
 city_id = "mid_city"
 refresh_interval_ticks = 200
 stock_bands = Array[Resource]([ExtResource("2_ilvl15"), ExtResource("3_ilvl20"), ExtResource("4_ilvl25")])
-healing_potion_definitions = Array[Resource]([ExtResource("5_potion10"), ExtResource("6_potion20")])
+healing_potion_definitions = Array[Resource]([ExtResource("5_potion10"), ExtResource("6_potion20"), ExtResource("potion15"), ExtResource("potion20"), ExtResource("potion25")])

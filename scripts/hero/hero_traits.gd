@@ -17,6 +17,7 @@ const STARTING_TRAIT_MAX: int = 2
 const COURAGE_EXTREME_MODIFIER: float = 0.30
 const MORALITY_QUEST_MODIFIER: float = 0.20
 const GREED_MAX_MODIFIER: float = 0.30
+const GENEROSITY_MAX_MODIFIER: float = 0.30
 const CATEGORY_DAMAGE_MULTIPLIER: float = 1.10
 
 static func roll_starting_traits(random_number_generator: RandomNumberGenerator) -> Array[String]:

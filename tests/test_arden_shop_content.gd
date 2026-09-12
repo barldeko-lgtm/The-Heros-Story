@@ -43,7 +43,7 @@ func run_test() -> void:
 	assert(shop != null, "Arden shop resource must exist.")
 	assert(shop.id == "arden_shop" and shop.city_id == "mid_city", "Arden shop must belong to Mid City.")
 	assert(shop.refresh_interval_ticks == 200, "Arden shop must preserve the Starting City 200-tick refresh interval.")
-	assert(shop.healing_potion_definitions.size() == 2, "Arden shop must preserve both Starting City potion definitions.")
+	assert(shop.healing_potion_definitions.size() == 5, "Arden shop must preserve both Starting City potion definitions.")
 	assert(shop.healing_potion_definitions[0].potion_level == 5 and shop.healing_potion_definitions[0].shop_price == 100, "Arden must retain the Level 5 / 100 Gold potion.")
 	assert(shop.healing_potion_definitions[1].potion_level == 10 and shop.healing_potion_definitions[1].shop_price == 200, "Arden must retain the Level 10 / 200 Gold potion.")
 	assert(shop.stock_bands.size() == 3, "Arden shop must expose exactly ilvl 15, 20, and 25 bands.")
