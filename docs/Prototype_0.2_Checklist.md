@@ -37,8 +37,8 @@ Status:
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - ✅ Fire/Cold/Lightning ordinary attacks are live in Arden; elemental hits keep Accuracy/Dodge/Crit/Block, ignore Armor, use direct-percentage matching Resistance (75% cap), and receive the current ×1.20 elemental-offense weight inside shared Power. The Warrior now also has an innate 10% Fire / Cold / Lightning Resistance baseline before equipment.
 - ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick with the approved price curve.
-- ⬜ Protector ability: Shield Bash.
-- ⬜ Slayer ability: Crippling Blows.
+- ✅ Protector Shield Bash SL1 is live at Level 25; later ranks/HeroPower valuation remain pending.
+- ✅ Slayer Crippling Blows SL1 is live at Level 25; later ranks/HeroPower valuation remain pending.
 
 ## 3. Personality and autonomous behaviour
 
@@ -59,9 +59,9 @@ Status:
 - ✅ Map Screen shows terrain, both city clusters, road, hero, current quest targets, dungeon markers, temporary-event footprints, zoom and panning.
 - ✅ Travel interruption/resumption works for ordinary quest travel plus outbound and completed-return ordinary-dungeon travel, including event-owned detours.
 - 🟡 Map Screen is functional, but current-route/destination presentation and final hidden-information presentation remain incomplete.
-- 🟡 City-local runtime/context switching now exists for Дорнвальд and Арден ordinary quests; the full per-city economy/dungeon/event context is still incomplete.
+- 🟡 City-local runtime/context switching now exists for Дорнвальд and Арден ordinary quests, economy and ordinary dungeons; Mid Region temporary-event content is still incomplete.
 - 🟡 Autonomous relocation from Starting City to Mid-Level City is live with the temporary Level-13 trigger and real map travel; richer long-term-goal logic is deferred.
-- 🟡 Арден has local ordinary quests and its own equipment shop/economy after arrival; local events and Mid Region dungeons are still missing.
+- 🟡 Арден has local ordinary quests, its own equipment shop/economy after arrival, and three Mid Region ordinary dungeons; local temporary events are still missing.
 
 ## 5. Ordinary quests and quest board
 
@@ -94,7 +94,7 @@ Status:
 - ✅ Failure memory and current progress-based retry Power gates work.
 - ✅ Dungeon completion uses the normal item pipeline and supports Rare/Epic rewards.
 - ✅ Divine Vision can reveal one existing unknown dungeon in the current region.
-- ⬜ Mid Region ordinary dungeons: **0 / 2**.
+- ✅ Mid Region ordinary dungeons: **3 / 3** — `Заброшенный пограничный форт`, `Пепельные пещеры`, `Крепость Железного Клыка`.
 
 ## 8. Items, equipment, loot and inventory
 
@@ -132,7 +132,7 @@ Status:
 - ✅ Instant Resurrection.
 - ✅ Divine Vision for one unknown dungeon in the current region.
 - 🟡 Ordinary quest guidance works in simulation, but its player-facing quest-selection UI is missing.
-- ⬜ First-specialization divine guidance.
+- ✅ First-specialization divine guidance: one 80-Energy `+0.15` influence during the active Level-20 window, currently exposed through the Hero-screen debug specialization panel.
 
 ## 11. Narrative, logs and Hero Diary
 
@@ -149,7 +149,7 @@ Status:
 ## 12. UI
 
 - 🟡 Current developer-oriented Main UI is functional but is not the finished Prototype 0.2 player-facing interface.
-- ✅ Hero development view includes live stats/personality and player primary-attribute allocation.
+- ✅ Hero development view includes live stats/personality, player primary-attribute allocation, and the always-visible first-specialization debug calculation with Level-20 influence controls.
 - 🟡 Inventory Screen is a strong functional first pass with paper doll, all 12 equipment slots, retained gear and potion display.
 - 🟡 Map Screen is functional but still needs final route/destination and hidden-information presentation.
 - 🟡 God panel and Log/Diary presentation are functional; ordinary quest-guidance UI is still missing.
@@ -160,17 +160,18 @@ Status:
 
 ## 13. First Warrior specialization
 
-- ⬜ Autonomous Protector / Slayer preference from player-shaped attributes plus independent Brave/Cautious influence.
-- ⬜ One-time divine specialization guidance and specialization decision window.
+- ✅ Protector / Slayer preference from live player-shaped attributes, excluding actually earned mandatory Warrior STR; the Level-20 Brave/Cautious state is frozen as a separate +0.05 influence.
+- ✅ Level-20 180-tick decision window, always-visible Level-1 debug preview, separate pending-choice `+`, one-time 80-Energy `+0.15` divine influence, deterministic timeout/tie resolution and immediate Protector/Slayer class-id switch are live.
+- ✅ First specialization combat skills SL1: Shield Bash / Crippling Blows unlock automatically at Level 25 with specialization-first Rage priority, WIS scaling and their current stun/Attack-Speed-control rules.
 - ⬜ Specialization Quest and dedicated Protector/Slayer specialization dungeon content.
 - ⬜ Specialization granting, immediate/profile progression rewards and later specialization-directed attribute growth.
-- ⬜ Protector/Slayer abilities and their later Skill Level progression.
+- ⬜ Later Shield Bash / Crippling Blows Skill Level progression, shop training and HeroPower valuation.
 
 ## 14. Save / load / persistence
 
 - ✅ Two independent rolling slots are live: Manual and Autosave; Continue selects the newest valid candidate and Load exposes both slots.
 - ✅ Autosave is live after new-game creation, approximately every 10 real minutes, on normal close, and after an increased completed-dungeon count.
-- 🟡 Major dungeon-completion autosave is live; specialization autosave remains pending because specialization itself is not implemented.
+- 🟡 Major dungeon-completion autosave is live; the later full-specialization milestone autosave remains pending because Specialization Quest completion/rewards are not implemented yet.
 - ✅ The current simulation snapshot preserves the required live graph including progression/personality, equipment/inventory, world/activity state, dungeon/event state, God state, Diary/Log history and deterministic RNG continuation.
 - 🟡 Save/Load/Return controls are live in the current running-game menu; final Menu Screen presentation is still incomplete.
 - 🚫 Offline simulation while the game is closed.
@@ -179,18 +180,18 @@ Status:
 
 | Content | Current | Prototype 0.2 target |
 |---|---:|---:|
-| Normal cities | 2 on map / 1 complete + Arden ordinary-quest context | 2 complete |
+| Normal cities | 2 on map / 1 complete + Arden quests/economy/dungeons context | 2 complete |
 | Ordinary quest templates | 48 (22 + 26) | 48 current approved target (22 + 26) |
 | Handcrafted temporary events | 15 | ~15–20 across both regions |
-| Ordinary dungeons | 2 | 4 |
-| First specialization paths | 0 | 2 |
+| Ordinary dungeons | 5 (2 Dornwald + 3 Arden) | 5 current approved target |
+| First specialization paths | 2 decision/runtime paths live | 2 |
 | Specialization dungeon variants | 0 | 2 |
 | Base Warrior abilities | 2 + purchasable Skill Levels 2–10 | 2 + purchasable ranks |
-| First-specialization abilities | 0 | 2 |
+| First-specialization abilities | 2 at SL1 | 2 + later ranks |
 | Personality axes | 4 live | 4 |
 | Visual armor families | 6 | at least 5–6 |
 | Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
-| Main playable progression | Starting City + Arden ordinary-quest slice live | compressed level ~1–30 |
+| Main playable progression | Starting City + Arden quests/economy/dungeons slice live | compressed level ~1–30 |
 
 The current ordinary quest-board tuning is up to 12 offers per city: 4/4/4 in Дорнвальд and 3/3/3/3 in Арден. These values are deliberately still treated as balance tuning and may be adjusted after transition testing.
 
@@ -200,9 +201,9 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Replace the debug all-in-one questionnaire layout with separate question pages when needed and later implement the currently locked non-Warrior classes outside the present Warrior slice.
-3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival and Arden ordinary-quest foundation, especially local events and dungeons.
+3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival, Arden ordinary quests, economy and dungeons, especially local temporary events and remaining equipment-content breadth.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
-5. Add the two Mid Region ordinary dungeons plus later equipment/potion progression content.
-6. Implement the first Protector / Slayer specialization flow, specialization dungeons and specialization abilities.
+5. Complete remaining later equipment-content breadth; Mid Region ordinary dungeons and potion progression through Level 25 are already live.
+6. Complete the already-live Protector / Slayer path/SL1 ability flow with specialization quests/dungeons, profile growth, later specialization-skill ranks and their HeroPower valuation.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
 8. Extend persistence only for still-missing future systems such as specialization, then run long-duration Prototype 0.2 validation through the intended compressed level range.

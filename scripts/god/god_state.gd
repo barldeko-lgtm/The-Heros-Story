@@ -18,6 +18,7 @@ const QUEST_GUIDANCE_COOLDOWN_TICKS: int = 360
 const QUEST_GUIDANCE_MODIFIER: float = 0.20
 const VISION_COST: float = 80.0
 const VISION_COOLDOWN_TICKS: int = 1500
+const SPECIALIZATION_GUIDANCE_COST: float = 80.0
 const RESURRECTION_COST_PER_REMAINING_TICK: float = 0.5
 
 var energy: float = STARTING_ENERGY
@@ -69,6 +70,9 @@ func try_activate_vision() -> bool:
 		return false
 	vision_cooldown_ticks = VISION_COOLDOWN_TICKS
 	return true
+
+func try_spend_specialization_guidance() -> bool:
+	return spend_energy(SPECIALIZATION_GUIDANCE_COST)
 
 func get_resurrection_cost(remaining_respawn_ticks: int) -> float:
 	return float(maxi(0, remaining_respawn_ticks)) * RESURRECTION_COST_PER_REMAINING_TICK

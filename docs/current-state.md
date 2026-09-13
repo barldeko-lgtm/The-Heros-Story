@@ -10,7 +10,7 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent, first specialization is not implemented, while two-slot save/load is now connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
+The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision slice is now live**, while its Specialization Quests, specialization dungeons, rewards and abilities remain unimplemented; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -18,17 +18,21 @@ Startup offers New Game and Continue (enabled when a readable save candidate exi
 
 The running game menu exposes Save, Load and Return to Game and pauses simulation. Save writes one manual slot with overwrite confirmation. Load offers independent Manual/Autosave slots with hero, level and timestamp, then asks before discarding current progress. Continue tries newest candidates first. Loading binds a new MainUI to a detached restored simulation; invalid snapshots leave the running game intact. No offline time is applied.
 
-Initial creation, ten real minutes, normal close and increased completed-dungeon count trigger autosaves. Specialization is not implemented, so its milestone is not connected yet. Normal-close write failure leaves the game open and paused with an error. Files have integrity checks, verified temporary writes and prior-copy backups; save timestamps increase across both slots. Tests use isolated project `.godot/` directories, never player slots. Focused tests: `test_save_store.gd`, `test_save_ui.gd`, `test_save_confirmations.gd`, `test_save_close_probe.gd`, `test_simulation_snapshot.gd`, `test_snapshot_validation.gd`, `test_snapshot_scenarios.gd`, `test_save_dungeon_milestone.gd`.
+Initial creation, ten real minutes, normal close and increased completed-dungeon count trigger autosaves. The later **full-specialization gained** milestone autosave is not connected yet because Specialization Quest completion/rewards are still absent; the now-live Protector/Slayer decision by itself is not treated as that final milestone. Normal-close write failure leaves the game open and paused with an error. Files have integrity checks, verified temporary writes and prior-copy backups; save timestamps increase across both slots. Tests use isolated project `.godot/` directories, never player slots. Focused tests: `test_save_store.gd`, `test_save_ui.gd`, `test_save_confirmations.gd`, `test_save_close_probe.gd`, `test_simulation_snapshot.gd`, `test_snapshot_validation.gd`, `test_snapshot_scenarios.gd`, `test_save_dungeon_milestone.gd`.
 
-Snapshot restoration rejects missing/unknown serialized properties, malformed containers/references/RNG and incompatible property types. Typed arrays are reconstructed explicitly, preserving Diary/Log entries and questionnaire answers rather than silently retaining empty defaults. Event instances receive a valid construction resource before saved state is hydrated. Regression scenarios compare the complete captured graph immediately after load and after identical dungeon combat, event completion and death-to-recovery continuation. A real completed-dungeon fixture verifies one restorable milestone autosave. This is targeted persistence coverage, not full long-run Prototype 0.2 validation.
+Snapshot restoration rejects missing/unknown serialized properties, malformed containers/references/RNG and incompatible property types. Typed arrays are reconstructed explicitly, preserving Diary/Log entries and questionnaire answers rather than silently retaining empty defaults. Snapshot schema **v3** adds first-specialization skill state plus the fight-local Shield Bash / Crippling Blows combat timers. Previous v1/v2 snapshots migrate explicitly: v1 first gains the specialization-decision defaults, then v2→v3 adds the new specialization-skill/combat fields; an already chosen Level-25+ Protector/Slayer in a v2 save receives the matching automatic SL1 during migration. Event instances receive a valid construction resource before saved state is hydrated. Regression scenarios compare the complete captured graph immediately after load and after identical dungeon combat, event completion and death-to-recovery continuation. A real completed-dungeon fixture verifies one restorable milestone autosave. This is targeted persistence coverage, not full long-run Prototype 0.2 validation.
 
 ## Main-screen surface polish
 
 The main gameplay screen uses a muted dark blue-gray background (#191e26), retaining opaque #232830 panel fills. Hero summary, God panel, opponent and combat-statistics cards have one-pixel #495462 borders and reduced shadows; the narrative outer border matches, with its old content inset preserved. Tick text is lightened for contrast. Positions, sizes, content, controls and gameplay remain unchanged. Secondary screens retain their previous light background and styling; startup and mini-window appearance are unchanged. Focused coverage: `tests/test_main_screen_surface_style.gd`.
 
+## Statistics screen
+
+The new СТАТИСТИКА header button occupies the free left area at (32, 20), leaving existing navigation in place. It opens an in-game secondary screen containing only the relocated combat-results card. The opponent card remains on Main. Existing aggregate/current-enemy counters and formatting are unchanged; the same simulation continues while Statistics is open. Back, close and other navigation use the existing screen-switching path. Focused coverage: `tests/test_statistics_screen.gd`.
+
 ## Compact opponent card
 
-The opponent panel is now 320×280 at (1014, 80), with a wrapping name, live numeric HP bar and the same five combat indicators. Outside combat only the no-combat caption remains. Combat statistics at (1014, 380), 320×220 show overall totals summed from the existing per-mob counters, followed by the selected enemy results. Both include fights, wins, losses and win percentage (zero-safe). Opponent HP reuses the hero resource-bar and numeric-label builders for identical borderless styling. No combat rules or statistics collection changed. Coverage: `tests/test_opponent_card.gd`.
+The opponent panel is now 320×280 at (1014, 80), with a wrapping name, live numeric HP bar and the same five combat indicators. Outside combat only the no-combat caption remains. Combat statistics now live on the separate Statistics screen at (32, 80), 320×220 and show overall totals summed from the existing per-mob counters, followed by the selected enemy results. Both include fights, wins, losses and win percentage (zero-safe). Opponent HP reuses the hero resource-bar and numeric-label builders for identical borderless styling. No combat rules or statistics collection changed. Coverage: `tests/test_opponent_card.gd`.
 
 ## Narrative reading area
 
@@ -132,6 +136,24 @@ Personality is already used by real gameplay:
 
 Exact hidden values are visible only in the current developer Hero screen; the intended player-facing design still treats them as hidden.
 
+## First Warrior specialization decision
+
+The first **Protector / Slayer selection slice** is live. The decision changes the hero's runtime class/path immediately, and the matching first specialization combat skill is now learned automatically at Level 25. Specialization Quest/dungeon content, specialization profile rewards/growth, specialization equipment rules, later specialization-skill ranks and specialization-skill HeroPower valuation are still absent.
+
+The developer Hero screen shows the specialization calculation from **Level 1** for balance inspection, but the controls remain inactive before Level 20. At Level 20:
+
+- a **180-world-tick** decision window starts;
+- a separate specialization `+` indicator appears beside the hero level and in mini-window mode while the decision remains active;
+- the currently established Courage-side trait is snapshotted once: **Brave gives +0.05 Slayer**, **Cautious gives +0.05 Protector**, neutral gives neither; later live trait changes do not alter this frozen input;
+- the stat profile remains live throughout the window: `SlayerRaw = PersonalSTR + DEX`, `ProtectorRaw = CON + WIS`, normalized into base shares;
+- `PersonalSTR` subtracts the Warrior STR actually gained automatically through level-ups. Because the hero begins at Level 1, Level 20 subtracts exactly **19** mandatory STR. Later automatic Warrior STR gained while the window is still open is likewise excluded;
+- pending player attribute points have no specialization weight until actually assigned; allocating them during the 180 ticks immediately changes the corresponding live stat weights;
+- there is **no score-lead early auto-resolution**.
+
+The player may use one specialization influence during the active window for **80 Divine Energy**, adding **+0.15** to Protector or Slayer. Using it ends the window immediately and compares the resulting current totals; the influenced side is not guaranteed to win. If the player does not intervene, the full 180 ticks must expire before the current totals are compared. Exact ties use an isolated deterministic seeded tie-break.
+
+When the result is fixed, `hero_class_id` changes immediately from `warrior` to `protector` / **Защитник** or `slayer` / **Истребитель** and the decision `+` disappears. This current class/path switch does not yet grant any specialization ability or profile-stat reward; those remain part of the later Specialization Quest/progression implementation.
+
 ## Combat and Warrior abilities
 
 Live combat is one hero versus one current enemy using resolved `CombatStats`.
@@ -184,11 +206,32 @@ MobPower now evaluates a mob's defensive stats against the current Warrior's **p
 - Skill Level scales base remaining-damage reduction evenly from 25% at Skill Level 1 to 45% at Skill Level 10;
 - scales with WIS separately through its own ability-specific formula using the current **0.30 WIS coefficient**.
 
-HeroPower now includes the approved permanent valuation for the implemented base Warrior abilities through the shared `PowerCalculator`: Power Strike contributes **+4.0%** when learned plus **+0.75% per additional Skill Level**, while Battle Guard contributes **+4.5%** when learned plus **+0.40% per additional Skill Level**. With both base abilities learned, WIS contributes the current provisional aggregate value of **+0.20% HeroPower per point above WIS 5**. These bonuses are additive before the resulting total multiplier is applied to the normal CombatStats-based Power. Quest eligibility, equipment virtual evaluation and displayed HeroPower therefore all observe the same permanent skill/WIS valuation. The WIS valuation remains intentionally provisional until Protector / Slayer specialization abilities are implemented and measured.
+### Protector — Shield Bash
+
+- learned automatically at hero **Level 25** when the chosen class/path is Protector; current runtime implements **Skill Level 1 only**;
+- requires an equipped shield, costs **25 Rage**, has a **60-second cooldown**, replaces one normal hero attack opportunity and always has priority over Power Strike when usable;
+- cannot miss, does no direct damage and does not interact with Crit/Block as a damage hit;
+- SL1 base stun is **3.0 seconds** plus the approved WIS term `2.0 × WisdomFactor`;
+- stun freezes the enemy's current attack timer: the enemy gains no attack progress during the stun and resumes from the same remaining progress afterward;
+- bosses/special enemies have no automatic stun immunity in the current rules.
+
+### Slayer — Crippling Blows
+
+- learned automatically at hero **Level 25** when the chosen class/path is Slayer; current runtime implements **Skill Level 1 only**;
+- costs **25 Rage**, has a **60-second cooldown**, replaces one normal hero attack opportunity and always has priority over Power Strike when usable;
+- currently has **no weapon requirement** and remains usable while the Slayer is wearing a shield; weapon-hand restrictions are deferred until that equipment model exists;
+- performs two independent weapon strikes at **×0.65** ordinary weapon-hit damage each; each strike resolves hit/miss, Crit and Block separately;
+- if at least one strike hits, enemy Attack Speed is reduced for **10 seconds**; SL1 starts at **15%** plus the approved `0.10 × WisdomFactor` term;
+- applying and removing the Attack Speed reduction preserves the percentage progress of the enemy's current attack rather than resetting or granting free progress;
+- bosses/special enemies have no automatic resistance to the current debuff.
+
+For both specialization skills, the specialization action is attempted first whenever it is learned, off cooldown, affordable in Rage and (for Shield Bash) its shield requirement is satisfied. While that specialization action is unavailable/on cooldown, the existing Power Strike logic remains the ordinary Rage-spending fallback. Specialization Skill Level purchases and their HeroPower valuation are intentionally not implemented in this slice.
+
+HeroPower now includes the approved permanent valuation for the implemented base Warrior abilities through the shared `PowerCalculator`: Power Strike contributes **+4.0%** when learned plus **+0.75% per additional Skill Level**, while Battle Guard contributes **+4.5%** when learned plus **+0.40% per additional Skill Level**. With both base abilities learned, WIS contributes the current provisional aggregate value of **+0.20% HeroPower per point above WIS 5**. These bonuses are additive before the resulting total multiplier is applied to the normal CombatStats-based Power. Quest eligibility, equipment virtual evaluation and displayed HeroPower therefore all observe the same permanent skill/WIS valuation. Shield Bash / Crippling Blows are deliberately **not yet valued in HeroPower**; their contribution will be tuned separately after live combat testing, and the existing provisional WIS valuation is unchanged for now.
 
 Ordinary quest recovery after a won fight now restores **15% MaxHP per world tick + 0.2 percentage points per current WIS**, capped at **40% MaxHP per tick**. The starting WIS 5 therefore gives **16% MaxHP per tick**. This applies only to the ordinary quest `RECOVERING_AFTER_FIGHT` loop; dungeon between-fight healing remains potion-driven, event combat does not gain this free recovery, and city recovery after resurrection remains at its separate 20% MaxHP per tick rule.
 
-The approved working Skill Level cost curve starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Autonomous city training is live after the market-sale step and shares one optional-development budget with meaningful equipment after required dungeon preparation is protected. Established Curious buys an affordable unlocked Skill Level before optional equipment; established Conservative buys meaningful affordable equipment first; neutral uses the Warrior default of Skill Level first. The lower-priority category is still allowed on a later tick, and if the preferred category has no valid affordable purchase the same tick falls through to the other category without adding an empty delay. Every successful rank or equipment purchase still consumes its own shopping world tick. Protector/Slayer specialization abilities are not implemented yet.
+The approved working Skill Level cost curve starts at 500 Gold for Skill Level 2 and increases by 30% per next rank, rounded to the nearest 50 Gold: 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold for Skill Levels 2–10. Autonomous city training is live after the market-sale step and shares one optional-development budget with meaningful equipment after required dungeon preparation is protected. Established Curious buys an affordable unlocked Skill Level before optional equipment; established Conservative buys meaningful affordable equipment first; neutral uses the Warrior default of Skill Level first. The lower-priority category is still allowed on a later tick, and if the preferred category has no valid affordable purchase the same tick falls through to the other category without adding an empty delay. Every successful rank or equipment purchase still consumes its own shopping world tick. This purchasing system still applies only to the two base Warrior skills; Shield Bash / Crippling Blows currently stay at automatic SL1 with no purchasable ranks.
 
 Current runtime rank availability uses the working five-level cadence exactly: Power Strike unlocks SL2 / SL3 / SL4 at hero levels 10 / 15 / 20, while Battle Guard unlocks SL2 / SL3 / SL4 at hero levels 15 / 20 / 25, continuing by the same interval up to Skill Level 10.
 
@@ -585,13 +628,14 @@ Implemented abilities:
 - **Combat Empowerment** — 10 Energy, +15% resolved Physical Damage for the next 5 fights, 120-tick cooldown;
 - **Instant Resurrection** — dynamic cost `RemainingRespawnTicks × 0.5`, no separate cooldown;
 - **ordinary quest guidance** — 5 Energy, +0.20 DivineModifier to one valid current offer for the next selection, 360-tick cooldown;
+- **first-specialization guidance** — during the Level-20 decision window, one 80-Energy use adds +0.15 to Protector or Slayer and immediately triggers the final current-score comparison;
 - **Divine Vision** — 80 Energy, 1500-tick cooldown, reveals one random existing unknown dungeon in the hero's current region.
 
 The current developer God panel exposes Healing, Combat Empowerment, Instant Resurrection, and Divine Vision.
 
 Ordinary quest guidance is currently **headless-only** because the player-facing quest-guidance selection UI has not been implemented.
 
-First-specialization divine guidance is not implemented because specialization itself is still absent.
+First-specialization guidance is exposed on the developer **Hero screen** inside the specialization debug panel rather than on the God panel, so the player can see the exact current Protector/Slayer weights before spending the one-time influence.
 
 ## Narrative, debug log and diary
 
@@ -743,7 +787,7 @@ These are intentional or transitional and should not be silently "fixed" back to
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
 - ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
 - the Warrior attacks physically; eight Arden ordinary mobs use Fire / Cold / Lightning attacks with the temporary raw-Attack reduction and shared Power evaluation weight described above;
-- Arden's ordinary quests and dedicated ilvl 15/20/25 equipment shop/drop sources are live; local events and ordinary dungeons remain missing. Its city routine uses local shop stock, normal sale and unlocked Skill Level training;
+- Arden's ordinary quests, dedicated ilvl 15/20/25 equipment shop/drop sources, and three ordinary dungeons are live; local temporary events remain missing. Its city routine uses local shop stock, normal sale and unlocked Skill Level training;
 - unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
 - the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
 
@@ -752,11 +796,10 @@ These are intentional or transitional and should not be silently "fixed" back to
 The most important incomplete areas are:
 
 - separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
-- Mid-Level City as a complete economy/dungeon/event gameplay context beyond its now-live ordinary quest loop;
+- Mid-Level City as a complete gameplay context beyond its now-live ordinary quests, economy and three ordinary dungeons; local temporary events remain missing;
 - remaining Arden equipment-slot/overlay breadth;
 - the remaining temporary-event population toward the 15–20 target;
-- two Mid Region ordinary dungeons;
-- first Warrior specialization: Protector / Slayer direction, specialization quest, specialization dungeon, specialization rewards and abilities;
+- remaining first Warrior specialization content after the live Protector/Slayer decision: specialization quest, specialization dungeon, specialization rewards/growth, equipment rules and abilities;
 - remaining later equipment content; potion tiers through Level 25 are live;
 - two-handed / complete legal hand-configuration content breadth;
 - full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;

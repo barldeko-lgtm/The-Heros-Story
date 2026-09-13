@@ -22,6 +22,43 @@ func _init() -> void:
 	assert(restored.active_combat_session != null, "Active combat must survive restore.")
 	assert(restored.world_state.hero_position_changed.is_connected(restored.on_hero_position_changed), "Restored world callback must be connected.")
 	assert(restored.active_combat_session.random_number_generator.state == simulation.active_combat_session.random_number_generator.state, "Combat RNG state must survive restore.")
+	var legacy_v1: Dictionary = captured.duplicate(true)
+	legacy_v1["version"] = SimulationSnapshot.LEGACY_VERSION_1
+	var legacy_hero_id: int = legacy_v1.nodes[legacy_v1.root.ref].properties.hero_state.ref
+	for property_name in [
+		"specialization_decision_active",
+		"specialization_decision_start_tick",
+		"specialization_decision_ticks_remaining",
+		"specialization_courage_trait_snapshot",
+		"specialization_guidance_id",
+		"first_specialization_id",
+		"specialization_final_protector_base",
+		"specialization_final_slayer_base",
+		"specialization_final_protector_score",
+		"specialization_final_slayer_score",
+	]:
+		legacy_v1.nodes[legacy_hero_id].properties.erase(property_name)
+	var legacy_result: Dictionary = SimulationSnapshot.restore(legacy_v1)
+	assert(str(legacy_result.get("error", "")).is_empty() and legacy_result.get("simulation") != null, "Legacy v1 snapshots must migrate to default first-specialization state.")
+
+	var legacy_v2: Dictionary = captured.duplicate(true)
+	legacy_v2["version"] = SimulationSnapshot.LEGACY_VERSION_2
+	var legacy_v2_hero_id: int = legacy_v2.nodes[legacy_v2.root.ref].properties.hero_state.ref
+	legacy_v2.nodes[legacy_v2_hero_id].properties.erase("shield_bash_skill_level")
+	legacy_v2.nodes[legacy_v2_hero_id].properties.erase("crippling_blows_skill_level")
+	var legacy_v2_combat_id: int = legacy_v2.nodes[legacy_v2.root.ref].properties.active_combat_session.ref
+	for property_name in [
+		"shield_bash_skill_level",
+		"shield_bash_ready_time",
+		"crippling_blows_skill_level",
+		"crippling_blows_ready_time",
+		"hero_has_shield",
+		"crippling_slow_active_until",
+		"crippling_slow_reduction",
+	]:
+		legacy_v2.nodes[legacy_v2_combat_id].properties.erase(property_name)
+	var legacy_v2_result: Dictionary = SimulationSnapshot.restore(legacy_v2)
+	assert(str(legacy_v2_result.get("error", "")).is_empty() and legacy_v2_result.get("simulation") != null, "Legacy v2 snapshots must migrate to default specialization-skill combat state.")
 
 	simulation.advance_time(60.0)
 	restored.advance_time(60.0)

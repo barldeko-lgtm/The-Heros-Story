@@ -21,6 +21,7 @@ const EXPERIENCE_INCREASE_AFTER_LEVEL_13: int = 1000
 const LATE_EXPERIENCE_START_LEVEL: int = 13
 const POWER_STRIKE_UNLOCK_LEVEL: int = 5
 const BATTLE_GUARD_UNLOCK_LEVEL: int = 10
+const FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL: int = 25
 const MAX_SKILL_LEVEL: int = 10
 const SKILL_LEVEL_INTERVAL: int = 5
 const POWER_STRIKE_SKILL_ID := "power_strike"
@@ -62,6 +63,18 @@ func apply_level_up(hero_state) -> void:
 		hero_state.power_strike_skill_level = 1
 	if hero_state.level >= BATTLE_GUARD_UNLOCK_LEVEL and hero_state.battle_guard_skill_level == 0:
 		hero_state.battle_guard_skill_level = 1
+	ensure_first_specialization_skill(hero_state)
+
+func ensure_first_specialization_skill(hero_state) -> bool:
+	if hero_state == null or hero_state.level < FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL:
+		return false
+	if hero_state.hero_class_id == "protector" and hero_state.shield_bash_skill_level == 0:
+		hero_state.shield_bash_skill_level = 1
+		return true
+	if hero_state.hero_class_id == "slayer" and hero_state.crippling_blows_skill_level == 0:
+		hero_state.crippling_blows_skill_level = 1
+		return true
+	return false
 
 func get_max_unlocked_skill_level(skill_id: String, hero_level: int) -> int:
 	var unlock_level: int = get_skill_unlock_level(skill_id)

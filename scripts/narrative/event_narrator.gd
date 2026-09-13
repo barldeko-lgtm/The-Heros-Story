@@ -63,12 +63,18 @@ func describe_combat_action(action, hero_name: String, mob_definition) -> String
 	var attacker_name: String = hero_name if action.attacker_id == "hero" else mob_definition.display_name
 	if action.action_id == "battle_guard":
 		return "%.2f с — %s применил «Боевой заслон»." % [action.time_seconds, attacker_name]
+	if action.action_id == "shield_bash":
+		return "%.2f с — %s применил «Удар щитом» и оглушил противника." % [action.time_seconds, attacker_name]
+	if action.action_id == "crippling_blows" and not action.did_hit:
+		return "%.2f с — %s промахнулся одним из «Калечащих ударов»." % [action.time_seconds, attacker_name]
 	if not action.did_hit:
 		return "%.2f с — %s промахнулся." % [action.time_seconds, attacker_name]
 	var critical_text := " критическим ударом" if action.is_critical else ""
 	var block_text := " Удар был заблокирован." if action.was_blocked else ""
 	if action.action_id == "power_strike":
 		return "%.2f с — %s применил «Мощный удар»%s и нанёс %.2f урона.%s" % [action.time_seconds, attacker_name, critical_text, action.damage, block_text]
+	if action.action_id == "crippling_blows":
+		return "%.2f с — %s нанёс один из «Калечащих ударов»%s: %.2f урона.%s" % [action.time_seconds, attacker_name, critical_text, action.damage, block_text]
 	return "%.2f с — %s%s нанёс %.2f урона.%s" % [action.time_seconds, attacker_name, critical_text, action.damage, block_text]
 
 func describe_fight_won(hero_name: String, event_name: String, mob_definition, experience_reward: int, current_hp: float, max_hp: float) -> String:

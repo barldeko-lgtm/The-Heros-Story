@@ -18,6 +18,7 @@ var quest_label: Label
 var details_scroll: ScrollContainer
 var hero_details_label: RichTextLabel
 var pending_attribute_indicator: Label
+var pending_specialization_indicator: Label
 
 func setup(live_simulation) -> void:
 	simulation = live_simulation
@@ -58,6 +59,13 @@ func create_hero_panel() -> void:
 	pending_attribute_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pending_attribute_indicator.hide()
 	level_row.add_child(pending_attribute_indicator)
+	pending_specialization_indicator = make_label(20, Color("d9bd7d"))
+	pending_specialization_indicator.name = "PendingSpecializationIndicator"
+	pending_specialization_indicator.text = "+"
+	pending_specialization_indicator.tooltip_text = "Идёт выбор первой специализации — откройте экран героя"
+	pending_specialization_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pending_specialization_indicator.hide()
+	level_row.add_child(pending_specialization_indicator)
 	gold_label = make_label(14, Color("d9bd7d"))
 	gold_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -117,6 +125,8 @@ func add_bar_text(bar: ProgressBar) -> Label:
 func update_pending_attribute_indicator() -> void:
 	if pending_attribute_indicator != null:
 		pending_attribute_indicator.visible = simulation.hero_state.pending_primary_attribute_points > 0
+	if pending_specialization_indicator != null:
+		pending_specialization_indicator.visible = simulation.has_pending_specialization_decision()
 
 func detail_row(caption: String, value: String) -> String:
 	return "[cell expand=1][color=#9eabbc]%s:[/color][/cell][cell][color=#edf0f4]%s[/color][/cell]" % [caption, value]
@@ -128,7 +138,7 @@ func update_hero_panel() -> void:
 	var hero = simulation.hero_state
 	var stats = simulation.base_combat_stats
 	hero_name_label.text = hero.hero_name
-	subtitle_label.text = "Воин · Черты: %s" % HeroTraitsScript.get_display_names(simulation.get_hero_traits())
+	subtitle_label.text = "%s · Черты: %s" % [simulation.get_hero_class_display_name(), HeroTraitsScript.get_display_names(simulation.get_hero_traits())]
 	level_label.text = "Уровень %d" % hero.level
 	gold_label.text = "Золото: %d" % hero.gold
 	hp_bar.max_value = stats.max_hp

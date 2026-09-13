@@ -35,10 +35,14 @@ func run() -> void:
 	check(controller.active, "Mini mode must activate from its button")
 	check(controller.panel.visible, "Mini panel must be visible")
 	check(not ui.hero_screen.visible, "Ordinary UI must be hidden")
-	check(controller.panel.get_child_count() == 3, "Mini panel must contain only status, pending points and Expand")
+	check(controller.panel.get_child_count() == 4, "Mini panel must contain only status, two pending indicators and Expand")
 	check(controller.expand_button.text.is_empty() and controller.expand_button.icon != null, "Expand must be icon-only")
 	check(controller.expand_button.size == Vector2(28, 28), "Expand must be a compact square")
 	check(root.content_scale_size == Vector2i.ZERO, "Mini UI must not inherit full-game stretch")
+	ui.simulation.hero_state.specialization_decision_active = true
+	controller.refresh_status()
+	check(controller.pending_specialization_indicator.visible, "Mini mode must show the separate specialization-choice plus")
+	ui.simulation.hero_state.specialization_decision_active = false
 	if DisplayServer.get_name() != "headless":
 		await create_timer(0.2).timeout
 		check(root.size == Vector2i(240, 40), "Native mini window size")

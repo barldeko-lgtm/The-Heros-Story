@@ -79,6 +79,11 @@ func guide_hero_to_quest(quest_id: String, autonomous_quest_choice: bool, availa
 			return god_state.try_set_quest_guidance(quest_id)
 	return false
 
+func use_specialization_guidance(can_apply: bool) -> bool:
+	if not can_apply:
+		return false
+	return god_state.try_spend_specialization_guidance()
+
 func use_vision(dungeon_system, region_id: String, rng: RandomNumberGenerator):
 	if dungeon_system == null or region_id.is_empty() or rng == null:
 		return null

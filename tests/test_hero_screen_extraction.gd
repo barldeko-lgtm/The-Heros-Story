@@ -30,19 +30,32 @@ func run() -> void:
 	var panel = ui.hero_screen.get_node("AttributeAllocationPanel")
 	var skills = ui.hero_screen.get_node("SkillsPanel")
 	var personality = ui.hero_screen.get_node("PersonalityAxesPanel")
+	var specialization = ui.hero_screen.get_node("SpecializationPanel")
 	check(panel.position == Vector2(411, 108) and panel.size == Vector2(544, 360), "Attribute panel geometry preserved")
 	check(skills.position == Vector2(973, 108) and skills.size == Vector2(300, 150), "Skill panel fits beside hero development without moving existing panels")
 	check(personality.position == Vector2(411, 472) and personality.size == Vector2(544, 280), "Personality panel geometry preserved")
+	check(specialization.position == Vector2(973, 276) and specialization.size == Vector2(361, 476), "Specialization debug panel uses the free right column")
+	check(ui.hero_screen.specialization_details_label.text.contains("ЗАЩИТНИК") and ui.hero_screen.specialization_details_label.text.contains("ИСТРЕБИТЕЛЬ"), "Specialization weights are visible from Level 1 for debugging")
+	check(ui.hero_screen.protector_guidance_button.disabled and ui.hero_screen.slayer_guidance_button.disabled, "Specialization influence is inactive before Level 20")
 	var hero = ui.simulation.hero_state
 	var power_strike_label := skills.find_child("PowerStrikeLevelLabel", true, false) as Label
 	var battle_guard_label := skills.find_child("BattleGuardLevelLabel", true, false) as Label
+	var specialization_skill_label := skills.find_child("SpecializationSkillLabel", true, false) as Label
 	check(power_strike_label != null and power_strike_label.text == "Мощный удар: не изучен", "Locked Power Strike is shown clearly")
 	check(battle_guard_label != null and battle_guard_label.text == "Боевой заслон: не изучен", "Locked Battle Guard is shown clearly")
+	check(specialization_skill_label != null and specialization_skill_label.text.contains("после выбора пути"), "Specialization skill slot is visible before the path is chosen")
 	hero.power_strike_skill_level = 3
 	hero.battle_guard_skill_level = 2
 	ui.hero_screen.refresh()
 	check(power_strike_label.text == "Мощный удар: ур. 3 / 10", "Power Strike level refreshes from HeroState")
 	check(battle_guard_label.text == "Боевой заслон: ур. 2 / 10", "Battle Guard level refreshes from HeroState")
+	hero.hero_class_id = "protector"
+	hero.shield_bash_skill_level = 0
+	ui.hero_screen.refresh()
+	check(specialization_skill_label.text == "Удар щитом: откроется на ур. 25", "Chosen Protector path previews its automatic Level-25 skill")
+	hero.shield_bash_skill_level = 1
+	ui.hero_screen.refresh()
+	check(specialization_skill_label.text == "Удар щитом: ур. 1", "Learned Protector skill is shown on the Hero screen")
 	hero.personality_axis_values["courage"] = 35
 	hero.personality_traits_by_axis["courage"] = ""
 	ui.update_personality_panel()

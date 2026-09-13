@@ -30,9 +30,11 @@ func run() -> void:
 	var old_hp: float = hero.current_hp
 	hero.current_hp = old_hp * 0.5
 	hero.pending_primary_attribute_points = 1
+	hero.specialization_decision_active = true
 	ui.update_hero_panel()
 	check(card.hp_bar.value == hero.current_hp and card.hp_text.text.contains("%.1f" % hero.current_hp), "HP numbers and bar refresh together")
 	check(card.pending_attribute_indicator.visible, "Pending points remain visible beside level")
+	check(card.pending_specialization_indicator.visible, "Active specialization choice has its own plus indicator beside level")
 	var tick: int = ui.simulation.world_clock.world_tick
 	var rng_state = ui.simulation.seeded_rng.get_rng().state
 	ui.update_hero_panel()
@@ -52,8 +54,10 @@ func run() -> void:
 	ui.set_active_screen("hero")
 	check(not card.is_visible_in_tree(), "Card hides on other screens")
 	hero.pending_primary_attribute_points = 0
+	hero.specialization_decision_active = false
 	ui.set_active_screen("main")
 	check(not card.pending_attribute_indicator.visible, "Return refreshes spent points")
+	check(not card.pending_specialization_indicator.visible, "Resolved specialization choice hides its plus indicator")
 	await process_frame
 	await process_frame
 	ui.free()

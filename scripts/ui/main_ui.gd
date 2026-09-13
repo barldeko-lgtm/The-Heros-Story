@@ -30,6 +30,7 @@ var opponent_hp_bar: ProgressBar
 var opponent_hp_label: Label
 var opponent_details_label: Label
 var combat_statistics_label: Label
+var death_statistics_label: Label
 var attribute_points_label: Label:
 	get:
 		return hero_screen.attribute_points_label
@@ -52,6 +53,8 @@ var main_screen: Control
 var hero_screen: Control
 var inventory_screen: Control
 var map_screen: Control
+var statistics_screen: Control
+var statistics_button: Button
 var hero_button: Button
 var inventory_button: Button
 var map_button: Button
@@ -113,8 +116,9 @@ func refresh_visible_screen() -> void:
 		tick_counter_label.text = "Тик: %d" % simulation.world_clock.world_tick
 		update_hero_panel()
 		update_opponent_panel()
-		update_combat_statistics_panel()
 		god_panel.refresh()
+	if statistics_screen.is_visible_in_tree():
+		update_combat_statistics_panel()
 	if hero_screen.is_visible_in_tree():
 		hero_screen.refresh()
 	if inventory_screen.is_visible_in_tree():
@@ -147,6 +151,12 @@ func create_screen_layers() -> void:
 	map_screen.setup(simulation)
 	map_screen.visible = false
 	add_child(map_screen)
+
+	statistics_screen = Control.new()
+	statistics_screen.name = "StatisticsScreen"
+	statistics_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	statistics_screen.visible = false
+	add_child(statistics_screen)
 
 func add_to_main_screen(control: Control) -> void:
 	if main_screen != null:
@@ -211,6 +221,17 @@ func apply_progress_bar_style(progress_bar: ProgressBar, fill_color: Color) -> v
 	progress_bar.add_theme_stylebox_override("fill", fill_style)
 
 func create_top_menu() -> void:
+	# Use the free left header area without shifting existing navigation.
+	statistics_button = Button.new()
+	statistics_button.name = "StatisticsButton"
+	statistics_button.text = "СТАТИСТИКА"
+	statistics_button.tooltip_text = "Открыть статистику боёв"
+	statistics_button.position = Vector2(32.0, 20.0)
+	statistics_button.custom_minimum_size = Vector2(200.0, 42.0)
+	statistics_button.add_theme_font_size_override("font_size", 18)
+	MainButtonStyle.apply_button(statistics_button)
+	statistics_button.pressed.connect(func(): set_active_screen("main" if statistics_screen.visible else "statistics"))
+	add_child(statistics_button)
 	var top_menu := HBoxContainer.new()
 	top_menu.name = "TopMenu"
 	top_menu.position = Vector2(371.0, 20.0)
@@ -318,7 +339,12 @@ func set_active_screen(screen_id: String) -> void:
 	var hero_is_open: bool = screen_id == "hero"
 	var inventory_is_open: bool = screen_id == "inventory"
 	var map_is_open: bool = screen_id == "map"
-	main_screen.visible = not hero_is_open and not inventory_is_open and not map_is_open
+	var statistics_is_open: bool = screen_id == "statistics"
+	statistics_screen.visible = statistics_is_open
+	MainButtonStyle.set_navigation_selected(statistics_button, statistics_is_open)
+	statistics_button.text = "НАЗАД" if statistics_is_open else "СТАТИСТИКА"
+	statistics_button.tooltip_text = "Вернуться на главный экран" if statistics_is_open else "Открыть статистику боёв"
+	main_screen.visible = not hero_is_open and not inventory_is_open and not map_is_open and not statistics_is_open
 	hero_screen.visible = hero_is_open
 	inventory_screen.visible = inventory_is_open
 	map_screen.visible = map_is_open
@@ -331,7 +357,7 @@ func set_active_screen(screen_id: String) -> void:
 	inventory_button.tooltip_text = "Вернуться на главный экран" if inventory_is_open else "Открыть инвентарь"
 	map_button.text = "НАЗАД" if map_is_open else "КАРТА"
 	map_button.tooltip_text = "Вернуться на главный экран" if map_is_open else "Открыть карту"
-	inventory_close_button.visible = hero_is_open or inventory_is_open or map_is_open
+	inventory_close_button.visible = hero_is_open or inventory_is_open or map_is_open or statistics_is_open
 	refresh_visible_screen()
 	if map_screen.is_visible_in_tree():
 		map_screen.refresh()
@@ -423,14 +449,25 @@ func update_opponent_panel() -> void:
 func create_combat_statistics_panel() -> void:
 	var panel := PanelContainer.new()
 	apply_panel_style(panel)
-	panel.position = Vector2(1014.0, 380.0)
+	panel.name = "CombatStatisticsPanel"
+	panel.position = Vector2(32.0, 80.0)
 	panel.size = Vector2(320.0, 220.0)
-	add_to_main_screen(panel)
+	statistics_screen.add_child(panel)
 
 	combat_statistics_label = Label.new()
 	combat_statistics_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	combat_statistics_label.add_theme_font_size_override("font_size", 15)
 	panel.add_child(combat_statistics_label)
+	var death_panel := PanelContainer.new()
+	death_panel.name = "DeathStatisticsPanel"
+	apply_panel_style(death_panel)
+	death_panel.position = Vector2(371.0, 80.0)
+	death_panel.size = Vector2(624.0, 260.0)
+	statistics_screen.add_child(death_panel)
+	death_statistics_label = Label.new()
+	death_statistics_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	death_statistics_label.add_theme_font_size_override("font_size", 18)
+	death_panel.add_child(death_statistics_label)
 
 func update_combat_statistics_panel() -> void:
 	var total: int = 0
@@ -450,6 +487,13 @@ func update_combat_statistics_panel() -> void:
 		var rate: float = 100.0 * int(stats["wins"]) / mob_total if mob_total > 0 else 0.0
 		text += "\n\nПротив: %s\nБои: %d · Побед: %d · Поражений: %d\nПобеды: %.1f%%" % [stats["display_name"], mob_total, stats["wins"], stats["losses"], rate]
 	combat_statistics_label.text = text
+	var deaths: Dictionary = preload("res://scripts/combat/death_statistics.gd").summarize(simulation.combat_results_by_mob)
+	var death_text := "Смерти героя\n\nВсего: %d\nНа квестах: %d\nВ данжах: %d\nВ событиях: %d" % [deaths.total, deaths.quest, deaths.dungeon, deaths.event]
+	if int(deaths.unknown) > 0:
+		death_text += "\nБез данных об активности: %d" % deaths.unknown
+	death_text += "\n\nСамый опасный противник: "
+	death_text += "%s — смертей: %d" % [deaths.killer_name, deaths.killer_deaths] if int(deaths.killer_deaths) > 0 else "Пока никто"
+	death_statistics_label.text = death_text
 
 func update_hero_panel() -> void:
 	hero_summary_panel.update_hero_panel()

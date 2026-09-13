@@ -809,17 +809,21 @@ The player does not directly select the specialization from a menu.
 
 The hero forms a specialization preference from their actual developed primary attributes and established character, then may receive one limited divine nudge before the decision becomes final.
 
-The specialization is not granted immediately when the direction is chosen. Choosing the direction activates the corresponding **Specialization Quest**, and the specialization becomes owned only after that quest is completed.
+When the direction is fixed, the hero's class/path identity changes immediately to **Protector** or **Slayer**. The future corresponding **Specialization Quest** remains dedicated progression/content for that path, but it no longer gates the first specialization combat skill: the matching first skill is learned automatically at Level 25.
 
 ### 11.1. Attribute-Based Specialization Preference
 
 The hero's developed primary-attribute profile is one main influence on the first specialization decision.
 
-Because Warrior receives one permanent class-directed Strength point per level, that mandatory class growth must not by itself bias every Warrior toward Slayer.
+Because Warrior receives one permanent class-directed Strength point on every gained level, that mandatory class growth must not by itself bias every Warrior toward Slayer.
 
-At the first-specialization milestone, subtract the Warrior's expected mandatory class Strength contribution from current Strength:
+Subtract the Warrior's **actually earned mandatory class Strength** from current Strength. Because the hero starts at Level 1 and receives the fixed Warrior point only when gaining a level, the Level-20 decision begins after exactly **19** mandatory Warrior STR points have been earned:
 
-> **`PersonalSTR = max(0, STR - 20)`**
+> **`MandatoryWarriorSTR = max(0, Level - 1)`**
+>
+> **`PersonalSTR = max(0, STR - MandatoryWarriorSTR)`**
+
+At Level 20 this is therefore exactly `PersonalSTR = max(0, STR - 19)`. If the hero gains another level while the 180-tick decision window is still open, that later automatic Warrior STR is also excluded rather than becoming false evidence for Slayer.
 
 The current Prototype 0.2 first-specialization raw profiles are:
 
@@ -853,11 +857,11 @@ Personality is a **separate secondary influence** on the first-specialization pr
 
 For Prototype 0.2, only the personality axis that directly represents attitude toward danger is used for this first-tier split:
 
-- established **Brave** provides a soft modifier toward **Slayer**;
-- established **Cautious** provides a soft modifier toward **Protector**;
+- established **Brave** provides **+0.05** toward **Slayer**;
+- established **Cautious** provides **+0.05** toward **Protector**;
 - if neither side is established, no personality modifier is applied.
 
-The exact numerical size of this personality modifier remains a tuning value.
+The relevant courage trait is snapshotted exactly when the Level-20 specialization decision begins. That frozen Brave / Cautious / neutral result remains the specialization personality input for the full decision window even if later events would establish, remove, or reverse the live courage trait.
 
 Noble / Devious, Greedy / Generous, and Curious / Conservative do not receive direct first-specialization score bonuses merely because they exist. They may matter to later content or future specialization designs only where their meaning genuinely fits.
 
@@ -891,6 +895,8 @@ The player cannot pay separately to influence both directions.
 
 Divine guidance does not directly choose the specialization. It only modifies the hero's current preference.
 
+Using this one-time influence **ends the decision window immediately**. The two final scores are compared after the `+0.15` modifier is applied, so a sufficiently strong opposite profile may still win despite the player's nudge.
+
 A hero who has developed very strongly toward one path may therefore ignore the practical effect of the divine nudge, while a hero who is genuinely near the middle may be pushed toward the other path.
 
 This preserves the core principle:
@@ -917,48 +923,28 @@ Reaching compressed level 20 begins a specialization-decision window of:
 
 During this window, the specialization scores may be reevaluated at valid decision points if relevant hero state changes.
 
-The player may use the one-time divine direction only while the specialization direction remains undecided.
+The player may use the one-time divine direction only while the specialization direction remains undecided. There is **no automatic early decision based only on a large score lead**: even a strongly one-sided profile remains open while the player still has the opportunity to guide it.
 
-The hero may decide before the full 180 ticks have elapsed if one specialization becomes clearly dominant.
+Primary attributes remain live during the full window. Previously unspent primary points contribute nothing while still pending; if the player allocates them into STR / DEX / CON / WIS before the decision ends, the specialization weights immediately use those newly assigned values. INT does not directly enter the current Protector/Slayer formulas.
 
-Current working early-decision threshold:
+The decision ends in exactly one of two ways:
 
-> **one specialization leads the other by at least `0.20`**
-
-Example:
-
-```text
-SlayerScore = 0.72
-ProtectorScore = 0.35
-
-Difference = 0.37
-→ Slayer direction may be chosen immediately.
-```
-
-A close result does not force an immediate decision:
-
-```text
-SlayerScore = 0.58
-ProtectorScore = 0.52
-
-Difference = 0.06
-→ the hero remains undecided while the decision window is still active.
-```
-
-When the 180-tick window expires, the hero chooses the specialization with the higher current final score even if the difference is smaller than `0.20`.
+- the player uses the one-time `+0.15` divine direction, after which the resulting current scores are compared immediately;
+- the full **180 world ticks** expire without player influence, after which the current scores are compared as they stand.
 
 If both final scores are exactly equal when the window expires, the tie must be resolved deterministically through the shared seeded RNG or another single centralized deterministic tie-break rule. The decision must not depend on UI order or arbitrary dictionary iteration.
 
-### 11.6. Specialization Quest Activation
+### 11.6. Fixed Path and Specialization Quest
 
 Once the direction is chosen:
 
 - that direction becomes the hero's fixed first-specialization target;
+- the current runtime/presentation class id changes from Warrior to **Protector** or **Slayer** immediately so the chosen path is visible as part of the hero's identity;
 - the one-time divine direction opportunity closes;
-- the corresponding authored **Specialization Quest** becomes available to the hero through the normal quest/progression flow;
-- completing that quest activates the specialization.
+- the corresponding authored **Specialization Quest** remains future dedicated content for that path through the normal quest/progression flow;
+- reaching Level 25 automatically teaches the matching first specialization combat skill at Skill Level 1, even if that future quest slice has not yet been implemented/completed.
 
-The specialization direction itself does not grant specialization stats, abilities, or equipment rules before the Specialization Quest is completed.
+The class-id/path change itself still does **not** grant the later specialization profile-stat rewards, equipment rules, or other future progression rewards. Those remain separate slices.
 
 The current specialization direction is permanent for Prototype 0.2 once chosen. Prototype 0.2 does not include respecialization.
 
@@ -973,7 +959,7 @@ Its current identity is:
 - intended combat setup: **one-handed weapon + shield**;
 - defensive identity built around survivability, mitigation, Block, and shield-based tools.
 
-The first Protector specialization ability is planned around compressed level 25:
+The first Protector specialization ability is learned automatically at compressed **Level 25** when Protector is the fixed path:
 
 > **Shield Bash**
 
@@ -981,14 +967,19 @@ Shield Bash is a shield-based control ability rather than a damage attack.
 
 Current working rules:
 
-- requires the Protector specialization to be active;
+- requires the Protector path/class;
 - requires a shield;
 - Rage cost: **25**;
 - cooldown: **60 seconds**;
+- replaces one normal hero attack opportunity;
+- when learned, off cooldown, affordable in Rage, and the shield requirement is met, Shield Bash has priority over Power Strike; Power Strike is considered only while Shield Bash is unavailable;
+- Shield Bash **cannot miss**;
 - deals **no direct damage**;
 - stuns an eligible ordinary enemy;
 - base stun duration scales with Skill Level from **3.0 seconds at Skill Level 1** to **5.0 seconds at Skill Level 10**;
 - intermediate Skill Levels scale evenly between those endpoints.
+
+The current implementation slice grants and executes **Skill Level 1 only**. Later Shield Bash ranks are intended to unlock on the five-level cadence, but rank purchasing/progression is deferred.
 
 Shield Bash uses the shared Wisdom scaling model:
 
@@ -1001,6 +992,8 @@ Its current WIS scaling is:
 > **`FinalStunDuration = BaseStunDuration + 2.0 × WisdomFactor`**
 
 Therefore WIS can theoretically add up to nearly **+2 seconds** of stun duration at extremely high values, while ordinary investment produces a smaller increase.
+
+During the resolved stun the enemy's current attack preparation is **frozen**. No attack progress accumulates during the stun; when the stun ends, the enemy resumes from the same remaining attack progress it had when Shield Bash landed.
 
 Shield Bash is intended to give Protector a clear defensive-control tool and to compete with offensive Rage spending such as Power Strike.
 
@@ -1018,11 +1011,11 @@ Its current identity is:
 
 - primary development emphasis: **Strength**;
 - secondary support from **Dexterity**;
-- intended combat setup: **two-handed weapon or dual wielding**;
-- no shield for Slayer-specific combat tools;
+- long-term intended combat identity may later emphasize offensive weapon configurations, but the current equipment-hand model does not yet enforce that distinction;
+- the current first Slayer skill has **no weapon requirement** and remains usable while a shield is equipped;
 - offensive identity built around pressure and higher damage output.
 
-The first Slayer specialization ability is planned around compressed level 25:
+The first Slayer specialization ability is learned automatically at compressed **Level 25** when Slayer is the fixed path:
 
 > **Crippling Blows**
 
@@ -1030,16 +1023,20 @@ Crippling Blows is an offensive control ability built around two fast weapon str
 
 Current working rules:
 
-- requires the Slayer specialization to be active;
-- works with legal Slayer weapon setups;
+- requires the Slayer path/class;
+- currently has no weapon requirement and does not forbid a shield;
 - Rage cost: **25**;
 - cooldown: **60 seconds**;
+- replaces one normal hero attack opportunity;
+- when learned, off cooldown and affordable in Rage, Crippling Blows has priority over Power Strike; Power Strike is considered only while Crippling Blows is unavailable;
 - performs **two weapon strikes**;
 - each strike deals **×0.65** of the resolved ordinary weapon-hit damage;
 - each strike resolves hit / miss and critical chance independently;
 - if at least one of the two strikes hits, the target receives an Attack Speed reduction for **10 seconds**;
 - base Attack Speed reduction scales with Skill Level from **15% at Skill Level 1** to **25% at Skill Level 10**;
 - intermediate Skill Levels scale evenly between those endpoints.
+
+The current implementation slice grants and executes **Skill Level 1 only**. Later Crippling Blows ranks are intended to unlock on the five-level cadence, but rank purchasing/progression is deferred.
 
 Crippling Blows uses the shared Wisdom scaling model:
 
@@ -1053,6 +1050,8 @@ Its current WIS scaling is:
 
 The WIS term is expressed as a fraction, so it can theoretically add up to nearly **10 percentage points** of additional Attack Speed reduction at extremely high WIS values.
 
+Applying the Attack Speed reduction preserves the percentage progress of the enemy's attack currently being prepared. Removing the reduction after 10 seconds also preserves that percentage progress, so the effect neither resets an attack nor grants free hidden progress when it begins or ends.
+
 Crippling Blows is intended to give Slayer a form of active control without turning the specialization into a defensive tank path: the hero deals modest immediate damage and temporarily reduces the enemy's offensive tempo.
 
 Prototype 0.2 bosses and special enemies do **not** automatically resist or reduce the Attack Speed penalty from Crippling Blows.
@@ -1063,12 +1062,11 @@ The normal resolved Attack Speed reduction and 10-second duration apply to them 
 
 The following are current working balance values and may be tuned through testing:
 
-- `40` mandatory class Strength removed from the specialization comparison;
-- the exact Brave / Cautious specialization modifier;
+- actually earned mandatory Warrior STR is removed from the comparison (`19` at Level 20 in the current progression);
+- Brave / Cautious specialization modifier `+0.05`;
 - divine modifier `+0.15`;
 - divine cost `80 Energy`;
-- decision window `180 ticks`;
-- early-decision lead threshold `0.20`.
+- decision window `180 ticks`.
 
 The structural rules are fixed unless explicitly redesigned:
 
@@ -1076,10 +1074,12 @@ The structural rules are fixed unless explicitly redesigned:
 - mandatory Warrior Strength must not create false Slayer bias;
 - Brave / Cautious personality is an independent soft specialization influence;
 - primary attributes and personality are not treated as the same developmental evidence;
+- the Level-20 Brave / Cautious state is frozen for this decision while primary attributes remain live;
 - divine guidance is one-time and secondary;
-- the hero may decide before the deadline if the direction is clear;
-- the hero chooses autonomously when the window closes;
-- the specialization becomes active only through its Specialization Quest.
+- there is no score-lead early auto-resolution;
+- player guidance ends the window immediately by triggering the final current-score comparison;
+- without guidance, the hero chooses autonomously when the full window closes;
+- the resolved Protector / Slayer path becomes the hero's runtime class identity immediately, and its first combat skill is learned automatically at Level 25; the future Specialization Quest no longer gates that first skill.
 
 ---
 
@@ -2105,7 +2105,7 @@ These Mid Region dungeons use the same shared discovery, preparation, retry, com
 
 ## 17. Specialization Quest and Specialization Dungeon
 
-After the Warrior selects the Protector or Slayer direction, a dedicated Specialization Quest becomes active.
+After the Warrior selects the Protector or Slayer direction, that path/class identity is already fixed. A dedicated Specialization Quest is still planned as path-specific progression/content, but it no longer grants the path itself and does not gate the automatic Level-25 first combat skill.
 
 The Specialization Quest creates a dedicated quest dungeon that did not need to exist beforehand.
 
@@ -2116,11 +2116,13 @@ This dungeon:
 - exists in addition to the ordinary local dungeon population;
 - reuses the same dungeon execution, preparation, death, healing, and retry systems where possible;
 - contains a required quest relic / specialization objective;
-- grants no specialization merely for reaching the level threshold.
+- does not control whether the Level-25 first specialization skill is learned.
 
 Core flow:
 
-> **level milestone → hero chooses specialization direction → Specialization Quest → prepare → dedicated dungeon → defeat boss → obtain relic / objective → complete quest → specialization granted**
+> **Level 20 → hero chooses Protector / Slayer path → path identity fixed → Level 25 matching first skill learned automatically**
+>
+> **chosen path → Specialization Quest → prepare → dedicated dungeon → defeat boss → obtain relic / objective → complete path-specific progression milestone/reward**
 
 Protector and Slayer may use different specialization dungeon content / boss definitions even though they share one technical dungeon system.
 
@@ -3370,7 +3372,7 @@ The current provisional aggregate valuation for Wisdom, after both base Warrior 
 
 > **approximately +0.20% HeroPower per WIS above the starting value of 5**
 
-This WIS value is a temporary planning estimate for the current two-ability Warrior kit, not a universal generic stat conversion. It may be recalibrated when Protector / Slayer specialization abilities are implemented and their own WIS scaling becomes part of the real combat kit.
+This WIS value is a temporary planning estimate inherited from the original two-ability Warrior kit, not a universal generic stat conversion. Shield Bash / Crippling Blows are now live at SL1, but they deliberately have no HeroPower valuation yet; this provisional WIS value may be recalibrated when their Power contribution is tuned from live combat results.
 
 These HeroPower valuation bonuses are now wired into the shared runtime `PowerCalculator` as one additive permanent Hero multiplier. Hero quest eligibility, virtual equipment comparison, and displayed HeroPower all use the same skill/WIS-aware result, while MobPower and ItemPower continue to use the same underlying CombatStats Power formula without Warrior ability bonuses.
 
@@ -3378,15 +3380,19 @@ These HeroPower valuation bonuses are now wired into the shared runtime `PowerCa
 
 #### Shield Bash Skill Levels
 
-Shield Bash is the first Protector specialization ability and is planned around compressed hero level 25 after the specialization is actually obtained.
+Shield Bash is the first Protector specialization ability and is learned automatically at compressed hero **Level 25** once Protector is the fixed path.
 
 Its fixed combat rules are:
 
 - requires a shield;
 - costs **25 Rage**;
 - cooldown **60 sec**;
+- replaces one ordinary hero attack opportunity and takes autonomous Rage-spending priority over Power Strike while usable;
+- cannot miss;
 - deals **no direct damage**;
 - applies a stun to an eligible ordinary enemy.
+
+The current runtime slice implements **Skill Level 1 only**. Later rank availability is intended to advance every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on), but purchasing/using those higher specialization ranks is deferred for now.
 
 Skill Level changes the base stun duration.
 
@@ -3404,20 +3410,26 @@ Shield Bash then applies the shared Wisdom scaling:
 
 where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
 
+The stun freezes the enemy's in-progress attack timer. The enemy accumulates no attack progress while stunned and resumes from the same remaining progress after the stun ends.
+
 Prototype 0.2 bosses and special enemies use the same resolved Shield Bash stun duration as ordinary eligible enemies by default. Boss balance is handled through their combat strength, abilities, and encounter design rather than automatic control immunity.
 
 #### Crippling Blows Skill Levels
 
-Crippling Blows is the first Slayer specialization ability and is planned around compressed hero level 25 after the specialization is actually obtained.
+Crippling Blows is the first Slayer specialization ability and is learned automatically at compressed hero **Level 25** once Slayer is the fixed path.
 
 Its fixed combat rules are:
 
 - costs **25 Rage**;
 - cooldown **60 sec**;
+- replaces one ordinary hero attack opportunity and takes autonomous Rage-spending priority over Power Strike while usable;
+- currently has no weapon-hand requirement and remains usable with a shield equipped;
 - performs **two weapon strikes**;
 - each strike deals **×0.65 ordinary resolved weapon-hit damage**;
 - both strikes resolve hit / miss and critical chance independently;
 - if at least one strike hits, the target receives an Attack Speed reduction for **10 sec**.
+
+The current runtime slice implements **Skill Level 1 only**. Later rank availability is intended to advance every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on), but purchasing/using those higher specialization ranks is deferred for now.
 
 Skill Level changes the base Attack Speed reduction.
 
@@ -3434,6 +3446,8 @@ Crippling Blows then applies the shared Wisdom scaling:
 > **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.10 × WisdomFactor`**
 
 where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
+
+Applying and removing the temporary Attack Speed reduction preserves the percentage progress of the enemy's current attack. The effect therefore neither resets an attack nor grants hidden free progress when the interval changes.
 
 Prototype 0.2 bosses and special enemies receive the normal resolved Crippling Blows Attack Speed reduction and duration by default; they do not gain automatic control resistance merely because they are bosses.
 
@@ -3626,7 +3640,8 @@ Current working values:
 - cost **80 Divine Energy**;
 - usable only once for the entire first-specialization decision;
 - adds **+0.15** to Protector or Slayer according to the player's chosen direction;
-- available only while the specialization direction remains undecided.
+- available only while the specialization direction remains undecided;
+- immediately ends the decision window and triggers comparison of the resulting current specialization scores.
 
 This guidance influences preference but does not directly grant a specialization.
 
@@ -5182,7 +5197,6 @@ They should be tuned after the relevant systems exist and can be tested together
 - exact number of starting-questionnaire prompts and the size of its additional primary-attribute pool;
 - exact hidden personality shifts from starting-questionnaire answers;
 - hidden personality ranges, visible-trait thresholds, hysteresis, and formative movement magnitudes;
-- exact Brave / Cautious first-specialization modifier;
 - final tuning of the working item-level affix budgets and secondary-stat cost table defined in Section 19;
 - exact strength / item-level ranges of the three shop progression bands;
 - final potion-price tuning beyond the currently approved Level 5 = 100 Gold / Level 10 = 200 Gold Starting City values, including later Level 15 / 20 / 25 tiers;

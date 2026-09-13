@@ -7,6 +7,7 @@ var panel: Panel
 var expand_button: Button
 var status_label: Label
 var pending_points_indicator: Label
+var pending_specialization_indicator: Label
 var _window: Window
 var _ui: Control
 var _saved_window: Dictionary = {}
@@ -49,7 +50,7 @@ func _ready() -> void:
 	status_label.name = "MiniStatus"
 	status_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	status_label.offset_left = 8.0
-	status_label.offset_right = -60.0
+	status_label.offset_right = -80.0
 	status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_label.add_theme_font_size_override("font_size", 16)
@@ -73,6 +74,24 @@ func _ready() -> void:
 	pending_points_indicator.add_theme_constant_override("outline_size", 2)
 	pending_points_indicator.hide()
 	panel.add_child(pending_points_indicator)
+	pending_specialization_indicator = Label.new()
+	pending_specialization_indicator.name = "PendingSpecialization"
+	pending_specialization_indicator.text = "+"
+	pending_specialization_indicator.tooltip_text = "Идёт выбор первой специализации"
+	pending_specialization_indicator.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
+	pending_specialization_indicator.offset_left = -76.0
+	pending_specialization_indicator.offset_right = -58.0
+	pending_specialization_indicator.offset_top = -14.0
+	pending_specialization_indicator.offset_bottom = 14.0
+	pending_specialization_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pending_specialization_indicator.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	pending_specialization_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pending_specialization_indicator.add_theme_font_size_override("font_size", 20)
+	pending_specialization_indicator.add_theme_color_override("font_color", Color("d9bd7d"))
+	pending_specialization_indicator.add_theme_color_override("font_outline_color", Color.BLACK)
+	pending_specialization_indicator.add_theme_constant_override("outline_size", 2)
+	pending_specialization_indicator.hide()
+	panel.add_child(pending_specialization_indicator)
 
 # UI grouping only; never infer combat from HP or change gameplay state.
 static func resolve_status(loop_state: String, in_combat: bool, combat_context: String) -> Dictionary:
@@ -112,6 +131,7 @@ func refresh_status() -> void:
 		return
 	var simulation = _ui.simulation
 	pending_points_indicator.visible = simulation.hero_state.pending_primary_attribute_points > 0
+	pending_specialization_indicator.visible = simulation.has_pending_specialization_decision()
 	var status := resolve_status(simulation.hero_state.loop_state, simulation.active_combat_session != null, simulation.active_combat_context)
 	if status_label.text != status.text:
 		status_label.text = status.text

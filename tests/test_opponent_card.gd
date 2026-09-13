@@ -44,7 +44,7 @@ func run() -> void:
 		await process_frame
 		ok = ok and ui.opponent_panel.size == Vector2(320, 280)
 		ok = ok and ui.opponent_details_label.get_global_rect().end.y <= ui.opponent_panel.get_global_rect().end.y
-		ok = ok and ui.combat_statistics_label.get_parent().position == Vector2(1014, 380)
+		ok = ok and ui.combat_statistics_label.get_parent().position == Vector2(32, 80)
 		ui.update_opponent_panel()
 		if DisplayServer.get_name() != "headless":
 			await process_frame

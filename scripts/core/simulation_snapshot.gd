@@ -2,7 +2,9 @@ class_name SimulationSnapshot
 extends RefCounted
 
 ## Explicit, JSON-safe graph snapshot for mutable Simulation state.
-const VERSION := 1
+const VERSION := 3
+const LEGACY_VERSION_1 := 1
+const LEGACY_VERSION_2 := 2
 const SimulationScript = preload("res://scripts/core/simulation.gd")
 const WorldClockScript = preload("res://scripts/core/world_clock.gd")
 const SeededRngScript = preload("res://scripts/core/seeded_rng.gd")
@@ -48,13 +50,20 @@ static func capture(simulation) -> Dictionary:
 	return {"version": VERSION, "root": root, "nodes": context.nodes}
 
 static func restore(data: Dictionary) -> Dictionary:
-	if not data.get("version") is int or data.get("version") != VERSION:
+	if not data.get("version") is int:
 		return {"simulation": null, "error": "unsupported snapshot version"}
-	var validation_error := _validate_snapshot(data)
+	var prepared: Dictionary = data
+	if int(data.get("version")) == LEGACY_VERSION_1:
+		prepared = _migrate_v1_to_v2(data)
+	if int(prepared.get("version", 0)) == LEGACY_VERSION_2:
+		prepared = _migrate_v2_to_v3(prepared)
+	elif int(prepared.get("version", 0)) != VERSION:
+		return {"simulation": null, "error": "unsupported snapshot version"}
+	var validation_error := _validate_snapshot(prepared)
 	if not validation_error.is_empty():
 		return {"simulation": null, "error": validation_error}
-	var nodes: Array = data.nodes
-	var root_id: int = data.root.ref
+	var nodes: Array = prepared.nodes
+	var root_id: int = prepared.root.ref
 	var root_node: Dictionary = nodes[root_id]
 	var properties: Dictionary = root_node.get("properties", {})
 	var seed := _encoded_int(properties.get("simulation_seed"), 1)
@@ -63,7 +72,7 @@ static func restore(data: Dictionary) -> Dictionary:
 	# Saved creation state is hydrated below, not replayed through the questionnaire.
 	var simulation = SimulationScript.new(seed, null if autonomous else SimulationScript.DefaultInitialQuest, [], events)
 	var context := {"nodes": nodes, "objects": {}, "error": "", "root_id": root_id, "root": simulation}
-	var decoded = _decode(data.root, context, 0)
+	var decoded = _decode(prepared.root, context, 0)
 	if not str(context.error).is_empty() or decoded != simulation:
 		return {"simulation": null, "error": str(context.error) if not str(context.error).is_empty() else "root decode failed"}
 	# Constructor connections are intentionally restored only after state hydration.
@@ -72,6 +81,74 @@ static func restore(data: Dictionary) -> Dictionary:
 	if not simulation.world_clock.tick_completed.is_connected(simulation.on_world_tick_completed):
 		simulation.world_clock.tick_completed.connect(simulation.on_world_tick_completed)
 	return {"simulation": simulation, "error": ""}
+
+static func _migrate_v1_to_v2(data: Dictionary) -> Dictionary:
+	var migrated: Dictionary = data.duplicate(true)
+	migrated["version"] = LEGACY_VERSION_2
+	if not migrated.get("nodes") is Array:
+		return migrated
+	for node in migrated["nodes"]:
+		if not node is Dictionary or str(node.get("script", "")) != "res://scripts/hero/hero_state.gd":
+			continue
+		var properties = node.get("properties")
+		if not properties is Dictionary:
+			continue
+		var defaults := {
+			"specialization_decision_active": false,
+			"specialization_decision_start_tick": -1,
+			"specialization_decision_ticks_remaining": 0,
+			"specialization_courage_trait_snapshot": "",
+			"specialization_guidance_id": "",
+			"first_specialization_id": "",
+			"specialization_final_protector_base": -1.0,
+			"specialization_final_slayer_base": -1.0,
+			"specialization_final_protector_score": -1.0,
+			"specialization_final_slayer_score": -1.0,
+		}
+		for property_name in defaults:
+			if not properties.has(property_name):
+				properties[property_name] = defaults[property_name]
+			node["properties"] = properties
+	return migrated
+
+static func _migrate_v2_to_v3(data: Dictionary) -> Dictionary:
+	var migrated: Dictionary = data.duplicate(true)
+	migrated["version"] = VERSION
+	if not migrated.get("nodes") is Array:
+		return migrated
+	for node in migrated["nodes"]:
+		if not node is Dictionary:
+			continue
+		var properties = node.get("properties")
+		if not properties is Dictionary:
+			continue
+		var script_path: String = str(node.get("script", ""))
+		if script_path == "res://scripts/hero/hero_state.gd":
+			if not properties.has("shield_bash_skill_level"):
+				properties["shield_bash_skill_level"] = 0
+			if not properties.has("crippling_blows_skill_level"):
+				properties["crippling_blows_skill_level"] = 0
+			var saved_level: int = int(properties.get("level", 1))
+			var saved_class_id: String = str(properties.get("hero_class_id", "warrior"))
+			if saved_level >= 25 and saved_class_id == "protector":
+				properties["shield_bash_skill_level"] = 1
+			elif saved_level >= 25 and saved_class_id == "slayer":
+				properties["crippling_blows_skill_level"] = 1
+		elif script_path == "res://scripts/combat/combat_session.gd":
+			var combat_defaults := {
+				"shield_bash_skill_level": 0,
+				"shield_bash_ready_time": 0.0,
+				"crippling_blows_skill_level": 0,
+				"crippling_blows_ready_time": 0.0,
+				"hero_has_shield": false,
+				"crippling_slow_active_until": 0.0,
+				"crippling_slow_reduction": 0.0,
+			}
+			for property_name in combat_defaults:
+				if not properties.has(property_name):
+					properties[property_name] = combat_defaults[property_name]
+		node["properties"] = properties
+	return migrated
 
 static func _encode(value, context: Dictionary, depth: int):
 	if depth > MAX_DEPTH:

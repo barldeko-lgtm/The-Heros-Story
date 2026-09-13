@@ -16,6 +16,7 @@ const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
 const HeroBackgroundScript = preload("res://scripts/hero/hero_background.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
+const HeroSpecializationScript = preload("res://scripts/hero/hero_specialization.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
 const GodSystemScript = preload("res://scripts/god/god_system.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
@@ -256,6 +257,15 @@ func get_hero_power() -> float:
 func get_hero_traits() -> Array[String]:
 	return trait_development.get_established_traits(hero_state)
 
+func get_hero_class_display_name() -> String:
+	return HeroSpecializationScript.get_class_display_name(hero_state.hero_class_id)
+
+func get_first_specialization_debug_state() -> Dictionary:
+	return HeroSpecializationScript.get_debug_state(hero_state)
+
+func has_pending_specialization_decision() -> bool:
+	return hero_state.specialization_decision_active
+
 func get_current_hero_hp() -> float:
 	if active_combat_session != null:
 		return active_combat_session.hero_remaining_hp
@@ -296,7 +306,7 @@ func get_current_opponent_power() -> float:
 		damage_type = active_combat_mob_definition.attack_damage_type
 	return power_calculator.calculate(opponent_stats, damage_type, "physical")
 
-func record_combat_result(mob_definition: Resource, hero_won: bool) -> String:
+func record_combat_result(mob_definition: Resource, hero_won: bool, activity: String = "") -> String:
 	var mob_id: String = mob_definition.id
 	var stats: Dictionary = combat_results_by_mob.get(mob_id, {
 		"display_name": mob_definition.display_name,
@@ -309,6 +319,10 @@ func record_combat_result(mob_definition: Resource, hero_won: bool) -> String:
 		stats["wins"] += 1
 	else:
 		stats["losses"] += 1
+		if activity in [COMBAT_CONTEXT_QUEST, COMBAT_CONTEXT_DUNGEON, COMBAT_CONTEXT_EVENT]:
+			var deaths_by_activity: Dictionary = stats.get("deaths_by_activity", {})
+			deaths_by_activity[activity] = int(deaths_by_activity.get(activity, 0)) + 1
+			stats["deaths_by_activity"] = deaths_by_activity
 	combat_results_by_mob[mob_id] = stats
 
 	var win_rate: float = 100.0 * float(stats["wins"]) / float(stats["total"])
@@ -392,7 +406,10 @@ func start_combat_session(mob_definition: Resource, combat_context: String, star
 		hero_damage_multiplier,
 		hero_state.power_strike_skill_level,
 		hero_state.wisdom,
-		hero_state.battle_guard_skill_level
+		hero_state.battle_guard_skill_level,
+		hero_state.shield_bash_skill_level,
+		hero_state.crippling_blows_skill_level,
+		hero_state.equipment.get_item("shield") != null
 	)
 	active_combat_session.hero_remaining_hp = clampf(starting_hero_hp, 0.0, combat_stats.max_hp)
 	active_combat_mob_definition = mob_definition
@@ -421,13 +438,16 @@ func advance_active_combat(available_seconds: float) -> float:
 			consume_combat_buff_fight()
 		active_combat_uses_blessing = false
 		active_combat_session = null
-		record_combat_result(fought_mob_definition, combat_result.hero_won)
+		record_combat_result(fought_mob_definition, combat_result.hero_won, finished_combat_context)
 		var combat_world_tick: int = get_active_combat_world_tick()
 		var previous_level: int = hero_state.level
 		if combat_result.hero_won:
 			hero_progression.add_experience(hero_state, fought_mob_definition.experience_reward)
 			if hero_state.level != previous_level:
 				refresh_combat_stats()
+			if previous_level < HeroSpecializationScript.DECISION_LEVEL and hero_state.level >= HeroSpecializationScript.DECISION_LEVEL:
+				if HeroSpecializationScript.start_if_needed(hero_state, combat_world_tick):
+					debug_log.record_event(combat_world_tick, "%s достиг 20 уровня. Началось 180-тиковое решение между путями Защитника и Истребителя." % hero_state.hero_name)
 
 		if finished_combat_context == COMBAT_CONTEXT_EVENT:
 			complete_event_combat(fought_mob_definition, combat_result, combat_world_tick)
@@ -545,6 +565,12 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 
 func on_world_tick_completed(completed_tick: int) -> void:
 	god_state.advance_world_tick()
+	if HeroSpecializationScript.start_if_needed(hero_state, completed_tick):
+		debug_log.record_event(completed_tick, "%s достиг 20 уровня. Началось 180-тиковое решение между путями Защитника и Истребителя." % hero_state.hero_name)
+	var specialization_result: String = HeroSpecializationScript.advance_world_tick(hero_state, completed_tick, simulation_seed)
+	if not specialization_result.is_empty():
+		hero_progression.ensure_first_specialization_skill(hero_state)
+		debug_log.record_event(completed_tick, "%s выбрал путь: %s." % [hero_state.hero_name, HeroSpecializationScript.get_class_display_name(specialization_result)])
 	if temporary_events_enabled:
 		var event_priority_refresh: bool = autonomous_quest_choice \
 			and completed_tick >= EventSystemScript.FIRST_EVENT_SPAWN_TICK \
@@ -1208,6 +1234,23 @@ func consume_combat_buff_fight() -> void:
 func guide_hero_to_quest(quest_id: String) -> bool:
 	var available_quests: Array = [] if quest_pool == null else quest_pool.get_available_quests()
 	return god_system.guide_hero_to_quest(quest_id, autonomous_quest_choice, available_quests)
+
+func guide_first_specialization(specialization_id: String) -> bool:
+	var can_apply: bool = HeroSpecializationScript.can_apply_guidance(hero_state, specialization_id)
+	if not god_system.use_specialization_guidance(can_apply):
+		return false
+	var result: String = HeroSpecializationScript.apply_guidance_and_resolve(hero_state, specialization_id, simulation_seed, world_clock.world_tick)
+	assert(not result.is_empty(), "Paid specialization guidance must resolve an active first-specialization decision.")
+	hero_progression.ensure_first_specialization_skill(hero_state)
+	debug_log.record_event(
+		world_clock.world_tick,
+		"Покровитель направил %s к пути «%s» (+0.15). Итоговый выбор героя: %s." % [
+			hero_state.hero_name,
+			HeroSpecializationScript.get_class_display_name(specialization_id),
+			HeroSpecializationScript.get_class_display_name(result),
+		]
+	)
+	return true
 
 func get_current_city_center() -> Vector2i:
 	if hero_state != null and hero_state.current_city_id == HeroState.MID_CITY_ID:

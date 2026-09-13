@@ -10,6 +10,8 @@ const FALLBACK_SEED: int = 1
 const NORMAL_ATTACK_ID := "normal_attack"
 const POWER_STRIKE_ID := "power_strike"
 const BATTLE_GUARD_ID := "battle_guard"
+const SHIELD_BASH_ID := "shield_bash"
+const CRIPPLING_BLOWS_ID := "crippling_blows"
 const MAX_RAGE: int = 100
 const NORMAL_HIT_RAGE: int = 5
 const CRITICAL_HIT_RAGE: int = 7
@@ -26,6 +28,16 @@ const BATTLE_GUARD_COOLDOWN_SECONDS: float = 60.0
 const BATTLE_GUARD_MIN_REDUCTION: float = 0.25
 const BATTLE_GUARD_MAX_REDUCTION: float = 0.45
 const BATTLE_GUARD_WISDOM_COEFFICIENT: float = 0.30
+const SHIELD_BASH_RAGE_COST: int = 25
+const SHIELD_BASH_COOLDOWN_SECONDS: float = 60.0
+const SHIELD_BASH_BASE_STUN_SECONDS: float = 3.0
+const SHIELD_BASH_WISDOM_COEFFICIENT: float = 2.0
+const CRIPPLING_BLOWS_RAGE_COST: int = 25
+const CRIPPLING_BLOWS_COOLDOWN_SECONDS: float = 60.0
+const CRIPPLING_BLOWS_DAMAGE_MULTIPLIER: float = 0.65
+const CRIPPLING_BLOWS_DURATION_SECONDS: float = 10.0
+const CRIPPLING_BLOWS_BASE_ATTACK_SPEED_REDUCTION: float = 0.15
+const CRIPPLING_BLOWS_WISDOM_COEFFICIENT: float = 0.10
 const BASE_WISDOM: int = 5
 
 var hero_stats: CombatStats
@@ -48,8 +60,15 @@ var power_strike_ready_time: float = 0.0
 var battle_guard_skill_level: int = 0
 var battle_guard_active_until: float = 0.0
 var battle_guard_ready_time: float = 0.0
+var shield_bash_skill_level: int = 0
+var shield_bash_ready_time: float = 0.0
+var crippling_blows_skill_level: int = 0
+var crippling_blows_ready_time: float = 0.0
+var hero_has_shield: bool = false
+var crippling_slow_active_until: float = 0.0
+var crippling_slow_reduction: float = 0.0
 
-func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, initial_random_number_generator: RandomNumberGenerator = null, initial_hero_damage_multiplier: float = 1.0, initial_power_strike_skill_level: int = 0, initial_hero_wisdom: int = BASE_WISDOM, initial_battle_guard_skill_level: int = 0) -> void:
+func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, initial_random_number_generator: RandomNumberGenerator = null, initial_hero_damage_multiplier: float = 1.0, initial_power_strike_skill_level: int = 0, initial_hero_wisdom: int = BASE_WISDOM, initial_battle_guard_skill_level: int = 0, initial_shield_bash_skill_level: int = 0, initial_crippling_blows_skill_level: int = 0, initial_hero_has_shield: bool = false) -> void:
 	assert(initial_hero_stats.attack_speed > 0.0, "Hero attack speed must be positive.")
 	assert(initial_mob_stats.attack_speed > 0.0, "Mob attack speed must be positive.")
 	hero_stats = initial_hero_stats
@@ -58,9 +77,14 @@ func _init(initial_hero_stats: CombatStats, initial_mob_stats: CombatStats, init
 	assert(hero_damage_multiplier > 0.0, "Hero damage multiplier must be positive.")
 	assert(initial_power_strike_skill_level >= 0 and initial_power_strike_skill_level <= MAX_SKILL_LEVEL, "Power Strike Skill Level must be between 0 and 10.")
 	assert(initial_battle_guard_skill_level >= 0 and initial_battle_guard_skill_level <= MAX_SKILL_LEVEL, "Battle Guard Skill Level must be between 0 and 10.")
+	assert(initial_shield_bash_skill_level >= 0 and initial_shield_bash_skill_level <= MAX_SKILL_LEVEL, "Shield Bash Skill Level must be between 0 and 10.")
+	assert(initial_crippling_blows_skill_level >= 0 and initial_crippling_blows_skill_level <= MAX_SKILL_LEVEL, "Crippling Blows Skill Level must be between 0 and 10.")
 	power_strike_skill_level = initial_power_strike_skill_level
 	hero_wisdom = initial_hero_wisdom
 	battle_guard_skill_level = initial_battle_guard_skill_level
+	shield_bash_skill_level = initial_shield_bash_skill_level
+	crippling_blows_skill_level = initial_crippling_blows_skill_level
+	hero_has_shield = initial_hero_has_shield
 	random_number_generator = initial_random_number_generator
 	if random_number_generator == null:
 		random_number_generator = RandomNumberGenerator.new()
@@ -80,9 +104,14 @@ func advance(delta_seconds: float, mob_damage_type: String = DamageResolverScrip
 	var target_time := elapsed_seconds + maxf(0.0, delta_seconds)
 	while not is_finished:
 		var next_action_time := minf(hero_next_attack_time, mob_next_attack_time)
+		if has_active_crippling_slow():
+			next_action_time = minf(next_action_time, crippling_slow_active_until)
 		if next_action_time > target_time + TIME_EPSILON:
 			break
 		elapsed_seconds = next_action_time
+		if crippling_slow_reduction > 0.0 and elapsed_seconds + TIME_EPSILON >= crippling_slow_active_until:
+			expire_crippling_slow()
+			continue
 		try_activate_battle_guard(resolved_actions)
 		var hero_attacks_now := is_equal_approx(hero_next_attack_time, next_action_time)
 		var mob_attacks_now := is_equal_approx(mob_next_attack_time, next_action_time)
@@ -90,21 +119,43 @@ func advance(delta_seconds: float, mob_damage_type: String = DamageResolverScrip
 		var mob_damage := 0.0
 
 		if hero_attacks_now:
-			var uses_power_strike := can_use_power_strike()
-			var attack_multiplier := hero_damage_multiplier
-			var action_id := NORMAL_ATTACK_ID
-			if uses_power_strike:
-				rage -= POWER_STRIKE_RAGE_COST
-				power_strike_ready_time = elapsed_seconds + POWER_STRIKE_COOLDOWN_SECONDS
-				attack_multiplier *= get_power_strike_multiplier()
-				action_id = POWER_STRIKE_ID
-			var hero_hit = create_hit("hero", hero_stats, mob_stats, attack_multiplier, uses_power_strike, action_id)
-			hero_hit.time_seconds = elapsed_seconds
-			actions.append(hero_hit)
-			resolved_actions.append(hero_hit)
-			hero_damage = hero_hit.damage
-			if not uses_power_strike and hero_hit.did_hit:
-				add_rage(CRITICAL_HIT_RAGE if hero_hit.is_critical else NORMAL_HIT_RAGE)
+			if can_use_shield_bash():
+				rage -= SHIELD_BASH_RAGE_COST
+				shield_bash_ready_time = elapsed_seconds + SHIELD_BASH_COOLDOWN_SECONDS
+				var stun_duration := get_shield_bash_stun_duration()
+				mob_next_attack_time += stun_duration
+				mob_attacks_now = false
+				var shield_bash = CombatActionScript.new("hero", elapsed_seconds, 0.0, false, true, false, DamageResolverScript.DAMAGE_TYPE_PHYSICAL, SHIELD_BASH_ID)
+				actions.append(shield_bash)
+				resolved_actions.append(shield_bash)
+			elif can_use_crippling_blows():
+				rage -= CRIPPLING_BLOWS_RAGE_COST
+				crippling_blows_ready_time = elapsed_seconds + CRIPPLING_BLOWS_COOLDOWN_SECONDS
+				var crippling_hit_one = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * CRIPPLING_BLOWS_DAMAGE_MULTIPLIER, false, CRIPPLING_BLOWS_ID)
+				var crippling_hit_two = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * CRIPPLING_BLOWS_DAMAGE_MULTIPLIER, false, CRIPPLING_BLOWS_ID)
+				for crippling_hit in [crippling_hit_one, crippling_hit_two]:
+					crippling_hit.time_seconds = elapsed_seconds
+					actions.append(crippling_hit)
+					resolved_actions.append(crippling_hit)
+					hero_damage += crippling_hit.damage
+				if crippling_hit_one.did_hit or crippling_hit_two.did_hit:
+					apply_crippling_slow(get_crippling_blows_attack_speed_reduction())
+			else:
+				var uses_power_strike := can_use_power_strike()
+				var attack_multiplier := hero_damage_multiplier
+				var action_id := NORMAL_ATTACK_ID
+				if uses_power_strike:
+					rage -= POWER_STRIKE_RAGE_COST
+					power_strike_ready_time = elapsed_seconds + POWER_STRIKE_COOLDOWN_SECONDS
+					attack_multiplier *= get_power_strike_multiplier()
+					action_id = POWER_STRIKE_ID
+				var hero_hit = create_hit("hero", hero_stats, mob_stats, attack_multiplier, uses_power_strike, action_id)
+				hero_hit.time_seconds = elapsed_seconds
+				actions.append(hero_hit)
+				resolved_actions.append(hero_hit)
+				hero_damage = hero_hit.damage
+				if not uses_power_strike and hero_hit.did_hit:
+					add_rage(CRITICAL_HIT_RAGE if hero_hit.is_critical else NORMAL_HIT_RAGE)
 			hero_next_attack_time += hero_attack_interval
 		if mob_attacks_now:
 			var mob_hit = create_hit("mob", mob_stats, hero_stats, 1.0, false, NORMAL_ATTACK_ID, mob_damage_type)
@@ -164,10 +215,60 @@ func get_matching_resistance(target_stats: CombatStats, damage_type: String) -> 
 func can_use_power_strike() -> bool:
 	return power_strike_skill_level > 0 and rage >= POWER_STRIKE_RAGE_COST and elapsed_seconds + TIME_EPSILON >= power_strike_ready_time
 
+func can_use_shield_bash() -> bool:
+	return shield_bash_skill_level > 0 and hero_has_shield and rage >= SHIELD_BASH_RAGE_COST and elapsed_seconds + TIME_EPSILON >= shield_bash_ready_time
+
+func can_use_crippling_blows() -> bool:
+	return crippling_blows_skill_level > 0 and rage >= CRIPPLING_BLOWS_RAGE_COST and elapsed_seconds + TIME_EPSILON >= crippling_blows_ready_time
+
+func get_wisdom_factor() -> float:
+	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
+	return float(effective_wisdom) / float(effective_wisdom + 100)
+
+func get_shield_bash_stun_duration() -> float:
+	assert(shield_bash_skill_level > 0, "Shield Bash duration requires the learned specialization skill.")
+	return SHIELD_BASH_BASE_STUN_SECONDS + SHIELD_BASH_WISDOM_COEFFICIENT * get_wisdom_factor()
+
+func get_crippling_blows_attack_speed_reduction() -> float:
+	assert(crippling_blows_skill_level > 0, "Crippling Blows reduction requires the learned specialization skill.")
+	return CRIPPLING_BLOWS_BASE_ATTACK_SPEED_REDUCTION + CRIPPLING_BLOWS_WISDOM_COEFFICIENT * get_wisdom_factor()
+
+func has_active_crippling_slow() -> bool:
+	return crippling_slow_reduction > 0.0 and crippling_slow_active_until > elapsed_seconds
+
+func apply_crippling_slow(reduction: float) -> void:
+	var clamped_reduction := clampf(reduction, 0.0, 0.95)
+	if clamped_reduction <= 0.0:
+		return
+	if has_active_crippling_slow():
+		expire_crippling_slow()
+	var base_interval: float = 2.0 / mob_stats.attack_speed
+	var slowed_interval: float = base_interval / (1.0 - clamped_reduction)
+	rescale_mob_attack_progress(mob_attack_interval, slowed_interval)
+	mob_attack_interval = slowed_interval
+	crippling_slow_reduction = clamped_reduction
+	crippling_slow_active_until = elapsed_seconds + CRIPPLING_BLOWS_DURATION_SECONDS
+
+func expire_crippling_slow() -> void:
+	if crippling_slow_reduction <= 0.0:
+		crippling_slow_active_until = 0.0
+		return
+	var base_interval: float = 2.0 / mob_stats.attack_speed
+	rescale_mob_attack_progress(mob_attack_interval, base_interval)
+	mob_attack_interval = base_interval
+	crippling_slow_reduction = 0.0
+	crippling_slow_active_until = 0.0
+
+func rescale_mob_attack_progress(old_interval: float, new_interval: float) -> void:
+	if old_interval <= TIME_EPSILON or new_interval <= TIME_EPSILON:
+		return
+	var remaining: float = maxf(0.0, mob_next_attack_time - elapsed_seconds)
+	var progress: float = clampf(1.0 - remaining / old_interval, 0.0, 1.0)
+	mob_next_attack_time = elapsed_seconds + new_interval * (1.0 - progress)
+
 func get_power_strike_multiplier() -> float:
 	assert(power_strike_skill_level > 0 and power_strike_skill_level <= MAX_SKILL_LEVEL, "Power Strike multiplier requires a learned Skill Level from 1 to 10.")
-	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
-	var wisdom_factor := float(effective_wisdom) / float(effective_wisdom + 100)
+	var wisdom_factor := get_wisdom_factor()
 	var skill_progress := float(power_strike_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
 	var skill_multiplier := lerpf(POWER_STRIKE_MIN_MULTIPLIER, POWER_STRIKE_MAX_MULTIPLIER, skill_progress)
 	return skill_multiplier + POWER_STRIKE_WISDOM_COEFFICIENT * wisdom_factor
@@ -180,8 +281,7 @@ func is_battle_guard_active() -> bool:
 
 func get_battle_guard_multiplier() -> float:
 	assert(battle_guard_skill_level > 0 and battle_guard_skill_level <= MAX_SKILL_LEVEL, "Battle Guard multiplier requires a learned Skill Level from 1 to 10.")
-	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
-	var wisdom_factor := float(effective_wisdom) / float(effective_wisdom + 100)
+	var wisdom_factor := get_wisdom_factor()
 	var skill_progress := float(battle_guard_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
 	var base_reduction := lerpf(BATTLE_GUARD_MIN_REDUCTION, BATTLE_GUARD_MAX_REDUCTION, skill_progress)
 	var damage_reduction := base_reduction + BATTLE_GUARD_WISDOM_COEFFICIENT * wisdom_factor

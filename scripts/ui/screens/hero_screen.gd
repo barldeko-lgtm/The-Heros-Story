@@ -3,6 +3,9 @@ extends Control
 signal hero_state_changed
 
 const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
+const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
+const HeroSpecializationScript = preload("res://scripts/hero/hero_specialization.gd")
+const GodStateScript = preload("res://scripts/god/god_state.gd")
 const PRIMARY_ATTRIBUTE_DISPLAY_NAMES := {
 	"strength": "Сила",
 	"dexterity": "Ловкость",
@@ -15,9 +18,15 @@ var attribute_points_label: Label
 var attribute_buttons: Dictionary = {}
 var power_strike_level_label: Label
 var battle_guard_level_label: Label
+var specialization_skill_label: Label
 var personality_axis_bars: Dictionary = {}
 var personality_axis_markers: Dictionary = {}
 var personality_axis_value_labels: Dictionary = {}
+var specialization_panel: PanelContainer
+var specialization_status_label: Label
+var specialization_details_label: RichTextLabel
+var protector_guidance_button: Button
+var slayer_guidance_button: Button
 
 func setup(live_simulation) -> void:
 	simulation = live_simulation
@@ -26,12 +35,115 @@ func _ready() -> void:
 	create_attribute_allocation_panel()
 	create_skills_panel()
 	create_personality_panel()
+	create_specialization_panel()
 	refresh()
 
 func refresh() -> void:
 	update_attribute_allocation_panel()
 	update_skills_panel()
 	update_personality_panel()
+	update_specialization_panel()
+
+func create_specialization_panel() -> void:
+	specialization_panel = PanelContainer.new()
+	specialization_panel.name = "SpecializationPanel"
+	apply_panel_style(specialization_panel)
+	specialization_panel.position = Vector2(973.0, 276.0)
+	specialization_panel.size = Vector2(361.0, 476.0)
+	add_child(specialization_panel)
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 8)
+	specialization_panel.add_child(content)
+
+	var title := Label.new()
+	title.text = "Первая специализация"
+	title.add_theme_font_size_override("font_size", 20)
+	content.add_child(title)
+
+	specialization_status_label = Label.new()
+	specialization_status_label.name = "SpecializationStatusLabel"
+	specialization_status_label.add_theme_font_size_override("font_size", 13)
+	specialization_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(specialization_status_label)
+
+	specialization_details_label = RichTextLabel.new()
+	specialization_details_label.name = "SpecializationDetailsLabel"
+	specialization_details_label.bbcode_enabled = true
+	specialization_details_label.fit_content = false
+	specialization_details_label.scroll_active = true
+	specialization_details_label.custom_minimum_size = Vector2(0.0, 270.0)
+	specialization_details_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	specialization_details_label.add_theme_font_size_override("normal_font_size", 13)
+	content.add_child(specialization_details_label)
+
+	protector_guidance_button = Button.new()
+	protector_guidance_button.name = "ProtectorGuidanceButton"
+	protector_guidance_button.text = "Направить к Защитнику  +0.15"
+	protector_guidance_button.custom_minimum_size.y = 40.0
+	apply_secondary_button_style(protector_guidance_button)
+	protector_guidance_button.pressed.connect(on_specialization_guidance_pressed.bind(HeroSpecializationScript.PROTECTOR_ID))
+	content.add_child(protector_guidance_button)
+
+	slayer_guidance_button = Button.new()
+	slayer_guidance_button.name = "SlayerGuidanceButton"
+	slayer_guidance_button.text = "Направить к Истребителю  +0.15"
+	slayer_guidance_button.custom_minimum_size.y = 40.0
+	apply_secondary_button_style(slayer_guidance_button)
+	slayer_guidance_button.pressed.connect(on_specialization_guidance_pressed.bind(HeroSpecializationScript.SLAYER_ID))
+	content.add_child(slayer_guidance_button)
+
+func on_specialization_guidance_pressed(specialization_id: String) -> void:
+	if simulation.guide_first_specialization(specialization_id):
+		hero_state_changed.emit()
+	refresh()
+
+func update_specialization_panel() -> void:
+	if specialization_details_label == null:
+		return
+	var state: Dictionary = simulation.get_first_specialization_debug_state()
+	var hero = simulation.hero_state
+	var resolved_id: String = str(state.get("specialization_id", ""))
+	var active: bool = bool(state.get("decision_active", false))
+	if not resolved_id.is_empty():
+		specialization_status_label.text = "Выбор завершён: %s" % HeroSpecializationScript.get_class_display_name(resolved_id)
+	elif active:
+		specialization_status_label.text = "АКТИВНО · осталось %d / %d тиков" % [int(state["ticks_remaining"]), HeroSpecializationScript.DECISION_WINDOW_TICKS]
+	else:
+		specialization_status_label.text = "Наблюдение · выбор откроется на 20 уровне" if hero.level < HeroSpecializationScript.DECISION_LEVEL else "Ожидает запуска окна выбора"
+
+	var trait_id: String = str(state.get("courage_trait", ""))
+	var trait_text := "нет"
+	if not trait_id.is_empty():
+		trait_text = HeroTraitsScript.get_display_name(trait_id)
+	trait_text += " (зафиксировано)" if bool(state.get("trait_is_frozen", false)) else " (текущее; снимок на 20 ур.)"
+
+	var guidance_id: String = str(state.get("guidance_id", ""))
+	var protector_guidance: float = float(state.get("protector_divine_modifier", 0.0))
+	var slayer_guidance: float = float(state.get("slayer_divine_modifier", 0.0))
+	var text := "[color=#aeb8c6]Свободных очков:[/color] %d\n" % int(state["pending_primary_attribute_points"])
+	text += "[color=#aeb8c6]Черта выбора:[/color] %s\n" % trait_text
+	text += "[color=#aeb8c6]Разница итогов:[/color] %.3f\n\n" % float(state["difference"])
+	text += "[color=#d9bd7d][b]ЗАЩИТНИК[/b][/color]\n"
+	text += "CON %d + WIS %d → raw %.0f\n" % [hero.constitution, hero.wisdom, float(state["protector_raw"])]
+	text += "Вес статов: %.3f\n" % float(state["protector_base"])
+	text += "Черта: %+.2f · Покровитель: %+.2f\n" % [float(state["protector_trait_modifier"]), protector_guidance]
+	text += "[b]Итого: %.3f[/b]\n\n" % float(state["protector_score"])
+	text += "[color=#d9bd7d][b]ИСТРЕБИТЕЛЬ[/b][/color]\n"
+	text += "Личная STR %d (STR %d − %d классовых) + DEX %d → raw %.0f\n" % [int(state["personal_strength"]), hero.strength, int(state["mandatory_strength"]), hero.dexterity, float(state["slayer_raw"])]
+	text += "Вес статов: %.3f\n" % float(state["slayer_base"])
+	text += "Черта: %+.2f · Покровитель: %+.2f\n" % [float(state["slayer_trait_modifier"]), slayer_guidance]
+	text += "[b]Итого: %.3f[/b]" % float(state["slayer_score"])
+	if not guidance_id.is_empty():
+		text += "\n\n[color=#aeb8c6]Влияние уже использовано: %s[/color]" % HeroSpecializationScript.get_class_display_name(guidance_id)
+	specialization_details_label.text = text
+
+	var can_choose: bool = active and guidance_id.is_empty() and simulation.god_state.energy + 0.000001 >= GodStateScript.SPECIALIZATION_GUIDANCE_COST
+	protector_guidance_button.disabled = not can_choose
+	slayer_guidance_button.disabled = not can_choose
+	var cost_text := "Стоимость: %.0f энергии (сейчас %.0f)" % [GodStateScript.SPECIALIZATION_GUIDANCE_COST, simulation.god_state.energy]
+	protector_guidance_button.tooltip_text = cost_text
+	slayer_guidance_button.tooltip_text = cost_text
 
 func create_attribute_allocation_panel() -> void:
 	var panel := PanelContainer.new()
@@ -74,7 +186,7 @@ func create_skills_panel() -> void:
 	add_child(panel)
 
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 10)
+	content.add_theme_constant_override("separation", 6)
 	panel.add_child(content)
 
 	var title := Label.new()
@@ -91,6 +203,12 @@ func create_skills_panel() -> void:
 	battle_guard_level_label.name = "BattleGuardLevelLabel"
 	battle_guard_level_label.add_theme_font_size_override("font_size", 17)
 	content.add_child(battle_guard_level_label)
+
+	specialization_skill_label = Label.new()
+	specialization_skill_label.name = "SpecializationSkillLabel"
+	specialization_skill_label.add_theme_font_size_override("font_size", 13)
+	specialization_skill_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	content.add_child(specialization_skill_label)
 
 func create_personality_panel() -> void:
 	var panel := PanelContainer.new()
@@ -246,10 +364,22 @@ func update_attribute_allocation_panel() -> void:
 		attribute_buttons[attribute_id].disabled = pending_points <= 0 or in_combat
 
 func update_skills_panel() -> void:
-	if power_strike_level_label == null or battle_guard_level_label == null:
+	if power_strike_level_label == null or battle_guard_level_label == null or specialization_skill_label == null:
 		return
 	power_strike_level_label.text = get_skill_level_text("Мощный удар", simulation.hero_state.power_strike_skill_level)
 	battle_guard_level_label.text = get_skill_level_text("Боевой заслон", simulation.hero_state.battle_guard_skill_level)
+	match simulation.hero_state.hero_class_id:
+		HeroSpecializationScript.PROTECTOR_ID:
+			specialization_skill_label.text = get_specialization_skill_text("Удар щитом", simulation.hero_state.shield_bash_skill_level)
+		HeroSpecializationScript.SLAYER_ID:
+			specialization_skill_label.text = get_specialization_skill_text("Калечащие удары", simulation.hero_state.crippling_blows_skill_level)
+		_:
+			specialization_skill_label.text = "Спецнавык: после выбора пути"
+
+func get_specialization_skill_text(skill_name: String, skill_level: int) -> String:
+	if skill_level <= 0:
+		return "%s: откроется на ур. 25" % skill_name
+	return "%s: ур. 1" % skill_name
 
 func get_skill_level_text(skill_name: String, skill_level: int) -> String:
 	if skill_level <= 0:

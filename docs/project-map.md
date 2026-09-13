@@ -132,7 +132,7 @@ Shared stateless death-recovery rules used by QuestRunner, DungeonRunner and Eve
 
 ### `scripts/hero/hero_progression.gd`
 
-Owns XP application, level-up growth, pending primary-point creation/spending and current automatic Warrior ability unlocks.
+Owns XP application, level-up growth, pending primary-point creation/spending, current automatic base-Warrior ability unlocks, and the automatic Level-25 SL1 grant for the already chosen Protector/Slayer path. It does not buy later ranks or execute combat abilities.
 
 ### `scripts/hero/hero_traits.gd`
 
@@ -143,6 +143,10 @@ Owns the canonical current trait IDs/display names and the small constants/helpe
 Owns the four personality axes, clamping, activation/hysteresis transitions, mapping between axis sides and visible traits, starting-trait initialization and authored Formative movement.
 
 `HeroState` stores values; `TraitDevelopment` owns transition rules.
+
+### `scripts/hero/hero_specialization.gd`
+
+Owns the first Protector / Slayer decision rules: live attribute-profile weights, removal of actually earned mandatory Warrior STR, frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break and final `hero_class_id` path switch. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
 
 ### `scripts/hero/equipment.gd`
 
@@ -179,7 +183,7 @@ Factory/entry helper that creates one live duel from already resolved hero and m
 
 ### `scripts/combat/combat_session.gd`
 
-Owns one active duel: internal combat time, live HP, attack opportunities, hit/crit/block resolution calls, fight-local Rage, current autonomous Warrior abilities and final victory/defeat state.
+Owns one active duel: internal combat time, live HP, attack opportunities, hit/crit/block resolution calls, fight-local Rage, current autonomous Warrior/first-specialization abilities and final victory/defeat state. It also owns the fight-local Shield Bash enemy-turn freeze and Crippling Blows Attack-Speed interval/progress adjustment.
 
 It must not own quest cancellation, resurrection, shop logic, dungeon progression or God-system state.
 
@@ -672,7 +676,7 @@ Quest code discovers content by directory rather than hard-coding every individu
 ### Dungeons
 
 - `data/dungeons/starting_region/` — current ordinary Starting Region dungeons and their dungeon-only mobs.
-- `data/dungeons/mid_region/` — future ordinary Mid Region dungeon scaffold.
+- `data/dungeons/mid_region/` — current three Arden / Mid Region ordinary dungeons and their dungeon-only mobs.
 - `data/dungeons/specialization/` — future specialization dungeon scaffold; intentionally not part of the ordinary loader.
 
 ### Items/economy

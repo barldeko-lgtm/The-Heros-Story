@@ -168,8 +168,8 @@ The shared calculator currently applies an elemental-offense evaluation factor o
 Current Warrior ability ownership crosses progression/state/combat without merging those responsibilities:
 
 ```text
-HeroProgression learns Skill Level 1 and defines hero-level rank availability
-→ SkillTrainingSystem purchases unlocked higher Skill Levels with Gold
+HeroProgression learns base Skill Level 1 and the current Level-25 first-specialization SL1
+→ SkillTrainingSystem purchases unlocked higher Skill Levels for the base Warrior skills only
 → HeroState stores learned Skill Levels
 → Simulation supplies the current learned levels + relevant hero attributes when a fight starts
 → CombatSession owns fight-local Rage and the live ability timelines
@@ -180,8 +180,11 @@ Contracts:
 
 - Rage is fight-local `CombatSession` state and is not carried between fights in `HeroState`;
 - ability unlock/progression state belongs to hero progression/state, not to `CombatSession`;
-- `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it does not grant Skill Level 1 or invent hero-level gates;
+- `SkillTrainingSystem` may advance only an already-learned base-Warrior rank that `HeroProgression` says is currently unlocked; it does not grant Skill Level 1 or currently train Shield Bash / Crippling Blows;
 - `CombatSession` decides autonomous use of already-learned combat abilities during the duel;
+- when a first-specialization skill is usable it has Rage-spending priority over Power Strike; Power Strike remains the fallback while the specialization skill is unavailable/on cooldown;
+- Shield Bash freezes the current enemy attack timer for its resolved stun duration instead of allowing hidden progress to accumulate during stun;
+- Crippling Blows owns its temporary enemy Attack-Speed adjustment in `CombatSession`, preserving current attack-progress percentage both when the slow starts and when it expires;
 - ability-specific WIS scaling belongs to the ability/combat implementation rather than a fake generic WIS stat conversion in `StatResolver`;
 - the current provisional WIS contribution to persistent HeroPower is a Power valuation owned by `PowerCalculator`, not a generic CombatStats conversion;
 - narrative identifies special actions from structured combat facts/action ids rather than inferring them from damage numbers.
@@ -213,6 +216,35 @@ Contracts:
 - UI may display current development/debug state but must not own personality-transition logic.
 
 Exact axis values, thresholds and current starting bootstrap are documented in `current-state.md` and Scope rather than duplicated here.
+
+## First-specialization decision boundary
+
+The current first-specialization decision remains split across state, rule ownership, God-resource spending and presentation:
+
+```text
+HeroState live attributes + established Courage trait
+→ HeroSpecialization opens Level-20 window and freezes Courage input
+→ HeroSpecialization computes Protector / Slayer scores from live assigned attributes
+→ optional Simulation request → GodSystem / GodState spends 80 Energy
+→ HeroSpecialization applies +0.15 and resolves immediately
+OR 180 world ticks expire
+→ HeroSpecialization resolves deterministically
+→ HeroState first_specialization_id + hero_class_id
+→ UI presents the resulting state
+```
+
+Contracts:
+
+- `HeroSpecialization` owns the score formulas and decision lifecycle; UI must not duplicate or resolve them;
+- Level-20 Courage is a frozen fact for this decision only: Brave contributes +0.05 Slayer, Cautious contributes +0.05 Protector, and later personality transitions do not rewrite the snapshot;
+- assigned primary attributes remain live for the full window; pending unspent points have no effect until `Simulation → HeroProgression` actually allocates them;
+- mandatory Warrior STR must never create false Slayer preference. The calculation subtracts the actually earned fixed class contribution (`19` on reaching Level 20 in the current progression), not a stale magic constant;
+- a large score lead alone never closes the current 180-tick window;
+- one-time player guidance may be attempted only while the window is active; Energy spending stays in the God-state path, while specialization scoring stays in `HeroSpecialization`;
+- guidance adds +0.15 and immediately triggers the final current-score comparison; it is influence, not guaranteed direct assignment;
+- without guidance, the full 180 elapsed world ticks are required before resolution;
+- exact ties use an isolated deterministic seed and must not consume unrelated gameplay RNG streams;
+- the current path decision changes the hero's displayed/runtime class id to Protector or Slayer when the direction resolves; at Level 25 `HeroProgression` grants the matching Shield Bash / Crippling Blows SL1 automatically. Specialization Quest rewards, profile growth, later specialization-skill ranks, specialization equipment rules and specialization-skill HeroPower valuation remain separate future slices.
 
 ## Ordinary quest selection and execution
 
