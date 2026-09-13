@@ -60,6 +60,19 @@ func _init() -> void:
 	var legacy_v2_result: Dictionary = SimulationSnapshot.restore(legacy_v2)
 	assert(str(legacy_v2_result.get("error", "")).is_empty() and legacy_v2_result.get("simulation") != null, "Legacy v2 snapshots must migrate to default specialization-skill combat state.")
 
+	var legacy_v4: Dictionary = captured.duplicate(true)
+	legacy_v4["version"] = SimulationSnapshot.LEGACY_VERSION_4
+	var legacy_v4_hero_id: int = legacy_v4.nodes[legacy_v4.root.ref].properties.hero_state.ref
+	legacy_v4.nodes[legacy_v4_hero_id].properties.level = 25
+	legacy_v4.nodes[legacy_v4_hero_id].properties.first_specialization_id = "protector"
+	legacy_v4.nodes[legacy_v4_hero_id].properties.hero_class_id = "protector"
+	legacy_v4.nodes[legacy_v4_hero_id].properties.shield_bash_skill_level = 1
+	var legacy_v4_result: Dictionary = SimulationSnapshot.restore(legacy_v4)
+	assert(str(legacy_v4_result.get("error", "")).is_empty() and legacy_v4_result.get("simulation") != null, "Legacy v4 specialization-selection snapshots must migrate to the delayed-grant semantics.")
+	var migrated_v4_hero = legacy_v4_result.simulation.hero_state
+	assert(migrated_v4_hero.first_specialization_id == "protector" and migrated_v4_hero.hero_class_id == "warrior", "Legacy chosen Protector must remain the target but return to Warrior until the specialization trial is completed.")
+	assert(migrated_v4_hero.shield_bash_skill_level == 0 and migrated_v4_hero.crippling_blows_skill_level == 0, "Legacy specialization skills granted before any trial must be removed by the v4-to-v5 migration.")
+
 	simulation.advance_time(60.0)
 	restored.advance_time(60.0)
 	assert(restored.world_clock.world_tick == simulation.world_clock.world_tick, "Continuation must consume identical world ticks.")

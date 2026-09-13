@@ -168,7 +168,7 @@ The shared calculator currently applies an elemental-offense evaluation factor o
 Current Warrior ability ownership crosses progression/state/combat without merging those responsibilities:
 
 ```text
-HeroProgression learns base Skill Level 1 and the current Level-25 first-specialization SL1
+HeroProgression learns base Skill Level 1 and the current Level-25 first-specialization SL1 only after that specialization is actually granted
 → SkillTrainingSystem purchases unlocked higher Skill Levels for the base Warrior skills only
 → HeroState stores learned Skill Levels
 → Simulation supplies the current learned levels + relevant hero attributes when a fight starts
@@ -229,7 +229,9 @@ HeroState live attributes + established Courage trait
 → HeroSpecialization applies +0.15 and resolves immediately
 OR 180 world ticks expire
 → HeroSpecialization resolves deterministically
-→ HeroState first_specialization_id + hero_class_id
+→ HeroState first_specialization_id target only; hero_class_id remains Warrior
+→ later Specialization Quest/dungeon completion explicitly grants the selected class
+→ HeroProgression grants matching SL1 immediately if Level 25+ (or on reaching Level 25 later)
 → UI presents the resulting state
 ```
 
@@ -244,7 +246,10 @@ Contracts:
 - guidance adds +0.15 and immediately triggers the final current-score comparison; it is influence, not guaranteed direct assignment;
 - without guidance, the full 180 elapsed world ticks are required before resolution;
 - exact ties use an isolated deterministic seed and must not consume unrelated gameplay RNG streams;
-- the current path decision changes the hero's displayed/runtime class id to Protector or Slayer when the direction resolves; at Level 25 `HeroProgression` grants the matching Shield Bash / Crippling Blows SL1 automatically. Specialization Quest rewards, profile growth, later specialization-skill ranks, specialization equipment rules and specialization-skill HeroPower valuation remain separate future slices.
+- the current path decision fixes only `first_specialization_id`; `hero_class_id` stays Warrior until the selected specialization trial is explicitly completed;
+- `HeroProgression` grants Shield Bash / Crippling Blows SL1 only when the matching specialization is actually granted and the hero is Level 25+, or when that already-granted specialization later reaches Level 25;
+- the two authored specialization dungeon resources stay outside `DungeonSystem.DEFAULT_ORDINARY_DUNGEON_DIRECTORIES`; their future quest/spawn integration must add them deliberately rather than making them ordinary discoverable dungeons;
+- Specialization Quest objective/relic handling, material completion rewards, profile growth, later specialization-skill ranks, specialization equipment rules and specialization-skill HeroPower valuation remain separate future slices.
 
 ## Ordinary quest selection and execution
 

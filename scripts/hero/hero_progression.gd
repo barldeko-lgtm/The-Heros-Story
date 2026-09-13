@@ -68,10 +68,10 @@ func apply_level_up(hero_state) -> void:
 func ensure_first_specialization_skill(hero_state) -> bool:
 	if hero_state == null or hero_state.level < FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL:
 		return false
-	if hero_state.hero_class_id == "protector" and hero_state.shield_bash_skill_level == 0:
+	if hero_state.first_specialization_id == "protector" and hero_state.hero_class_id == "protector" and hero_state.shield_bash_skill_level == 0:
 		hero_state.shield_bash_skill_level = 1
 		return true
-	if hero_state.hero_class_id == "slayer" and hero_state.crippling_blows_skill_level == 0:
+	if hero_state.first_specialization_id == "slayer" and hero_state.hero_class_id == "slayer" and hero_state.crippling_blows_skill_level == 0:
 		hero_state.crippling_blows_skill_level = 1
 		return true
 	return false

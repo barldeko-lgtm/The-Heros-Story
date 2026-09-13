@@ -128,11 +128,20 @@ static func resolve(hero_state, simulation_seed: int, decision_tick: int) -> Str
 	hero_state.specialization_final_protector_score = protector_score
 	hero_state.specialization_final_slayer_score = slayer_score
 	hero_state.first_specialization_id = result
-	hero_state.hero_class_id = result
 	hero_state.specialization_decision_active = false
 	hero_state.specialization_decision_ticks_remaining = 0
 	hero_state.state_changed.emit()
 	return result
+
+static func grant_selected_specialization(hero_state) -> String:
+	if hero_state == null or hero_state.hero_class_id != WARRIOR_ID:
+		return ""
+	var specialization_id: String = str(hero_state.first_specialization_id)
+	if not is_valid_specialization_id(specialization_id):
+		return ""
+	hero_state.hero_class_id = specialization_id
+	hero_state.state_changed.emit()
+	return specialization_id
 
 static func get_debug_state(hero_state) -> Dictionary:
 	var scores: Dictionary = get_score_state(hero_state)

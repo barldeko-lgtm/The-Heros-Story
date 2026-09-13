@@ -132,7 +132,7 @@ Shared stateless death-recovery rules used by QuestRunner, DungeonRunner and Eve
 
 ### `scripts/hero/hero_progression.gd`
 
-Owns XP application, level-up growth, pending primary-point creation/spending, current automatic base-Warrior ability unlocks, and the automatic Level-25 SL1 grant for the already chosen Protector/Slayer path. It does not buy later ranks or execute combat abilities.
+Owns XP application, level-up growth, pending primary-point creation/spending, current automatic base-Warrior ability unlocks, and the automatic Level-25 SL1 grant for an **actually granted** Protector/Slayer specialization. A chosen target alone does not unlock the specialization skill. It does not buy later ranks or execute combat abilities.
 
 ### `scripts/hero/hero_traits.gd`
 
@@ -146,7 +146,7 @@ Owns the four personality axes, clamping, activation/hysteresis transitions, map
 
 ### `scripts/hero/hero_specialization.gd`
 
-Owns the first Protector / Slayer decision rules: live attribute-profile weights, removal of actually earned mandatory Warrior STR, frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break and final `hero_class_id` path switch. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
+Owns the first Protector / Slayer decision rules: live attribute-profile weights, removal of actually earned mandatory Warrior STR, frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break, permanent target selection in `first_specialization_id`, and the explicit later grant operation that changes `hero_class_id` only after the specialization trial is completed. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
 
 ### `scripts/hero/equipment.gd`
 
@@ -685,7 +685,7 @@ Quest code discovers content by directory rather than hard-coding every individu
 
 - `data/dungeons/starting_region/` — current ordinary Starting Region dungeons and their dungeon-only mobs.
 - `data/dungeons/mid_region/` — current three Arden / Mid Region ordinary dungeons and their dungeon-only mobs.
-- `data/dungeons/specialization/` — future specialization dungeon scaffold; intentionally not part of the ordinary loader.
+- `data/dungeons/specialization/` — authored mirrored Protector/Slayer 2+boss specialization trials (approximately 340/420 Power); intentionally not part of the ordinary loader until the Specialization Quest spawn/activation flow is connected.
 
 ### Items/economy
 

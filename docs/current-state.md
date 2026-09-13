@@ -10,7 +10,7 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision slice is now live**, while its Specialization Quests, specialization dungeons, rewards and abilities remain unimplemented; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
+The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision slice is live** and both first specialization combat skills are implemented, while the Specialization Quest activation/completion flow, specialization granting, profile rewards/growth and map spawning of the authored specialization dungeons remain unimplemented; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -20,7 +20,7 @@ The running game menu exposes Save, Load and Return to Game and pauses simulatio
 
 Initial creation, ten real minutes, normal close and increased completed-dungeon count trigger autosaves. The later **full-specialization gained** milestone autosave is not connected yet because Specialization Quest completion/rewards are still absent; the now-live Protector/Slayer decision by itself is not treated as that final milestone. Normal-close write failure leaves the game open and paused with an error. Files have integrity checks, verified temporary writes and prior-copy backups; save timestamps increase across both slots. Tests use isolated project `.godot/` directories, never player slots. Focused tests: `test_save_store.gd`, `test_save_ui.gd`, `test_save_confirmations.gd`, `test_save_close_probe.gd`, `test_simulation_snapshot.gd`, `test_snapshot_validation.gd`, `test_snapshot_scenarios.gd`, `test_save_dungeon_milestone.gd`.
 
-Snapshot restoration rejects missing/unknown serialized properties, malformed containers/references/RNG and incompatible property types. Typed arrays are reconstructed explicitly, preserving Diary/Log entries and questionnaire answers rather than silently retaining empty defaults. Snapshot schema **v3** adds first-specialization skill state plus the fight-local Shield Bash / Crippling Blows combat timers. Previous v1/v2 snapshots migrate explicitly: v1 first gains the specialization-decision defaults, then v2→v3 adds the new specialization-skill/combat fields; an already chosen Level-25+ Protector/Slayer in a v2 save receives the matching automatic SL1 during migration. Event instances receive a valid construction resource before saved state is hydrated. Regression scenarios compare the complete captured graph immediately after load and after identical dungeon combat, event completion and death-to-recovery continuation. A real completed-dungeon fixture verifies one restorable milestone autosave. This is targeted persistence coverage, not full long-run Prototype 0.2 validation.
+Snapshot restoration rejects missing/unknown serialized properties, malformed containers/references/RNG and incompatible property types. Typed arrays are reconstructed explicitly, preserving Diary/Log entries and questionnaire answers rather than silently retaining empty defaults. Snapshot schema **v5** preserves the earlier specialization-skill/combat-timer and item-origin migrations, then adds the delayed-specialization-grant semantic migration: any v4 save where choosing Protector/Slayer had already changed `hero_class_id` is restored to `warrior` while keeping `first_specialization_id` as the chosen target, and any prematurely granted specialization SL1 is cleared because no specialization trial could have been completed in that older build. Event instances receive a valid construction resource before saved state is hydrated. Regression scenarios compare the complete captured graph immediately after load and after identical dungeon combat, event completion and death-to-recovery continuation. A real completed-dungeon fixture verifies one restorable milestone autosave. This is targeted persistence coverage, not full long-run Prototype 0.2 validation.
 
 ## Main-screen surface polish
 
@@ -28,7 +28,7 @@ The main gameplay screen uses a muted dark blue-gray background (#191e26), retai
 
 ## Equipped-item origin statistics
 
-Statistics now derives Purchased / Found / Starting / Unknown counts from currently equipped ItemInstances only; backpack items, potions and empty slots are excluded. `acquisition_source` is assigned at successful shop purchase, reward/drop generation, or initial clothing creation, never inferred from rarity/name. Mob, event and dungeon rewards share Found. Legacy items migrate to Unknown; that row is hidden when zero. Snapshot v4 adds this property through an explicit v3→v4 migration while preserving the prior specialization migrations. Focused coverage: `tests/test_equipment_origin_statistics.gd`.
+Statistics now derives Purchased / Found / Starting / Unknown counts from currently equipped ItemInstances only; backpack items, potions and empty slots are excluded. `acquisition_source` is assigned at successful shop purchase, reward/drop generation, or initial clothing creation, never inferred from rarity/name. Mob, event and dungeon rewards share Found. Legacy items migrate to Unknown; that row is hidden when zero. Snapshot v4 introduced this property through an explicit v3→v4 migration; current schema v5 retains that migration before applying the newer specialization-grant semantics. Focused coverage: `tests/test_equipment_origin_statistics.gd`.
 
 ## Lifetime death statistics
 
@@ -146,7 +146,7 @@ Exact hidden values are visible only in the current developer Hero screen; the i
 
 ## First Warrior specialization decision
 
-The first **Protector / Slayer selection slice** is live. The decision changes the hero's runtime class/path immediately, and the matching first specialization combat skill is now learned automatically at Level 25. Specialization Quest/dungeon content, specialization profile rewards/growth, specialization equipment rules, later specialization-skill ranks and specialization-skill HeroPower valuation are still absent.
+The first **Protector / Slayer selection slice** is live. The decision now fixes only the permanent target; the hero stays mechanically Warrior until the specialization trial is completed. Shield Bash / Crippling Blows SL1 combat behaviour is implemented and requires both the actually granted specialization and Level 25. The two mirrored specialization dungeon content definitions are authored, while Specialization Quest spawning/completion, class granting, profile rewards/growth, specialization equipment rules, later specialization-skill ranks and specialization-skill HeroPower valuation are still absent.
 
 The developer Hero screen shows the specialization calculation from **Level 1** for balance inspection, but the controls remain inactive before Level 20. At Level 20:
 
@@ -160,7 +160,7 @@ The developer Hero screen shows the specialization calculation from **Level 1** 
 
 The player may use one specialization influence during the active window for **80 Divine Energy**, adding **+0.15** to Protector or Slayer. Using it ends the window immediately and compares the resulting current totals; the influenced side is not guaranteed to win. If the player does not intervene, the full 180 ticks must expire before the current totals are compared. Exact ties use an isolated deterministic seeded tie-break.
 
-When the result is fixed, `hero_class_id` changes immediately from `warrior` to `protector` / **Защитник** or `slayer` / **Истребитель** and the decision `+` disappears. This current class/path switch does not yet grant any specialization ability or profile-stat reward; those remain part of the later Specialization Quest/progression implementation.
+When the result is fixed, `first_specialization_id` stores the permanent **Protector / Slayer target** and the decision `+` disappears, but `hero_class_id` deliberately remains `warrior`. The specialization is granted only after the future Specialization Quest/dungeon completion flow explicitly completes the trial. This keeps the hero mechanically Warrior during the trial instead of granting the class before proving it.
 
 ## Combat and Warrior abilities
 
@@ -216,7 +216,7 @@ MobPower now evaluates a mob's defensive stats against the current Warrior's **p
 
 ### Protector — Shield Bash
 
-- learned automatically at hero **Level 25** when the chosen class/path is Protector; current runtime implements **Skill Level 1 only**;
+- learned automatically at hero **Level 25** only after Protector has actually been granted; merely choosing Protector as the Level-20 target is insufficient. If the trial is completed after Level 25, SL1 is granted immediately at completion; current runtime implements **Skill Level 1 only**;
 - requires an equipped shield, costs **25 Rage**, has a **60-second cooldown**, replaces one normal hero attack opportunity and always has priority over Power Strike when usable;
 - cannot miss, does no direct damage and does not interact with Crit/Block as a damage hit;
 - SL1 base stun is **3.0 seconds** plus the approved WIS term `2.0 × WisdomFactor`;
@@ -225,7 +225,7 @@ MobPower now evaluates a mob's defensive stats against the current Warrior's **p
 
 ### Slayer — Crippling Blows
 
-- learned automatically at hero **Level 25** when the chosen class/path is Slayer; current runtime implements **Skill Level 1 only**;
+- learned automatically at hero **Level 25** only after Slayer has actually been granted; merely choosing Slayer as the Level-20 target is insufficient. If the trial is completed after Level 25, SL1 is granted immediately at completion; current runtime implements **Skill Level 1 only**;
 - costs **25 Rage**, has a **60-second cooldown**, replaces one normal hero attack opportunity and always has priority over Power Strike when usable;
 - currently has **no weapon requirement** and remains usable while the Slayer is wearing a shield; weapon-hand restrictions are deferred until that equipment model exists;
 - performs two independent weapon strikes at **×0.65** ordinary weapon-hit damage each; each strike resolves hit/miss, Crit and Block separately;
@@ -435,6 +435,13 @@ The final Prototype 0.2 target of roughly 15–20 handcrafted events across both
 ## Ordinary dungeons
 
 The current ordinary-dungeon system loads ordinary dungeon definitions from the Starting/Mid region content folders and keeps specialization dungeon content separate.
+
+Two mirrored specialization-dungeon content definitions are now authored under `data/dungeons/specialization/` but are intentionally **not** part of the ordinary automatic population yet. Both use exactly **2 ordinary encounters + boss**, Physical damage, identical combat profiles and no material completion reward until the Specialization Quest completion path is connected:
+
+- Protector: **Бастион Последнего Дозора** — 2 × **Павший страж** at approximately **340 Power**, then **Командир Последнего Дозора** at approximately **420 Power**;
+- Slayer: **Яма Алого Клыка** — 2 × **Кровавый гладиатор** at approximately **340 Power**, then **Хозяин Алой Ямы** at approximately **420 Power**.
+
+Only authored identity/names differ between the two trial variants; their combat numbers, XP, encounter count and placement metadata are mirrored. Spawning/discovery, quest objective/relic, completion reward and specialization-grant hookup remain deferred.
 
 Both required **Starting Region ordinary dungeons** are live:
 
@@ -807,7 +814,7 @@ The most important incomplete areas are:
 - Mid-Level City as a complete gameplay context beyond its now-live ordinary quests, economy and three ordinary dungeons; local temporary events remain missing;
 - remaining Arden equipment-slot/overlay breadth;
 - the remaining temporary-event population toward the 15–20 target;
-- remaining first Warrior specialization content after the live Protector/Slayer decision: specialization quest, specialization dungeon, specialization rewards/growth, equipment rules and abilities;
+- remaining first Warrior specialization integration after the live Protector/Slayer decision and authored trial content: Specialization Quest spawning/objective/completion, class grant, specialization rewards/growth, equipment rules and later ability ranks/Power valuation;
 - remaining later equipment content; potion tiers through Level 25 are live;
 - two-handed / complete legal hand-configuration content breadth;
 - full QuestLoot / unsafe carried-adventure-loot model beyond the current equipment-only review slice;

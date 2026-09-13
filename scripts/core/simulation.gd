@@ -570,7 +570,6 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		debug_log.record_event(completed_tick, "%s достиг 20 уровня. Началось 180-тиковое решение между путями Защитника и Истребителя." % hero_state.hero_name)
 	var specialization_result: String = HeroSpecializationScript.advance_world_tick(hero_state, completed_tick, simulation_seed)
 	if not specialization_result.is_empty():
-		hero_progression.ensure_first_specialization_skill(hero_state)
 		debug_log.record_event(completed_tick, "%s выбрал путь: %s." % [hero_state.hero_name, HeroSpecializationScript.get_class_display_name(specialization_result)])
 	if temporary_events_enabled:
 		var event_priority_refresh: bool = autonomous_quest_choice \
@@ -1242,7 +1241,6 @@ func guide_first_specialization(specialization_id: String) -> bool:
 		return false
 	var result: String = HeroSpecializationScript.apply_guidance_and_resolve(hero_state, specialization_id, simulation_seed, world_clock.world_tick)
 	assert(not result.is_empty(), "Paid specialization guidance must resolve an active first-specialization decision.")
-	hero_progression.ensure_first_specialization_skill(hero_state)
 	debug_log.record_event(
 		world_clock.world_tick,
 		"Покровитель направил %s к пути «%s» (+0.15). Итоговый выбор героя: %s." % [

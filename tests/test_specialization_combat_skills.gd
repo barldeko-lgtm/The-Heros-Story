@@ -4,6 +4,7 @@ const CombatSessionScript = preload("res://scripts/combat/combat_session.gd")
 const CombatStatsScript = preload("res://scripts/model/runtime/combat_stats.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const HeroStateScript = preload("res://scripts/hero/hero_state.gd")
+const HeroSpecializationScript = preload("res://scripts/hero/hero_specialization.gd")
 
 func _init() -> void:
 	test_level_25_auto_unlock()
@@ -16,23 +17,34 @@ func _init() -> void:
 
 func test_level_25_auto_unlock() -> void:
 	var progression = HeroProgressionScript.new()
+	var pending_protector = HeroStateScript.new("Кандидат в Защитники")
+	pending_protector.level = 24
+	pending_protector.first_specialization_id = HeroSpecializationScript.PROTECTOR_ID
+	progression.apply_level_up(pending_protector)
+	assert(pending_protector.level == 25 and pending_protector.shield_bash_skill_level == 0, "A Level-25 Protector target must not learn Shield Bash before the specialization is actually granted.")
+	assert(pending_protector.hero_class_id == HeroSpecializationScript.WARRIOR_ID, "A chosen target remains Warrior until the specialization trial is completed.")
+
 	var protector = HeroStateScript.new("Защитник")
 	protector.level = 24
-	protector.hero_class_id = "protector"
+	protector.first_specialization_id = HeroSpecializationScript.PROTECTOR_ID
+	protector.hero_class_id = HeroSpecializationScript.PROTECTOR_ID
 	progression.apply_level_up(protector)
 	assert(protector.level == 25 and protector.shield_bash_skill_level == 1, "Protector must learn Shield Bash SL1 automatically at Level 25.")
 	assert(protector.crippling_blows_skill_level == 0, "Protector must not learn the Slayer skill.")
 
 	var slayer = HeroStateScript.new("Истребитель")
 	slayer.level = 24
-	slayer.hero_class_id = "slayer"
+	slayer.first_specialization_id = HeroSpecializationScript.SLAYER_ID
+	slayer.hero_class_id = HeroSpecializationScript.SLAYER_ID
 	progression.apply_level_up(slayer)
 	assert(slayer.level == 25 and slayer.crippling_blows_skill_level == 1, "Slayer must learn Crippling Blows SL1 automatically at Level 25.")
 	assert(slayer.shield_bash_skill_level == 0, "Slayer must not learn the Protector skill.")
 
-	var late_path = HeroStateScript.new("Поздний выбор")
+	var late_path = HeroStateScript.new("Позднее испытание")
 	late_path.level = 25
-	late_path.hero_class_id = "protector"
+	late_path.first_specialization_id = HeroSpecializationScript.PROTECTOR_ID
+	assert(not progression.ensure_first_specialization_skill(late_path), "A Level-25 chosen target must still wait for actual specialization completion.")
+	assert(HeroSpecializationScript.grant_selected_specialization(late_path) == HeroSpecializationScript.PROTECTOR_ID, "Completing the future specialization trial must explicitly grant the selected class.")
 	assert(progression.ensure_first_specialization_skill(late_path), "A specialization fixed at or after Level 25 must receive its SL1 immediately.")
 	assert(late_path.shield_bash_skill_level == 1, "Late Protector path must receive Shield Bash SL1.")
 

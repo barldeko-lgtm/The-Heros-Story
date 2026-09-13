@@ -9,7 +9,7 @@ func _init() -> void:
 	test_level_one_preview_and_level_twenty_snapshot()
 	test_live_allocated_stats_and_divine_guidance_resolve_immediately()
 	test_timeout_waits_full_180_ticks_and_is_deterministic()
-	print("PASS: First specialization preview, frozen courage trait, live stat weights, +0.15 guidance, 180-tick timeout and class switch work.")
+	print("PASS: First specialization preview, frozen courage trait, live stat weights, +0.15 guidance and 180-tick target selection work without granting the class early.")
 	quit()
 
 func test_level_one_preview_and_level_twenty_snapshot() -> void:
@@ -54,7 +54,8 @@ func test_live_allocated_stats_and_divine_guidance_resolve_immediately() -> void
 	var energy_before: float = simulation.god_state.energy
 	assert(simulation.guide_first_specialization(HeroSpecializationScript.PROTECTOR_ID), "The player must be able to spend the one-time +0.15 Protector influence during the active window.")
 	assert(is_equal_approx(simulation.god_state.energy, energy_before - simulation.god_state.SPECIALIZATION_GUIDANCE_COST), "Specialization guidance must spend the approved 80 Divine Energy.")
-	assert(hero.first_specialization_id == HeroSpecializationScript.PROTECTOR_ID and hero.hero_class_id == HeroSpecializationScript.PROTECTOR_ID, "Guidance must immediately end the window and switch the hero class to the winning specialization.")
+	assert(hero.first_specialization_id == HeroSpecializationScript.PROTECTOR_ID, "Guidance must immediately end the window and fix the winning specialization target.")
+	assert(hero.hero_class_id == HeroSpecializationScript.WARRIOR_ID, "Choosing a specialization target must not grant the class before the specialization dungeon/quest is completed.")
 	assert(not hero.specialization_decision_active and hero.specialization_decision_ticks_remaining == 0, "Player influence must close the decision immediately.")
 	assert(not simulation.guide_first_specialization(HeroSpecializationScript.SLAYER_ID), "The one-time specialization influence must not be usable after the decision is resolved.")
 
@@ -73,7 +74,8 @@ func test_timeout_waits_full_180_ticks_and_is_deterministic() -> void:
 		assert(HeroSpecializationScript.advance_world_tick(hero, tick, 777).is_empty(), "The window must remain unresolved before its 180th elapsed tick.")
 	assert(hero.specialization_decision_ticks_remaining == 1, "Exactly one decision tick must remain after 179 elapsed ticks.")
 	var result: String = HeroSpecializationScript.advance_world_tick(hero, 230, 777)
-	assert(result == HeroSpecializationScript.SLAYER_ID and hero.hero_class_id == HeroSpecializationScript.SLAYER_ID, "The 180th elapsed tick must resolve to the current higher score and switch class.")
+	assert(result == HeroSpecializationScript.SLAYER_ID and hero.first_specialization_id == HeroSpecializationScript.SLAYER_ID, "The 180th elapsed tick must resolve to the current higher score and fix that specialization target.")
+	assert(hero.hero_class_id == HeroSpecializationScript.WARRIOR_ID, "Timeout resolution must also leave the hero mechanically Warrior until the specialization trial is completed.")
 
 	var tie_a = HeroStateScript.new("Tie A")
 	var tie_b = HeroStateScript.new("Tie B")

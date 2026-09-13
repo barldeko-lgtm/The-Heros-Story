@@ -106,7 +106,10 @@ func update_specialization_panel() -> void:
 	var resolved_id: String = str(state.get("specialization_id", ""))
 	var active: bool = bool(state.get("decision_active", false))
 	if not resolved_id.is_empty():
-		specialization_status_label.text = "Выбор завершён: %s" % HeroSpecializationScript.get_class_display_name(resolved_id)
+		var obtained: bool = hero.hero_class_id == resolved_id
+		specialization_status_label.text = (
+			"Специализация получена: %s" if obtained else "Направление выбрано: %s · испытание впереди"
+		) % HeroSpecializationScript.get_class_display_name(resolved_id)
 	elif active:
 		specialization_status_label.text = "АКТИВНО · осталось %d / %d тиков" % [int(state["ticks_remaining"]), HeroSpecializationScript.DECISION_WINDOW_TICKS]
 	else:
@@ -368,13 +371,19 @@ func update_skills_panel() -> void:
 		return
 	power_strike_level_label.text = get_skill_level_text("Мощный удар", simulation.hero_state.power_strike_skill_level)
 	battle_guard_level_label.text = get_skill_level_text("Боевой заслон", simulation.hero_state.battle_guard_skill_level)
-	match simulation.hero_state.hero_class_id:
-		HeroSpecializationScript.PROTECTOR_ID:
+	var target_id: String = str(simulation.hero_state.first_specialization_id)
+	if target_id == HeroSpecializationScript.PROTECTOR_ID:
+		if simulation.hero_state.hero_class_id == HeroSpecializationScript.PROTECTOR_ID:
 			specialization_skill_label.text = get_specialization_skill_text("Удар щитом", simulation.hero_state.shield_bash_skill_level)
-		HeroSpecializationScript.SLAYER_ID:
+		else:
+			specialization_skill_label.text = "Удар щитом: после испытания"
+	elif target_id == HeroSpecializationScript.SLAYER_ID:
+		if simulation.hero_state.hero_class_id == HeroSpecializationScript.SLAYER_ID:
 			specialization_skill_label.text = get_specialization_skill_text("Калечащие удары", simulation.hero_state.crippling_blows_skill_level)
-		_:
-			specialization_skill_label.text = "Спецнавык: после выбора пути"
+		else:
+			specialization_skill_label.text = "Калечащие удары: после испытания"
+	else:
+		specialization_skill_label.text = "Спецнавык: после выбора пути"
 
 func get_specialization_skill_text(skill_name: String, skill_level: int) -> String:
 	if skill_level <= 0:

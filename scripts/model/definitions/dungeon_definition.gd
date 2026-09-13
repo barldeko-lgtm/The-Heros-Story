@@ -11,7 +11,7 @@ extends Resource
 @export var placement_forbidden_tags: PackedStringArray = PackedStringArray()
 @export var placement_radius: int = 0
 @export var ordinary_mob_definition: Resource
-@export_range(3, 5, 1) var ordinary_encounter_count: int = 3
+@export_range(2, 5, 1) var ordinary_encounter_count: int = 3
 @export var boss_mob_definition: Resource
 @export var completion_gold_reward: int = 0
 @export var completion_equipment_source: Resource

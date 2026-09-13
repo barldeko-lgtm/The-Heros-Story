@@ -2,7 +2,8 @@ class_name SimulationSnapshot
 extends RefCounted
 
 ## Explicit, JSON-safe graph snapshot for mutable Simulation state.
-const VERSION := 4
+const VERSION := 5
+const LEGACY_VERSION_4 := 4
 const LEGACY_VERSION_3 := 3
 const LEGACY_VERSION_1 := 1
 const LEGACY_VERSION_2 := 2
@@ -60,6 +61,8 @@ static func restore(data: Dictionary) -> Dictionary:
 		prepared = _migrate_v2_to_v3(prepared)
 	if int(prepared.get("version", 0)) == LEGACY_VERSION_3:
 		prepared = _migrate_v3_to_v4(prepared)
+	if int(prepared.get("version", 0)) == LEGACY_VERSION_4:
+		prepared = _migrate_v4_to_v5(prepared)
 	elif int(prepared.get("version", 0)) != VERSION:
 		return {"simulation": null, "error": "unsupported snapshot version"}
 	var validation_error := _validate_snapshot(prepared)
@@ -155,7 +158,7 @@ static func _migrate_v2_to_v3(data: Dictionary) -> Dictionary:
 
 static func _migrate_v3_to_v4(data: Dictionary) -> Dictionary:
 	var migrated: Dictionary = data.duplicate(true)
-	migrated["version"] = VERSION
+	migrated["version"] = LEGACY_VERSION_4
 	if not migrated.get("nodes") is Array:
 		return migrated
 	for node in migrated.nodes:
@@ -164,6 +167,28 @@ static func _migrate_v3_to_v4(data: Dictionary) -> Dictionary:
 		var properties = node.get("properties")
 		if properties is Dictionary and not properties.has("acquisition_source"):
 			properties["acquisition_source"] = "unknown"
+	return migrated
+
+static func _migrate_v4_to_v5(data: Dictionary) -> Dictionary:
+	var migrated: Dictionary = data.duplicate(true)
+	migrated["version"] = VERSION
+	if not migrated.get("nodes") is Array:
+		return migrated
+	for node in migrated.nodes:
+		if not node is Dictionary or node.get("script", "") != "res://scripts/hero/hero_state.gd":
+			continue
+		var properties = node.get("properties")
+		if not properties is Dictionary:
+			continue
+		var target_id: String = str(properties.get("first_specialization_id", ""))
+		var class_id: String = str(properties.get("hero_class_id", "warrior"))
+		if (target_id == "protector" or target_id == "slayer") and class_id == target_id:
+			# Before schema v5, choosing a direction immediately changed class and could grant
+			# the Level-25 skill. Specialization dungeons did not exist yet, so such saves
+			# represent a chosen target, not an actually completed specialization.
+			properties["hero_class_id"] = "warrior"
+			properties["shield_bash_skill_level"] = 0
+			properties["crippling_blows_skill_level"] = 0
 	return migrated
 
 static func _encode(value, context: Dictionary, depth: int):

@@ -809,7 +809,7 @@ The player does not directly select the specialization from a menu.
 
 The hero forms a specialization preference from their actual developed primary attributes and established character, then may receive one limited divine nudge before the decision becomes final.
 
-When the direction is fixed, the hero's class/path identity changes immediately to **Protector** or **Slayer**. The future corresponding **Specialization Quest** remains dedicated progression/content for that path, but it no longer gates the first specialization combat skill: the matching first skill is learned automatically at Level 25.
+When the direction is fixed, it becomes the hero's permanent **Protector** or **Slayer target**, but the hero remains mechanically **Warrior** until the corresponding Specialization Quest/dungeon trial is successfully completed. The first specialization combat skill therefore requires both the earned specialization and the Level-25 threshold.
 
 ### 11.1. Attribute-Based Specialization Preference
 
@@ -939,12 +939,13 @@ If both final scores are exactly equal when the window expires, the tie must be 
 Once the direction is chosen:
 
 - that direction becomes the hero's fixed first-specialization target;
-- the current runtime/presentation class id changes from Warrior to **Protector** or **Slayer** immediately so the chosen path is visible as part of the hero's identity;
+- the current runtime/presentation class id remains **Warrior** until the corresponding specialization trial is actually completed;
 - the one-time divine direction opportunity closes;
-- the corresponding authored **Specialization Quest** remains future dedicated content for that path through the normal quest/progression flow;
-- reaching Level 25 automatically teaches the matching first specialization combat skill at Skill Level 1, even if that future quest slice has not yet been implemented/completed.
+- the corresponding authored **Specialization Quest** is the required progression path that leads to the matching Specialization Dungeon;
+- successful completion of that quest/dungeon explicitly grants **Protector** or **Slayer** and changes `hero_class_id`;
+- the matching first specialization combat skill may be learned at Skill Level 1 only after the specialization is actually granted. If the hero is already Level 25 or higher when the trial is completed, SL1 is granted immediately; otherwise it unlocks automatically on reaching Level 25.
 
-The class-id/path change itself still does **not** grant the later specialization profile-stat rewards, equipment rules, or other future progression rewards. Those remain separate slices.
+Choosing the target alone grants no specialization stats, abilities, equipment rules, or class identity. The hero enters the specialization trial as a Warrior who has chosen a direction but has not yet earned the specialization.
 
 The current specialization direction is permanent for Prototype 0.2 once chosen. Prototype 0.2 does not include respecialization.
 
@@ -959,7 +960,7 @@ Its current identity is:
 - intended combat setup: **one-handed weapon + shield**;
 - defensive identity built around survivability, mitigation, Block, and shield-based tools.
 
-The first Protector specialization ability is learned automatically at compressed **Level 25** when Protector is the fixed path:
+The first Protector specialization ability is learned automatically at compressed **Level 25** only after Protector has actually been granted through the specialization trial:
 
 > **Shield Bash**
 
@@ -967,7 +968,7 @@ Shield Bash is a shield-based control ability rather than a damage attack.
 
 Current working rules:
 
-- requires the Protector path/class;
+- requires the Protector class to be actually granted, not merely selected as the first-specialization target;
 - requires a shield;
 - Rage cost: **25**;
 - cooldown: **60 seconds**;
@@ -1015,7 +1016,7 @@ Its current identity is:
 - the current first Slayer skill has **no weapon requirement** and remains usable while a shield is equipped;
 - offensive identity built around pressure and higher damage output.
 
-The first Slayer specialization ability is learned automatically at compressed **Level 25** when Slayer is the fixed path:
+The first Slayer specialization ability is learned automatically at compressed **Level 25** only after Slayer has actually been granted through the specialization trial:
 
 > **Crippling Blows**
 
@@ -1023,7 +1024,7 @@ Crippling Blows is an offensive control ability built around two fast weapon str
 
 Current working rules:
 
-- requires the Slayer path/class;
+- requires the Slayer class to be actually granted, not merely selected as the first-specialization target;
 - currently has no weapon requirement and does not forbid a shield;
 - Rage cost: **25**;
 - cooldown: **60 seconds**;
@@ -1079,7 +1080,7 @@ The structural rules are fixed unless explicitly redesigned:
 - there is no score-lead early auto-resolution;
 - player guidance ends the window immediately by triggering the final current-score comparison;
 - without guidance, the hero chooses autonomously when the full window closes;
-- the resolved Protector / Slayer path becomes the hero's runtime class identity immediately, and its first combat skill is learned automatically at Level 25; the future Specialization Quest no longer gates that first skill.
+- the resolved Protector / Slayer result fixes only the target; the hero remains Warrior until the specialization trial is completed, and the first specialization combat skill requires both the granted class and Level 25.
 
 ---
 
@@ -2105,7 +2106,7 @@ These Mid Region dungeons use the same shared discovery, preparation, retry, com
 
 ## 17. Specialization Quest and Specialization Dungeon
 
-After the Warrior selects the Protector or Slayer direction, that path/class identity is already fixed. A dedicated Specialization Quest is still planned as path-specific progression/content, but it no longer grants the path itself and does not gate the automatic Level-25 first combat skill.
+After the Warrior selects the Protector or Slayer direction, that direction becomes a permanent target but the hero remains mechanically **Warrior**. A dedicated Specialization Quest and Specialization Dungeon are required to earn the chosen class.
 
 The Specialization Quest creates a dedicated quest dungeon that did not need to exist beforehand.
 
@@ -2116,15 +2117,23 @@ This dungeon:
 - exists in addition to the ordinary local dungeon population;
 - reuses the same dungeon execution, preparation, death, healing, and retry systems where possible;
 - contains a required quest relic / specialization objective;
-- does not control whether the Level-25 first specialization skill is learned.
+- on successful quest completion, grants the chosen specialization class;
+- gates the Level-25 first specialization skill because that skill requires the specialization to be actually granted.
 
 Core flow:
 
-> **Level 20 → hero chooses Protector / Slayer path → path identity fixed → Level 25 matching first skill learned automatically**
+> **Level 20 → hero chooses Protector / Slayer target → remains Warrior → Specialization Quest → prepare → dedicated dungeon → defeat boss → obtain relic / objective → complete quest → specialization granted**
 >
-> **chosen path → Specialization Quest → prepare → dedicated dungeon → defeat boss → obtain relic / objective → complete path-specific progression milestone/reward**
+> **if specialization is granted at Level 25+ → matching first skill SL1 is learned immediately; otherwise it unlocks automatically at Level 25**
 
-Protector and Slayer may use different specialization dungeon content / boss definitions even though they share one technical dungeon system.
+Prototype 0.2 uses two separately authored but deliberately mirrored specialization dungeons. They differ only in identity/name while keeping the same combat difficulty and encounter structure:
+
+- **Protector — Bastion of the Last Watch / `Бастион Последнего Дозора`**: `2 × Fallen Guard / Павший страж` at approximately **340 Power**, then `Commander of the Last Watch / Командир Последнего Дозора` at approximately **420 Power**;
+- **Slayer — Pit of the Scarlet Fang / `Яма Алого Клыка`**: `2 × Blood Gladiator / Кровавый гладиатор` at approximately **340 Power**, then `Master of the Scarlet Pit / Хозяин Алой Ямы` at approximately **420 Power**.
+
+The paired ordinary enemies use identical combat stats and XP; the paired bosses also use identical combat stats and XP. Both variants use Physical attacks and the same placement metadata. This is intentional: choosing Protector versus Slayer must not secretly change trial difficulty.
+
+The content resources live under `data/dungeons/specialization/` and are intentionally excluded from the ordinary automatic dungeon loader. Their quest-driven spawning/placement, relic/objective completion, material reward, and final specialization-grant hookup are connected in a later targeted pass.
 
 ---
 
@@ -3380,7 +3389,7 @@ These HeroPower valuation bonuses are now wired into the shared runtime `PowerCa
 
 #### Shield Bash Skill Levels
 
-Shield Bash is the first Protector specialization ability and is learned automatically at compressed hero **Level 25** once Protector is the fixed path.
+Shield Bash is the first Protector specialization ability and is learned automatically at compressed hero **Level 25** only after Protector has actually been granted by the specialization trial. A chosen Protector target without completed trial does not unlock it.
 
 Its fixed combat rules are:
 
@@ -3416,7 +3425,7 @@ Prototype 0.2 bosses and special enemies use the same resolved Shield Bash stun 
 
 #### Crippling Blows Skill Levels
 
-Crippling Blows is the first Slayer specialization ability and is learned automatically at compressed hero **Level 25** once Slayer is the fixed path.
+Crippling Blows is the first Slayer specialization ability and is learned automatically at compressed hero **Level 25** only after Slayer has actually been granted by the specialization trial. A chosen Slayer target without completed trial does not unlock it.
 
 Its fixed combat rules are:
 

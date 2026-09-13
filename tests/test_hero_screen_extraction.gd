@@ -49,10 +49,12 @@ func run() -> void:
 	ui.hero_screen.refresh()
 	check(power_strike_label.text == "Мощный удар: ур. 3 / 10", "Power Strike level refreshes from HeroState")
 	check(battle_guard_label.text == "Боевой заслон: ур. 2 / 10", "Battle Guard level refreshes from HeroState")
-	hero.hero_class_id = "protector"
+	hero.first_specialization_id = "protector"
+	hero.hero_class_id = "warrior"
 	hero.shield_bash_skill_level = 0
 	ui.hero_screen.refresh()
-	check(specialization_skill_label.text == "Удар щитом: откроется на ур. 25", "Chosen Protector path previews its automatic Level-25 skill")
+	check(specialization_skill_label.text == "Удар щитом: после испытания", "Chosen Protector target must show that the specialization trial still gates the skill")
+	hero.hero_class_id = "protector"
 	hero.shield_bash_skill_level = 1
 	ui.hero_screen.refresh()
 	check(specialization_skill_label.text == "Удар щитом: ур. 1", "Learned Protector skill is shown on the Hero screen")

@@ -161,9 +161,9 @@ Status:
 ## 13. First Warrior specialization
 
 - ✅ Protector / Slayer preference from live player-shaped attributes, excluding actually earned mandatory Warrior STR; the Level-20 Brave/Cautious state is frozen as a separate +0.05 influence.
-- ✅ Level-20 180-tick decision window, always-visible Level-1 debug preview, separate pending-choice `+`, one-time 80-Energy `+0.15` divine influence, deterministic timeout/tie resolution and immediate Protector/Slayer class-id switch are live.
-- ✅ First specialization combat skills SL1: Shield Bash / Crippling Blows unlock automatically at Level 25 with specialization-first Rage priority, WIS scaling and their current stun/Attack-Speed-control rules.
-- ⬜ Specialization Quest and dedicated Protector/Slayer specialization dungeon content.
+- ✅ Level-20 180-tick decision window, always-visible Level-1 debug preview, separate pending-choice `+`, one-time 80-Energy `+0.15` divine influence and deterministic timeout/tie resolution are live; the result now fixes only the target while the hero remains Warrior until the specialization trial is completed.
+- ✅ First specialization combat skills SL1 are implemented with specialization-first Rage priority, WIS scaling and their current stun/Attack-Speed-control rules; they unlock at Level 25 only after the specialization has actually been granted.
+- 🟡 Dedicated Protector/Slayer specialization dungeon **content** is authored as mirrored 2+boss 340/420-Power trials, but Specialization Quest spawning/activation, relic/objective completion and runtime hookup are still missing.
 - ⬜ Specialization granting, immediate/profile progression rewards and later specialization-directed attribute growth.
 - ⬜ Later Shield Bash / Crippling Blows Skill Level progression, shop training and HeroPower valuation.
 
@@ -184,8 +184,8 @@ Status:
 | Ordinary quest templates | 48 (22 + 26) | 48 current approved target (22 + 26) |
 | Handcrafted temporary events | 15 | ~15–20 across both regions |
 | Ordinary dungeons | 5 (2 Dornwald + 3 Arden) | 5 current approved target |
-| First specialization paths | 2 decision/runtime paths live | 2 |
-| Specialization dungeon variants | 0 | 2 |
+| First specialization paths | 2 target-selection paths live; class grant pending trial hookup | 2 |
+| Specialization dungeon variants | 2 authored / not spawned yet | 2 |
 | Base Warrior abilities | 2 + purchasable Skill Levels 2–10 | 2 + purchasable ranks |
 | First-specialization abilities | 2 at SL1 | 2 + later ranks |
 | Personality axes | 4 live | 4 |
@@ -204,6 +204,6 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival, Arden ordinary quests, economy and dungeons, especially local temporary events and remaining equipment-content breadth.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Complete remaining later equipment-content breadth; Mid Region ordinary dungeons and potion progression through Level 25 are already live.
-6. Complete the already-live Protector / Slayer path/SL1 ability flow with specialization quests/dungeons, profile growth, later specialization-skill ranks and their HeroPower valuation.
+6. Connect the already-authored Protector / Slayer specialization dungeons to their Specialization Quests, grant the class only on successful trial completion, then add profile growth, later specialization-skill ranks and their HeroPower valuation.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
 8. Extend persistence only for still-missing future systems such as specialization, then run long-duration Prototype 0.2 validation through the intended compressed level range.
