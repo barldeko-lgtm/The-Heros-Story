@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "iron_fang_warlord"
+display_name = "Вождь Железного Клыка"
+category = 0
+max_hp = 2400.0
+attack = 211.0
+attack_speed = 0.90
+accuracy = 165.0
+dodge = 8.0
+armor = 75.0
+block = 40.0
+crit_chance = 0.18
+crit_damage = 2.0
+experience_reward = 700

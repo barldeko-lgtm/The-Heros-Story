@@ -541,6 +541,8 @@ It does not own dungeon travel/combat or Belt generation.
 - successful return travel;
 - dungeon-context death/resurrection/recovery.
 
+For normal-city dungeons, both successful return travel and dungeon-death relocation must use the hero's authoritative current city center. Arden dungeon success/failure must never route back to Dornwald merely because the Starting Region was implemented first.
+
 Combat itself remains the shared `CombatSession`.
 
 Potion consumption remains coordinated through `PotionPreparationSystem` inside the approved between-fight window.

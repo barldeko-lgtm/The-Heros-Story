@@ -508,7 +508,7 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		var retry_growth: float = dungeon_evaluator.get_retry_growth(ordinary_encounters_completed, reached_boss)
 		var required_retry_power: float = dungeon_evaluator.get_required_retry_power(attempt_start_power, ordinary_encounters_completed, reached_boss)
 		dungeon_runner.active_dungeon.record_failed_attempt(attempt_start_power, ordinary_encounters_completed, reached_boss)
-		var _assert_set_hero_position_ok_8: bool = world_state.set_hero_position(hex_map.definition.starting_city_center)
+		var _assert_set_hero_position_ok_8: bool = world_state.set_hero_position(get_current_city_center())
 		assert(_assert_set_hero_position_ok_8, "Dead dungeon hero must return to the current city map position for resurrection.")
 		debug_log.record_combat_event(
 			dungeon_narrator.describe_death(hero_state.hero_name, dungeon_runner.active_dungeon.definition.display_name, fought_mob_definition, dungeon_runner.respawn_ticks_remaining),
@@ -539,7 +539,7 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 		record_dungeon_completed_diary_entry(dungeon_definition, gold_reward, reward_item, combat_world_tick)
 		var _assert_remove_completed_dungeon_from_map_ok_9: bool = dungeon_system.remove_completed_dungeon_from_map(completed_dungeon)
 		assert(_assert_remove_completed_dungeon_from_map_ok_9, "Completed dungeon must release its map activity and disappear from the map.")
-		var _assert_begin_return_to_city_ok_10: bool = dungeon_runner.begin_return_to_city(hero_state, hex_map.definition.starting_city_center)
+		var _assert_begin_return_to_city_ok_10: bool = dungeon_runner.begin_return_to_city(hero_state, get_current_city_center())
 		assert(_assert_begin_return_to_city_ok_10, "Completed dungeon must start a real return route to the city.")
 		debug_log.record_combat_event(dungeon_narrator.describe_return_started(hero_state.hero_name, dungeon_definition.display_name, travel_system.get_remaining_steps()), combat_world_tick)
 

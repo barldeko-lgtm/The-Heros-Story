@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MobDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/mob_definition.gd" id="1_mob_definition"]
+
+[resource]
+script = ExtResource("1_mob_definition")
+id = "ash_creature"
+display_name = "Пепельная тварь"
+category = 1
+attack_damage_type = "fire"
+max_hp = 1200.0
+attack = 145.0
+attack_speed = 1.10
+accuracy = 135.0
+dodge = 15.0
+armor = 20.0
+block = 0.0
+crit_chance = 0.14
+crit_damage = 1.75
+experience_reward = 380

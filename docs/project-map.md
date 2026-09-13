@@ -337,7 +337,7 @@ Immutable ordinary-dungeon content: placement constraints, ordinary encounter de
 
 Dungeon-only mob resources may live beside the dungeon definition; they are not ordinary quest mobs.
 
-`data/dungeons/mid_region/` is reserved for the later Mid Region ordinary dungeons. `data/dungeons/specialization/` is intentionally separate from the ordinary-dungeon loader.
+`data/dungeons/mid_region/` contains the three current Arden ordinary dungeons and their dungeon-only enemies. `data/dungeons/specialization/` is intentionally separate from the ordinary-dungeon loader.
 
 ### `scripts/model/runtime/dungeon_instance.gd`
 

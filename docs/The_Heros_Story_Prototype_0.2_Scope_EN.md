@@ -79,7 +79,7 @@ Prototype 0.2 must include, at minimum:
 - quest offer expiration and replacement;
 - approximately **15–20 handcrafted temporary events total** across the two-city world;
 - a working personality system with several opposing trait axes and real trait development;
-- two ordinary dungeons associated with each city / local region;
+- two ordinary dungeons associated with Dornwald / Starting Region and three ordinary dungeons associated with Arden / Mid Region;
 - dedicated authored Specialization Dungeon content for both **Protector** and **Slayer**, activated as part of the corresponding Specialization Quest and sharing one technical dungeon system;
 - item level, item rarity, random modifiers, loot sources, and autonomous equipment evaluation;
 - rarity through **Epic / Purple**;
@@ -2090,6 +2090,16 @@ The currently approved Starting Region pair is:
 - **Blackfang Settlement / `Городище Черноклыков`** — forest placement, 5–7 hexes from Starting City, `3 × Blackfang Guard / Гоблин-гвардеец` at approximately 230 Power / 260 XP, then `Goblin King / Король гоблинов` at approximately 300 Power / 320 XP; completion grants 2000 Gold + one ilvl 10 item at 75% Rare / 25% Epic.
 
 Both completion equipment sources cover all twelve current equipment slots. These concrete Power, XP, Gold, distance, and rarity values remain balance data and may be tuned without changing the shared dungeon architecture.
+
+### 16.8. Current Mid Region / Arden Dungeon Content
+
+Arden currently uses three ordinary dungeons so its three live equipment tiers each have one dungeon-completion step. Their individual enemies remain below the strongest ordinary enemy of the corresponding tier because a dungeon already adds difficulty through three ordinary fights plus a boss, carried HP, no ordinary quest recovery, and limited Belt-potion healing.
+
+- **Abandoned Border Fort / `Заброшенный пограничный форт`** — plains placement, 4–6 hexes from Arden; `3 × Border Deserter / Пограничный дезертир` at approximately 310 Power / 260 XP, then `Deserter Captain / Капитан дезертиров` at approximately 400 Power / 340 XP; completion grants 3000 Gold + one ilvl 15 item at 75% Rare / 25% Epic.
+- **Ash Caves / `Пепельные пещеры`** — forest placement, 5–7 hexes from Arden; `3 × Ash Creature / Пепельная тварь` at approximately 450 Power / 380 XP using Fire attacks, then `Heart of Flame / Сердце пламени` at approximately 580 Power / 480 XP using Fire attacks; completion grants 5000 Gold + one ilvl 20 item at 75% Rare / 25% Epic.
+- **Iron Fang Fortress / `Крепость Железного Клыка`** — hill/mountain placement, 6–7 hexes from Arden; `3 × Iron Fang Elite / Элитный воин Железного Клыка` at approximately 650 Power / 550 XP, then `Iron Fang Warlord / Вождь Железного Клыка` at approximately 840 Power / 700 XP; completion grants 8000 Gold + one ilvl 25 item at 75% Rare / 25% Epic.
+
+These Mid Region dungeons use the same shared discovery, preparation, retry, combat, completion, and map-cleanup architecture as the Starting Region pair. Success and dungeon-death recovery route through the hero's current city context; an Arden dungeon never sends the hero back to Dornwald.
 
 ---
 

@@ -10,7 +10,7 @@ The current build already contains a working autonomous early-game loop across q
 
 The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: only the Starting City is a full economy/dungeon/event gameplay context, its Starting Region now contains fifteen handcrafted temporary events while Mid Region event content is still absent, only the two Starting Region ordinary dungeons are authored, first specialization is not implemented, while two-slot save/load is now connected. Arden now has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
+The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent, first specialization is not implemented, while two-slot save/load is now connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -390,7 +390,15 @@ Both required **Starting Region ordinary dungeons** are live:
 - **Заброшенные железные шахты** — 3 Mine Troglodytes at approximately 140 Power, then Deep Devourer at approximately 180 Power; completion grants 700 Gold + one compressed ilvl 5 Rare/Epic item;
 - **Городище Черноклыков** — 3 Blackfang Guards at approximately 230 Power, then Goblin King at approximately 300 Power; completion grants 2000 Gold + one compressed ilvl 10 Rare/Epic item.
 
-Both current completion item rolls use **75% Rare / 25% Epic** and may select from all twelve current equipment slots.
+Both Starting Region completion item rolls use **75% Rare / 25% Epic** and may select from all twelve current equipment slots.
+
+All three approved **Mid Region / Arden ordinary dungeons** are also live and intentionally keep each individual fight below the strongest ordinary enemy of the matching equipment tier because dungeon difficulty comes from four consecutive encounters without ordinary quest healing:
+
+- **Заброшенный пограничный форт** — plains placement 4–6 hexes from Arden; 3 Border Deserters at approximately 310 Power, then Deserter Captain at approximately 400 Power; completion grants 3000 Gold + one ilvl 15 Rare/Epic item;
+- **Пепельные пещеры** — forest placement 5–7 hexes from Arden; 3 Ash Creatures at approximately 450 Power using Fire attacks, then Heart of Flame at approximately 580 Power using Fire attacks; completion grants 5000 Gold + one ilvl 20 Rare/Epic item;
+- **Крепость Железного Клыка** — hill/mountain placement 6–7 hexes from Arden; 3 Iron Fang Elites at approximately 650 Power, then Iron Fang Warlord at approximately 840 Power; completion grants 8000 Gold + one ilvl 25 Rare/Epic item.
+
+All three Arden completion rolls use the same **75% Rare / 25% Epic** dungeon rarity split. The current ilvl 15 source contains ten authored armor/accessory slots; the current ilvl 20 and ilvl 25 sources contain the five authored armor slots. Missing item categories are not synthesized for dungeon rewards.
 
 Current dungeon flow includes:
 
@@ -411,7 +419,7 @@ Current dungeon flow includes:
 - normal death/resurrection handling;
 - successful completion reward routing through the normal item-generation/equipment-evaluation systems;
 - completed dungeon removal from the active map;
-- real return travel to Starting City after success.
+- real return travel to the hero's authoritative current city after success.
 
 ### Dungeon selection ownership
 
@@ -429,7 +437,7 @@ After a failed attempt, the next attempt is additionally blocked until current b
 
 The failed attempt's starting HeroPower is the comparison baseline. A later failed retry replaces that baseline with the retry's own starting HeroPower.
 
-The two Mid Region ordinary dungeons are not authored yet.
+Dungeon death/resurrection also returns the hero to the authoritative current city center, so Arden dungeon failures do not route back to Dornwald.
 
 ## Items, equipment and inventory
 
