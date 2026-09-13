@@ -177,6 +177,10 @@ Ordinary equipment uses virtual replacement plus the shared resulting HeroPower.
 
 ## Combat
 
+### `scripts/combat/death_statistics.gd`
+
+Read-only lifetime summary over existing `Simulation.combat_results_by_mob`: total losses, optional activity breakdown, legacy unclassified deaths and a stable top killer. No independent counters or Simulation ownership. `MainUI` presents the result on Statistics; Simulation records the finished combat context at its existing result-commit boundary.
+
 ### `scripts/combat/combat_simulator.gd`
 
 Factory/entry helper that creates one live duel from already resolved hero and mob `CombatStats`.
@@ -378,6 +382,10 @@ Developer/debug narration for dungeon combat/progression facts only.
 Immutable visual/base item identity: id, name, slot, icon/overlay references and authored definition-level fields.
 
 Concrete generated combat values belong to `ItemInstance`, not to the visual definition.
+
+### `scripts/items/equipment_origin_statistics.gd`
+
+Read-only summary of provenance for the current Equipment loadout, not lifetime acquisitions. ItemInstance owns `acquisition_source`; ShopSystem, EquipmentRewardSystem and Simulation starting-clothing creation assign it at their acquisition boundaries. MainUI displays the summary on Statistics.
 
 ### `scripts/model/runtime/item_instance.gd`
 

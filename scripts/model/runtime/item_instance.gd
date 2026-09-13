@@ -5,6 +5,7 @@ const ItemPowerCalculatorScript = preload("res://scripts/items/item_power_calcul
 const ItemPriceCalculatorScript = preload("res://scripts/economy/item_price_calculator.gd")
 const BeltPotionRulesScript = preload("res://scripts/items/belt_potion_rules.gd")
 
+var acquisition_source: String = "unknown"
 var definition: Resource
 var item_level: int
 var rarity: int

@@ -31,6 +31,7 @@ var opponent_hp_label: Label
 var opponent_details_label: Label
 var combat_statistics_label: Label
 var death_statistics_label: Label
+var equipment_origin_label: Label
 var attribute_points_label: Label:
 	get:
 		return hero_screen.attribute_points_label
@@ -468,6 +469,16 @@ func create_combat_statistics_panel() -> void:
 	death_statistics_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	death_statistics_label.add_theme_font_size_override("font_size", 18)
 	death_panel.add_child(death_statistics_label)
+	var origin_panel := PanelContainer.new()
+	origin_panel.name = "EquipmentOriginPanel"
+	apply_panel_style(origin_panel)
+	origin_panel.position = Vector2(32.0, 370.0)
+	origin_panel.size = Vector2(500.0, 220.0)
+	statistics_screen.add_child(origin_panel)
+	equipment_origin_label = Label.new()
+	equipment_origin_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	equipment_origin_label.add_theme_font_size_override("font_size", 18)
+	origin_panel.add_child(equipment_origin_label)
 
 func update_combat_statistics_panel() -> void:
 	var total: int = 0
@@ -494,6 +505,10 @@ func update_combat_statistics_panel() -> void:
 	death_text += "\n\nСамый опасный противник: "
 	death_text += "%s — смертей: %d" % [deaths.killer_name, deaths.killer_deaths] if int(deaths.killer_deaths) > 0 else "Пока никто"
 	death_statistics_label.text = death_text
+	var origins: Dictionary = preload("res://scripts/items/equipment_origin_statistics.gd").summarize(simulation.hero_state.equipment)
+	equipment_origin_label.text = "Происхождение экипировки\nСейчас надето на герое\n\nКуплено: %d\nНайдено: %d\nСтартовые вещи: %d" % [origins.purchased, origins.found, origins.starting]
+	if int(origins.unknown) > 0:
+		equipment_origin_label.text += "\nИсточник неизвестен: %d" % origins.unknown
 
 func update_hero_panel() -> void:
 	hero_summary_panel.update_hero_panel()

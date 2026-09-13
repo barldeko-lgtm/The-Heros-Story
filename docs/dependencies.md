@@ -581,6 +581,10 @@ Potion consumption remains coordinated through `PotionPreparationSystem` inside 
 
 Dungeon execution must not be forced into `QuestRunner` simply because both activities contain combat and travel.
 
+## Equipment provenance and persistence
+
+`ItemInstance.acquisition_source` records purchased / found / starting / unknown. Generic generation leaves Unknown; successful shop transactions mark Purchased; reward creation (including quest drops before review) marks Found; starting-clothing creation marks Starting. Routing and equipment replacement preserve provenance. Statistics reads only equipped instances and does not infer sources from names, quality or Diary. Snapshot v4 requires the field; migration from v3 adds Unknown to legacy items without changing prior specialization migrations or inventing historical origins.
+
 ## Generated equipment, loot and inventory
 
 Generated equipment must preserve this chain:

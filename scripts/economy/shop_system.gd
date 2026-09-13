@@ -88,6 +88,7 @@ func purchase_listing(hero_state, listing_index: int, target_slot: String = "") 
 		return result
 
 	hero_state.gold -= price
+	item_instance.acquisition_source = "purchased"
 	var replaced_item = hero_state.equipment.replace_item(item_instance, resolved_target_slot)
 	var resale_value: int = 0
 	if replaced_item != null:

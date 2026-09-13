@@ -2,7 +2,8 @@ class_name SimulationSnapshot
 extends RefCounted
 
 ## Explicit, JSON-safe graph snapshot for mutable Simulation state.
-const VERSION := 3
+const VERSION := 4
+const LEGACY_VERSION_3 := 3
 const LEGACY_VERSION_1 := 1
 const LEGACY_VERSION_2 := 2
 const SimulationScript = preload("res://scripts/core/simulation.gd")
@@ -57,6 +58,8 @@ static func restore(data: Dictionary) -> Dictionary:
 		prepared = _migrate_v1_to_v2(data)
 	if int(prepared.get("version", 0)) == LEGACY_VERSION_2:
 		prepared = _migrate_v2_to_v3(prepared)
+	if int(prepared.get("version", 0)) == LEGACY_VERSION_3:
+		prepared = _migrate_v3_to_v4(prepared)
 	elif int(prepared.get("version", 0)) != VERSION:
 		return {"simulation": null, "error": "unsupported snapshot version"}
 	var validation_error := _validate_snapshot(prepared)
@@ -113,7 +116,7 @@ static func _migrate_v1_to_v2(data: Dictionary) -> Dictionary:
 
 static func _migrate_v2_to_v3(data: Dictionary) -> Dictionary:
 	var migrated: Dictionary = data.duplicate(true)
-	migrated["version"] = VERSION
+	migrated["version"] = LEGACY_VERSION_3
 	if not migrated.get("nodes") is Array:
 		return migrated
 	for node in migrated["nodes"]:
@@ -148,6 +151,19 @@ static func _migrate_v2_to_v3(data: Dictionary) -> Dictionary:
 				if not properties.has(property_name):
 					properties[property_name] = combat_defaults[property_name]
 		node["properties"] = properties
+	return migrated
+
+static func _migrate_v3_to_v4(data: Dictionary) -> Dictionary:
+	var migrated: Dictionary = data.duplicate(true)
+	migrated["version"] = VERSION
+	if not migrated.get("nodes") is Array:
+		return migrated
+	for node in migrated.nodes:
+		if not node is Dictionary or node.get("script", "") != "res://scripts/model/runtime/item_instance.gd":
+			continue
+		var properties = node.get("properties")
+		if properties is Dictionary and not properties.has("acquisition_source"):
+			properties["acquisition_source"] = "unknown"
 	return migrated
 
 static func _encode(value, context: Dictionary, depth: int):

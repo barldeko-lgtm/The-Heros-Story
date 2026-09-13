@@ -26,9 +26,17 @@ Snapshot restoration rejects missing/unknown serialized properties, malformed co
 
 The main gameplay screen uses a muted dark blue-gray background (#191e26), retaining opaque #232830 panel fills. Hero summary, God panel, opponent and combat-statistics cards have one-pixel #495462 borders and reduced shadows; the narrative outer border matches, with its old content inset preserved. Tick text is lightened for contrast. Positions, sizes, content, controls and gameplay remain unchanged. Secondary screens retain their previous light background and styling; startup and mini-window appearance are unchanged. Focused coverage: `tests/test_main_screen_surface_style.gd`.
 
+## Equipped-item origin statistics
+
+Statistics now derives Purchased / Found / Starting / Unknown counts from currently equipped ItemInstances only; backpack items, potions and empty slots are excluded. `acquisition_source` is assigned at successful shop purchase, reward/drop generation, or initial clothing creation, never inferred from rarity/name. Mob, event and dungeon rewards share Found. Legacy items migrate to Unknown; that row is hidden when zero. Snapshot v4 adds this property through an explicit v3→v4 migration while preserving the prior specialization migrations. Focused coverage: `tests/test_equipment_origin_statistics.gd`.
+
+## Lifetime death statistics
+
+Statistics shows total deaths, quest/dungeon/event deaths and the top killer by mob ID across all activities. Combat-result recording receives the finished fight context before runner cleanup and adds optional `deaths_by_activity` counters inside the existing per-mob record. Total deaths/top killer are derived from existing losses, not duplicated. Equal killer counts use ascending stable mob ID. Legacy records without context remain readable and their unmatched losses appear as “Без данных об активности”; no history is reconstructed from Diary. No new serialized script property or snapshot version is introduced: the existing dictionary codec retains the additive nested data. Focused coverage: `tests/test_death_statistics.gd` (including legacy-shaped records and snapshot round-trip).
+
 ## Statistics screen
 
-The new СТАТИСТИКА header button occupies the free left area at (32, 20), leaving existing navigation in place. It opens an in-game secondary screen containing only the relocated combat-results card. The opponent card remains on Main. Existing aggregate/current-enemy counters and formatting are unchanged; the same simulation continues while Statistics is open. Back, close and other navigation use the existing screen-switching path. Focused coverage: `tests/test_statistics_screen.gd`.
+The new СТАТИСТИКА header button occupies the free left area at (32, 20), leaving existing navigation in place. It opens an in-game secondary screen containing the relocated combat-results card and a lifetime death-statistics card. The opponent card remains on Main. Existing aggregate/current-enemy counters and formatting are unchanged; the same simulation continues while Statistics is open. Back, close and other navigation use the existing screen-switching path. Focused coverage: `tests/test_statistics_screen.gd`.
 
 ## Compact opponent card
 

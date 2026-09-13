@@ -216,6 +216,7 @@ func equip_starting_armor() -> void:
 	for item_definition in DefaultStartingArmorDefinitions:
 		var fixed_stats := {"armor": 1.0}
 		var item_instance = ItemInstanceScript.new(item_definition, 1, 0, fixed_stats, [], 0.0, fixed_stats)
+		item_instance.acquisition_source = "starting"
 		var _assert_equip_if_empty_ok_4: bool = hero_state.equipment.equip_if_empty(item_instance)
 		assert(_assert_equip_if_empty_ok_4, "Every starting armor piece must equip into its empty approved slot.")
 

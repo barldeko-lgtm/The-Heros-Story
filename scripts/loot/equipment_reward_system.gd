@@ -34,6 +34,8 @@ func generate_mob_equipment_drop(mob_definition: Resource, rng) -> Dictionary:
 	var item_level: int = int(mob_definition.equipment_drop_table.item_level)
 	result["item_definition"] = item_definition
 	result["item_instance"] = item_generator.generate(item_definition, item_level, rng)
+	if result["item_instance"] != null:
+		result["item_instance"].acquisition_source = "found"
 	return result
 
 func resolve_dungeon_completion_reward(hero_state, dungeon_definition: Resource, rng) -> Dictionary:
@@ -80,6 +82,7 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng, r
 	var item_instance = item_generator.generate(item_definition, item_level, rng, rarity_override)
 	if item_instance == null:
 		return result
+	item_instance.acquisition_source = "found"
 	return route_item(hero_state, item_instance)
 
 func route_item(hero_state, item_instance) -> Dictionary:
