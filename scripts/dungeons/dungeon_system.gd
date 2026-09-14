@@ -140,6 +140,17 @@ func clear_instances() -> void:
 func get_all_dungeons() -> Array:
 	return dungeon_instances.duplicate()
 
+func get_active_dungeons_in_region(region_id: String) -> Array:
+	var result: Array = []
+	if region_id.is_empty():
+		return result
+	for instance in dungeon_instances:
+		if instance == null or instance.completed or instance.definition == null or not instance.has_map_target():
+			continue
+		if instance.definition.region_id == region_id:
+			result.append(instance)
+	return result
+
 func get_discovered_dungeons() -> Array:
 	var result: Array = []
 	for instance in dungeon_instances:
@@ -178,9 +189,15 @@ func discover_nearby(cell: Vector2i, current_hex_map, rng, is_curious: bool = fa
 	var discovered_now: Array = []
 	if current_hex_map == null or rng == null:
 		return discovered_now
+	var hero_hex = current_hex_map.get_hex(cell)
+	if hero_hex == null or hero_hex.region_id.is_empty():
+		return discovered_now
+	var current_region_id: String = hero_hex.region_id
 
 	for instance in dungeon_instances:
-		if instance == null or instance.discovered or not instance.has_map_target():
+		if instance == null or instance.discovered or instance.definition == null or not instance.has_map_target():
+			continue
+		if instance.definition.region_id != current_region_id:
 			continue
 		var distance: int = current_hex_map.get_distance_steps(cell, instance.target_hex)
 		if distance < 0 or distance > MAX_NEARBY_DISCOVERY_RADIUS:

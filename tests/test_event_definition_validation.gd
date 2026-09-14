@@ -96,13 +96,13 @@ func _init() -> void:
 	var malformed_result = definition.validate_definition()
 	check(typeof(malformed_result) == TYPE_BOOL and malformed_result == false, "Wrong option resource returns false")
 
-	var directory := "res://data/events/starting_region"
 	var authored_count: int = 0
-	for file_name in DirAccess.get_files_at(directory):
-		if file_name.ends_with(".tres"):
-			var authored = load(directory.path_join(file_name))
-			check(authored.validate_definition(), "Authored event: " + file_name)
-			authored_count += 1
+	for directory in ["res://data/events/starting_region", "res://data/events/mid_region"]:
+		for file_name in DirAccess.get_files_at(directory):
+			if file_name.ends_with(".tres"):
+				var authored = load(directory.path_join(file_name))
+				check(authored != null and authored.validate_definition(), "Authored event: %s/%s" % [directory, file_name])
+				authored_count += 1
 	check(authored_count > 0, "Authored event coverage is not empty")
 	print("Event validation: %d checks, %d authored events, %d failures" % [checks, authored_count, failures])
 	quit(1 if failures > 0 else 0)

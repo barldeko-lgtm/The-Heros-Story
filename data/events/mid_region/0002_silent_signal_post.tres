@@ -1,0 +1,200 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=32 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0104_veteran_bandit.tres" id="4_bandit"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "rush_to_the_post"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "courage"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "approach_by_the_proven_gully"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "help_the_runner_first"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На открытой равнине герой встречает израненного сигнальщика Ардена. Дальний пост перестал подавать огни после нападения, а сам сигнальщик едва успел выбраться. Он уверен, что башню занял опытный разбойник и что в запертом ящике поста всё ещё лежат деньги, собранные на ремонт дороги."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_WIS"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой не ждёт, пока сигнальщик отдышится. Он берёт у него направление и сразу идёт к посту самым прямым путём, рассчитывая выбить захватчика до того, как тот успеет подготовить ещё одну засаду."
+next_stage_id = "str_travel"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой расспрашивает сигнальщика о старой служебной тропе и выбирает знакомый гарнизону овраг вместо короткого открытого подъёма. Два тика уходят на то, чтобы запомнить безопасный подход и не показать себя раньше времени."
+next_stage_id = "wis_travel"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Прежде чем уходить, герой три тика останавливает кровь, перевязывает сигнальщику плечо и помогает ему прийти в себя. В благодарность тот объясняет, как с тыльной стороны поста добраться до старой лестницы, почти не видимой с основной тропы."
+next_stage_id = "con_travel"
+
+[sub_resource type="Resource" id="Stage_str_travel"]
+script = ExtResource("2_stage")
+id = "str_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой идёт прямо к замолчавшему сигнальному посту."
+next_stage_id = "str_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel"]
+script = ExtResource("2_stage")
+id = "wis_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой подходит к сигнальному посту по старому оврагу, скрывающему движение снизу."
+next_stage_id = "wis_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel"]
+script = ExtResource("2_stage")
+id = "con_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой идёт к сигнальному посту по пути, который описал спасённый сигнальщик."
+next_stage_id = "con_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_arrival"]
+script = ExtResource("2_stage")
+id = "str_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой выходит к посту без маскировки. Разбойник-ветеран успевает схватить оружие и встречает его на площадке полностью готовым к бою."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_wis_arrival"]
+script = ExtResource("2_stage")
+id = "wis_arrival"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Снизу герой замечает, что разбойник привязал к старой сигнальной раме мешки с награбленным. Два тика он ждёт подходящего момента, ослабляет крепёж длинным шестом и обрушивает тяжёлую раму на площадку. Захватчик выбирается из-под дерева раненым, но всё ещё способен драться."
+next_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_con_arrival"]
+script = ExtResource("2_stage")
+id = "con_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Зная о тыльной лестнице, герой появляется почти за спиной захватчика и сталкивает вниз тяжёлый масляный бочонок. Разбойник успевает отскочить, но получает удар и вступает в бой уже потрёпанным."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "str_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "wis_end"
+combat_start_hp_ratio = 0.75
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_bandit")
+combat_victory_stage_id = "con_end"
+combat_start_hp_ratio = 0.85
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой поспешил к замолчавшему сигнальному посту и в открытом бою победил занявшего его разбойника-ветерана. В посту нашлись двести двадцать золотых из дорожной кассы, которые захватчик уже успел отделить себе."
+outcome_id = "signal_post_retaken_by_force"
+gold_reward = 220
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой подошёл к замолчавшему сигнальному посту по старому оврагу, обрушил на захватчика сигнальную раму и добил разбойника в схватке. Среди его добычи осталось двести двадцать золотых дорожной кассы."
+outcome_id = "signal_post_retaken_carefully"
+gold_reward = 220
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Сначала герой спас раненого сигнальщика, а затем воспользовался указанной им тыльной лестницей и отбил пост у разбойника. В захваченном ящике оказалось двести двадцать золотых дорожной кассы."
+outcome_id = "signal_post_retaken_after_aid"
+gold_reward = 220
+
+[resource]
+script = ExtResource("1_event")
+id = "silent_signal_post"
+display_name = "Молчание сигнального поста"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("plains", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_travel"), SubResource("Stage_wis_travel"), SubResource("Stage_con_travel"), SubResource("Stage_str_arrival"), SubResource("Stage_wis_arrival"), SubResource("Stage_con_arrival"), SubResource("Stage_str_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_con_combat"), SubResource("Stage_str_end"), SubResource("Stage_wis_end"), SubResource("Stage_con_end")])

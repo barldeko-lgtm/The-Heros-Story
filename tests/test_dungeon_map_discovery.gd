@@ -20,8 +20,9 @@ func run_test() -> void:
 	test_spawn_and_vision_discovery()
 	test_physical_hex_discovery()
 	test_nearby_discovery_chances_and_repeat_checks()
+	test_nearby_discovery_stays_inside_current_region()
 	await test_map_visibility_boundary()
-	print("PASS: Automatically loaded ordinary dungeons spawn on real hidden map hexes, use translucent unknown markers, and become fully visible after discovery.")
+	print("PASS: Ordinary dungeon discovery and MapScreen visibility stay inside the hero's current region while preserving local hidden-marker debugging and normal reveal rules.")
 	quit()
 
 func test_spawn_and_vision_discovery() -> void:
@@ -98,6 +99,24 @@ func test_nearby_discovery_chances_and_repeat_checks() -> void:
 	var curious_attempt: Array = curious_simulation.dungeon_system.discover_nearby(radius_two_cell, curious_simulation.hex_map, ScriptedRng.new([0.149]), true)
 	assert(curious_attempt.has(curious_dungeon) and curious_dungeon.discovery_source == "hero_nearby_radius_2", "Curious must discover at radius 2 on a roll below 15 percent.")
 
+func test_nearby_discovery_stays_inside_current_region() -> void:
+	var simulation = SimulationScript.new(7006, null)
+	var mid_dungeon = find_dungeon(simulation, "abandoned_border_fort")
+	assert(mid_dungeon != null and not mid_dungeon.discovered, "Cross-region discovery test requires one unknown Mid Region dungeon.")
+	for other_dungeon in simulation.dungeon_system.get_all_dungeons():
+		if other_dungeon != mid_dungeon and not other_dungeon.discovered:
+			other_dungeon.discover("test_setup")
+
+	var boundary_pair: Dictionary = find_adjacent_region_boundary(simulation)
+	assert(not boundary_pair.is_empty(), "The authored map must contain an adjacent Starting/Mid region boundary.")
+	mid_dungeon.target_hex = boundary_pair["mid"]
+	var starting_cell: Vector2i = boundary_pair["starting"]
+	var blocked_attempt: Array = simulation.dungeon_system.discover_nearby(starting_cell, simulation.hex_map, ScriptedRng.new([0.0]), false)
+	assert(blocked_attempt.is_empty() and not mid_dungeon.discovered, "A Mid Region dungeon must not be discoverable from a Starting Region hex even when it is directly across the border.")
+
+	var same_region_attempt: Array = simulation.dungeon_system.discover_nearby(boundary_pair["mid"], simulation.hex_map, ScriptedRng.new([]), false)
+	assert(same_region_attempt.has(mid_dungeon) and mid_dungeon.discovered, "The same dungeon must become discoverable after the hero is actually inside its owning region.")
+
 func test_map_visibility_boundary() -> void:
 	var simulation = SimulationScript.new(7003, null)
 	var dungeon = find_dungeon(simulation, "abandoned_iron_mines")
@@ -109,7 +128,10 @@ func test_map_visibility_boundary() -> void:
 	await process_frame
 
 	assert(map_screen.get_discovered_dungeons().is_empty(), "Unknown dungeon must remain absent from the hero's discovered-dungeon view.")
-	assert(map_screen.get_dungeon_marker_instances().size() == simulation.dungeon_system.get_all_dungeons().size(), "Debug MapScreen must receive every active ordinary dungeon for marker rendering.")
+	var starting_region_markers: Array = simulation.dungeon_system.get_active_dungeons_in_region(simulation.hex_map.STARTING_REGION_ID)
+	assert(map_screen.get_dungeon_marker_instances().size() == starting_region_markers.size(), "MapScreen must render only dungeons from the hero's current region.")
+	for marker_dungeon in map_screen.get_dungeon_marker_instances():
+		assert(marker_dungeon.definition.region_id == simulation.hex_map.STARTING_REGION_ID, "Starting Region MapScreen must not leak Mid Region dungeon markers.")
 	var dungeon_texture: Texture2D = map_screen.get_dungeon_visual_texture()
 	assert(dungeon_texture != null, "Dungeon markers must use the supplied dungeon activity sprite.")
 	assert(dungeon_texture.resource_path == map_screen.map_tile_visuals.DUNGEON_MAP_PATH, "Dungeon visual must use assets/map/activities/dungeon.png.")
@@ -129,6 +151,13 @@ func test_map_visibility_boundary() -> void:
 	assert(is_equal_approx(map_screen.get_dungeon_marker_alpha(dungeon), 1.0), "Discovered dungeon marker must become fully opaque.")
 	assert(map_screen.get_dungeon_marker_signature() != marker_signature_before_discovery, "Discovery must change the map marker signature so the opacity redraws immediately.")
 	assert(map_screen.get_hex_tooltip_text(simulation.hex_map.get_hex(dungeon.target_hex)).contains(dungeon.definition.display_name), "A discovered dungeon hex tooltip must show its dungeon name.")
+
+	assert(simulation.world_state.set_hero_position(simulation.hex_map.definition.mid_city_center), "Map visibility test must be able to move into Mid Region.")
+	await process_frame
+	var mid_region_markers: Array = simulation.dungeon_system.get_active_dungeons_in_region(simulation.hex_map.MID_REGION_ID)
+	assert(map_screen.get_dungeon_marker_instances().size() == mid_region_markers.size(), "Entering Mid Region must switch MapScreen to that region's dungeon markers.")
+	for marker_dungeon in map_screen.get_dungeon_marker_instances():
+		assert(marker_dungeon.definition.region_id == simulation.hex_map.MID_REGION_ID, "Mid Region MapScreen must not keep Starting Region dungeon markers visible.")
 	map_screen.free()
 
 func find_dungeon(simulation, dungeon_id: String):
@@ -142,3 +171,16 @@ func find_cell_at_distance(simulation, center: Vector2i, wanted_distance: int) -
 		if simulation.hex_map.get_distance_steps(center, cell) == wanted_distance:
 			return cell
 	return Vector2i(-1, -1)
+
+func find_adjacent_region_boundary(simulation) -> Dictionary:
+	for column in range(simulation.hex_map.definition.width):
+		for row in range(simulation.hex_map.definition.height):
+			var starting_cell := Vector2i(column, row)
+			var starting_hex = simulation.hex_map.get_hex(starting_cell)
+			if starting_hex == null or starting_hex.region_id != simulation.hex_map.STARTING_REGION_ID:
+				continue
+			for neighbor in simulation.hex_map.get_neighbors(starting_cell):
+				var neighbor_hex = simulation.hex_map.get_hex(neighbor)
+				if neighbor_hex != null and neighbor_hex.region_id == simulation.hex_map.MID_REGION_ID:
+					return {"starting": starting_cell, "mid": neighbor}
+	return {}

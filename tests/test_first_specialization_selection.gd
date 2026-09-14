@@ -16,7 +16,6 @@ func test_level_one_preview_and_level_twenty_snapshot() -> void:
 	var hero = HeroStateScript.new("Preview")
 	var preview: Dictionary = HeroSpecializationScript.get_debug_state(hero)
 	assert(not bool(preview["decision_active"]), "Specialization choice must be inactive before Level 20.")
-	assert(int(preview["mandatory_strength"]) == 0, "Level 1 preview must subtract no class-earned Strength.")
 	assert(is_equal_approx(float(preview["slayer_base"]), 0.5) and is_equal_approx(float(preview["protector_base"]), 0.5), "Symmetric Level 1 stats must preview equal specialization weights.")
 
 	hero.level = 20
@@ -27,7 +26,8 @@ func test_level_one_preview_and_level_twenty_snapshot() -> void:
 	hero.personality_traits_by_axis["courage"] = HeroTraitsScript.BRAVE
 	assert(HeroSpecializationScript.start_if_needed(hero, 100), "Level 20 must open the first-specialization decision window.")
 	var started: Dictionary = HeroSpecializationScript.get_debug_state(hero)
-	assert(int(started["mandatory_strength"]) == 19 and int(started["personal_strength"]) == 5, "Level 20 must remove exactly the 19 actually earned mandatory Warrior STR points.")
+	assert(is_equal_approx(float(started["slayer_raw"]), 29.0), "Level-20 SlayerRaw must include the full current 24 STR plus 5 DEX, including Warrior class growth.")
+	assert(is_equal_approx(float(started["protector_raw"]), 10.0), "ProtectorRaw must remain current CON + WIS.")
 	assert(str(started["courage_trait"]) == HeroTraitsScript.BRAVE and is_equal_approx(float(started["slayer_trait_modifier"]), 0.05), "Brave must freeze as +0.05 Slayer influence at Level 20.")
 	assert(int(started["ticks_remaining"]) == 180, "The decision must open with the full 180 ticks remaining.")
 	hero.personality_traits_by_axis["courage"] = HeroTraitsScript.CAUTIOUS
@@ -40,13 +40,13 @@ func test_live_allocated_stats_and_divine_guidance_resolve_immediately() -> void
 	hero.level = 20
 	hero.strength = 24
 	hero.dexterity = 5
-	hero.constitution = 5
+	hero.constitution = 24
 	hero.wisdom = 5
 	hero.pending_primary_attribute_points = 1
 	hero.personality_traits_by_axis["courage"] = HeroTraitsScript.BRAVE
 	assert(HeroSpecializationScript.start_if_needed(hero, simulation.world_clock.world_tick), "Fixture must start the decision window.")
 	var before: Dictionary = simulation.get_first_specialization_debug_state()
-	assert(is_equal_approx(float(before["protector_base"]), 0.5), "Balanced fixture must start at 0.5 Protector stat weight.")
+	assert(is_equal_approx(float(before["protector_base"]), 0.5), "Equal STR+DEX and CON+WIS totals must start at 0.5 Protector stat weight.")
 	assert(simulation.allocate_primary_attribute("constitution"), "A pending point distributed during the window must use the normal attribute command.")
 	var after: Dictionary = simulation.get_first_specialization_debug_state()
 	assert(float(after["protector_base"]) > float(before["protector_base"]), "A newly distributed CON point must immediately raise Protector stat weight.")
@@ -83,7 +83,7 @@ func test_timeout_waits_full_180_ticks_and_is_deterministic() -> void:
 		tied_hero.level = 20
 		tied_hero.strength = 24
 		tied_hero.dexterity = 5
-		tied_hero.constitution = 5
+		tied_hero.constitution = 24
 		tied_hero.wisdom = 5
 		assert(HeroSpecializationScript.start_if_needed(tied_hero, 1000))
 	var tie_result_a: String = HeroSpecializationScript.resolve(tie_a, 9999, 1180)

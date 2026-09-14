@@ -147,7 +147,7 @@ Owns the four personality axes, clamping, activation/hysteresis transitions, map
 
 ### `scripts/hero/hero_specialization.gd`
 
-Owns the first Protector / Slayer decision rules: live attribute-profile weights, removal of actually earned mandatory Warrior STR, frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break, permanent target selection in `first_specialization_id`, and the explicit later grant operation that changes `hero_class_id` only after the specialization trial is completed. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
+Owns the first Protector / Slayer decision rules: live full-attribute profile weights (`STR + DEX` versus `CON + WIS`), frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break, permanent target selection in `first_specialization_id`, and the explicit later grant operation that changes `hero_class_id` only after the specialization trial is completed. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
 
 ### `scripts/hero/specialization_quest_system.gd` / `data/quests/specialization/*.tres`
 
@@ -308,13 +308,13 @@ Structured quest/runtime facts used by coordination and narrative layers, includ
 ### `scripts/model/definitions/event_definition.gd`
 ### `scripts/model/definitions/event_stage_definition.gd`
 ### `scripts/model/definitions/event_option_definition.gd`
-### `data/events/starting_region/*.tres`
+### `data/events/starting_region/*.tres` / `data/events/mid_region/*.tres`
 
 Immutable authored temporary-event content.
 
 Definitions own placement/lifetime metadata and stage graphs. Stages/options own authored scene timing, decision rules, Formative/Expressive meaning, travel/combat references, rewards/outcomes and event-specific narrative text where appropriate. Current decision data supports both one-trait Expressive checks and an authored any-of-traits check; COMBAT stages may also author a reduced starting current-HP ratio while still referencing an ordinary immutable `MobDefinition` for all combat stats.
 
-Current event content lives in `data/events/starting_region/`; exact authored branches belong in those resources, not in generic event code. The current Starting Region pool contains fifteen resources (`0001`–`0015`). `0005_ogre_at_old_barrow.tres` is the first event to use the any-of-traits Expressive rule and authored partial starting mob HP; events `0006`–`0013` intentionally reuse the established framework for a broader content mix, while `0014_medicine_before_sunset.tres` and `0015_signal_from_old_quarry.tres` add two more real secondary-objective travel stories without introducing one-off event scripts.
+Current event content lives in the two region folders above; exact authored branches belong in those resources, not in generic event code. `data/events/starting_region/` contains the complete twenty-event Dornwald pool and `data/events/mid_region/` contains the complete fifteen-event Arden pool. `EventSystem` loads both directories through the same generic data path, so Mid Region stories do not require region-specific event scripts.
 
 ### `scripts/model/runtime/event_instance.gd`
 
@@ -358,7 +358,7 @@ Mutable runtime state for one placed dungeon: target/reservation, discovery/comp
 
 ### `scripts/dungeons/dungeon_system.gd`
 
-Owns ordinary-dungeon definition loading, deterministic map placement/reservations, discovery/knowledge state, Divine Vision reveal support, cleanup after completion, and the explicit placement/reservation entry point used to spawn an already-known authored specialization dungeon without adding it to ordinary population/discovery.
+Owns ordinary-dungeon definition loading, deterministic map placement/reservations, region-local discovery/knowledge state, current-region dungeon queries, Divine Vision reveal support, cleanup after completion, and the explicit placement/reservation entry point used to spawn an already-known authored specialization dungeon without adding it to ordinary population/discovery.
 
 It does not execute the expedition or combat.
 
@@ -639,7 +639,7 @@ It does not decide equipment upgrades, buy/sell items or consume potions.
 ### `scenes/ui/screens/map_screen.tscn`
 ### `scripts/ui/screens/map_screen.gd`
 
-Observation-only world-map presentation: terrain/cities/road, hero position, quest/dungeon markers, temporary-event footprints, hover info, camera zoom/pan and developer hidden-location presentation.
+Observation-only world-map presentation: terrain/cities/road, hero position, quest markers, current-region dungeon markers, temporary-event footprints, hover info, camera zoom/pan and developer hidden-location presentation for unknown local dungeons.
 
 It does not choose destinations, reserve activities, calculate travel or reveal locations by itself.
 

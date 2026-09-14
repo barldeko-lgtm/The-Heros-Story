@@ -1,0 +1,150 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0107_orc_berserker.tres" id="4_orc"]
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "move_the_wounded_first"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "drop_the_resin_vat"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "study_the_orcs_path"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В лесу герой выходит к смоляным печам, где работа внезапно остановилась. Несколько углежогов и смолокуров прячутся за земляным валом, двое ранены. Один орк-берсерк прорвался к промыслу раньше своего отряда и теперь крушит бочки между печами, не давая людям забрать пострадавших или уйти по узкой тропе."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_CON"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой сперва два тика переносит обоих раненых за высокий земляной вал и помогает остальным оттащить от огня бочки со смолой. Только убедившись, что люди больше не останутся между печами и орком, он выходит навстречу берсерку."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой замечает тяжёлую бочку на деревянных козлах над проходом. Не предупреждая хозяев, он подрубает крепление и заманивает орка под бочку. Смола и обломки сбивают берсерка с ног, но часть дорогого запаса безвозвратно выливается в грязь."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой изучает следы между печами и замечает, что орк всякий раз возвращается одной и той же сухой тропой, обходя дым. За два тика он натягивает поперёк неё пропитанную смолой верёвку и присыпает её золой. Берсерк цепляется за ловушку и получает ранение ещё до боя."
+next_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "con_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "dex_end"
+combat_start_hp_ratio = 0.65
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "wis_end"
+combat_start_hp_ratio = 0.75
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У смоляных печей герой сначала вынес раненых из опасного места, а затем в честной схватке убил орка-берсерка. Работники собрали для него двести шестьдесят золотых."
+outcome_id = "resin_workers_saved_nobly"
+gold_reward = 260
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой без спроса пожертвовал бочкой дорогой смолы, обрушил её на орка и добил раненого берсерка. Смолокуры были недовольны потерей, но за спасённый промысел всё же заплатили триста золотых."
+outcome_id = "resin_workers_saved_by_ruthless_trap"
+gold_reward = 300
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой изучил повадки орка у смоляных печей, устроил ловушку на его привычной тропе и победил уже раненого берсерка. За спасённый промысел он получил двести восемьдесят золотых."
+outcome_id = "resin_workers_saved_by_tracking"
+gold_reward = 280
+
+[resource]
+script = ExtResource("1_event")
+id = "blood_at_resin_kilns"
+display_name = "Кровь у смоляных печей"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_con_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_con_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_con_end"), SubResource("Stage_dex_end"), SubResource("Stage_wis_end")])

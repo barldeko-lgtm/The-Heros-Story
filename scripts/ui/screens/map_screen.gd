@@ -166,12 +166,18 @@ func is_selected_quest_offer(offer) -> bool:
 func get_discovered_dungeons() -> Array:
 	if simulation == null or simulation.dungeon_system == null:
 		return []
-	return simulation.dungeon_system.get_discovered_dungeons()
+	var current_region_id: String = simulation.get_current_region_id()
+	if current_region_id.is_empty():
+		return []
+	return simulation.dungeon_system.get_discovered_dungeons_in_region(current_region_id)
 
 func get_dungeon_marker_instances() -> Array:
 	if simulation == null or simulation.dungeon_system == null:
 		return []
-	return simulation.dungeon_system.get_all_dungeons()
+	var current_region_id: String = simulation.get_current_region_id()
+	if current_region_id.is_empty():
+		return []
+	return simulation.dungeon_system.get_active_dungeons_in_region(current_region_id)
 
 func get_dungeon_marker_signature() -> String:
 	var parts := PackedStringArray()
@@ -213,6 +219,9 @@ func get_dungeon_marker_alpha(dungeon_instance) -> float:
 
 func get_discovered_dungeon_at_hex(cell: Vector2i):
 	if simulation == null or simulation.dungeon_system == null:
+		return null
+	var hex_definition = hex_map.get_hex(cell) if hex_map != null else null
+	if hex_definition == null or hex_definition.region_id != simulation.get_current_region_id():
 		return null
 	return simulation.dungeon_system.get_discovered_dungeon_at_hex(cell)
 

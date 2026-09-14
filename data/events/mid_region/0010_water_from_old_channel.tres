@@ -1,0 +1,119 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "clear_only_the_paying_branch"
+driver_attribute = "strength"
+next_stage_id = "str_work"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "rebuild_the_shared_split"
+driver_attribute = "constitution"
+next_stage_id = "con_work"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "search_for_the_old_bypass"
+driver_attribute = "wisdom"
+next_stage_id = "wis_search"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В холмах герой находит старый каменный канал, где после небольшого обвала почти исчез поток. У развилки спорят люди из пастушьего посёлка и надсмотрщик небольшой каменоломни: обе стороны зависят от одной воды и каждая хочет, чтобы сначала расчистили её ветку. Камни можно разобрать, но старая кладка уже начала осыпаться."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_work"]
+script = ExtResource("2_stage")
+id = "str_work"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Надсмотрщик каменоломни предлагает заплатить больше, если вода пойдёт к рабочим первой. Герой принимает условия и три тика разбирает самые тяжёлые плиты именно в этой ветке. Поток возвращается к каменоломне, а пастухам придётся ждать следующей расчистки."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_con_work"]
+script = ExtResource("2_stage")
+id = "con_work"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой отказывается выбирать, кому достанется вода. Четыре тика он укрепляет старую развилку камнями, переносит осыпавшуюся кладку и вручную выравнивает два русла. Работы выходит больше, зато поток снова делится между обеими сторонами."
+next_stage_id = "con_end"
+
+[sub_resource type="Resource" id="Stage_wis_search"]
+script = ExtResource("2_stage")
+id = "wis_search"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой не трогает свежий обвал сразу. Три тика он осматривает старую кладку выше по склону и находит заросший обслуживающий обход, которым давно никто не пользовался. После расчистки узкого отверстия вода обходит повреждённый участок и снова приходит к обеим веткам."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У старого канала герой принял более выгодное предложение каменоломни и расчистил только её ветку. За приоритетный поток надсмотрщик заплатил триста золотых, а пастушьему посёлку пришлось ждать другой помощи."
+outcome_id = "old_channel_cleared_for_highest_payer"
+gold_reward = 300
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой долго укреплял развилку старого канала, чтобы вода снова шла и пастухам, и рабочим каменоломни. Полной платы он не потребовал и взял только шестьдесят золотых за потраченное время."
+outcome_id = "old_channel_shared_generously"
+gold_reward = 60
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой исследовал старую кладку канала и нашёл забытый обход вокруг обвала. Поток вернулся к обеим веткам без тяжёлой разборки, а жители собрали для него двести золотых."
+outcome_id = "old_channel_bypass_rediscovered"
+gold_reward = 200
+
+[resource]
+script = ExtResource("1_event")
+id = "water_from_old_channel"
+display_name = "Вода из старого канала"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_work"), SubResource("Stage_con_work"), SubResource("Stage_wis_search"), SubResource("Stage_str_end"), SubResource("Stage_con_end"), SubResource("Stage_wis_end")])

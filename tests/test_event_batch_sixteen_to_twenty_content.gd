@@ -55,9 +55,16 @@ func _init() -> void:
 	assert(attribute_counts == {"strength": 4, "dexterity": 4, "constitution": 4, "wisdom": 3})
 
 	var simulation = SimulationScript.new(1162001, null, [], true)
-	assert(simulation.event_system.event_definitions.size() == 20, "Starting Region event pool must contain twenty authored definitions.")
+	assert(count_region_events(simulation, "starting_region") == 20, "Starting Region event pool must contain twenty authored definitions.")
 	print("PASS: Events 16-20 are non-combat personality-balancing stories with 4 Devious / 4 Generous / 4 Greedy / 3 Conservative formative branches and exactly two secondary-map detours.")
 	quit()
+
+func count_region_events(simulation, region_id: String) -> int:
+	var count := 0
+	for definition in simulation.event_system.event_definitions:
+		if definition != null and definition.region_id == region_id:
+			count += 1
+	return count
 
 func movement_trait(axis_id: String, delta: int) -> String:
 	if axis_id == "morality" and delta < 0:

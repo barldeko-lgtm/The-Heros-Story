@@ -1,0 +1,112 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "restore_payroll_fairly"
+driver_attribute = "constitution"
+next_stage_id = "con_reconcile"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "turn_hidden_pouch_into_leverage"
+driver_attribute = "dexterity"
+next_stage_id = "dex_pressure"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "demand_paid_arbitration"
+driver_attribute = "strength"
+next_stage_id = "str_fee"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На равнине неподалёку от Ардена герой застаёт ссору у разбитой казённой телеги. Писарь гарнизона и возчик собирают разорванные мешочки с жалованием и обвиняют друг друга в недостаче. До возвращения в город оба боятся даже трогать опрокинутый сундук без независимого свидетеля."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_CON"), SubResource("Option_DEX"), SubResource("Option_STR")])
+
+[sub_resource type="Resource" id="Stage_con_reconcile"]
+script = ExtResource("2_stage")
+id = "con_reconcile"
+stage_type = 0
+duration_ticks = 4
+scene_text = "Герой четыре тика помогает собрать тяжёлый сундук, пересчитать монеты по ротным ведомостям и заново запечатать каждый мешок. Он не позволяет ни писарю списать недостачу на возчика, ни возчику спрятать повреждённые пломбы. Когда счёт сходится, оба подписывают одну честную запись о случившемся."
+next_stage_id = "con_end"
+
+[sub_resource type="Resource" id="Stage_dex_pressure"]
+script = ExtResource("2_stage")
+id = "dex_pressure"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой быстро замечает маленький казённый мешочек, который писарь успел задвинуть под сиденье телеги до начала спора. Вместо того чтобы сразу вывести его на чистую воду, герой тихо показывает находку и предлагает оставить историю между ними. Писарь понимает намёк и платит за молчание из собственных денег."
+next_stage_id = "dex_end"
+
+[sub_resource type="Resource" id="Stage_str_fee"]
+script = ExtResource("2_stage")
+id = "str_fee"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой один поднимает перекошенный сундук, вытаскивает его из грязи и даёт понять обоим спорщикам, что без его помощи жалование до Ардена вообще не доберётся. Продолжить работу он соглашается только после того, как обе стороны заранее складываются на заметную плату за его силу и время."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "У разбитой казённой телеги герой помог восстановить ведомости и собрать жалование гарнизона без обмана одной стороны другой. За тяжёлую работу писарь выплатил ему сто сорок золотых из предусмотренных дорожных расходов."
+outcome_id = "garrison_pay_restored_fairly"
+gold_reward = 140
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой обнаружил спрятанный писарем мешочек с жалованием и превратил находку в рычаг давления. Мешочек вернулся в казённый сундук, а за молчание писарь отдал герою двести двадцать золотых из собственных накоплений."
+outcome_id = "hidden_pay_pouch_used_as_leverage"
+gold_reward = 220
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой вытащил тяжёлый сундук с жалованием из грязи и помог довести дело до конца, но за свою незаменимую помощь потребовал крупную плату. Писарь и возчик вместе заплатили ему сто девяносто золотых."
+outcome_id = "garrison_pay_arbitrated_for_fee"
+gold_reward = 190
+
+[resource]
+script = ExtResource("1_event")
+id = "missing_garrison_pay"
+display_name = "Пропавшее жалование"
+region_id = "mid_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_con_reconcile"), SubResource("Stage_dex_pressure"), SubResource("Stage_str_fee"), SubResource("Stage_con_end"), SubResource("Stage_dex_end"), SubResource("Stage_str_end")])

@@ -133,7 +133,7 @@ func update_specialization_panel() -> void:
 	text += "Черта: %+.2f · Покровитель: %+.2f\n" % [float(state["protector_trait_modifier"]), protector_guidance]
 	text += "[b]Итого: %.3f[/b]\n\n" % float(state["protector_score"])
 	text += "[color=#d9bd7d][b]ИСТРЕБИТЕЛЬ[/b][/color]\n"
-	text += "Личная STR %d (STR %d − %d классовых) + DEX %d → raw %.0f\n" % [int(state["personal_strength"]), hero.strength, int(state["mandatory_strength"]), hero.dexterity, float(state["slayer_raw"])]
+	text += "STR %d + DEX %d → raw %.0f\n" % [hero.strength, hero.dexterity, float(state["slayer_raw"])]
 	text += "Вес статов: %.3f\n" % float(state["slayer_base"])
 	text += "Черта: %+.2f · Покровитель: %+.2f\n" % [float(state["slayer_trait_modifier"]), slayer_guidance]
 	text += "[b]Итого: %.3f[/b]" % float(state["slayer_score"])

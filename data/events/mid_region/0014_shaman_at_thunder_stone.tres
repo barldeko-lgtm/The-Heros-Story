@@ -1,0 +1,150 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0111_storm_shaman.tres" id="4_shaman"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "pull_the_wounded_patrolman_clear"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "fake_a_retreat_to_the_ledge"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "use_the_old_grounding_chain"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На каменистом склоне герой находит прижавшийся к старому карьерному укрытию патруль Ардена. Выше, у высокого расколотого валуна, орк-шаман бьёт молниями по каждому, кто пытается выйти на открытое место. Один патрульный ранен и лежит за низкой стенкой, а остальные обещают награду тому, кто снимет шамана с гребня."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой прежде всего выбегает к раненому, подхватывает его и затаскивает за каменную стенку. Шаман сразу замечает движение, поэтому после спасения человека герой вынужден подниматься к нему без долгой подготовки."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой показывает шаману блестящую пряжку со снятого патрульного плаща и делает вид, что уходит с трофеем. Два тика он заманивает орка на узкую полку под осыпью, а затем срывает подготовленные камни и ранит противника ещё до схватки."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой не проверяет на себе открытый подъём. Три тика он осматривает старое карьерное укрытие и находит толстую заземляющую цепь, которой раньше отводили грозу от подъёмного крана. Подтянув её к расколотому валуну, герой заставляет следующий разряд пройти через мокрый камень рядом с шаманом и обжигает его."
+next_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_shaman")
+combat_victory_stage_id = "str_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_shaman")
+combat_victory_stage_id = "dex_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_shaman")
+combat_victory_stage_id = "wis_end"
+combat_start_hp_ratio = 0.85
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У громового камня герой сначала вытащил раненого патрульного из-под ударов молний, а затем поднялся к орку-шаману и победил его. Патруль выплатил триста золотых."
+outcome_id = "thunder_stone_shaman_defeated_after_rescue"
+gold_reward = 300
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой обманом выманил орка-шамана под осыпь, тяжело ранил его камнями и затем победил в бою. За освобождённый гребень патруль отдал ему триста тридцать золотых."
+outcome_id = "thunder_stone_shaman_lured_into_rockfall"
+gold_reward = 330
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой не пошёл по открытому склону, использовал старую карьерную заземляющую цепь и обжёг орка-шамана его же разрядом перед схваткой. После победы патруль выплатил двести девяносто золотых."
+outcome_id = "thunder_stone_shaman_grounded_carefully"
+gold_reward = 290
+
+[resource]
+script = ExtResource("1_event")
+id = "shaman_at_thunder_stone"
+display_name = "Шаман у громового камня"
+region_id = "mid_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_str_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_wis_end")])

@@ -1,0 +1,150 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0102_hardened_orc_raider.tres" id="4_orc"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "stand_between_orc_and_workers"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "feign_retreat_into_grain_ditch"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "barricade_the_granary_yard"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "У полевого амбара на равнине герой слышит крики и видит, как закалённый орк-налётчик гонит работников от раскрытых ворот. Несколько людей успели укрыться за мешками с зерном, но один раненый остался у навеса. Орк не спешит уходить: он разбивает бочки и явно собирается забрать столько припасов, сколько сможет унести."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой выходит прямо между орком и раненым работником, помогает человеку отползти к мешкам и принимает первый натиск на себя. Времени на ловушки нет: главное — не дать налётчику добраться до безоружных людей."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой делает вид, что испугался и бросает у ворот открытую сумку с монетами работников. Отступая к узкой зерновой канаве, он два тика заманивает орка всё глубже между насыпями. Когда налётчик наклоняется за приманкой, герой обрушивает на него заранее подрезанную стенку мешков."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой не выходит на открытый двор. Три тика он закрывает боковые проходы тележками и мешками, уводит людей за внутреннюю стену и заставляет орка самому лезть через единственный укреплённый вход. Перед схваткой налётчик получает несколько тяжёлых ударов жердями и камнями."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "str_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "dex_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_orc")
+combat_victory_stage_id = "con_end"
+combat_start_hp_ratio = 0.8
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У полевого амбара герой закрыл собой раненого работника и в прямом бою убил закалённого орка-налётчика. Хозяева спасённого зерна собрали для него двести пятьдесят золотых."
+outcome_id = "field_granary_defended_for_workers"
+gold_reward = 250
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой обманом заманил орка в зерновую канаву, обрушил на него мешки и добил уже раненого налётчика. Большая часть припасов уцелела, и владельцы амбара заплатили двести восемьдесят золотых."
+outcome_id = "field_granary_defended_by_deception"
+gold_reward = 280
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой не стал встречать орка на открытом дворе, укрепил единственный проход и измотал налётчика до схватки. После победы хозяева амбара выплатили ему двести сорок золотых."
+outcome_id = "field_granary_defended_from_barricade"
+gold_reward = 240
+
+[resource]
+script = ExtResource("1_event")
+id = "orc_at_field_granary"
+display_name = "Орк у полевого амбара"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_con_combat"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_con_end")])

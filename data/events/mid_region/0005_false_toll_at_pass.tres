@@ -1,0 +1,140 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0108_hardened_mercenary.tres" id="4_mercenary"]
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "pretend_to_pay_then_strike"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "hold_the_safe_side_of_the_pass"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "inspect_the_false_seal"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На старом подъёме в холмах герой видит несколько остановленных торговых телег. Закалённый наёмник перегородил дорогу цепью и собирает якобы новую дорожную пошлину от имени Ардена. Купцы уверены, что печать на его бумаге фальшивая, но никто не хочет первым спорить с вооружённым человеком. Они обещают двести шестьдесят золотых тому, кто откроет путь."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_DEX"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой делает вид, что поверил в новую пошлину, отсчитывает несколько монет и два тика ведёт спокойный разговор, постепенно подходя ближе. Когда наёмник опускает щит, чтобы принять деньги, герой резко выбивает его оружие и наносит первый удар до того, как обман раскрывается."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой не входит между цепью и склоном, где наёмник заранее выбрал удобное место. Три тика он помогает купцам поставить две телеги поперёк дороги и вынуждает сборщика самому выйти с узкого подъёма. Тот злится и бросается вперёд, теряя преимущество позиции."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой два тика изучает бумагу, печать и узлы на дорожной цепи. Он замечает, что печать собрана из двух старых штампов, а цепь держится на наскоро забитом клине. Герой выдёргивает клин в нужный момент: тяжёлая цепь сбивает наёмника с ног и окончательно выдаёт подделку перед купцами."
+next_stage_id = "wis_combat"
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_mercenary")
+combat_victory_stage_id = "dex_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_mercenary")
+combat_victory_stage_id = "con_end"
+combat_start_hp_ratio = 0.85
+
+[sub_resource type="Resource" id="Stage_wis_combat"]
+script = ExtResource("2_stage")
+id = "wis_combat"
+stage_type = 3
+duration_ticks = 1
+mob_definition = ExtResource("4_mercenary")
+combat_victory_stage_id = "wis_end"
+combat_start_hp_ratio = 0.75
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "На старом подъёме герой притворился готовым заплатить незаконную пошлину, подпустил сборщика близко и первым ударом лишил его преимущества. После победы купцы открыли дорогу и выплатили обещанные двести шестьдесят золотых."
+outcome_id = "false_toll_broken_by_deception"
+gold_reward = 260
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой отказался драться на заранее выбранной сборщиком позиции, укрепил безопасную сторону прохода и вынудил наёмника самому выйти к нему. После победы купцы заплатили герою двести шестьдесят золотых."
+outcome_id = "false_toll_broken_from_safe_ground"
+gold_reward = 260
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой разобрал поддельную печать незаконного сборщика, нашёл слабое крепление дорожной цепи и использовал его перед схваткой. После победы и открытия дороги купцы выплатили ему двести шестьдесят золотых."
+outcome_id = "false_toll_exposed_and_broken"
+gold_reward = 260
+
+[resource]
+script = ExtResource("1_event")
+id = "false_toll_at_pass"
+display_name = "Пошлина на старом подъёме"
+region_id = "mid_region"
+placement_distance_hex_min = 4
+placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_dex_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_dex_combat"), SubResource("Stage_con_combat"), SubResource("Stage_wis_combat"), SubResource("Stage_dex_end"), SubResource("Stage_con_end"), SubResource("Stage_wis_end")])

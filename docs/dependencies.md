@@ -251,7 +251,7 @@ Contracts:
 - `HeroSpecialization` owns the score formulas and decision lifecycle; UI must not duplicate or resolve them;
 - Level-20 Courage is a frozen fact for this decision only: Brave contributes +0.05 Slayer, Cautious contributes +0.05 Protector, and later personality transitions do not rewrite the snapshot;
 - assigned primary attributes remain live for the full window; pending unspent points have no effect until `Simulation → HeroProgression` actually allocates them;
-- mandatory Warrior STR must never create false Slayer preference. The calculation subtracts the actually earned fixed class contribution (`19` on reaching Level 20 in the current progression), not a stale magic constant;
+- the attribute comparison deliberately uses the hero's **full current stats**: `SlayerRaw = STR + DEX` and `ProtectorRaw = CON + WIS`. Automatic Warrior STR is part of the developed profile and is not subtracted a second time;
 - a large score lead alone never closes the current 180-tick window;
 - one-time player guidance may be attempted only while the window is active; Energy spending stays in the God-state path, while specialization scoring stays in `HeroSpecialization`;
 - guidance adds +0.15 and immediately triggers the final current-score comparison; it is influence, not guaranteed direct assignment;
@@ -551,7 +551,9 @@ It does not execute travel or dungeon combat.
 
 Dungeon discovery changes knowledge state only. It must not automatically interrupt the hero's currently active quest/event/travel activity or force an immediate expedition.
 
-Entering the exact dungeon hex is deterministic discovery. Radius-1/radius-2 discovery is probabilistic and is checked again on each later movement step; this logic remains owned by `DungeonSystem`, while `Simulation` supplies the hero's current established Curious state and an isolated deterministic roll source.
+Nearby discovery is strictly region-local. `DungeonSystem` derives the hero's current region from the movement hex and ignores ordinary dungeon instances owned by every other region before distance or RNG is evaluated, so radius checks can never leak across a region border. Entering the exact local dungeon hex is deterministic discovery. Radius-1/radius-2 local discovery is probabilistic and is checked again on each later movement step; this logic remains owned by `DungeonSystem`, while `Simulation` supplies the hero's current established Curious state and an isolated deterministic roll source.
+
+Map presentation may expose the current developer-only translucent marker for an unknown dungeon, but only for active dungeons in the hero's current region. Other-region dungeon markers and discovered-dungeon tooltip identity must remain hidden until the hero physically enters that region.
 
 Specialization dungeons remain outside the ordinary-dungeon loader. `DungeonSystem.spawn_known_authored_dungeon(...)` is the deliberate exception used by the trainer quest: it applies the definition's normal placement constraints/reservation, creates exactly one persistent instance and marks it known at creation. It must not make the unselected trial exist, feed nearby discovery/Curious/Divine Vision, or turn specialization content into ordinary automatic population.
 

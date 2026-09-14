@@ -77,7 +77,7 @@ Prototype 0.2 must include, at minimum:
 - authored ordinary quest pools sized for each city's progression needs; the current approved counts are **22 Starting City quests** and **26 Mid-Level City / Arden quests**;
 - current working tuning of up to **12 simultaneously active ordinary quest offers per city**;
 - quest offer expiration and replacement;
-- approximately **15–20 handcrafted temporary events total** across the two-city world;
+- **35 handcrafted temporary events total** across the two-city world: 20 around Dornwald / Starting Region and 15 around Arden / Mid Region;
 - a working personality system with several opposing trait axes and real trait development;
 - two ordinary dungeons associated with Dornwald / Starting Region and three ordinary dungeons associated with Arden / Mid Region;
 - dedicated authored Specialization Dungeon content for both **Protector** and **Slayer**, activated as part of the corresponding Specialization Quest and sharing one technical dungeon system;
@@ -815,23 +815,15 @@ When the direction is fixed, it becomes the hero's permanent **Protector** or **
 
 ### 11.1. Attribute-Based Specialization Preference
 
-The hero's developed primary-attribute profile is one main influence on the first specialization decision.
+The hero's developed primary-attribute profile is one main influence on the first specialization decision. The comparison uses the hero's **full current attributes**, including the Warrior's automatic Strength growth:
 
-Because Warrior receives one permanent class-directed Strength point on every gained level, that mandatory class growth must not by itself bias every Warrior toward Slayer.
-
-Subtract the Warrior's **actually earned mandatory class Strength** from current Strength. Because the hero starts at Level 1 and receives the fixed Warrior point only when gaining a level, the Level-20 decision begins after exactly **19** mandatory Warrior STR points have been earned:
-
-> **`MandatoryWarriorSTR = max(0, Level - 1)`**
->
-> **`PersonalSTR = max(0, STR - MandatoryWarriorSTR)`**
-
-At Level 20 this is therefore exactly `PersonalSTR = max(0, STR - 19)`. If the hero gains another level while the 180-tick decision window is still open, that later automatic Warrior STR is also excluded rather than becoming false evidence for Slayer.
-
-The current Prototype 0.2 first-specialization raw profiles are:
-
-> **`SlayerRaw = PersonalSTR + DEX`**
+> **`SlayerRaw = STR + DEX`**
 
 > **`ProtectorRaw = CON + WIS`**
+
+The Warrior's automatic `+1 STR` on each gained level is deliberately **not subtracted**. Playtesting showed that the player already sees this class growth and naturally accounts for it when distributing the four free primary-attribute points, commonly investing those points into other attributes instead of duplicating the Strength that grows automatically. Subtracting the automatic STR again at the specialization decision therefore double-corrected the profile and understated the hero's real Slayer-oriented physical capability.
+
+If the hero gains another level while the 180-tick decision window is still open, the new automatic STR immediately participates in `SlayerRaw`, just like any other live current attribute change.
 
 The two raw values are converted into normalized base shares:
 
@@ -850,8 +842,6 @@ ProtectorBase ≈ 0.35
 ```
 
 The purpose of normalization is to compare the hero's actual developed profile rather than rely on arbitrary absolute stat thresholds.
-
-If future balance changes alter the exact mandatory Warrior Strength gained before the specialization milestone, the subtraction value must follow the real class-directed growth rather than remain hard-coded to an obsolete number.
 
 ### 11.2. Personality Influence
 
@@ -1067,7 +1057,7 @@ The normal resolved Attack Speed reduction and 10-second duration apply to them 
 
 The following are current working balance values and may be tuned through testing:
 
-- actually earned mandatory Warrior STR is removed from the comparison (`19` at Level 20 in the current progression);
+- full current STR participates in Slayer preference together with DEX; automatic Warrior STR is intentionally included rather than removed;
 - Brave / Cautious specialization modifier `+0.05`;
 - divine modifier `+0.15`;
 - divine cost `80 Energy`;
@@ -1076,7 +1066,7 @@ The following are current working balance values and may be tuned through testin
 The structural rules are fixed unless explicitly redesigned:
 
 - stats are one primary specialization influence;
-- mandatory Warrior Strength must not create false Slayer bias;
+- the specialization comparison uses the hero's real current developed attributes, including class-directed Warrior Strength;
 - Brave / Cautious personality is an independent soft specialization influence;
 - primary attributes and personality are not treated as the same developmental evidence;
 - the Level-20 Brave / Cautious state is frozen for this decision while primary attributes remain live;
@@ -1682,7 +1672,7 @@ The current event population uses one shared rotation cadence rather than allowi
 
 > **first population at world tick 100 → full unengaged population reroll every 200 world ticks: 300 / 500 / 700 / ...**
 
-At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current twenty authored Starting Region events, a normal full rotation selects **five of the eligible definitions**, not the entire pool; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
+At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current complete thirty-five authored definitions across both event directories, a normal full rotation selects **five of the eligible definitions**, not the entire pool; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
 
 If a selected definition cannot fit because an already-active world activity occupies every valid footprint, that definition remains selected for the current cycle and may appear at the first later valid placement opportunity. The system must not cancel or move an already-active hero objective to force event placement.
 
@@ -1694,7 +1684,9 @@ Prototype 0.2 uses one global early-game warm-up gate for temporary events:
 
 This is a world-pacing rule rather than a hero-level requirement. Its purpose is to let the hero live through an initial stretch of ordinary quests and begin differentiating primary attributes before stat-driven formative events can occur. If no valid free footprint exists for a selected event because an already-active world activity occupies the required area, placement may wait until the first later valid opportunity inside that population cycle; the gate and later rotations must never cancel or displace the hero's current activity merely to force an event onto the map. Ordinary available quest-board offers may be re-placed around an event at their normal refresh boundary, but an already accepted active quest keeps its real target reservation.
 
-The original Prototype 0.2 working target was approximately 15–20 handcrafted temporary events total across both city regions. The approved Starting Region personality-balancing expansion has superseded that combined-count target: **Dornwald / Starting Region now deliberately contains 20 authored events by itself**, while Mid Region event content still remains to be authored. The final combined two-region count must therefore be set during the Mid Region content pass rather than deleting approved Starting Region stories to preserve the obsolete earlier total.
+The approved Prototype 0.2 event-content target is now **35 handcrafted events total: 20 around Dornwald / Starting Region + 15 around Arden / Mid Region**. The older approximately 15–20 combined target is obsolete and must not be used to delete approved content. The full Arden batch must use exactly **5 plains / 5 forest / 5 hill** encounter centers, exactly **7 events containing combat**, and exactly **5 events with a real event-owned secondary-map destination**.
+
+The approved full Arden Formative-movement target is **Brave 2 / Cautious 2 / Noble 6 / Devious 8 / Generous 7 / Greedy 7 / Curious 5 / Conservative 8**. Combined with the final Dornwald distribution **11 / 11 / 6 / 5 / 6 / 6 / 7 / 5**, this yields the intended near-flat two-region total **Brave 13 / Cautious 13 / Noble 12 / Devious 13 / Generous 13 / Greedy 13 / Curious 12 / Conservative 13**. Brave and Cautious remain exactly equal because that axis participates in the first-specialization decision.
 
 A handcrafted temporary event should behave like a small authored RPG situation rather than a one-tick random popup. Different branches may contain different numbers and kinds of stages. A branch may end quickly, continue through another decision, require a temporary detour, enter normal combat, inspect an established trait, or combine several of these before reaching a final outcome.
 
@@ -1956,6 +1948,50 @@ The next five Starting Region stories are an explicit personality-balance pass. 
 
 Across these fifteen new Formative options the intended movement distribution is exactly **Devious 4 / Generous 4 / Greedy 4 / Conservative 3**. Their primary-stat participation is **STR 4 / DEX 4 / CON 4 / WIS 3**, bringing the full twenty-event Starting Region authored-option participation to **STR 15 / DEX 15 / CON 14 / WIS 14**. Exactly two of these five events own secondary-map objectives and none contains a COMBAT stage.
 
+After the later semantic correction pass, the final twenty-event Dornwald Formative distribution is **Brave 11 / Cautious 11 / Noble 6 / Devious 5 / Generous 6 / Greedy 6 / Curious 7 / Conservative 5**.
+
+### 15.13. Mid Region Event Batch 1 — Events 1–5
+
+The first five Arden events establish the approved fifteen-event Mid Region content plan without introducing any new event-system mechanics:
+
+- `missing_garrison_pay` / **«Пропавшее жалование»** — plains, local, non-combat; Noble / Devious / Greedy Formative routes;
+- `silent_signal_post` / **«Молчание сигнального поста»** — plains, real secondary objective, combat against the existing Veteran Bandit; Brave / Conservative / Generous routes;
+- `charcoal_burners_dispute` / **«Спор у углежогов»** — forest, local, non-combat; Conservative / Devious / Noble routes;
+- `isolated_logging_camp` / **«Отрезанная лесная артель»** — forest, real secondary objective, non-combat; Generous / Greedy / Cautious routes;
+- `false_toll_at_pass` / **«Пошлина на старом подъёме»** — hill, local combat against the existing Hardened Mercenary; Devious / Conservative / Curious routes.
+
+This first batch therefore consumes **2 plains / 2 forest / 1 hill**, **2 of 7 combat events**, **2 of 5 secondary-map detours**, and Formative movement **Brave 1 / Cautious 1 / Noble 2 / Devious 3 / Generous 2 / Greedy 2 / Curious 1 / Conservative 3**. After these five stories, the cumulative two-region movement is **12 / 12 / 8 / 8 / 8 / 8 / 8 / 8** in that same trait order.
+
+The remaining ten Arden events must provide **3 plains / 3 forest / 4 hill**, **5 more combat events**, **3 more secondary-map detours**, and movement **Brave 1 / Cautious 1 / Noble 4 / Devious 5 / Generous 5 / Greedy 5 / Curious 4 / Conservative 5**.
+
+### 15.14. Mid Region Event Batch 2 — Events 6–10
+
+The second five Arden stories deliberately spend a combat-heavy middle batch while leaving a clean final five-event remainder:
+
+- `wargs_at_supply_wagon` / **«Варги у обоза снабжения»** — plains, local combat against the existing Warg Pack Leader. STR rescues a wounded guard immediately and moves Brave; DEX secretly sacrifices garrison provisions as bait and moves Devious; CON fortifies the wagon circle instead of pursuing the pack and moves Conservative. The same immutable Warg uses 100% / 70% / 85% starting current HP respectively.
+- `blood_at_resin_kilns` / **«Кровь у смоляных печей»** — forest, local combat against the existing Orc Berserker. CON moves the wounded first and moves Noble; DEX sacrifices an owner's resin vat without permission and moves Devious; WIS studies the Orc's repeated path and moves Curious. The fight begins at 100% / 65% / 75% current HP respectively.
+- `surveyors_lost_case` / **«Ящик землемера»** — forest, non-combat real secondary-map round trip. STR retrieves the entire heavy survey kit for only travel money and moves Generous; DEX recovers only the valuable instruments for a larger agreed share and moves Greedy; WIS rejects the uncertain shortcut and follows the marked route, moving Conservative. Every branch physically reaches the remote survey marker and then returns to the encounter hex before the interrupted route resumes.
+- `beast_at_mountain_cistern` / **«Зверь у горного водосбора»** — hill, local combat against the existing Old Mountain Beast. STR rescues the trapped keeper before preparing and moves Noble; CON negotiates high hazard pay and moves Greedy; DEX uses an emergency gate and conceals the collateral damage, moving Devious. The same beast begins at 100% / 85% / 70% current HP respectively.
+- `water_from_old_channel` / **«Вода из старого канала»** — hill, local non-combat dispute. STR clears only the higher-paying quarry branch and moves Greedy; CON rebuilds the shared split for both communities and moves Generous; WIS searches the old masonry and rediscovers a bypass, moving Curious.
+
+Batch 2 therefore contributes exactly **1 plains / 2 forest / 2 hill**, **3 combat events**, **1 secondary-map detour**, Formative movement **Brave 1 / Cautious 0 / Noble 2 / Devious 3 / Generous 2 / Greedy 3 / Curious 2 / Conservative 2**, and primary-stat participation **STR 4 / DEX 4 / CON 4 / WIS 3**.
+
+After events 1–10, Arden has consumed **3 plains / 4 forest / 3 hill**, **5 of 7 combat events**, **3 of 5 secondary-map detours**, and movement **Brave 2 / Cautious 1 / Noble 4 / Devious 6 / Generous 4 / Greedy 5 / Curious 3 / Conservative 5**. The final five Arden events must therefore provide exactly **2 plains / 1 forest / 2 hill**, **2 combat events**, **2 secondary-map detours**, and movement **Brave 0 / Cautious 1 / Noble 2 / Devious 2 / Generous 3 / Greedy 2 / Curious 2 / Conservative 3**.
+
+### 15.15. Mid Region Event Batch 3 — Events 11–15
+
+The final five Arden stories close the approved temporary-event content target without adding any new event-system mechanics:
+
+- `wagon_in_flooded_hollow` / **«Телега в размокшей низине»** — plains, local non-combat. STR physically saves the complete wagon for only travel money and moves Generous; CON first negotiates a large salvage share and moves Greedy; WIS refuses another uncertain muddy shortcut and rebuilds a known firm causeway, moving Conservative.
+- `orc_at_field_granary` / **«Орк у полевого амбара»** — plains, local combat against the existing Hardened Orc Raider. STR puts itself between the raider and the workers and moves Noble; DEX uses a false retreat and money bait and moves Devious; CON fortifies the granary yard rather than meeting the Orc in the open and moves Cautious. The same immutable Orc begins at 100% / 70% / 80% current HP respectively.
+- `smoke_beyond_firebreak` / **«Дым за лесной просекой»** — forest, non-combat real secondary destination. DEX tests an unknown hunters' path toward the smoke and moves Curious; CON carries extra water/tools and then stays to fight the fire for little pay, moving Generous; WIS follows the known marked firebreak and moves Conservative. The event ends at the remote work camp and resumes the interrupted route from that real new position.
+- `shaman_at_thunder_stone` / **«Шаман у громового камня»** — hill, local combat against the existing Lightning-damage Storm Shaman. STR first rescues a wounded patrolman and moves Noble; DEX fakes a retreat and lures the Shaman beneath a rockfall, moving Devious; WIS refuses the exposed ascent and reuses an old quarry grounding chain, moving Conservative. The same immutable Shaman begins at 100% / 70% / 85% current HP respectively.
+- `bell_on_far_ridge` / **«Колокол на дальнем гребне»** — hill, non-combat real secondary round trip. STR carries the complete heavy repair kit for only travel money and moves Generous; CON negotiates high hazard pay before the climb and moves Greedy; WIS investigates a forgotten counterweight mechanism and moves Curious. Every branch reaches the remote hill objective and physically returns to the encounter point before the original route resumes.
+
+Batch 3 contributes exactly **2 plains / 1 forest / 2 hill**, **2 combat events**, **2 secondary-map detours**, Formative movement **Brave 0 / Cautious 1 / Noble 2 / Devious 2 / Generous 3 / Greedy 2 / Curious 2 / Conservative 3**, and primary-stat participation **STR 4 / DEX 3 / CON 4 / WIS 4**.
+
+The complete fifteen-event Arden pool therefore lands exactly on the approved **5 plains / 5 forest / 5 hill**, **7 combat events**, **5 secondary-map detours**, and Formative movement **Brave 2 / Cautious 2 / Noble 6 / Devious 8 / Generous 7 / Greedy 7 / Curious 5 / Conservative 8**. Arden's final primary-stat participation is **STR 12 / DEX 11 / CON 11 / WIS 11**. Combined with Dornwald, the full authored Formative distribution is the approved near-flat **13 / 13 / 12 / 13 / 13 / 13 / 12 / 13** across Brave / Cautious / Noble / Devious / Generous / Greedy / Curious / Conservative.
+
 ---
 
 ## 16. Dungeons
@@ -2089,13 +2125,14 @@ Discovery should use map knowledge rather than omniscient UI.
 
 The current implemented nearby-discovery tuning is checked on every hero movement step:
 
+- only ordinary dungeons whose owning `region_id` matches the hero's current map hex are eligible for nearby discovery; a dungeon across a region border is ignored even when it lies within the normal discovery radius;
 - entering the dungeon's own hex discovers it with **100%** certainty;
 - at **radius 1**, a normal hero has **40%** discovery chance;
 - at **radius 2**, a normal hero has **10%** discovery chance;
 - an established **Curious** hero instead uses **50%** at radius 1 and **15%** at radius 2;
 - later movement through nearby hexes performs fresh checks rather than permanently exhausting that area after one failed roll.
 
-This discovery changes knowledge only and does not interrupt the hero's current activity. Tavern/city-information discovery remains an intended source but is not yet implemented in the current slice.
+This discovery changes knowledge only and does not interrupt the hero's current activity. The map must likewise not expose dungeon markers or dungeon identity from a different region merely because those instances already exist internally. Tavern/city-information discovery remains an intended source but is not yet implemented in the current slice.
 
 ### 16.7. Current Starting Region Dungeon Content
 
@@ -4466,7 +4503,7 @@ Current Prototype 0.2 content target:
 | Starting questionnaire | small fixed set of questions |
 | Ordinary quest templates | 15 per city |
 | Simultaneous ordinary quest offers | up to 6 per city: maximum 2 from each of the 3 relative-strength bands |
-| Handcrafted temporary events | 20 Starting Region + Mid Region batch; final combined total to be fixed during the Mid Region content pass |
+| Handcrafted temporary events | 35 total = 20 Starting Region + 15 Mid Region |
 | Ordinary dungeon content | 2 per city / region |
 | First specialization paths | 2 |
 | Specialization dungeon variants | 1 per first specialization path, sharing one system |

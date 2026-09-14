@@ -1,0 +1,172 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=30 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "carry_food_and_medicine"
+driver_attribute = "strength"
+next_stage_id = "str_pack"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "carry_only_the_paid_coffer"
+driver_attribute = "dexterity"
+next_stage_id = "dex_pack"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "take_only_safe_essentials"
+driver_attribute = "wisdom"
+next_stage_id = "wis_pack"
+personality_axis_id = "courage"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В лесу герой встречает обозного мастера у размытого ручьём тракта. Дальняя лесная артель оказалась отрезана от обычной дороги: у рабочих заканчиваются лекарства и еда, а вместе с припасами нужно передать закрытый денежный ларец для расчёта за древесину. По узкой обходной тропе телега не пройдёт, но один человек может донести часть груза."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_pack"]
+script = ExtResource("2_stage")
+id = "str_pack"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой три тика перекладывает груз так, чтобы унести не только лекарства, но и тяжёлый мешок еды для рабочих. Денежный ларец обозный мастер оставляет у себя до следующей оказии. За лишний вес герой не требует отдельной платы: важнее, чтобы артель получила всё необходимое."
+next_stage_id = "str_travel"
+
+[sub_resource type="Resource" id="Stage_dex_pack"]
+script = ExtResource("2_stage")
+id = "dex_pack"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой выбирает самый компактный и дорогой груз — закрытый денежный ларец. За его срочную доставку мастер обещает высокую плату. Лекарства и еда остаются ждать следующего носильщика: герой не собирается бесплатно превращать одну оплачиваемую работу в три."
+next_stage_id = "dex_travel"
+
+[sub_resource type="Resource" id="Stage_wis_pack"]
+script = ExtResource("2_stage")
+id = "wis_pack"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой проверяет обходную тропу по словам мастера и отказывается от денежного ларца и тяжёлых мешков: на мокрых камнях такой груз слишком легко потерять. Он берёт только лекарства и небольшой запас еды — то, что можно гарантированно донести без лишнего риска."
+next_stage_id = "wis_travel"
+
+[sub_resource type="Resource" id="Stage_str_travel"]
+script = ExtResource("2_stage")
+id = "str_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Нагруженный лекарствами и едой, герой идёт по обходной тропе к отрезанной лесной артели."
+next_stage_id = "str_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_travel"]
+script = ExtResource("2_stage")
+id = "dex_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой несёт по обходной тропе закрытый денежный ларец к отрезанной лесной артели."
+next_stage_id = "dex_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel"]
+script = ExtResource("2_stage")
+id = "wis_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой осторожно несёт по обходной тропе только самые необходимые припасы."
+next_stage_id = "wis_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_arrival"]
+script = ExtResource("2_stage")
+id = "str_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В артели особенно рады лекарствам и еде: часть рабочих уже собиралась делить последние сухари. Старший предлагает герою обычную плату, но тот берёт лишь сто золотых на дорогу, не превращая чужую нужду в торг."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_dex_arrival"]
+script = ExtResource("2_stage")
+id = "dex_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Денежный ларец приходит вовремя, и старший артели может рассчитаться за уже вывезенную древесину. За быструю доставку дорогого груза он без спора отсчитывает герою двести сорок золотых, как и обещал мастер."
+next_stage_id = "dex_end"
+
+[sub_resource type="Resource" id="Stage_wis_arrival"]
+script = ExtResource("2_stage")
+id = "wis_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Лекарства и небольшой запас еды доходят сухими и целыми. Старший артели признаёт, что потеря денежного ларца на размытой тропе обошлась бы куда дороже задержки, и платит герою сто шестьдесят золотых за надёжную доставку."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой прошёл по размытой лесной тропе к отрезанной артели, взяв на себя лишний груз лекарств и еды и не потребовав за это полной платы. Рабочие дали ему сто золотых на дорогу."
+outcome_id = "logging_camp_supplied_generously"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой выбрал из груза отрезанной артели только хорошо оплачиваемый денежный ларец и доставил его по обходной тропе. За срочную работу он получил двести сорок золотых."
+outcome_id = "logging_camp_pay_coffer_delivered"
+gold_reward = 240
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой не стал рисковать тяжёлым и дорогим грузом на размытой тропе и доставил отрезанной артели только надёжно упакованные лекарства и еду. За безопасную доставку он получил сто шестьдесят золотых."
+outcome_id = "logging_camp_essentials_delivered_safely"
+gold_reward = 160
+
+[resource]
+script = ExtResource("1_event")
+id = "isolated_logging_camp"
+display_name = "Отрезанная лесная артель"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("forest", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_pack"), SubResource("Stage_dex_pack"), SubResource("Stage_wis_pack"), SubResource("Stage_str_travel"), SubResource("Stage_dex_travel"), SubResource("Stage_wis_travel"), SubResource("Stage_str_arrival"), SubResource("Stage_dex_arrival"), SubResource("Stage_wis_arrival"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_wis_end")])

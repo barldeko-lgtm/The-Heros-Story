@@ -1,0 +1,112 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "follow_old_forest_rules"
+driver_attribute = "wisdom"
+next_stage_id = "wis_marks"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "exploit_the_tally_loophole"
+driver_attribute = "dexterity"
+next_stage_id = "dex_tally"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "move_the_kiln_fairly"
+driver_attribute = "strength"
+next_stage_id = "str_move"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "В лесу герой находит дымящую угольную яму и спорящих рядом людей. Арденский лесничий требует погасить печь: углежоги вырубили деревья за старой разрешённой чертой. Те отвечают, что метки на стволах почти исчезли, а если сейчас уничтожить печь, несколько семей останутся без заработка."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_WIS"), SubResource("Option_DEX"), SubResource("Option_STR")])
+
+[sub_resource type="Resource" id="Stage_wis_marks"]
+script = ExtResource("2_stage")
+id = "wis_marks"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой три тика ищет старые зарубки и каменные ориентиры, не пытаясь придумать новое правило на месте. Выясняется, что углежоги действительно вышли за прежнюю границу. Печь разрешают догореть, но новые рубки до получения официального разрешения запрещают."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_dex_tally"]
+script = ExtResource("2_stage")
+id = "dex_tally"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой замечает, что лесничий ведёт учёт не по месту каждой вырубки, а по общему числу отмеченных стволов. Он предлагает углежогам записать часть уже срубленного леса как старый разрешённый остаток, а лесничему показывает только те пни, которые укладываются в ведомость. За удобную лазейку углежоги платят отдельно."
+next_stage_id = "dex_end"
+
+[sub_resource type="Resource" id="Stage_str_move"]
+script = ExtResource("2_stage")
+id = "str_move"
+stage_type = 0
+duration_ticks = 4
+scene_text = "Герой четыре тика помогает углежогам разобрать опасную часть печи и перенести запас дров обратно за старую границу. Лесничий сохраняет лес, семьи не теряют весь уголь, а дальнейшую работу стороны соглашаются вести уже по восстановленным меткам."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "В споре лесничего с углежогами герой восстановил старую границу по прежним меткам и не стал менять действующий порядок ради удобства одной стороны. Лесничий заплатил ему сто пятьдесят золотых за разбор старых ориентиров."
+outcome_id = "charcoal_boundary_restored"
+gold_reward = 150
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой нашёл лазейку в учёте лесничего и помог углежогам скрыть часть спорной вырубки внутри старой ведомости. За выгодное решение углежоги отдали ему двести тридцать золотых."
+outcome_id = "charcoal_tally_manipulated"
+gold_reward = 230
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой помог углежогам перенести работу за восстановленную лесную границу так, чтобы и лесничий, и семьи сохранили своё. За тяжёлую помощь стороны вместе заплатили ему сто тридцать золотых."
+outcome_id = "charcoal_dispute_settled_fairly"
+gold_reward = 130
+
+[resource]
+script = ExtResource("1_event")
+id = "charcoal_burners_dispute"
+display_name = "Спор у углежогов"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_wis_marks"), SubResource("Stage_dex_tally"), SubResource("Stage_str_move"), SubResource("Stage_wis_end"), SubResource("Stage_dex_end"), SubResource("Stage_str_end")])

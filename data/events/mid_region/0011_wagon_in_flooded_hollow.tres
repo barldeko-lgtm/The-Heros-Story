@@ -1,0 +1,119 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "pull_the_wagon_for_travel_money"
+driver_attribute = "strength"
+next_stage_id = "str_work"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "demand_a_full_salvage_share"
+driver_attribute = "constitution"
+next_stage_id = "con_work"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "keep_to_the_known_causeway"
+driver_attribute = "wisdom"
+next_stage_id = "wis_work"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На равнине после ночного ливня герой встречает торговую телегу, увязшую по ступицы в размокшей низине. Лошади выбились из сил, одна ось уже опасно перекошена, а купцы спорят, вытаскивать ли весь груз или бросить часть тюков до следующего дня. До Ардена недалеко, но ещё один неудачный рывок может окончательно сломать повозку."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_work"]
+script = ExtResource("2_stage")
+id = "str_work"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой три тика работает рядом с возчиками: подкладывает под колёса жерди, поднимает перекошенный борт и вместе с лошадьми вытягивает тяжёлую телегу на твёрдую землю. Когда купец предлагает полноценную плату, герой берёт только деньги на дорогу — груз и так едва не пропал целиком."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_con_work"]
+script = ExtResource("2_stage")
+id = "con_work"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой быстро оценивает, какие тюки стоят дороже всего, и прежде чем лезть в грязь договаривается о крупной доле за спасение товара. Два тика он таскает ценные ящики на сухое место, разгружает повозку и только потом помогает вытолкнуть облегчённую телегу."
+next_stage_id = "con_end"
+
+[sub_resource type="Resource" id="Stage_wis_work"]
+script = ExtResource("2_stage")
+id = "wis_work"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой отказывается пробовать ещё один прямой рывок через жижу. Четыре тика он ищет край старой утрамбованной колеи, укрепляет её ветками и камнями и выводит телегу по уже известному твёрдому обходу. Способ медленный, зато не требует проверять на ходу ещё одну сомнительную тропу."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "На размокшей равнине герой помог купцам вытащить тяжёлую телегу вместе со всем грузом и отказался от полной платы, взяв лишь девяносто золотых на дорогу."
+outcome_id = "flooded_wagon_pulled_out_generously"
+gold_reward = 90
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой сначала спас самые дорогие тюки, затем вытащил облегчённую телегу и получил заранее оговорённую крупную долю — двести восемьдесят золотых."
+outcome_id = "flooded_wagon_salvaged_for_share"
+gold_reward = 280
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой не стал испытывать новые грязные обходы, восстановил старую твёрдую колею и медленно вывел телегу из низины. Купцы заплатили ему сто семьдесят золотых."
+outcome_id = "flooded_wagon_moved_by_known_route"
+gold_reward = 170
+
+[resource]
+script = ExtResource("1_event")
+id = "wagon_in_flooded_hollow"
+display_name = "Телега в размокшей низине"
+region_id = "mid_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_work"), SubResource("Stage_con_work"), SubResource("Stage_wis_work"), SubResource("Stage_str_end"), SubResource("Stage_con_end"), SubResource("Stage_wis_end")])

@@ -1,0 +1,215 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=34 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "bring_back_everything"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "recover_only_the_valuable_tools"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "follow_only_the_marked_route"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На лесной просеке герой встречает землемера Ардена с вывихнутой ногой. Тот размечал будущую дорогу и при падении оставил дальше в лесу ящик с картами, мерной цепью, медными приборами и колышками. До вечера обещан дождь: если бумаги и инструменты останутся там, несколько дней работы пропадут. Землемер показывает метки и просит принести ящик обратно."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой решает вернуть не только дорогие приборы, но и весь тяжёлый рабочий набор до последнего колышка. Он берёт у землемера запасные ремни и сразу говорит, что за помощь не станет требовать полноценной платы."
+next_stage_id = "str_travel_out"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой уточняет, какие вещи в ящике стоят дороже всего, и заранее договаривается, что за быстрый возврат медных приборов возьмёт заметную долю их стоимости. Остальное он принесёт только если это не замедлит дорогу."
+next_stage_id = "dex_travel_out"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Землемер предлагает короткий путь через сырой овраг, но герой два тика расспрашивает его о старых метках и выбирает более длинную уже проверенную просеку. Он предпочитает гарантированно вернуть карты и основные приборы, не испытывая незнакомый склон перед дождём."
+next_stage_id = "wis_travel_out"
+
+[sub_resource type="Resource" id="Stage_str_travel_out"]
+script = ExtResource("2_stage")
+id = "str_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой идёт по меткам землемера к оставленному в лесу рабочему ящику."
+next_stage_id = "str_recover"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_travel_out"]
+script = ExtResource("2_stage")
+id = "dex_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой быстро направляется к месту, где землемер бросил ящик с инструментами."
+next_stage_id = "dex_recover"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel_out"]
+script = ExtResource("2_stage")
+id = "wis_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой следует по надёжной размеченной просеке к оставленному ящику."
+next_stage_id = "wis_recover"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_recover"]
+script = ExtResource("2_stage")
+id = "str_recover"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "У дальнего знака герой находит раскрытый ящик. Три тика он собирает всё: карты, цепь, приборы, колья и тяжёлую подставку. Груз выходит неудобным, зато землемеру не придётся заново закупать ни одной части набора."
+next_stage_id = "str_return"
+
+[sub_resource type="Resource" id="Stage_dex_recover"]
+script = ExtResource("2_stage")
+id = "dex_recover"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой быстро забирает карты и самые дорогие медные приборы. Тяжёлые колья и подставку он оставляет под деревом: тащить дешёвые вещи ради чужой экономии не входит в оговорённую цену."
+next_stage_id = "dex_return"
+
+[sub_resource type="Resource" id="Stage_wis_recover"]
+script = ExtResource("2_stage")
+id = "wis_recover"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой укладывает в сухую ткань карты, мерную цепь и основные приборы, а громоздкую подставку оставляет под навесом из веток. Два тика он проверяет крепления, чтобы важная часть работы точно пережила обратную дорогу и дождь."
+next_stage_id = "wis_return"
+
+[sub_resource type="Resource" id="Stage_str_return"]
+script = ExtResource("2_stage")
+id = "str_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С полным тяжёлым ящиком герой возвращается к раненому землемеру."
+next_stage_id = "str_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_dex_return"]
+script = ExtResource("2_stage")
+id = "dex_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой возвращается к землемеру с картами и самой ценной частью инструментов."
+next_stage_id = "dex_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_wis_return"]
+script = ExtResource("2_stage")
+id = "wis_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой несёт назад аккуратно упакованные карты и основные измерительные приборы."
+next_stage_id = "wis_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой сходил к дальнему знаку землемера и вернул весь рабочий набор, включая самые тяжёлые вещи. От полноценной платы он отказался и взял лишь восемьдесят золотых на дорогу."
+outcome_id = "surveyors_case_returned_generously"
+gold_reward = 80
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой вернул землемеру карты и дорогие медные приборы, оставив дешёвую тяжёлую часть набора в лесу. За быстрый возврат ценностей он получил оговорённые двести шестьдесят золотых."
+outcome_id = "surveyors_valuables_returned_for_share"
+gold_reward = 260
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой не стал рисковать на незнакомом овраге перед дождём и по размеченной просеке вернул землемеру карты и основные приборы. За надёжную работу тот заплатил сто шестьдесят золотых."
+outcome_id = "surveyors_case_returned_safely"
+gold_reward = 160
+
+[resource]
+script = ExtResource("1_event")
+id = "surveyors_lost_case"
+display_name = "Ящик землемера"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("forest", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city", "road")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_str_travel_out"), SubResource("Stage_dex_travel_out"), SubResource("Stage_wis_travel_out"), SubResource("Stage_str_recover"), SubResource("Stage_dex_recover"), SubResource("Stage_wis_recover"), SubResource("Stage_str_return"), SubResource("Stage_dex_return"), SubResource("Stage_wis_return"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_wis_end")])

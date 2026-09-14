@@ -1,0 +1,185 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=30 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "take_the_unmarked_hunters_path"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "carry_water_and_tools"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "follow_the_marked_firebreak"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В лесу герой встречает обожжённого смолокура, который только что выбрался к старой противопожарной просеке. За грядой поднимается густой дым, а дальше стоят рабочие лесного участка. Мужчина не знает, загорелась ли смоляная яма или огонь уже пошёл по сухому подлеску, и просит героя добраться до дальнего лагеря раньше ветра."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_DEX"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой замечает старую охотничью зарубку, о которой смолокур ничего не знает, и решает проверить незнакомую боковую тропу. Она может вывести прямо к источнику дыма и позволит понять, что происходит, ещё до встречи с рабочими."
+next_stage_id = "dex_travel"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой не хочет приходить к пожару с пустыми руками. Два тика он собирает оставленные у просеки бурдюки, лопаты и мокрые полотнища и берёт столько груза, сколько сможет донести, не требуя за это отдельной платы."
+next_stage_id = "con_travel"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой расспрашивает смолокура о старых просеках и направлении ветра. Вместо неизвестной короткой тропы он выбирает размеченную противопожарную линию: путь длиннее, зато она точно выводит к рабочему лагерю и не заводит в сухую чащу."
+next_stage_id = "wis_travel"
+
+[sub_resource type="Resource" id="Stage_dex_travel"]
+script = ExtResource("2_stage")
+id = "dex_travel"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой уходит по незнакомым охотничьим зарубкам к дыму за лесной грядой."
+next_stage_id = "dex_help"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel"]
+script = ExtResource("2_stage")
+id = "con_travel"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С водой и тяжёлыми инструментами герой идёт к дальнему лагерю лесных рабочих."
+next_stage_id = "con_help"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel"]
+script = ExtResource("2_stage")
+id = "wis_travel"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой следует по старой размеченной противопожарной просеке к рабочему лагерю."
+next_stage_id = "wis_help"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_help"]
+script = ExtResource("2_stage")
+id = "dex_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Боковая тропа выводит героя прямо к краю тлеющего подлеска. Два тика он проверяет, куда ушёл огонь, отмечает опасный край и только затем предупреждает рабочих. Благодаря этому они успевают сразу начать рубить просеку в нужном месте."
+next_stage_id = "dex_end"
+
+[sub_resource type="Resource" id="Stage_con_help"]
+script = ExtResource("2_stage")
+id = "con_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой приносит воду и инструменты именно тогда, когда рабочие понимают, что огонь уже перешёл старую канаву. Четыре тика он остаётся с ними, таскает воду и помогает сбить пламя на подступах к лагерю."
+next_stage_id = "con_end"
+
+[sub_resource type="Resource" id="Stage_wis_help"]
+script = ExtResource("2_stage")
+id = "wis_help"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "По старой просеке герой выходит точно к лагерю и объясняет рабочим направление ветра и место, откуда пришёл смолокур. Три тика они вместе расчищают проверенную противопожарную линию и не дают огню приблизиться к постройкам."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "За лесной грядой герой пошёл по незнакомой охотничьей тропе, первым нашёл край пожара и помог рабочим понять, где нужно остановить огонь. Они заплатили ему сто восемьдесят золотых."
+outcome_id = "forest_fire_found_by_unmarked_path"
+gold_reward = 180
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой принёс в дальний лесной лагерь воду и тяжёлые инструменты, а затем остался помогать тушить подлесок. От большой платы он отказался и взял семьдесят золотых на дорогу."
+outcome_id = "forest_fire_helped_generously"
+gold_reward = 70
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой не стал проверять неизвестную короткую тропу, дошёл до лагеря по старой противопожарной просеке и помог укрепить проверенную линию. Рабочие заплатили ему сто пятьдесят золотых."
+outcome_id = "forest_fire_contained_from_known_firebreak"
+gold_reward = 150
+
+[resource]
+script = ExtResource("1_event")
+id = "smoke_beyond_firebreak"
+display_name = "Дым за лесной просекой"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("forest")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("forest", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_dex_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_dex_travel"), SubResource("Stage_con_travel"), SubResource("Stage_wis_travel"), SubResource("Stage_dex_help"), SubResource("Stage_con_help"), SubResource("Stage_wis_help"), SubResource("Stage_dex_end"), SubResource("Stage_con_end"), SubResource("Stage_wis_end")])

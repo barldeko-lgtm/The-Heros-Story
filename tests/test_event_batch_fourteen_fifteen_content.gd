@@ -12,9 +12,16 @@ func _init() -> void:
 	test_medicine_content(medicine)
 	test_quarry_content(quarry)
 	var simulation = SimulationScript.new(1141501, null, [], true)
-	assert(simulation.event_system.event_definitions.size() == 20, "Starting Region event pool must contain exactly twenty authored events after the balancing batch is added.")
+	assert(count_region_events(simulation, "starting_region") == 20, "Starting Region event pool must contain exactly twenty authored events after the balancing batch is added.")
 	print("PASS: Events 14-15 use underrepresented CON/STR and Generous/Cautious content with real secondary map objectives.")
 	quit()
+
+func count_region_events(simulation, region_id: String) -> int:
+	var count := 0
+	for definition in simulation.event_system.event_definitions:
+		if definition != null and definition.region_id == region_id:
+			count += 1
+	return count
 
 func test_medicine_content(definition) -> void:
 	assert(definition.id == "medicine_before_sunset")

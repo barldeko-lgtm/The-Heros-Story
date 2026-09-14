@@ -22,14 +22,8 @@ static func get_class_display_name(class_id: String) -> String:
 static func is_valid_specialization_id(specialization_id: String) -> bool:
 	return specialization_id == PROTECTOR_ID or specialization_id == SLAYER_ID
 
-static func get_mandatory_warrior_strength(hero_state) -> int:
-	# The hero begins at Level 1; each gained Warrior level contributes exactly +1 STR.
-	return maxi(0, hero_state.level - 1)
-
 static func get_score_state(hero_state) -> Dictionary:
-	var mandatory_strength: int = get_mandatory_warrior_strength(hero_state)
-	var personal_strength: int = maxi(0, hero_state.strength - mandatory_strength)
-	var slayer_raw: float = float(personal_strength + hero_state.dexterity)
+	var slayer_raw: float = float(hero_state.strength + hero_state.dexterity)
 	var protector_raw: float = float(hero_state.constitution + hero_state.wisdom)
 	var total_raw: float = slayer_raw + protector_raw
 	var slayer_base: float = 0.5 if total_raw <= SCORE_EPSILON else slayer_raw / total_raw
@@ -42,8 +36,6 @@ static func get_score_state(hero_state) -> Dictionary:
 	var protector_divine_modifier: float = DIVINE_MODIFIER if hero_state.specialization_guidance_id == PROTECTOR_ID else 0.0
 
 	return {
-		"mandatory_strength": mandatory_strength,
-		"personal_strength": personal_strength,
 		"slayer_raw": slayer_raw,
 		"protector_raw": protector_raw,
 		"slayer_base": slayer_base,

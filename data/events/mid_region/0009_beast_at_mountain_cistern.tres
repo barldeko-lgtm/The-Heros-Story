@@ -1,0 +1,150 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+[ext_resource type="Resource" path="res://data/mobs/mid_region/0105_old_mountain_beast.tres" id="4_beast"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "free_the_trapped_keeper"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "morality"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "negotiate_hazard_pay"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "use_the_emergency_gate"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "В холмах герой выходит к каменному водосборнику, от которого по старому каналу вода идёт к Ардену и ближайшим мастерским. Старый горный зверь забрался на площадку у шлюзов и разломал часть ограды. Один смотритель остался на узком уступе за зверем, а остальные боятся подходить к механизмам."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON"), SubResource("Option_DEX")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой не торгуется и не ждёт удобной позиции. Он срывает заклинившую боковую решётку, перебегает по мокрым плитам и вытаскивает смотрителя с уступа. Зверь замечает движение и сразу идёт на героя, пока тот ещё не успел подготовить площадку."
+next_stage_id = "str_combat"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой оценивает риск и прежде чем лезть к шлюзам договаривается со старшим смотрителем о повышенной плате. Затем три тика укрепляет створку каменными подпорками и ждёт, пока зверь сам полезет через узкий проход, где ему труднее развернуться."
+next_stage_id = "con_combat"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой замечает старый аварийный противовес над боковым шлюзом. Он два тика освобождает механизм и в нужный момент сбрасывает тяжёлую створку рядом со зверем. Удар ранит животное и ломает часть соседнего желоба; герой сразу решает, что смотрителям незачем знать, кто именно повредил канал."
+next_stage_id = "dex_combat"
+
+[sub_resource type="Resource" id="Stage_str_combat"]
+script = ExtResource("2_stage")
+id = "str_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_beast")
+combat_victory_stage_id = "str_end"
+combat_start_hp_ratio = 1.0
+
+[sub_resource type="Resource" id="Stage_con_combat"]
+script = ExtResource("2_stage")
+id = "con_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_beast")
+combat_victory_stage_id = "con_end"
+combat_start_hp_ratio = 0.85
+
+[sub_resource type="Resource" id="Stage_dex_combat"]
+script = ExtResource("2_stage")
+id = "dex_combat"
+stage_type = 3
+decision_role = 0
+duration_ticks = 1
+mob_definition = ExtResource("4_beast")
+combat_victory_stage_id = "dex_end"
+combat_start_hp_ratio = 0.7
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "У горного водосбора герой сперва вытащил запертого смотрителя с уступа, а затем победил старого горного зверя без предварительной подготовки. Смотрители заплатили ему двести двадцать золотых."
+outcome_id = "cistern_keeper_saved_first"
+gold_reward = 220
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой заранее договорился о высокой плате, укрепил проход у водосборника и победил горного зверя на подготовленной позиции. За опасную работу он получил триста двадцать золотых."
+outcome_id = "cistern_beast_killed_for_hazard_pay"
+gold_reward = 320
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой использовал аварийный шлюз, тяжело ранил горного зверя и после боя промолчал о том, что соседний желоб сломался из-за его ловушки. Смотрители выплатили ему двести восемьдесят золотых."
+outcome_id = "cistern_beast_killed_with_hidden_damage"
+gold_reward = 280
+
+[resource]
+script = ExtResource("1_event")
+id = "beast_at_mountain_cistern"
+display_name = "Зверь у горного водосбора"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_str_combat"), SubResource("Stage_con_combat"), SubResource("Stage_dex_combat"), SubResource("Stage_str_end"), SubResource("Stage_con_end"), SubResource("Stage_dex_end")])

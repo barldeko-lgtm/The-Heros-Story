@@ -1,0 +1,215 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=34 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "carry_the_full_repair_kit"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "negotiate_hazard_pay_first"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "study_the_old_counterweight"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "На холмистой дороге герой встречает смотрителя каменоломен рядом с разобранным ремонтным возком. На дальнем гребне молчит сигнальный колокол: буря сломала его деревянную раму, и без него рабочие не смогут быстро предупредить друг друга об обвале или налёте. Смотритель собрал новый брус, железные скобы и канат, но носильщики отказались тащить всё наверх."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_CON"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой связывает весь новый брус, скобы и канат в один неудобный груз и берётся донести ремонтный набор целиком. За работу он заранее просит только небольшую сумму на дорогу: если колокол нужен всем рабочим, нет смысла торговаться за каждую железку."
+next_stage_id = "str_travel_out"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой оценивает тяжёлый подъём и прежде чем трогать груз два тика торгуется со смотрителем. Он соглашается нести ремонтный набор только за крупную плату за риск и тяжёлую работу, после чего отбирает самые нужные детали и крепко увязывает их."
+next_stage_id = "con_travel_out"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+decision_role = 0
+duration_ticks = 2
+scene_text = "Герой расспрашивает смотрителя о старой раме и узнаёт, что внутри башенки когда-то был каменный противовес, которым никто не пользовался много лет. Вместо того чтобы сразу тащить весь новый брус, он берёт канат, скобы и инструменты, решив сначала разобраться в забытом механизме."
+next_stage_id = "wis_travel_out"
+
+[sub_resource type="Resource" id="Stage_str_travel_out"]
+script = ExtResource("2_stage")
+id = "str_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С полным тяжёлым ремонтным набором герой поднимается к сигнальному колоколу на дальнем гребне."
+next_stage_id = "str_repair"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel_out"]
+script = ExtResource("2_stage")
+id = "con_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой несёт отобранные детали по подъёму к дальнему сигнальному гребню."
+next_stage_id = "con_repair"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel_out"]
+script = ExtResource("2_stage")
+id = "wis_travel_out"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "С инструментами и канатом герой идёт к старой колокольной раме на гребне."
+next_stage_id = "wis_repair"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_repair"]
+script = ExtResource("2_stage")
+id = "str_repair"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "На гребне герой четыре тика меняет сломанный брус целиком, затягивает новые скобы и заново подвешивает тяжёлый колокол. Работа грубая и тяжёлая, зато новая рама снова выдержит непогоду."
+next_stage_id = "str_return"
+
+[sub_resource type="Resource" id="Stage_con_repair"]
+script = ExtResource("2_stage")
+id = "con_repair"
+stage_type = 0
+decision_role = 0
+duration_ticks = 3
+scene_text = "Герой три тика усиливает уцелевшую часть рамы принесёнными скобами, ставит короткую распорку и натягивает новый канат. Ремонт не такой полный, как замена всей балки, но колокол снова работает и выдержит текущий сезон."
+next_stage_id = "con_return"
+
+[sub_resource type="Resource" id="Stage_wis_repair"]
+script = ExtResource("2_stage")
+id = "wis_repair"
+stage_type = 0
+decision_role = 0
+duration_ticks = 4
+scene_text = "Герой четыре тика разбирает завал внутри башенки и действительно находит старый каменный противовес. Вернув его на направляющую и переставив канат, он снимает большую часть нагрузки со сломанной рамы и восстанавливает колокол почти без нового бруса."
+next_stage_id = "wis_return"
+
+[sub_resource type="Resource" id="Stage_str_return"]
+script = ExtResource("2_stage")
+id = "str_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "После проверки колокола герой спускается обратно к смотрителю каменоломен."
+next_stage_id = "str_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_con_return"]
+script = ExtResource("2_stage")
+id = "con_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Герой возвращается с гребня за заранее оговорённой платой."
+next_stage_id = "con_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_wis_return"]
+script = ExtResource("2_stage")
+id = "wis_return"
+stage_type = 2
+decision_role = 0
+duration_ticks = 1
+scene_text = "Проверив восстановленный старый механизм, герой спускается к смотрителю."
+next_stage_id = "wis_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой отнёс на дальний гребень полный тяжёлый набор, заново собрал раму сигнального колокола и вернулся к смотрителю. За общую для рабочих помощь он взял лишь девяносто золотых."
+outcome_id = "ridge_bell_rebuilt_generously"
+gold_reward = 90
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "Герой восстановил сигнальный колокол на дальнем гребне после заранее оговорённой тяжёлой платы и получил от смотрителя триста двадцать золотых."
+outcome_id = "ridge_bell_repaired_for_hazard_pay"
+gold_reward = 320
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+decision_role = 0
+duration_ticks = 1
+diary_text = "На дальнем гребне герой исследовал забытую колокольную башенку, нашёл старый противовес и восстановил механизм без полной замены рамы. Смотритель заплатил ему двести десять золотых."
+outcome_id = "ridge_bell_restored_with_old_counterweight"
+gold_reward = 210
+
+[resource]
+script = ExtResource("1_event")
+id = "bell_on_far_ridge"
+display_name = "Колокол на дальнем гребне"
+region_id = "mid_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_str_travel_out"), SubResource("Stage_con_travel_out"), SubResource("Stage_wis_travel_out"), SubResource("Stage_str_repair"), SubResource("Stage_con_repair"), SubResource("Stage_wis_repair"), SubResource("Stage_str_return"), SubResource("Stage_con_return"), SubResource("Stage_wis_return"), SubResource("Stage_str_end"), SubResource("Stage_con_end"), SubResource("Stage_wis_end")])

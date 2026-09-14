@@ -8,9 +8,9 @@ It is intentionally a runtime snapshot rather than a second design specification
 
 The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
 
-The most recent gameplay-content work expanded the Starting Region temporary-event population to **twenty handcrafted events**. Events 16–20 are deliberately non-combat personality-balancing stories: all fifteen of their Formative options move only toward the previously underrepresented **Devious / Generous / Greedy / Conservative** sides, and two of those five events use real event-owned secondary-map travel. The full pool also retains combat/non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
+The most recent gameplay-content work completed the approved **15-event Arden / Mid Region temporary-event batch**. The final five add two plains, one forest and two hill encounters, including two shared `CombatSession` fights and two real secondary-map detours. The complete Arden pool now lands exactly on **5 plains / 5 forest / 5 hill**, **7 combat events** and **5 secondary-map detours**. Its Formative movement also reaches the approved **Brave 2 / Cautious 2 / Noble 6 / Devious 8 / Generous 7 / Greedy 7 / Curious 5 / Conservative 8**, producing the intended full two-region authored distribution **13 / 13 / 12 / 13 / 13 / 13 / 12 / 13**. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: the Starting Region contains twenty handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision and Specialization Quest slice is live**, including quest-driven specialization-dungeon spawning, class granting, immediate/catch-up profile growth, first two-handed Slayer equipment, full SL1–SL10 combat formulas for the first specialization skills, their HeroPower valuation and purchasable later specialization ranks with the current approved Gold price ladder; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
+The larger Prototype 0.2 world is still incomplete, but its approved temporary-event content is now complete at **35 handcrafted events = 20 Dornwald + 15 Arden**. The first **Protector / Slayer decision and Specialization Quest slice is live**, including quest-driven specialization-dungeon spawning, class granting, immediate/catch-up profile growth, first two-handed Slayer equipment, full SL1–SL10 combat formulas for the first specialization skills, their HeroPower valuation and purchasable later specialization ranks with the current approved Gold price ladder; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -159,8 +159,8 @@ The developer Hero screen shows the specialization calculation from **Level 1** 
 - a **180-world-tick** decision window starts;
 - a separate specialization `+` indicator appears beside the hero level and in mini-window mode while the decision remains active;
 - the currently established Courage-side trait is snapshotted once: **Brave gives +0.05 Slayer**, **Cautious gives +0.05 Protector**, neutral gives neither; later live trait changes do not alter this frozen input;
-- the stat profile remains live throughout the window: `SlayerRaw = PersonalSTR + DEX`, `ProtectorRaw = CON + WIS`, normalized into base shares;
-- `PersonalSTR` subtracts the Warrior STR actually gained automatically through level-ups. Because the hero begins at Level 1, Level 20 subtracts exactly **19** mandatory STR. Later automatic Warrior STR gained while the window is still open is likewise excluded;
+- the stat profile remains live throughout the window: `SlayerRaw = STR + DEX`, `ProtectorRaw = CON + WIS`, normalized into base shares;
+- **all current STR counts**, including the Warrior's automatic +1 STR per gained level. Playtesting showed that the player already sees and plans around that automatic growth when distributing the four free points, so subtracting it again distorted the developed profile instead of correcting it;
 - pending player attribute points have no specialization weight until actually assigned; allocating them during the 180 ticks immediately changes the corresponding live stat weights;
 - there is **no score-lead early auto-resolution**.
 
@@ -402,6 +402,24 @@ The generic temporary-event system is live and currently has **20 authored Start
 19. `Посылка лесничему`;
 20. `Тайник старого охотника`.
 
+The Mid Region / Arden now has the complete **15 / 15** approved authored events:
+
+1. `Пропавшее жалование`;
+2. `Молчание сигнального поста`;
+3. `Спор у углежогов`;
+4. `Отрезанная лесная артель`;
+5. `Пошлина на старом подъёме`;
+6. `Варги у обоза снабжения`;
+7. `Кровь у смоляных печей`;
+8. `Ящик землемера`;
+9. `Зверь у горного водосбора`;
+10. `Вода из старого канала`;
+11. `Телега в размокшей низине`;
+12. `Орк у полевого амбара`;
+13. `Дым за лесной просекой`;
+14. `Шаман у громового камня`;
+15. `Колокол на дальнем гребне`.
+
 The current event framework supports:
 
 - authored SCENE / DECISION / TRAVEL / COMBAT / END style stages;
@@ -426,6 +444,14 @@ Events 16–20 are a deliberate **non-combat personality-balancing batch**. Ever
 
 A follow-up semantic balance pass also corrected five older Formative movements whose original trait labels did not match the authored action closely enough. The current full twenty-event Formative distribution is **Brave 11 / Cautious 11 / Noble 6 / Devious 5 / Generous 6 / Greedy 6 / Curious 7 / Conservative 5**. The Courage pair is intentionally exact at 11/11 because established Brave/Cautious affects the first-specialization decision, while the remaining six sides are now much closer without changing event outcomes, rewards, combat structure, or Expressive checks.
 
+Arden's approved final temporary-event target is now **15 authored events**. Across that full Mid Region batch the primary encounter terrain must be exactly **5 plains / 5 forest / 5 hill**, exactly **7 events** must contain combat, and exactly **5 events** must own a real secondary-map destination. The full Mid Region Formative target is **Brave 2 / Cautious 2 / Noble 6 / Devious 8 / Generous 7 / Greedy 7 / Curious 5 / Conservative 8**, which combines with Dornwald to produce the near-flat final two-region distribution **13 / 13 / 12 / 13 / 13 / 13 / 12 / 13** respectively.
+
+Mid Region events 1–5 consume **2 plains / 2 forest / 1 hill**, **2 combat events**, **2 secondary-map detours**, and Formative movement **Brave 1 / Cautious 1 / Noble 2 / Devious 3 / Generous 2 / Greedy 2 / Curious 1 / Conservative 3**.
+
+Mid Region events 6–10 add **1 plains / 2 forest / 2 hill**, **3 combat events**, **1 secondary-map round trip**, and Formative movement **Brave 1 / Cautious 0 / Noble 2 / Devious 3 / Generous 2 / Greedy 3 / Curious 2 / Conservative 2**. Their authored primary-stat participation is deliberately even at **STR 4 / DEX 4 / CON 4 / WIS 3**, bringing Arden events 1–10 to **STR 8 / DEX 8 / CON 7 / WIS 7**. The three combat stories reuse the existing early-Arden Warg Pack Leader, Orc Berserker and Old Mountain Beast rather than introducing event-only enemies or pulling late 900-Power content into early Arden travel.
+
+Mid Region events 11–15 close the pool with exactly **2 plains / 1 forest / 2 hill**, **2 combat events**, **2 secondary-map detours**, and Formative movement **Brave 0 / Cautious 1 / Noble 2 / Devious 2 / Generous 3 / Greedy 2 / Curious 2 / Conservative 3**. Their primary-stat participation is **STR 4 / DEX 3 / CON 4 / WIS 4**, bringing the complete Arden pool to **STR 12 / DEX 11 / CON 11 / WIS 11**. `Орк у полевого амбара` reuses the existing Hardened Orc Raider; `Шаман у громового камня` reuses the existing Lightning-damage Storm Shaman. `Дым за лесной просекой` ends at a real remote work camp, while `Колокол на дальнем гребне` travels to a real hill objective and physically returns before the interrupted route resumes.
+
 Current shared population rules:
 
 - no temporary event is placed before world tick 100;
@@ -449,7 +475,7 @@ If an event kills the hero while travelling toward a dungeon, that trip is cance
 
 If an event kills the hero while returning from an already completed dungeon, the dungeon remains completed and its granted completion rewards remain permanent; the interrupted return runtime is cleared and no new dungeon failed-attempt memory or retry-Power penalty is created.
 
-The Starting Region now deliberately contains **20 handcrafted events**. Mid Region event content is still missing. The earlier approximately 15–20-event total across both regions is therefore no longer a usable combined-content target after the approved Starting Region balancing expansion; the final two-region total must be reset during the Mid Region content pass rather than deleting approved Dornwald events merely to preserve the older count.
+The current authored total is the approved final **35 handcrafted events: 20 Dornwald + 15 Arden**.
 
 ## Ordinary dungeons
 
@@ -481,7 +507,7 @@ Current dungeon flow includes:
 
 - deterministic real map placement and reservation;
 - hidden/known state;
-- discovery on every hero movement step: entering the dungeon hex is guaranteed, radius 1 rolls 40%, and radius 2 rolls 10%; an established Curious hero instead rolls 50% / 15% at radius 1 / 2;
+- discovery on every hero movement step is strictly region-local: only ordinary dungeons whose authored region matches the hero's current map hex are eligible. Entering a local dungeon hex is guaranteed, radius 1 rolls 40%, and radius 2 rolls 10%; an established Curious hero instead rolls 50% / 15% at radius 1 / 2. A dungeon directly across a region border cannot be discovered from the other side;
 - nearby discovery is re-rolled on later movement steps rather than being limited to one attempt per surrounding hex;
 - Divine Vision can still reveal one random unknown dungeon in the current region;
 - dungeon discovery does not interrupt an activity already in progress;
@@ -782,7 +808,7 @@ Currently shows:
 - live hero position;
 - current quest targets;
 - current selected quest highlight;
-- ordinary dungeon markers with current developer hidden-location presentation;
+- ordinary dungeon markers for the hero's current region only, with current developer hidden-location presentation for unknown local dungeons;
 - active temporary-event footprints as translucent dark-blue map areas;
 - hover/debug information;
 - zoom and right-mouse panning.
@@ -824,8 +850,8 @@ These are intentional or transitional and should not be silently "fixed" back to
 - abstract legacy quest-distance fields still exist for old fixed tests/offers, but current real gameplay uses map targets and route length;
 - ordinary quest equipment now waits safely outside permanent Equipment/Inventory until the post-objective review tick, but the broader final `QuestLoot` / trophy/backpack model is still incomplete;
 - the Warrior attacks physically; eight Arden ordinary mobs use Fire / Cold / Lightning attacks with the temporary raw-Attack reduction and shared Power evaluation weight described above;
-- Arden's ordinary quests, dedicated ilvl 15/20/25 equipment shop/drop sources, and three ordinary dungeons are live; local temporary events remain missing. Its city routine uses local shop stock, normal sale and unlocked Skill Level training;
-- unknown dungeons are intentionally partially visible in the current developer Map view for testing; this is not the final hidden-information presentation;
+- Arden's ordinary quests, dedicated ilvl 15/20/25 equipment shop/drop sources, three ordinary dungeons and all 15 / 15 local temporary events are live. Its city routine uses local shop stock, normal sale and unlocked Skill Level training;
+- unknown dungeons are intentionally partially visible in the current developer Map view for testing, but only inside the hero's current region; other-region dungeons are not rendered or exposed through dungeon tooltips. This is not the final hidden-information presentation;
 - the UI is a developer build and may expose hidden values that the eventual player UI must not expose.
 
 ## Major Prototype 0.2 pieces still missing
@@ -833,9 +859,8 @@ These are intentional or transitional and should not be silently "fixed" back to
 The most important incomplete areas are:
 
 - separate question pages and playable non-Warrior classes (the debug questionnaire and four-option class screen are live);
-- Mid-Level City as a complete gameplay context beyond its now-live ordinary quests, economy and three ordinary dungeons; local temporary events remain missing;
+- Mid-Level City as a complete gameplay context beyond its now-live ordinary quests, economy, three ordinary dungeons and complete 15-event local temporary-event pool;
 - remaining Arden equipment-slot/overlay breadth;
-- the remaining temporary-event population toward the 15–20 target;
 - remaining first Warrior specialization work after the now-live decision + trainer quest + trial + class/reward/profile-growth + specialization-gained Diary/autosave flow: final two-handed art/content breadth;
 - remaining later equipment content; potion tiers through Level 25 are live;
 - broader two-handed / legal hand-configuration content breadth beyond the current Slayer ilvl 20/25 slice;
