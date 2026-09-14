@@ -21,6 +21,8 @@ func describe_skill_training(hero_name: String, result: Dictionary) -> String:
 	match str(result.get("skill_id", "")):
 		"power_strike": skill_name = "Мощный удар"
 		"battle_guard": skill_name = "Боевой заслон"
+		"shield_bash": skill_name = "Удар щитом"
+		"crippling_blows": skill_name = "Калечащие удары"
 		_: skill_name = "неизвестный навык"
 	return "%s улучшил «%s» до уровня %d за %d золота." % [
 		hero_name,
@@ -50,7 +52,13 @@ func describe_purchase(hero_name: String, result: Dictionary, best_purchase: Dic
 			result["price_paid"],
 			result["power_gain"],
 		]
-	if result["replaced_item"] != null:
+	var replaced_items: Array = result.get("replaced_items", [])
+	if replaced_items.size() > 1:
+		var replaced_names: Array[String] = []
+		for replaced_item in replaced_items:
+			replaced_names.append("«%s»" % replaced_item.definition.display_name)
+		log_text += " Старые предметы %s сразу проданы за %d золота." % [" и ".join(replaced_names), result["replaced_item_sale_value"]]
+	elif result["replaced_item"] != null:
 		log_text += " Старый предмет «%s» сразу продан за %d золота." % [result["replaced_item"].definition.display_name, result["replaced_item_sale_value"]]
 	return log_text
 

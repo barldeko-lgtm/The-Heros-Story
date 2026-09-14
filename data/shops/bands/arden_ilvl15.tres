@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=21 format=3]
+[gd_resource type="Resource" script_class="ShopStockBandDefinition" load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/shop_stock_band_definition.gd" id="1_band"]
 [ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet.tres" id="item_0_0"]
@@ -21,10 +21,14 @@
 [ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_1_uncommon.tres" id="item_1_7"]
 [ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_signet_ring_2_uncommon.tres" id="item_1_8"]
 [ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawn_belt_uncommon.tres" id="item_1_9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sword.tres" id="item_0_10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_shield.tres" id="item_0_11"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sword_uncommon.tres" id="item_1_10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/azure_dawnplate/azure_dawnplate_shield_uncommon.tres" id="item_1_11"]
 
 [resource]
 script = ExtResource("1_band")
 item_level = 15
 white_listings = 6
 uncommon_listings = 2
-item_definitions = Array[Resource]([ExtResource("item_0_0"), ExtResource("item_0_1"), ExtResource("item_0_2"), ExtResource("item_0_3"), ExtResource("item_0_4"), ExtResource("item_0_5"), ExtResource("item_0_6"), ExtResource("item_0_7"), ExtResource("item_0_8"), ExtResource("item_0_9"), ExtResource("item_1_0"), ExtResource("item_1_1"), ExtResource("item_1_2"), ExtResource("item_1_3"), ExtResource("item_1_4"), ExtResource("item_1_5"), ExtResource("item_1_6"), ExtResource("item_1_7"), ExtResource("item_1_8"), ExtResource("item_1_9")])
+item_definitions = Array[Resource]([ExtResource("item_0_0"), ExtResource("item_0_1"), ExtResource("item_0_2"), ExtResource("item_0_3"), ExtResource("item_0_4"), ExtResource("item_0_5"), ExtResource("item_0_6"), ExtResource("item_0_7"), ExtResource("item_0_8"), ExtResource("item_0_9"), ExtResource("item_0_10"), ExtResource("item_0_11"), ExtResource("item_1_0"), ExtResource("item_1_1"), ExtResource("item_1_2"), ExtResource("item_1_3"), ExtResource("item_1_4"), ExtResource("item_1_5"), ExtResource("item_1_6"), ExtResource("item_1_7"), ExtResource("item_1_8"), ExtResource("item_1_9"), ExtResource("item_1_10"), ExtResource("item_1_11")])

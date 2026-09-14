@@ -65,6 +65,10 @@ UI / test command
 
 It should not duplicate formulas already owned by a subsystem.
 
+## Downtime accounting
+
+Simulation owns the persisted `downtime_ticks` dictionary. Count dead waiting only on ordinary world ticks after the completed-combat skip check, before the owning resurrection runner advances; count unavailable quests only when actual selection fails. Do not derive either counter from log text or UI frames. UI divides each counter by completed world ticks since `start_tick`, with a zero-safe result. Snapshot v6 adds a zeroed dictionary and saved-clock baseline when migrating v5; preceding migrations remain unchanged.
+
 ## World time and combat boundary
 
 `WorldClock` is the single authority for ordinary world ticks.
@@ -168,8 +172,8 @@ The shared calculator currently applies an elemental-offense evaluation factor o
 Current Warrior ability ownership crosses progression/state/combat without merging those responsibilities:
 
 ```text
-HeroProgression learns base Skill Level 1 and the current Level-25 first-specialization SL1 only after that specialization is actually granted
-→ SkillTrainingSystem purchases unlocked higher Skill Levels for the base Warrior skills only
+HeroProgression learns base Skill Level 1 and the current Level-25 first-specialization SL1 only after that specialization is actually granted, and exposes the five-level rank-unlock cadence
+→ SkillTrainingSystem purchases unlocked higher Skill Levels for both base Warrior and first-specialization skills
 → HeroState stores learned Skill Levels
 → Simulation supplies the current learned levels + relevant hero attributes when a fight starts
 → CombatSession owns fight-local Rage and the live ability timelines
@@ -180,9 +184,10 @@ Contracts:
 
 - Rage is fight-local `CombatSession` state and is not carried between fights in `HeroState`;
 - ability unlock/progression state belongs to hero progression/state, not to `CombatSession`;
-- `SkillTrainingSystem` may advance only an already-learned base-Warrior rank that `HeroProgression` says is currently unlocked; it does not grant Skill Level 1 or currently train Shield Bash / Crippling Blows;
+- `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it never grants Skill Level 1. Base Warrior ranks use their current working cost curve, while Shield Bash / Crippling Blows temporarily cost 1 Gold per higher rank until final specialization pricing is approved;
 - `CombatSession` decides autonomous use of already-learned combat abilities during the duel;
 - when a first-specialization skill is usable it has Rage-spending priority over Power Strike; Power Strike remains the fallback while the specialization skill is unavailable/on cooldown;
+- first-specialization combat formulas, HeroPower valuation and `SkillTrainingSystem` all support Skill Levels 1–10; higher specialization ranks unlock every five hero levels after Level 25 and currently use the explicit temporary 1-Gold placeholder price;
 - Shield Bash freezes the current enemy attack timer for its resolved stun duration instead of allowing hidden progress to accumulate during stun;
 - Crippling Blows owns its temporary enemy Attack-Speed adjustment in `CombatSession`, preserving current attack-progress percentage both when the slow starts and when it expires;
 - ability-specific WIS scaling belongs to the ability/combat implementation rather than a fake generic WIS stat conversion in `StatResolver`;
@@ -230,7 +235,11 @@ HeroState live attributes + established Courage trait
 OR 180 world ticks expire
 → HeroSpecialization resolves deterministically
 → HeroState first_specialization_id target only; hero_class_id remains Warrior
-→ later Specialization Quest/dungeon completion explicitly grants the selected class
+→ next ordinary Arden quest turn-in routes one trainer tick through SpecializationQuestSystem
+→ selected authored specialization dungeon is spawned known; ordinary active_quest remains independent
+→ normal dungeon preparation / attempts / retries execute through DungeonRunner
+→ boss victory completes the trial objective but grants no dungeon reward
+→ return to Warrior Trainer → Simulation grants selected class + quest rewards/profile growth
 → HeroProgression grants matching SL1 immediately if Level 25+ (or on reaching Level 25 later)
 → UI presents the resulting state
 ```
@@ -248,8 +257,12 @@ Contracts:
 - exact ties use an isolated deterministic seed and must not consume unrelated gameplay RNG streams;
 - the current path decision fixes only `first_specialization_id`; `hero_class_id` stays Warrior until the selected specialization trial is explicitly completed;
 - `HeroProgression` grants Shield Bash / Crippling Blows SL1 only when the matching specialization is actually granted and the hero is Level 25+, or when that already-granted specialization later reaches Level 25;
-- the two authored specialization dungeon resources stay outside `DungeonSystem.DEFAULT_ORDINARY_DUNGEON_DIRECTORIES`; their future quest/spawn integration must add them deliberately rather than making them ordinary discoverable dungeons;
-- Specialization Quest objective/relic handling, material completion rewards, profile growth, later specialization-skill ranks, specialization equipment rules and specialization-skill HeroPower valuation remain separate future slices.
+- the two authored specialization dungeon resources stay outside `DungeonSystem.DEFAULT_ORDINARY_DUNGEON_DIRECTORIES`; `SpecializationQuestSystem`/Simulation deliberately add only the selected variant as an already-known authored dungeon on a valid plains hex 4–6 from Arden;
+- Specialization Quest state must remain parallel to ordinary `active_quest`: its persistence is derived from selected target + granted class + persistent specialization-dungeon state rather than duplicating another mutable quest flag;
+- failed specialization attempts retain the same `DungeonInstance` and ordinary DungeonEvaluator retry rules; failure must not erase the quest or force immediate repeated attempts;
+- specialization boss completion must not run the ordinary dungeon Gold/equipment reward pipeline; the material/class/profile reward belongs to trainer turn-in after real return travel;
+- trainer completion grants 2000 Gold, +5 pending player points, Protector CON or Slayer DEX catch-up for each reached level above 20, and the authored Rare ilvl 20 path equipment; future levels continue +1 CON/DEX through `HeroProgression`;
+- final specialization-skill pricing, full-specialization autosave/Diary milestone and broader specialization equipment content remain separate future slices; specialization combat scaling, rank unlock/purchase training and HeroPower valuation are already live.
 
 ## Ordinary quest selection and execution
 
@@ -538,7 +551,7 @@ Dungeon discovery changes knowledge state only. It must not automatically interr
 
 Entering the exact dungeon hex is deterministic discovery. Radius-1/radius-2 discovery is probabilistic and is checked again on each later movement step; this logic remains owned by `DungeonSystem`, while `Simulation` supplies the hero's current established Curious state and an isolated deterministic roll source.
 
-Specialization dungeons remain outside the ordinary-dungeon loader.
+Specialization dungeons remain outside the ordinary-dungeon loader. `DungeonSystem.spawn_known_authored_dungeon(...)` is the deliberate exception used by the trainer quest: it applies the definition's normal placement constraints/reservation, creates exactly one persistent instance and marks it known at creation. It must not make the unselected trial exist, feed nearby discovery/Curious/Divine Vision, or turn specialization content into ordinary automatic population.
 
 ### DungeonEvaluator boundary
 
@@ -645,6 +658,8 @@ It does not decide whether the result should be equipped.
 Contracts:
 
 - ordinary equipment uses virtual replacement and compares resulting base persistent HeroPower;
+- two-handed weapon evaluation must replace the full virtual hand configuration (weapon + shield as applicable), not compare only against the current `weapon` slot;
+- class-restricted items must be filtered/rejected unless `hero_class_id` is the actually granted required class; `first_specialization_id` alone is insufficient;
 - displayed rarity or ItemPower alone must not decide final ordinary equip routing;
 - temporary effects are excluded from both sides of virtual-equip comparison;
 - ring candidates must be evaluated against both ring positions and return the best actual target slot;
@@ -656,7 +671,7 @@ Contracts:
 - equipped items and retained unequipped equipment are distinct state;
 - healing-potion counts are persistent Inventory state but are separate from retained-equipment FIFO capacity;
 - automatic sale systems must never treat potions as ordinary equipment;
-- ordinary found/reward equipment that replaces an equipped item routes the displaced/rejected permanent gear through the normal retained-Inventory path, while a **shop purchase** follows the separate shop transaction rule where the replaced equipped item is sold immediately instead of entering Inventory;
+- ordinary found/reward equipment that replaces equipped items routes **all** displaced permanent gear through the normal retained-Inventory path, while a **shop purchase** follows the separate shop transaction rule where every displaced equipped item is sold immediately instead of entering Inventory; this matters when switching between sword+shield and a two-handed weapon;
 - still-unreviewed ordinary quest equipment remains separate from permanent Equipment/Inventory so quest failure can clear unsafe carried equipment without deleting permanent gear; a future generalized QuestLoot/trophy/backpack model must preserve that separation.
 
 Exact current slot counts, tier mappings, drop chances and rarity tuning live in `current-state.md`/data.

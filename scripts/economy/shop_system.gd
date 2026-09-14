@@ -10,11 +10,11 @@ var listings: Array = []
 var last_refresh_tick: int = 0
 var item_price_calculator = ItemPriceCalculatorScript.new()
 
-func _init(initial_shop_definition: Resource, initial_item_generator, initial_seed: int) -> void:
+func _init(initial_shop_definition: Resource, initial_item_generator, initial_seed: int, initial_class_id: String = "") -> void:
 	shop_definition = initial_shop_definition
 	item_generator = initial_item_generator
 	rng.seed = initial_seed
-	refresh_stock(0)
+	refresh_stock(0, initial_class_id)
 
 func get_listings() -> Array:
 	return listings
@@ -24,15 +24,15 @@ func get_healing_potion_definitions() -> Array:
 		return []
 	return shop_definition.healing_potion_definitions.duplicate()
 
-func advance_world_tick(completed_tick: int) -> bool:
+func advance_world_tick(completed_tick: int, hero_class_id: String = "") -> bool:
 	if shop_definition == null or shop_definition.refresh_interval_ticks <= 0:
 		return false
 	if completed_tick > 0 and completed_tick != last_refresh_tick and completed_tick % shop_definition.refresh_interval_ticks == 0:
-		refresh_stock(completed_tick)
+		refresh_stock(completed_tick, hero_class_id)
 		return true
 	return false
 
-func refresh_stock(completed_tick: int) -> void:
+func refresh_stock(completed_tick: int, hero_class_id: String = "") -> void:
 	listings.clear()
 	last_refresh_tick = completed_tick
 	if shop_definition == null or item_generator == null or rng == null:
@@ -40,14 +40,17 @@ func refresh_stock(completed_tick: int) -> void:
 	for stock_band in shop_definition.stock_bands:
 		if stock_band == null:
 			continue
-		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 0), stock_band.white_listings)
-		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 1), stock_band.uncommon_listings)
+		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 0, hero_class_id), stock_band.white_listings)
+		append_unique_listings(stock_band.item_level, get_definitions_for_rarity(stock_band, 1, hero_class_id), stock_band.uncommon_listings)
 
-func get_definitions_for_rarity(stock_band: Resource, rarity: int) -> Array:
+func get_definitions_for_rarity(stock_band: Resource, rarity: int, hero_class_id: String = "") -> Array:
 	var result: Array = []
 	for item_definition in stock_band.item_definitions:
-		if item_definition != null and int(item_definition.quality) == rarity:
-			result.append(item_definition)
+		if item_definition == null or int(item_definition.quality) != rarity:
+			continue
+		if item_definition.has_method("can_be_equipped_by_class") and not item_definition.can_be_equipped_by_class(hero_class_id):
+			continue
+		result.append(item_definition)
 	return result
 
 func append_unique_listings(item_level: int, definitions: Array, count: int) -> void:
@@ -70,6 +73,7 @@ func purchase_listing(hero_state, listing_index: int, target_slot: String = "") 
 		"item_instance": null,
 		"price_paid": 0,
 		"replaced_item": null,
+		"replaced_items": [],
 		"replaced_item_sale_value": 0,
 		"target_slot": "",
 	}
@@ -78,6 +82,8 @@ func purchase_listing(hero_state, listing_index: int, target_slot: String = "") 
 	var listing: Dictionary = listings[listing_index]
 	var item_instance = listing.get("item_instance")
 	if item_instance == null or item_instance.definition == null:
+		return result
+	if item_instance.definition.has_method("can_be_equipped_by_class") and not item_instance.definition.can_be_equipped_by_class(hero_state.hero_class_id):
 		return result
 	var price: int = item_price_calculator.get_reference_shop_value_for_item(item_instance)
 	if price < 0 or hero_state.gold < price:
@@ -89,19 +95,22 @@ func purchase_listing(hero_state, listing_index: int, target_slot: String = "") 
 
 	hero_state.gold -= price
 	item_instance.acquisition_source = "purchased"
-	var replaced_item = hero_state.equipment.replace_item(item_instance, resolved_target_slot)
+	var replaced_items: Array = hero_state.equipment.replace_item_configuration(item_instance, resolved_target_slot)
 	var resale_value: int = 0
-	if replaced_item != null:
-		resale_value = item_price_calculator.get_sell_price_for_item(replaced_item)
-		if resale_value > 0:
-			hero_state.gold += resale_value
+	for replaced_item in replaced_items:
+		var item_resale_value: int = item_price_calculator.get_sell_price_for_item(replaced_item)
+		if item_resale_value > 0:
+			resale_value += item_resale_value
+	if resale_value > 0:
+		hero_state.gold += resale_value
 	listing["item_instance"] = null
 	listings[listing_index] = listing
 
 	result["purchased"] = true
 	result["item_instance"] = item_instance
 	result["price_paid"] = price
-	result["replaced_item"] = replaced_item
+	result["replaced_items"] = replaced_items
+	result["replaced_item"] = replaced_items[0] if not replaced_items.is_empty() else null
 	result["replaced_item_sale_value"] = maxi(0, resale_value)
 	result["target_slot"] = resolved_target_slot
 	return result

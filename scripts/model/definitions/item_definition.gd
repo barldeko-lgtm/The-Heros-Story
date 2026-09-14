@@ -15,6 +15,9 @@ const QUALITY_RARE: int = 2
 @export var icon_texture: Texture2D
 @export var hero_overlay_texture: Texture2D
 @export var reference_shop_value_override: int = -1
+@export_enum("one_handed", "two_handed") var weapon_handedness: String = "one_handed"
+@export var required_class_id: String = ""
+@export_range(0.0, 10.0, 0.05) var modifier_budget_multiplier: float = 1.0
 @export var max_hp_bonus: float = 0.0
 @export var armor_bonus: int = 0
 @export var strength_bonus: int = 0
@@ -51,3 +54,9 @@ func get_quality_display_name() -> String:
 		QUALITY_UNCOMMON: return "Необычное"
 		QUALITY_RARE: return "Редкое"
 	return "Обычное"
+
+func is_two_handed_weapon() -> bool:
+	return equipment_slot == "weapon" and weapon_handedness == "two_handed"
+
+func can_be_equipped_by_class(class_id: String) -> bool:
+	return required_class_id.is_empty() or required_class_id == class_id

@@ -17,6 +17,7 @@ const HeroBackgroundScript = preload("res://scripts/hero/hero_background.gd")
 const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 const TraitDevelopmentScript = preload("res://scripts/hero/trait_development.gd")
 const HeroSpecializationScript = preload("res://scripts/hero/hero_specialization.gd")
+const SpecializationQuestSystemScript = preload("res://scripts/hero/specialization_quest_system.gd")
 const GodStateScript = preload("res://scripts/god/god_state.gd")
 const GodSystemScript = preload("res://scripts/god/god_system.gd")
 const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
@@ -33,6 +34,7 @@ const DungeonNarratorScript = preload("res://scripts/narrative/dungeon_narrator.
 const EventNarratorScript = preload("res://scripts/narrative/event_narrator.gd")
 const EconomyNarratorScript = preload("res://scripts/narrative/economy_narrator.gd")
 const ItemNarratorScript = preload("res://scripts/narrative/item_narrator.gd")
+const SpecializationQuestNarratorScript = preload("res://scripts/narrative/specialization_quest_narrator.gd")
 const QuestRunnerScript = preload("res://scripts/quests/quest_runner.gd")
 const QuestPoolScript = preload("res://scripts/quests/quest_pool.gd")
 const QuestEventScript = preload("res://scripts/quests/quest_event.gd")
@@ -57,6 +59,7 @@ const DefaultStartingArmorDefinitions := [
 	preload("res://data/items/starting_equipment/worn_pants.tres"),
 	preload("res://data/items/starting_equipment/worn_boots.tres"),
 ]
+const DefaultStartingWeaponDefinition = preload("res://data/items/starting_equipment/worn_club.tres")
 const TIME_EPSILON: float = 0.000001
 const DEFAULT_SIMULATION_SEED: int = 1
 const SHOP_RNG_SEED_OFFSET: int = 100003
@@ -71,6 +74,8 @@ const NARRATIVE_RNG_SEED_OFFSET: int = 700003
 const MID_QUEST_BOARD_RNG_SEED_OFFSET: int = 800003
 const MID_QUEST_PLACEMENT_RNG_SEED_OFFSET: int = 900003
 const MID_CITY_QUEST_DIRECTORY: String = "res://data/quests/mid_city"
+const SPECIALIZATION_DUNGEON_PLACEMENT_RNG_SEED_OFFSET: int = 950009
+const SPECIALIZATION_REWARD_RNG_SEED_OFFSET: int = 960017
 const COMBAT_CONTEXT_QUEST: String = "quest"
 const COMBAT_CONTEXT_DUNGEON: String = "dungeon"
 const COMBAT_CONTEXT_EVENT: String = "event"
@@ -137,6 +142,7 @@ var god_state
 var god_system
 var autonomous_quest_choice: bool = false
 var last_quest_selection: Dictionary = {}
+var downtime_ticks: Dictionary = {"dead": 0, "no_quest": 0, "start_tick": 0}
 var combat_results_by_mob: Dictionary = {}
 var pending_dungeon_preparation = null
 var pending_quest_equipment_drops: Array = []
@@ -185,7 +191,7 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 	var name_repository = HeroNameRepositoryScript.new(seeded_rng.get_rng())
 	hero_state = HeroStateScript.new(name_repository.get_random_name())
 	trait_development.ensure_state(hero_state)
-	equip_starting_armor()
+	equip_starting_equipment()
 	if background_answers.is_empty():
 		# Legacy direct/headless construction retains its seeded fixture behaviour.
 		var starting_traits: Array[String] = HeroTraitsScript.roll_starting_traits(seeded_rng.get_rng())
@@ -212,13 +218,16 @@ func _init(initial_seed: int = DEFAULT_SIMULATION_SEED, initial_quest_definition
 		diary.add_entry(world_clock.world_tick, arrival_text)
 		debug_log.record_event(world_clock.world_tick, arrival_text)
 
-func equip_starting_armor() -> void:
+func equip_starting_equipment() -> void:
 	for item_definition in DefaultStartingArmorDefinitions:
-		var fixed_stats := {"armor": 1.0}
-		var item_instance = ItemInstanceScript.new(item_definition, 1, 0, fixed_stats, [], 0.0, fixed_stats)
-		item_instance.acquisition_source = "starting"
-		var _assert_equip_if_empty_ok_4: bool = hero_state.equipment.equip_if_empty(item_instance)
-		assert(_assert_equip_if_empty_ok_4, "Every starting armor piece must equip into its empty approved slot.")
+		equip_fixed_starting_item(item_definition, {"armor": 1.0})
+	equip_fixed_starting_item(DefaultStartingWeaponDefinition, {"attack": 1.0})
+
+func equip_fixed_starting_item(item_definition: Resource, fixed_stats: Dictionary) -> void:
+	var item_instance = ItemInstanceScript.new(item_definition, 1, 0, fixed_stats, [], 0.0, fixed_stats)
+	item_instance.acquisition_source = "starting"
+	var equipped: bool = hero_state.equipment.equip_if_empty(item_instance)
+	assert(equipped, "Every starting item must equip into its empty approved slot.")
 
 func advance_time(delta_seconds: float) -> void:
 	var remaining_seconds := maxf(0.0, delta_seconds * time_scale)
@@ -549,15 +558,21 @@ func complete_dungeon_combat(fought_mob_definition: Resource, combat_result, was
 	elif result_type == "completed":
 		var completed_dungeon = dungeon_runner.active_dungeon
 		var dungeon_definition: Resource = completed_dungeon.definition
-		var gold_reward: int = maxi(0, dungeon_definition.completion_gold_reward)
-		hero_state.gold += gold_reward
-		var previous_max_hp: float = combat_stats.max_hp
-		var reward_result: Dictionary = equipment_reward_system.resolve_dungeon_completion_reward(hero_state, dungeon_definition, seeded_rng.get_rng())
-		var reward_item = reward_result.get("item_instance")
-		assert(reward_item != null, "Completed dungeon must produce its guaranteed equipment reward.")
-		debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
-		finalize_item_reward(reward_result, combat_world_tick, previous_max_hp, false)
-		record_dungeon_completed_diary_entry(dungeon_definition, gold_reward, reward_item, combat_world_tick)
+		if SpecializationQuestSystemScript.is_specialization_dungeon(completed_dungeon):
+			debug_log.record_combat_event(
+				SpecializationQuestNarratorScript.describe_trial_completed(hero_state.hero_name, dungeon_definition.display_name),
+				combat_world_tick
+			)
+		else:
+			var gold_reward: int = maxi(0, dungeon_definition.completion_gold_reward)
+			hero_state.gold += gold_reward
+			var previous_max_hp: float = combat_stats.max_hp
+			var reward_result: Dictionary = equipment_reward_system.resolve_dungeon_completion_reward(hero_state, dungeon_definition, seeded_rng.get_rng())
+			var reward_item = reward_result.get("item_instance")
+			assert(reward_item != null, "Completed ordinary dungeon must produce its guaranteed equipment reward.")
+			debug_log.record_combat_event(dungeon_narrator.describe_completed(hero_state.hero_name, dungeon_definition.display_name, gold_reward), combat_world_tick)
+			finalize_item_reward(reward_result, combat_world_tick, previous_max_hp, false)
+			record_dungeon_completed_diary_entry(dungeon_definition, gold_reward, reward_item, combat_world_tick)
 		var _assert_remove_completed_dungeon_from_map_ok_9: bool = dungeon_system.remove_completed_dungeon_from_map(completed_dungeon)
 		assert(_assert_remove_completed_dungeon_from_map_ok_9, "Completed dungeon must release its map activity and disappear from the map.")
 		var _assert_begin_return_to_city_ok_10: bool = dungeon_runner.begin_return_to_city(hero_state, get_current_city_center())
@@ -570,7 +585,10 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		debug_log.record_event(completed_tick, "%s достиг 20 уровня. Началось 180-тиковое решение между путями Защитника и Истребителя." % hero_state.hero_name)
 	var specialization_result: String = HeroSpecializationScript.advance_world_tick(hero_state, completed_tick, simulation_seed)
 	if not specialization_result.is_empty():
-		debug_log.record_event(completed_tick, "%s выбрал путь: %s." % [hero_state.hero_name, HeroSpecializationScript.get_class_display_name(specialization_result)])
+		debug_log.record_event(completed_tick, SpecializationQuestNarratorScript.describe_path_decided(
+			hero_state.hero_name,
+			HeroSpecializationScript.get_class_display_name(specialization_result)
+		))
 	if temporary_events_enabled:
 		var event_priority_refresh: bool = autonomous_quest_choice \
 			and completed_tick >= EventSystemScript.FIRST_EVENT_SPAWN_TICK \
@@ -589,12 +607,17 @@ func on_world_tick_completed(completed_tick: int) -> void:
 			if pending_event_instance == expired_event:
 				pending_event_instance = null
 			debug_log.record_event(completed_tick, event_narrator.describe_expired(expired_event))
-	if shop_system.advance_world_tick(completed_tick):
+	if shop_system.advance_world_tick(completed_tick, hero_state.hero_class_id):
 		debug_log.record_event(completed_tick, economy_narrator.describe_stock_refreshed())
 	if autonomous_quest_choice and quest_pool.advance_world_tick(completed_tick):
 		debug_log.record_event(completed_tick, "Доска заданий: предложения обновлены.")
 	if skip_quest_advance_on_completed_combat_tick:
 		skip_quest_advance_on_completed_combat_tick = false
+		return
+	if hero_state.loop_state == HeroState.DEAD_RESPAWNING:
+		downtime_ticks["dead"] += 1
+	if hero_state.loop_state == HeroState.VISITING_WARRIOR_TRAINER:
+		advance_specialization_trainer_tick(completed_tick)
 		return
 	if hero_state.loop_state == HeroState.EVENT_ACTIVE:
 		advance_event_tick(completed_tick)
@@ -658,6 +681,7 @@ func on_world_tick_completed(completed_tick: int) -> void:
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and try_start_mid_city_relocation(completed_tick):
 		return
 	if hero_state.loop_state == HeroState.CHOOSING_QUEST and not choose_next_quest():
+		downtime_ticks["no_quest"] += 1
 		debug_log.record_event(completed_tick, "%s не нашёл подходящего квеста." % hero_state.hero_name)
 		return
 	var event = quest_runner.advance(hero_state, combat_stats, not pending_quest_equipment_drops.is_empty())
@@ -671,7 +695,81 @@ func on_world_tick_completed(completed_tick: int) -> void:
 		quest_log_text = quest_narrator.describe_quest_selection(event, last_quest_selection)
 	debug_log.record_event(completed_tick, quest_log_text)
 	record_quest_diary_event(event, completed_tick)
+	if event.event_type == QuestEventScript.HERO_TURNED_IN_QUEST \
+		and hero_state.current_city_id == HeroState.MID_CITY_ID \
+		and SpecializationQuestSystemScript.needs_quest_acceptance(hero_state, dungeon_system):
+		hero_state.loop_state = HeroState.VISITING_WARRIOR_TRAINER
 	begin_pending_event_if_ready(completed_tick)
+
+func advance_specialization_trainer_tick(completed_tick: int) -> void:
+	if hero_state == null or hero_state.loop_state != HeroState.VISITING_WARRIOR_TRAINER:
+		return
+	if SpecializationQuestSystemScript.objective_is_complete(hero_state, dungeon_system):
+		complete_specialization_quest(completed_tick)
+		return
+	if not SpecializationQuestSystemScript.needs_quest_acceptance(hero_state, dungeon_system):
+		hero_state.loop_state = HeroState.VISITING_MARKET
+		return
+	var quest_definition = SpecializationQuestSystemScript.get_definition(hero_state.first_specialization_id)
+	assert(quest_definition != null and quest_definition.dungeon_definition != null, "Chosen specialization target must have an authored quest and dungeon.")
+	var placement_seed: int = simulation_seed + SPECIALIZATION_DUNGEON_PLACEMENT_RNG_SEED_OFFSET + completed_tick * 7919
+	var placement_rng: RandomNumberGenerator = SeededRngScript.new(placement_seed).get_rng()
+	var dungeon = dungeon_system.spawn_known_authored_dungeon(
+		quest_definition.dungeon_definition,
+		hex_map.definition.mid_city_center,
+		placement_rng,
+		"specialization_quest"
+	)
+	if dungeon == null:
+		push_error("Specialization Quest could not place its authored dungeon on a valid plains hex.")
+		hero_state.loop_state = HeroState.VISITING_MARKET
+		return
+	debug_log.record_event(completed_tick, SpecializationQuestNarratorScript.describe_quest_accepted(hero_state.hero_name, quest_definition, dungeon))
+	hero_state.loop_state = HeroState.VISITING_MARKET
+
+func complete_specialization_quest(completed_tick: int) -> void:
+	var quest_definition = SpecializationQuestSystemScript.get_definition(hero_state.first_specialization_id)
+	assert(quest_definition != null, "Completed specialization objective must have its authored quest definition.")
+	var previous_max_hp: float = combat_stats.max_hp
+	var granted_id: String = HeroSpecializationScript.grant_selected_specialization(hero_state)
+	assert(granted_id == quest_definition.specialization_id, "Specialization Quest must grant the already selected specialization target.")
+	var growth_result: Dictionary = hero_progression.apply_first_specialization_completion_growth(
+		hero_state,
+		quest_definition.pending_attribute_points_reward
+	)
+	hero_state.gold += maxi(0, int(quest_definition.gold_reward))
+	hero_progression.ensure_first_specialization_skill(hero_state)
+	refresh_combat_stats()
+	hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
+
+	var reward_seed: int = simulation_seed + SPECIALIZATION_REWARD_RNG_SEED_OFFSET + completed_tick * 8191
+	var reward_rng: RandomNumberGenerator = SeededRngScript.new(reward_seed).get_rng()
+	for item_definition in [quest_definition.reward_weapon_definition, quest_definition.reward_offhand_definition]:
+		if item_definition == null:
+			continue
+		var item_previous_max_hp: float = combat_stats.max_hp
+		var reward_result: Dictionary = equipment_reward_system.receive_item(
+			hero_state,
+			item_definition,
+			quest_definition.reward_item_level,
+			reward_rng,
+			2
+		)
+		assert(reward_result.get("item_instance") != null, "Specialization Quest equipment reward must generate its authored Rare item.")
+		finalize_item_reward(reward_result, completed_tick, item_previous_max_hp, false)
+
+	var directed_stat_name: String = "CON" if granted_id == HeroSpecializationScript.PROTECTOR_ID else "DEX"
+	shop_system.refresh_stock(completed_tick, hero_state.hero_class_id)
+	debug_log.record_event(completed_tick, SpecializationQuestNarratorScript.describe_quest_completed(
+		hero_state.hero_name,
+		HeroSpecializationScript.get_class_display_name(granted_id),
+		quest_definition.gold_reward,
+		int(growth_result.get("free_points", 0)),
+		int(growth_result.get("catchup_points", 0)),
+		directed_stat_name
+	))
+	hero_state.state_changed.emit()
+	hero_state.loop_state = HeroState.VISITING_MARKET
 
 func record_quest_diary_event(event, event_tick: int) -> void:
 	diary_recorder.record_quest_diary_event(event, event_tick)
@@ -907,9 +1005,12 @@ func get_power_ready_dungeon():
 	var current_region_id: String = get_current_region_id()
 	if current_region_id.is_empty():
 		return null
-	return preload("res://scripts/dungeons/dungeon_trip_selection.gd").find_power_ready(
-		dungeon_system.get_discovered_dungeons_in_region(current_region_id), get_hero_power(), dungeon_evaluator
+	var candidates: Array = SpecializationQuestSystemScript.prioritize_candidates(
+		hero_state,
+		dungeon_system,
+		dungeon_system.get_discovered_dungeons_in_region(current_region_id)
 	)
+	return preload("res://scripts/dungeons/dungeon_trip_selection.gd").find_power_ready(candidates, get_hero_power(), dungeon_evaluator)
 
 func finish_shopping_phase(completed_tick: int) -> void:
 	if try_start_mid_city_relocation(completed_tick):
@@ -954,7 +1055,7 @@ func advance_city_relocation_tick(completed_tick: int) -> void:
 		hero_state.current_city_id = HeroState.MID_CITY_ID
 		var _assert_mid_quest_context_ok: bool = activate_mid_city_quest_context()
 		assert(_assert_mid_quest_context_ok, "Physical arrival in Arden must activate the Mid Region ordinary quest context.")
-		shop_system = ShopSystemScript.new(DefaultMidCityShop, item_generator, simulation_seed + MID_CITY_SHOP_RNG_SEED_OFFSET)
+		shop_system = ShopSystemScript.new(DefaultMidCityShop, item_generator, simulation_seed + MID_CITY_SHOP_RNG_SEED_OFFSET, hero_state.hero_class_id)
 		hero_state.loop_state = HeroState.ARRIVED_IN_CITY
 		travel_system.clear_travel()
 		pending_event_instance = null
@@ -971,7 +1072,11 @@ func try_start_discovered_dungeon_trip(completed_tick: int) -> bool:
 	var current_region_id: String = get_current_region_id()
 	if current_region_id.is_empty():
 		return false
-	var candidates: Array = dungeon_system.get_discovered_dungeons_in_region(current_region_id)
+	var candidates: Array = SpecializationQuestSystemScript.prioritize_candidates(
+		hero_state,
+		dungeon_system,
+		dungeon_system.get_discovered_dungeons_in_region(current_region_id)
+	)
 	if candidates.is_empty():
 		return false
 	var current_hero_power: float = get_hero_power()
@@ -1102,13 +1207,16 @@ func advance_dungeon_between_fights_tick(completed_tick: int) -> void:
 	)
 
 func advance_dungeon_return_tick(completed_tick: int) -> void:
-	var dungeon_name: String = dungeon_runner.active_dungeon.definition.display_name
+	var returning_dungeon = dungeon_runner.active_dungeon
+	var dungeon_name: String = returning_dungeon.definition.display_name
 	var result: Dictionary = dungeon_runner.advance_return_to_city(hero_state)
 	if result.is_empty():
 		debug_log.record_tick(completed_tick)
 		return
 	if bool(result.get("arrived", false)):
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_returned_to_city(hero_state.hero_name, dungeon_name))
+		if SpecializationQuestSystemScript.is_selected_specialization_dungeon(hero_state, returning_dungeon) and returning_dungeon.completed:
+			hero_state.loop_state = HeroState.VISITING_WARRIOR_TRAINER
 	else:
 		debug_log.record_event(completed_tick, dungeon_narrator.describe_returning_to_city(hero_state.hero_name, dungeon_name, int(result.get("remaining_steps", 0))))
 		begin_pending_event_if_ready(completed_tick)
@@ -1166,8 +1274,10 @@ func finalize_item_reward(result: Dictionary, completed_tick: int, previous_max_
 		hero_state.current_hp = clampf(hero_state.current_hp + (combat_stats.max_hp - previous_max_hp), 0.0, combat_stats.max_hp)
 	debug_log.record_event(completed_tick, item_narrator.describe_received(hero_state.hero_name, item_instance, bool(result.get("equipped", false))))
 
-	if result.get("dropped_item") != null:
-		var dropped_instance = result["dropped_item"]
+	var dropped_items: Array = result.get("dropped_items", [])
+	if dropped_items.is_empty() and result.get("dropped_item") != null:
+		dropped_items = [result["dropped_item"]]
+	for dropped_instance in dropped_items:
 		debug_log.record_event(completed_tick, item_narrator.describe_overflow(dropped_instance))
 	if write_significant_equipment_diary:
 		record_equipment_acquisition_diary_entry(item_instance, completed_tick)
@@ -1249,6 +1359,10 @@ func guide_first_specialization(specialization_id: String) -> bool:
 			HeroSpecializationScript.get_class_display_name(result),
 		]
 	)
+	debug_log.record_event(world_clock.world_tick, SpecializationQuestNarratorScript.describe_path_decided(
+		hero_state.hero_name,
+		HeroSpecializationScript.get_class_display_name(result)
+	))
 	return true
 
 func get_current_city_center() -> Vector2i:

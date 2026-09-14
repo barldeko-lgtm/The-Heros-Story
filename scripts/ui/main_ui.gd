@@ -32,6 +32,7 @@ var opponent_details_label: Label
 var combat_statistics_label: Label
 var death_statistics_label: Label
 var equipment_origin_label: Label
+var downtime_label: Label
 var attribute_points_label: Label:
 	get:
 		return hero_screen.attribute_points_label
@@ -479,6 +480,16 @@ func create_combat_statistics_panel() -> void:
 	equipment_origin_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	equipment_origin_label.add_theme_font_size_override("font_size", 18)
 	origin_panel.add_child(equipment_origin_label)
+	var downtime_panel := PanelContainer.new()
+	downtime_panel.name = "DowntimePanel"
+	apply_panel_style(downtime_panel)
+	downtime_panel.position = Vector2(552.0, 370.0)
+	downtime_panel.size = Vector2(600.0, 220.0)
+	statistics_screen.add_child(downtime_panel)
+	downtime_label = Label.new()
+	downtime_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	downtime_label.add_theme_font_size_override("font_size", 18)
+	downtime_panel.add_child(downtime_label)
 
 func update_combat_statistics_panel() -> void:
 	var total: int = 0
@@ -498,6 +509,7 @@ func update_combat_statistics_panel() -> void:
 		var rate: float = 100.0 * int(stats["wins"]) / mob_total if mob_total > 0 else 0.0
 		text += "\n\nПротив: %s\nБои: %d · Побед: %d · Поражений: %d\nПобеды: %.1f%%" % [stats["display_name"], mob_total, stats["wins"], stats["losses"], rate]
 	combat_statistics_label.text = text
+	update_downtime_statistics()
 	var deaths: Dictionary = preload("res://scripts/combat/death_statistics.gd").summarize(simulation.combat_results_by_mob)
 	var death_text := "Смерти героя\n\nВсего: %d\nНа квестах: %d\nВ данжах: %d\nВ событиях: %d" % [deaths.total, deaths.quest, deaths.dungeon, deaths.event]
 	if int(deaths.unknown) > 0:
@@ -509,6 +521,19 @@ func update_combat_statistics_panel() -> void:
 	equipment_origin_label.text = "Происхождение экипировки\nСейчас надето на герое\n\nКуплено: %d\nНайдено: %d\nСтартовые вещи: %d" % [origins.purchased, origins.found, origins.starting]
 	if int(origins.unknown) > 0:
 		equipment_origin_label.text += "\nИсточник неизвестен: %d" % origins.unknown
+
+func update_downtime_statistics() -> void:
+	var counters: Dictionary = simulation.downtime_ticks
+	var total: int = simulation.world_clock.world_tick
+	var start: int = int(counters.get("start_tick", 0))
+	var period: int = maxi(0, total - start)
+	var dead: int = int(counters.get("dead", 0))
+	var no_quest: int = int(counters.get("no_quest", 0))
+	var dead_percent: float = 100.0 * dead / period if period > 0 else 0.0
+	var no_quest_percent: float = 100.0 * no_quest / period if period > 0 else 0.0
+	downtime_label.text = "Время простоя\n\nВсего тиков: %d\nМёртв: %d тиков (%.1f%%)\nНе нашёл подходящий квест: %d тиков (%.1f%%)" % [total, dead, dead_percent, no_quest, no_quest_percent]
+	if start > 0:
+		downtime_label.text += "\nУчёт с тика %d; тиков учтено: %d" % [start, period]
 
 func update_hero_panel() -> void:
 	hero_summary_panel.update_hero_panel()

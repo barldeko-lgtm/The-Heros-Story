@@ -78,6 +78,8 @@ func receive_item(hero_state, item_definition: Resource, item_level: int, rng, r
 	var result: Dictionary = create_empty_routing_result()
 	if hero_state == null or item_definition == null or rng == null:
 		return result
+	if item_definition.has_method("can_be_equipped_by_class") and not item_definition.can_be_equipped_by_class(hero_state.hero_class_id):
+		return result
 
 	var item_instance = item_generator.generate(item_definition, item_level, rng, rarity_override)
 	if item_instance == null:
@@ -95,15 +97,26 @@ func route_item(hero_state, item_instance) -> Dictionary:
 	result["equipment_evaluation"] = evaluation
 	if bool(evaluation.get("should_equip", false)):
 		var target_slot: String = str(evaluation.get("target_slot", item_instance.definition.equipment_slot))
-		var replaced_item = hero_state.equipment.replace_item(item_instance, target_slot)
+		var replaced_items: Array = hero_state.equipment.replace_item_configuration(item_instance, target_slot)
 		result["target_slot"] = target_slot
-		if replaced_item != null:
-			result["inventory_item"] = replaced_item
-			result["dropped_item"] = hero_state.inventory.add_item(replaced_item)
+		result["replaced_items"] = replaced_items
+		for replaced_item in replaced_items:
+			var dropped_item = hero_state.inventory.add_item(replaced_item)
+			result["inventory_items"].append(replaced_item)
+			if result["inventory_item"] == null:
+				result["inventory_item"] = replaced_item
+			if dropped_item != null:
+				result["dropped_items"].append(dropped_item)
+				if result["dropped_item"] == null:
+					result["dropped_item"] = dropped_item
 		result["equipped"] = true
 	else:
 		result["inventory_item"] = item_instance
-		result["dropped_item"] = hero_state.inventory.add_item(item_instance)
+		result["inventory_items"].append(item_instance)
+		var dropped_item = hero_state.inventory.add_item(item_instance)
+		result["dropped_item"] = dropped_item
+		if dropped_item != null:
+			result["dropped_items"].append(dropped_item)
 	return result
 
 func create_empty_routing_result() -> Dictionary:
@@ -113,5 +126,8 @@ func create_empty_routing_result() -> Dictionary:
 		"equipped": false,
 		"inventory_item": null,
 		"dropped_item": null,
+		"inventory_items": [],
+		"dropped_items": [],
+		"replaced_items": [],
 		"target_slot": "",
 	}

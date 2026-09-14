@@ -20,6 +20,10 @@ func evaluate(hero_state, candidate_item) -> Dictionary:
 	}
 	if hero_state == null or candidate_item == null or candidate_item.definition == null:
 		return result
+	if candidate_item.definition.has_method("can_be_equipped_by_class") \
+		and not candidate_item.definition.can_be_equipped_by_class(hero_state.hero_class_id):
+		result["comparison_mode"] = "class_restricted"
+		return result
 
 	var current_stats = stat_resolver.resolve(hero_state, false)
 	result["current_power"] = power_calculator.calculate_hero(current_stats, hero_state)
@@ -41,6 +45,11 @@ func evaluate(hero_state, candidate_item) -> Dictionary:
 
 	result["candidate_power"] = best_candidate_power
 	result["target_slot"] = best_target_slot
+	var current_weapon = hero_state.equipment.get_item("weapon")
+	var candidate_two_handed: bool = candidate_item.definition.has_method("is_two_handed_weapon") and candidate_item.definition.is_two_handed_weapon()
+	var current_two_handed: bool = current_weapon != null and current_weapon.definition != null and current_weapon.definition.has_method("is_two_handed_weapon") and current_weapon.definition.is_two_handed_weapon()
+	if candidate_two_handed or (current_two_handed and authored_slot in ["weapon", "shield"]):
+		result["comparison_mode"] = "hand_configuration"
 	if authored_slot in RING_SLOTS:
 		result["comparison_mode"] = "ring_pair"
 	if authored_slot == "belt":

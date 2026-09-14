@@ -181,6 +181,7 @@ func get_state_display_name(loop_state: String) -> String:
 		HeroState.RETURNING_TO_CITY: return "Возвращается в город"
 		HeroState.TURNING_IN_QUEST: return "Сдаёт квест"
 		HeroState.VISITING_MARKET: return "На рынке — продаёт ненужный шмот"
+		HeroState.VISITING_WARRIOR_TRAINER: return "У тренера воинов"
 		HeroState.SHOPPING: return "В магазине — выбирает покупку"
 		HeroState.TRAVEL_TO_DUNGEON: return "Идёт к данжу"
 		HeroState.AT_DUNGEON_ENTRANCE: return "У входа в данж"

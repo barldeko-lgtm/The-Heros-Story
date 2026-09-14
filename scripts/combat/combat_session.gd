@@ -28,16 +28,20 @@ const BATTLE_GUARD_COOLDOWN_SECONDS: float = 60.0
 const BATTLE_GUARD_MIN_REDUCTION: float = 0.25
 const BATTLE_GUARD_MAX_REDUCTION: float = 0.45
 const BATTLE_GUARD_WISDOM_COEFFICIENT: float = 0.30
-const SHIELD_BASH_RAGE_COST: int = 25
+const SHIELD_BASH_RAGE_COST: int = 15
 const SHIELD_BASH_COOLDOWN_SECONDS: float = 60.0
-const SHIELD_BASH_BASE_STUN_SECONDS: float = 3.0
+const SHIELD_BASH_MIN_STUN_SECONDS: float = 5.0
+const SHIELD_BASH_MAX_STUN_SECONDS: float = 7.0
 const SHIELD_BASH_WISDOM_COEFFICIENT: float = 2.0
-const CRIPPLING_BLOWS_RAGE_COST: int = 25
+const CRIPPLING_BLOWS_RAGE_COST: int = 15
 const CRIPPLING_BLOWS_COOLDOWN_SECONDS: float = 60.0
-const CRIPPLING_BLOWS_DAMAGE_MULTIPLIER: float = 0.65
+const CRIPPLING_BLOWS_BASE_DAMAGE_MULTIPLIER: float = 0.75
+const CRIPPLING_BLOWS_RANK_DAMAGE_MULTIPLIER_BONUS: float = 0.005
+const CRIPPLING_BLOWS_WISDOM_DAMAGE_COEFFICIENT: float = 0.03
 const CRIPPLING_BLOWS_DURATION_SECONDS: float = 10.0
-const CRIPPLING_BLOWS_BASE_ATTACK_SPEED_REDUCTION: float = 0.15
-const CRIPPLING_BLOWS_WISDOM_COEFFICIENT: float = 0.10
+const CRIPPLING_BLOWS_MIN_ATTACK_SPEED_REDUCTION: float = 0.25
+const CRIPPLING_BLOWS_MAX_ATTACK_SPEED_REDUCTION: float = 0.40
+const CRIPPLING_BLOWS_WISDOM_COEFFICIENT: float = 0.15
 const BASE_WISDOM: int = 5
 
 var hero_stats: CombatStats
@@ -131,8 +135,9 @@ func advance(delta_seconds: float, mob_damage_type: String = DamageResolverScrip
 			elif can_use_crippling_blows():
 				rage -= CRIPPLING_BLOWS_RAGE_COST
 				crippling_blows_ready_time = elapsed_seconds + CRIPPLING_BLOWS_COOLDOWN_SECONDS
-				var crippling_hit_one = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * CRIPPLING_BLOWS_DAMAGE_MULTIPLIER, false, CRIPPLING_BLOWS_ID)
-				var crippling_hit_two = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * CRIPPLING_BLOWS_DAMAGE_MULTIPLIER, false, CRIPPLING_BLOWS_ID)
+				var crippling_damage_multiplier := get_crippling_blows_damage_multiplier()
+				var crippling_hit_one = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * crippling_damage_multiplier, false, CRIPPLING_BLOWS_ID)
+				var crippling_hit_two = create_hit("hero", hero_stats, mob_stats, hero_damage_multiplier * crippling_damage_multiplier, false, CRIPPLING_BLOWS_ID)
 				for crippling_hit in [crippling_hit_one, crippling_hit_two]:
 					crippling_hit.time_seconds = elapsed_seconds
 					actions.append(crippling_hit)
@@ -225,13 +230,27 @@ func get_wisdom_factor() -> float:
 	var effective_wisdom := maxi(0, hero_wisdom - BASE_WISDOM)
 	return float(effective_wisdom) / float(effective_wisdom + 100)
 
+func get_specialization_wisdom_factor() -> float:
+	var effective_wisdom := maxi(0, hero_wisdom)
+	return float(effective_wisdom) / float(effective_wisdom + 100)
+
 func get_shield_bash_stun_duration() -> float:
 	assert(shield_bash_skill_level > 0, "Shield Bash duration requires the learned specialization skill.")
-	return SHIELD_BASH_BASE_STUN_SECONDS + SHIELD_BASH_WISDOM_COEFFICIENT * get_wisdom_factor()
+	var skill_progress := float(shield_bash_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
+	var base_stun_duration := lerpf(SHIELD_BASH_MIN_STUN_SECONDS, SHIELD_BASH_MAX_STUN_SECONDS, skill_progress)
+	return base_stun_duration + SHIELD_BASH_WISDOM_COEFFICIENT * get_specialization_wisdom_factor()
 
 func get_crippling_blows_attack_speed_reduction() -> float:
 	assert(crippling_blows_skill_level > 0, "Crippling Blows reduction requires the learned specialization skill.")
-	return CRIPPLING_BLOWS_BASE_ATTACK_SPEED_REDUCTION + CRIPPLING_BLOWS_WISDOM_COEFFICIENT * get_wisdom_factor()
+	var skill_progress := float(crippling_blows_skill_level - 1) / float(MAX_SKILL_LEVEL - 1)
+	var base_reduction := lerpf(CRIPPLING_BLOWS_MIN_ATTACK_SPEED_REDUCTION, CRIPPLING_BLOWS_MAX_ATTACK_SPEED_REDUCTION, skill_progress)
+	return base_reduction + CRIPPLING_BLOWS_WISDOM_COEFFICIENT * get_specialization_wisdom_factor()
+
+func get_crippling_blows_damage_multiplier() -> float:
+	assert(crippling_blows_skill_level > 0, "Crippling Blows damage multiplier requires the learned specialization skill.")
+	var rank_bonus := float(crippling_blows_skill_level - 1) * CRIPPLING_BLOWS_RANK_DAMAGE_MULTIPLIER_BONUS
+	var wisdom_bonus := CRIPPLING_BLOWS_WISDOM_DAMAGE_COEFFICIENT * get_specialization_wisdom_factor()
+	return CRIPPLING_BLOWS_BASE_DAMAGE_MULTIPLIER + rank_bonus + wisdom_bonus
 
 func has_active_crippling_slow() -> bool:
 	return crippling_slow_reduction > 0.0 and crippling_slow_active_until > elapsed_seconds

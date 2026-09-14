@@ -7,9 +7,9 @@ const BAND_PATHS := [
 	"res://data/shops/bands/arden_ilvl25.tres",
 ]
 const EXPECTED_BANDS := [
-	{"item_level": 15, "white_listings": 6, "slots": ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt"], "white_price": 1350, "uncommon_price": 4050},
-	{"item_level": 20, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots"], "white_price": 2300, "uncommon_price": 6900},
-	{"item_level": 25, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots"], "white_price": 3600, "uncommon_price": 10800},
+	{"item_level": 15, "white_listings": 6, "slots": ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"], "white_price": 1350, "uncommon_price": 4050},
+	{"item_level": 20, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"], "white_price": 2300, "uncommon_price": 6900},
+	{"item_level": 25, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"], "white_price": 3600, "uncommon_price": 10800},
 ]
 const EXPECTED_DEFINITIONS := [
 	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet.tres", "id": "azure_dawnplate_helmet", "name": "Шлем Лазурной Зари", "slot": "helmet", "overlay": true},
@@ -22,16 +22,22 @@ const EXPECTED_DEFINITIONS := [
 	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawn_belt.tres", "id": "azure_dawn_belt", "name": "Пояс Лазурной Зари", "slot": "belt", "overlay": false},
 	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawn_earrings.tres", "id": "azure_dawn_earrings", "name": "Серьги Лазурной Зари", "slot": "earrings", "overlay": false},
 	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawn_pendant.tres", "id": "azure_dawn_pendant", "name": "Подвеска Лазурной Зари", "slot": "necklace", "overlay": false},
+	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawnplate_sword.tres", "id": "azure_dawnplate_sword", "name": "Меч Лазурной Зари", "slot": "weapon", "overlay": false},
+	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawnplate_shield.tres", "id": "azure_dawnplate_shield", "name": "Щит Лазурной Зари", "slot": "shield", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_helmet.tres", "id": "crimson_thornplate_helmet", "name": "Шлем Багрового Шипа", "slot": "helmet", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_cuirass.tres", "id": "crimson_thornplate_cuirass", "name": "Кираса Багрового Шипа", "slot": "chest", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_gauntlets.tres", "id": "crimson_thornplate_gauntlets", "name": "Рукавицы Багрового Шипа", "slot": "gloves", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_legguards.tres", "id": "crimson_thornplate_legguards", "name": "Поножи Багрового Шипа", "slot": "pants", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sabatons.tres", "id": "crimson_thornplate_sabatons", "name": "Сабатоны Багрового Шипа", "slot": "boots", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sword.tres", "id": "crimson_thornplate_sword", "name": "Меч Багрового Шипа", "slot": "weapon", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_shield.tres", "id": "crimson_thornplate_shield", "name": "Щит Багрового Шипа", "slot": "shield", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet.tres", "id": "gilded_wyrm_helmet", "name": "Шлем Златого Дракона", "slot": "helmet", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_cuirass.tres", "id": "gilded_wyrm_cuirass", "name": "Кираса Златого Дракона", "slot": "chest", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets.tres", "id": "gilded_wyrm_gauntlets", "name": "Рукавицы Златого Дракона", "slot": "gloves", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards.tres", "id": "gilded_wyrm_legguards", "name": "Поножи Златого Дракона", "slot": "pants", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons.tres", "id": "gilded_wyrm_sabatons", "name": "Сабатоны Златого Дракона", "slot": "boots", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sword.tres", "id": "gilded_wyrm_sword", "name": "Меч Златого Дракона", "slot": "weapon", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_shield.tres", "id": "gilded_wyrm_shield", "name": "Щит Златого Дракона", "slot": "shield", "overlay": false},
 ]
 
 func _init() -> void:
@@ -65,17 +71,25 @@ func assert_definition_resources() -> void:
 			assert(int(definition.quality) == (1 if suffix == "_uncommon" else 0), "Only Common and Uncommon definitions are allowed: %s" % resource_path)
 			assert(definition.icon_texture != null, "Every supplied finished visual must have its icon: %s" % resource_path)
 			var family: String = expected.path.get_base_dir().get_file()
-			var icon_asset: String = "chestplate" if expected.slot == "chest" else ("gauntlets" if expected.slot == "gloves" else ("pants" if expected.slot == "pants" else ("boots" if expected.slot == "boots" else ("necklace" if expected.slot == "necklace" else ("ring" if expected.slot.begins_with("ring_") else expected.slot)))))
+			var icon_asset: String = "chestplate" if expected.slot == "chest" else ("gauntlets" if expected.slot == "gloves" else ("pants" if expected.slot == "pants" else ("boots" if expected.slot == "boots" else ("necklace" if expected.slot == "necklace" else ("ring" if expected.slot.begins_with("ring_") else ("sword" if expected.slot == "weapon" else expected.slot))))))
 			var expected_icon_path := "res://assets/items/icons/%s/%s_%s.png" % [family, family, icon_asset]
 			assert(definition.icon_texture.resource_path == expected_icon_path, "Arden definitions must use their exact supplied icon, without placeholder reuse: %s" % resource_path)
 			if expected.overlay:
 				assert(definition.hero_overlay_texture != null, "Only Azure ilvl 15 armor must have supplied overlays: %s" % resource_path)
 				assert(definition.hero_overlay_texture.get_width() == 441 and definition.hero_overlay_texture.get_height() == 800, "Azure ilvl 15 armor overlays must be 441x800: %s" % resource_path)
 			else:
-				assert(definition.hero_overlay_texture == null, "Jewelry and ilvl 20/25 armor must not invent overlays: %s" % resource_path)
+				assert(definition.hero_overlay_texture == null, "Icon-only Arden items must not invent overlays: %s" % resource_path)
 
 func assert_definition_file_sets() -> void:
-	var expected_by_family := {"azure_dawnplate": 10, "crimson_thornplate": 5, "gilded_wyrm": 5}
+	var expected_by_family := {"azure_dawnplate": 36, "crimson_thornplate": 22, "gilded_wyrm": 24}
+	var approved_extra_files := {
+		"crimson_thornplate": ["crimson_thornplate_greatsword_rare.tres"],
+		"gilded_wyrm": [
+			"gilded_wyrm_greatsword.tres",
+			"gilded_wyrm_greatsword_uncommon.tres",
+			"gilded_wyrm_greatsword_rare.tres",
+		],
+	}
 	for family in expected_by_family:
 		var directory_path := "res://data/items/visual_families/%s" % family
 		var actual_files := DirAccess.get_files_at(directory_path)
@@ -86,7 +100,9 @@ func assert_definition_file_sets() -> void:
 			expected_files.append(expected.path.get_file())
 			expected_files.append(expected.path.get_file().replace(".tres", "_uncommon.tres"))
 			expected_files.append(expected.path.get_file().replace(".tres", "_rare.tres"))
-		assert(actual_files.size() == int(expected_by_family[family]) * 3, "Arden visual family must contain its Common/Uncommon shop definitions plus matching Rare mob-drop definitions, with no placeholder files.")
+		for extra_file in approved_extra_files.get(family, []):
+			expected_files.append(extra_file)
+		assert(actual_files.size() == int(expected_by_family[family]), "Arden visual family must contain only its approved standard definitions plus the explicit Slayer two-handed additions.")
 		for resource_file in actual_files:
 			assert(expected_files.has(resource_file), "Arden visual family must not contain an unapproved resource: %s/%s" % [family, resource_file])
 
@@ -99,12 +115,18 @@ func assert_band(band: Resource, expected: Dictionary, expected_path: String) ->
 		definitions_by_rarity[int(definition.quality)].append(definition)
 	for rarity in [0, 1]:
 		var definitions: Array = definitions_by_rarity[rarity]
-		assert(definitions.size() == expected.slots.size(), "Each Arden rarity pool must cover every allowed slot exactly once.")
+		var allowed_extra_count: int = 1 if int(expected.item_level) == 25 else 0
+		assert(definitions.size() == expected.slots.size() + allowed_extra_count, "Each Arden rarity pool must contain the approved base slots plus only the explicit ilvl25 Slayer two-hander when applicable.")
 		var slots: Array[String] = []
+		var specialization_weapons := 0
 		for definition in definitions:
-			assert(not slots.has(definition.equipment_slot), "Each Arden rarity pool must not duplicate an equipment slot.")
+			if definition.equipment_slot == "weapon" and str(definition.required_class_id) == "slayer" and definition.is_two_handed_weapon():
+				specialization_weapons += 1
+				continue
+			assert(not slots.has(definition.equipment_slot), "Base Arden rarity pool must not duplicate an equipment slot.")
 			slots.append(definition.equipment_slot)
-		assert(slots == expected.slots, "Each Arden rarity pool must use the approved slot order and no missing visuals.")
+		assert(slots == expected.slots, "Each Arden rarity pool must preserve the approved base slot order and no missing visuals.")
+		assert(specialization_weapons == allowed_extra_count, "Only ilvl25 may add exactly one Slayer-only two-handed weapon per Common/Uncommon rarity pool.")
 
 func assert_generated_stock(shop: Resource) -> void:
 	var shop_system_script: Script = load("res://scripts/economy/shop_system.gd")

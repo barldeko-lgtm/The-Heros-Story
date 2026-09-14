@@ -107,7 +107,7 @@ static func resolve_status(loop_state: String, in_combat: bool, combat_context: 
 			caption = "Событие: бой"
 		return {"text": caption, "color": Color("ff9e38")}
 	match loop_state:
-		HeroState.VISITING_GUILD, HeroState.VISITING_MARKET, HeroState.SHOPPING, HeroState.PREPARING_DUNGEON, HeroState.ARRIVED_IN_CITY:
+		HeroState.VISITING_GUILD, HeroState.VISITING_MARKET, HeroState.VISITING_WARRIOR_TRAINER, HeroState.SHOPPING, HeroState.PREPARING_DUNGEON, HeroState.ARRIVED_IN_CITY:
 			caption = "В городе"
 		HeroState.RECOVERING_AFTER_FIGHT, HeroState.RECOVERING_IN_CITY:
 			caption = "Восстанавливается"

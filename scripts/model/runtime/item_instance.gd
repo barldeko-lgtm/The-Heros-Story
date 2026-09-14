@@ -52,6 +52,11 @@ func get_tooltip_text() -> String:
 		"Уровень предмета: %d" % item_level,
 		"Сила предмета: %.2f" % get_item_power(),
 	]
+	if definition.has_method("is_two_handed_weapon") and definition.is_two_handed_weapon():
+		lines.append("Хват: двуручный")
+	if not str(definition.required_class_id).is_empty():
+		var required_class_name: String = "Истребитель" if definition.required_class_id == "slayer" else definition.required_class_id
+		lines.append("Требуемый класс: %s" % required_class_name)
 	var price_calculator = ItemPriceCalculatorScript.new()
 	var shop_value: int = price_calculator.get_reference_shop_value_for_item(self)
 	var sell_price: int = price_calculator.get_sell_price_for_item(self)

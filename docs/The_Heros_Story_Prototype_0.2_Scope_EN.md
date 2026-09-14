@@ -362,19 +362,21 @@ If the player does not spend all newly available points immediately, the unspent
 
 After the first specialization is actually obtained, it adds:
 
-> **+1 specialization-directed primary-attribute point per later hero level**
+> **Protector: +1 CON per later hero level**
+>
+> **Slayer: +1 DEX per later hero level**
 
 Normal post-specialization growth therefore becomes:
 
 > **1 fixed Warrior STR + 4 player-distributed points + 1 specialization-directed point = 6 primary-attribute points per level**
 
-The specialization also grants its current working immediate profile reward when completed:
+Completing the first Specialization Quest also grants:
 
-> **+5 specialization-profile attribute points**
+> **+5 additional player-distributed primary-attribute points**
 
-The exact size of this immediate reward remains a provisional balance value.
+These five points enter the normal pending primary-attribute pool and provide no benefit until the player distributes them.
 
-If the hero completes the first specialization later than the normal compressed level-20 milestone, delayed specialization-directed growth is not permanently lost. The missing post-20 specialization points are granted when the specialization becomes active.
+If the hero completes the first specialization later than the normal compressed level-20 milestone, delayed specialization-directed growth is not permanently lost. On specialization completion, the hero immediately receives one catch-up specialization point for every already-reached level above 20: CON for Protector or DEX for Slayer. Example: completing the trial at Level 23 grants +3 CON / DEX immediately. Future level-ups then continue the same +1-per-level specialization growth normally.
 
 The current approved XP requirement curve is intentionally faster at the very beginning and then slows progression so the hero has more time to obtain, compare, and purchase equipment before leaving each progression band.
 
@@ -970,21 +972,21 @@ Current working rules:
 
 - requires the Protector class to be actually granted, not merely selected as the first-specialization target;
 - requires a shield;
-- Rage cost: **25**;
+- Rage cost: **15**;
 - cooldown: **60 seconds**;
 - replaces one normal hero attack opportunity;
 - when learned, off cooldown, affordable in Rage, and the shield requirement is met, Shield Bash has priority over Power Strike; Power Strike is considered only while Shield Bash is unavailable;
 - Shield Bash **cannot miss**;
 - deals **no direct damage**;
 - stuns an eligible ordinary enemy;
-- base stun duration scales with Skill Level from **3.0 seconds at Skill Level 1** to **5.0 seconds at Skill Level 10**;
+- base stun duration scales with Skill Level from **5.0 seconds at Skill Level 1** to **7.0 seconds at Skill Level 10**;
 - intermediate Skill Levels scale evenly between those endpoints.
 
-The current implementation slice grants and executes **Skill Level 1 only**. Later Shield Bash ranks are intended to unlock on the five-level cadence, but rank purchasing/progression is deferred.
+The current implementation grants **Skill Level 1** through progression and supports the full **Skill Level 1–10 combat formula and purchased rank path**. Higher Shield Bash ranks unlock every five hero levels after Level 25: SL2 at 30, SL3 at 35, and so on.
 
-Shield Bash uses the shared Wisdom scaling model:
+Shield Bash uses the specialization Wisdom scaling model. Its base Skill-Level endpoints are defined at **0 WIS**, so specialization WIS scaling uses total current WIS rather than subtracting the Warrior's starting 5 WIS:
 
-> **`EffectiveWIS = max(0, WIS - 5)`**
+> **`EffectiveWIS = max(0, WIS)`**
 
 > **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
 
@@ -1026,30 +1028,32 @@ Current working rules:
 
 - requires the Slayer class to be actually granted, not merely selected as the first-specialization target;
 - currently has no weapon requirement and does not forbid a shield;
-- Rage cost: **25**;
+- Rage cost: **15**;
 - cooldown: **60 seconds**;
 - replaces one normal hero attack opportunity;
 - when learned, off cooldown and affordable in Rage, Crippling Blows has priority over Power Strike; Power Strike is considered only while Crippling Blows is unavailable;
 - performs **two weapon strikes**;
-- each strike deals **×0.65** of the resolved ordinary weapon-hit damage;
+- each strike starts at **×0.75** of the resolved ordinary weapon-hit damage on Skill Level 1 at 0 WIS;
+- each additional Skill Level adds **+0.005** to each strike's damage coefficient;
+- total current WIS adds a small **`+0.03 × WisdomFactor`** to each strike's damage coefficient;
 - each strike resolves hit / miss and critical chance independently;
 - if at least one of the two strikes hits, the target receives an Attack Speed reduction for **10 seconds**;
-- base Attack Speed reduction scales with Skill Level from **15% at Skill Level 1** to **25% at Skill Level 10**;
+- base Attack Speed reduction scales with Skill Level from **25% at Skill Level 1** to **40% at Skill Level 10**;
 - intermediate Skill Levels scale evenly between those endpoints.
 
-The current implementation slice grants and executes **Skill Level 1 only**. Later Crippling Blows ranks are intended to unlock on the five-level cadence, but rank purchasing/progression is deferred.
+The current implementation grants **Skill Level 1** through progression and supports the full **Skill Level 1–10 combat formula and purchased rank path**. Higher Crippling Blows ranks unlock every five hero levels after Level 25: SL2 at 30, SL3 at 35, and so on.
 
-Crippling Blows uses the shared Wisdom scaling model:
+Crippling Blows uses the specialization Wisdom scaling model. Its base Skill-Level endpoints are defined at **0 WIS**, so specialization WIS scaling uses total current WIS:
 
-> **`EffectiveWIS = max(0, WIS - 5)`**
+> **`EffectiveWIS = max(0, WIS)`**
 
 > **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
 
 Its current WIS scaling is:
 
-> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.10 × WisdomFactor`**
+> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.15 × WisdomFactor`**
 
-The WIS term is expressed as a fraction, so it can theoretically add up to nearly **10 percentage points** of additional Attack Speed reduction at extremely high WIS values.
+The WIS term is expressed as a fraction, so it can theoretically add up to nearly **15 percentage points** of additional Attack Speed reduction at extremely high WIS values.
 
 Applying the Attack Speed reduction preserves the percentage progress of the enemy's attack currently being prepared. Removing the reduction after 10 seconds also preserves that percentage progress, so the effect neither resets an attack nor grants free hidden progress when it begins or ends.
 
@@ -2108,21 +2112,31 @@ These Mid Region dungeons use the same shared discovery, preparation, retry, com
 
 After the Warrior selects the Protector or Slayer direction, that direction becomes a permanent target but the hero remains mechanically **Warrior**. A dedicated Specialization Quest and Specialization Dungeon are required to earn the chosen class.
 
-The Specialization Quest creates a dedicated quest dungeon that did not need to exist beforehand.
+Resolving the Level-20 direction first produces a visible/logged milestone that the hero has decided who they want to become. It does **not** interrupt the activity already in progress. The Specialization Quest is accepted from the **Warrior Trainer** at the next normal city hand-off after the hero returns and turns in an ordinary quest.
+
+The Specialization Quest is a persistent parallel progression objective, not the ordinary `active_quest`. While it remains incomplete, the hero may continue accepting and completing normal guild quests, shopping, training, and strengthening between specialization-dungeon attempts.
+
+Accepting the Specialization Quest creates the selected path's dedicated quest dungeon at that moment; the unselected variant never exists in that playthrough unless selected by another hero/playthrough.
 
 This dungeon:
 
 - is tied to the chosen specialization path;
-- is known to the hero once the Specialization Quest is created;
+- is placed on a free **plains** hex **4–6 hexes from Arden** using the shared world-activity reservation rules;
+- is known to the hero immediately once the Specialization Quest is created;
+- is not eligible for normal nearby discovery, Curious discovery bonuses, or Divine Vision because it does not exist before the trainer gives the quest and is already known afterward;
 - exists in addition to the ordinary local dungeon population;
 - reuses the same dungeon execution, preparation, death, healing, and retry systems where possible;
-- contains a required quest relic / specialization objective;
-- on successful quest completion, grants the chosen specialization class;
+- uses the standard full dungeon preparation/potion routine before an attempt;
+- uses the normal retry-readiness growth after failure: +30% Power after no kills, +20% after ordinary progress, +10% after reaching the boss;
+- remains the same persistent dungeon at the same location after a failed attempt while the hero resumes ordinary life until ready to retry;
+- completes its quest objective when the boss is defeated;
+- grants **no direct dungeon Gold or equipment reward**;
+- after boss victory, the hero returns to the Warrior Trainer and turns in the Specialization Quest; that quest completion grants the chosen specialization class and all material/progression rewards;
 - gates the Level-25 first specialization skill because that skill requires the specialization to be actually granted.
 
 Core flow:
 
-> **Level 20 → hero chooses Protector / Slayer target → remains Warrior → Specialization Quest → prepare → dedicated dungeon → defeat boss → obtain relic / objective → complete quest → specialization granted**
+> **Level 20 → hero chooses Protector / Slayer target → remains Warrior → finish current ordinary activity → return/turn in ordinary quest → Warrior Trainer → accept parallel Specialization Quest → matching dungeon appears and is known → standard preparation → dedicated dungeon → defeat boss → return to trainer → complete quest → specialization granted**
 >
 > **if specialization is granted at Level 25+ → matching first skill SL1 is learned immediately; otherwise it unlocks automatically at Level 25**
 
@@ -2131,15 +2145,41 @@ Prototype 0.2 uses two separately authored but deliberately mirrored specializat
 - **Protector — Bastion of the Last Watch / `Бастион Последнего Дозора`**: `2 × Fallen Guard / Павший страж` at approximately **340 Power**, then `Commander of the Last Watch / Командир Последнего Дозора` at approximately **420 Power**;
 - **Slayer — Pit of the Scarlet Fang / `Яма Алого Клыка`**: `2 × Blood Gladiator / Кровавый гладиатор` at approximately **340 Power**, then `Master of the Scarlet Pit / Хозяин Алой Ямы` at approximately **420 Power**.
 
-The paired ordinary enemies use identical combat stats and XP; the paired bosses also use identical combat stats and XP. Both variants use Physical attacks and the same placement metadata. This is intentional: choosing Protector versus Slayer must not secretly change trial difficulty.
+The paired ordinary enemies use identical combat stats and XP; the paired bosses also use identical combat stats and XP. Both variants use Physical attacks and identical plains 4–6 placement metadata. This is intentional: choosing Protector versus Slayer must not secretly change trial difficulty.
 
-The content resources live under `data/dungeons/specialization/` and are intentionally excluded from the ordinary automatic dungeon loader. Their quest-driven spawning/placement, relic/objective completion, material reward, and final specialization-grant hookup are connected in a later targeted pass.
+The content resources live under `data/dungeons/specialization/` and are intentionally excluded from the ordinary automatic dungeon loader.
+
+Specialization Quest completion rewards are:
+
+- both paths: **2000 Gold**, **+5 pending player-distributed primary-attribute points**, the selected class grant, and all missing specialization-directed growth for already reached levels above 20;
+- **Protector**: catch-up/future specialization growth is CON; equipment reward is a **Rare / Blue ilvl 20 one-handed sword + Rare / Blue ilvl 20 shield**;
+- **Slayer**: catch-up/future specialization growth is DEX; equipment reward is one **Rare / Blue ilvl 20 two-handed weapon**.
+
+The Protector reward reuses the existing ilvl 20 one-handed sword/shield item family. The Slayer two-handed weapon uses the two-handed equipment rules defined below.
 
 ---
 
 ## 18. Equipment Slots and Item Groups
 
 Prototype 0.2 uses the current 12-slot equipment structure.
+
+### Weapon Hand Configuration
+
+Prototype 0.2 now distinguishes one-handed and two-handed weapons without adding a separate physical equipment slot:
+
+- a one-handed weapon occupies `weapon` and may coexist with a shield in `shield`;
+- a two-handed weapon is stored in `weapon` but consumes the full hand configuration and therefore cannot coexist with an equipped shield;
+- equipping a two-handed weapon displaces both the current weapon and current shield as applicable;
+- equipping a shield while a two-handed weapon is equipped displaces that two-handed weapon;
+- current Slayer two-handed weapons are class-restricted to an actually granted **Slayer** specialization.
+
+Current two-handed tuning deliberately trades the one-handed sword's speed bonus and shield defense for heavier base damage:
+
+- ilvl 20 two-handed base: **+60 Attack**, **no base Attack-Speed bonus**;
+- ilvl 25 two-handed base: **+80 Attack**, **no base Attack-Speed bonus**;
+- generated two-handed items keep the normal rarity affix count (Rare still has two affixes) but use **×2 total modifier budget** compared with an ordinary item of the same ilvl/rarity.
+
+The ilvl 20 Rare two-handed weapon is the Slayer Specialization Quest reward. The ilvl 25 family provides the next Slayer two-handed progression tier; temporary placeholder art is acceptable until final weapon visuals are authored.
 
 ### Armor
 
@@ -3368,7 +3408,7 @@ remaining damage × 0.55
 
 Cooldown, duration, activation threshold, and Rage cost do not improve with Skill Level in Prototype 0.2.
 
-#### Working HeroPower Valuation for the Two Base Warrior Abilities
+#### Working HeroPower Valuation for Warrior Abilities
 
 For current balance planning, the two implemented base Warrior abilities use the following provisional HeroPower valuation:
 
@@ -3381,7 +3421,16 @@ The current provisional aggregate valuation for Wisdom, after both base Warrior 
 
 > **approximately +0.20% HeroPower per WIS above the starting value of 5**
 
-This WIS value is a temporary planning estimate inherited from the original two-ability Warrior kit, not a universal generic stat conversion. Shield Bash / Crippling Blows are now live at SL1, but they deliberately have no HeroPower valuation yet; this provisional WIS value may be recalibrated when their Power contribution is tuned from live combat results.
+This WIS value remains a temporary planning estimate inherited from the original two-ability Warrior kit, not a universal generic stat conversion. First-specialization combat scaling uses its own total-WIS saturation formulas rather than converting WIS into generic combat stats.
+
+Combat calibration against representative upper-Arden opponents gives the first specialization abilities the following working permanent HeroPower valuation:
+
+- learning **Shield Bash Skill Level 1** contributes **+5.0% HeroPower**;
+- every Shield Bash rank after Skill Level 1 contributes a further **+0.65% HeroPower**;
+- learning **Crippling Blows Skill Level 1** contributes **+5.0% HeroPower**;
+- every Crippling Blows rank after Skill Level 1 contributes a further **+0.45% HeroPower**.
+
+No second generic WIS-to-HeroPower term is added for the specialization abilities. Isolated calibration values their own Wisdom scaling at roughly **+0.03% equivalent Power per WIS for Shield Bash** and **+0.02–0.03% per WIS for Crippling Blows**, but full-kit calibration shows that separately stacking those values into HeroPower would overstate high-WIS builds because their Rage/action priority competes with the simultaneously WIS-scaled Power Strike. Their real WIS scaling therefore remains in combat, while these learned/rank valuations deliberately stay conservative enough for stable quest/equipment Power comparisons.
 
 These HeroPower valuation bonuses are now wired into the shared runtime `PowerCalculator` as one additive permanent Hero multiplier. Hero quest eligibility, virtual equipment comparison, and displayed HeroPower all use the same skill/WIS-aware result, while MobPower and ItemPower continue to use the same underlying CombatStats Power formula without Warrior ability bonuses.
 
@@ -3394,30 +3443,34 @@ Shield Bash is the first Protector specialization ability and is learned automat
 Its fixed combat rules are:
 
 - requires a shield;
-- costs **25 Rage**;
+- costs **15 Rage**;
 - cooldown **60 sec**;
 - replaces one ordinary hero attack opportunity and takes autonomous Rage-spending priority over Power Strike while usable;
 - cannot miss;
 - deals **no direct damage**;
 - applies a stun to an eligible ordinary enemy.
 
-The current runtime slice implements **Skill Level 1 only**. Later rank availability is intended to advance every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on), but purchasing/using those higher specialization ranks is deferred for now.
+The current runtime supports the full **Skill Level 1–10 combat formula**. Progression grants SL1, then higher rank availability advances every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on); unlocked higher ranks are purchased through the normal autonomous city-training path.
 
 Skill Level changes the base stun duration.
 
 Working endpoints:
 
-> **Skill Level 1 → 3.0 sec stun**
+> **Skill Level 1 → 5.0 sec stun at 0 WIS**
 
-> **Skill Level 10 → 5.0 sec stun**
+> **Skill Level 10 → 7.0 sec stun at 0 WIS**
 
 Intermediate ranks scale evenly between those endpoints.
 
-Shield Bash then applies the shared Wisdom scaling:
+Shield Bash then applies specialization Wisdom scaling using total current WIS:
+
+> **`EffectiveWIS = max(0, WIS)`**
+
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
 
 > **`FinalStunDuration = BaseStunDuration + 2.0 × WisdomFactor`**
 
-where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
+The starting Skill-Level endpoints are therefore exact at 0 WIS rather than WIS 5.
 
 The stun freezes the enemy's in-progress attack timer. The enemy accumulates no attack progress while stunned and resumes from the same remaining progress after the stun ends.
 
@@ -3429,32 +3482,38 @@ Crippling Blows is the first Slayer specialization ability and is learned automa
 
 Its fixed combat rules are:
 
-- costs **25 Rage**;
+- costs **15 Rage**;
 - cooldown **60 sec**;
 - replaces one ordinary hero attack opportunity and takes autonomous Rage-spending priority over Power Strike while usable;
 - currently has no weapon-hand requirement and remains usable with a shield equipped;
 - performs **two weapon strikes**;
-- each strike deals **×0.65 ordinary resolved weapon-hit damage**;
+- each strike starts at **×0.75 ordinary resolved weapon-hit damage** on Skill Level 1 at 0 WIS;
+- each additional Skill Level adds **+0.005** to each strike's damage coefficient;
+- total current WIS adds a small **`+0.03 × WisdomFactor`** to each strike's damage coefficient;
 - both strikes resolve hit / miss and critical chance independently;
 - if at least one strike hits, the target receives an Attack Speed reduction for **10 sec**.
 
-The current runtime slice implements **Skill Level 1 only**. Later rank availability is intended to advance every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on), but purchasing/using those higher specialization ranks is deferred for now.
+The current runtime supports the full **Skill Level 1–10 combat formula**. Progression grants SL1, then higher rank availability advances every five hero levels after Level 25 (SL2 at 30, SL3 at 35, and so on); unlocked higher ranks are purchased through the normal autonomous city-training path.
 
 Skill Level changes the base Attack Speed reduction.
 
 Working endpoints:
 
-> **Skill Level 1 → 15% Attack Speed reduction**
+> **Skill Level 1 → 25% Attack Speed reduction at 0 WIS**
 
-> **Skill Level 10 → 25% Attack Speed reduction**
+> **Skill Level 10 → 40% Attack Speed reduction at 0 WIS**
 
 Intermediate ranks scale evenly between those endpoints.
 
-Crippling Blows then applies the shared Wisdom scaling:
+Crippling Blows then applies specialization Wisdom scaling using total current WIS:
 
-> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.10 × WisdomFactor`**
+> **`EffectiveWIS = max(0, WIS)`**
 
-where `WisdomFactor` uses the shared Warrior skill formula defined with Power Strike.
+> **`WisdomFactor = EffectiveWIS / (EffectiveWIS + 100)`**
+
+> **`FinalAttackSpeedReduction = BaseAttackSpeedReduction + 0.15 × WisdomFactor`**
+
+The starting Skill-Level endpoints are therefore exact at 0 WIS rather than WIS 5.
 
 Applying and removing the temporary Attack Speed reduction preserves the percentage progress of the enemy's current attack. The effect therefore neither resets an attack nor grants hidden free progress when the interval changes.
 
@@ -3464,7 +3523,7 @@ Prototype 0.2 bosses and special enemies receive the normal resolved Crippling B
 
 Higher Skill Levels cost progressively more Gold.
 
-The current working Prototype 0.2 price curve is:
+The current working Prototype 0.2 price curve for the two base Warrior skills is:
 
 | Purchased Skill Level | Gold cost |
 |---:|---:|
@@ -3478,7 +3537,7 @@ The current working Prototype 0.2 price curve is:
 | 9 | 3200 |
 | 10 | 4150 |
 
-The intended tuning rule is **Skill Level 2 = 500 Gold; each following rank costs approximately 30% more than the previous one, rounded to the nearest 50 Gold**. These values are working balance data and are expected to be revisited after the Mid-Level City economy and longer progression tests are live.
+The intended tuning rule for the base Warrior skills is **Skill Level 2 = 500 Gold; each following rank costs approximately 30% more than the previous one, rounded to the nearest 50 Gold**. First-specialization rank pricing is not finalized yet; the current runtime deliberately uses a **1 Gold per purchased Shield Bash / Crippling Blows rank** placeholder so rank/combat testing is not blocked by unfinished economy tuning. The placeholder is not intended final balance.
 
 The rank system itself is fixed:
 

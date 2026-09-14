@@ -47,7 +47,8 @@ func select_best_equipment_purchase(hero_state, listings: Array, available_gold_
 		var current_item_power: float = 0.0 if current_item == null else current_item.get_item_power()
 		var candidate_item_power: float = item_instance.get_item_power()
 		var is_belt: bool = item_instance.definition.equipment_slot == "belt"
-		if not is_belt and current_item != null and not passes_shop_itempower_threshold(current_item_power, candidate_item_power, traits):
+		var comparison_mode: String = str(equipment_evaluation.get("comparison_mode", "power"))
+		if not is_belt and comparison_mode != "hand_configuration" and current_item != null and not passes_shop_itempower_threshold(current_item_power, candidate_item_power, traits):
 			continue
 
 		var power_gain: float = float(equipment_evaluation.get("candidate_power", 0.0)) - float(equipment_evaluation.get("current_power", 0.0))
@@ -65,7 +66,7 @@ func select_best_equipment_purchase(hero_state, listings: Array, available_gold_
 			"power_gain": power_gain,
 			"current_power": float(equipment_evaluation.get("current_power", 0.0)),
 			"candidate_power": float(equipment_evaluation.get("candidate_power", 0.0)),
-			"comparison_mode": str(equipment_evaluation.get("comparison_mode", "power")),
+			"comparison_mode": comparison_mode,
 			"candidate_belt_healing": float(equipment_evaluation.get("candidate_belt_healing", 0.0)),
 			"candidate_belt_health": float(equipment_evaluation.get("candidate_belt_health", 0.0)),
 		}

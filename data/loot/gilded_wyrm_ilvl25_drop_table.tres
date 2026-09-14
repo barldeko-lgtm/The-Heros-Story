@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=17 format=3]
+[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/equipment_drop_table_definition.gd" id="1_drop_table"]
 [ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet.tres" id="c0"]
@@ -16,11 +16,17 @@
 [ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets_rare.tres" id="r2"]
 [ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards_rare.tres" id="r3"]
 [ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons_rare.tres" id="r4"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sword.tres" id="c5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_shield.tres" id="c6"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sword_uncommon.tres" id="u5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_shield_uncommon.tres" id="u6"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sword_rare.tres" id="r5"]
+[ext_resource type="Resource" path="res://data/items/visual_families/gilded_wyrm/gilded_wyrm_shield_rare.tres" id="r6"]
 
 [resource]
 script = ExtResource("1_drop_table")
 drop_chance = 0.05
 item_level = 25
-common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4")])
-uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4")])
-rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4")])
+common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5"), ExtResource("c6")])
+uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6")])
+rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4"), ExtResource("r5"), ExtResource("r6")])

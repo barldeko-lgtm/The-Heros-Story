@@ -2,7 +2,8 @@ class_name SimulationSnapshot
 extends RefCounted
 
 ## Explicit, JSON-safe graph snapshot for mutable Simulation state.
-const VERSION := 5
+const VERSION := 6
+const LEGACY_VERSION_5 := 5
 const LEGACY_VERSION_4 := 4
 const LEGACY_VERSION_3 := 3
 const LEGACY_VERSION_1 := 1
@@ -63,6 +64,8 @@ static func restore(data: Dictionary) -> Dictionary:
 		prepared = _migrate_v3_to_v4(prepared)
 	if int(prepared.get("version", 0)) == LEGACY_VERSION_4:
 		prepared = _migrate_v4_to_v5(prepared)
+	if int(prepared.get("version", 0)) == LEGACY_VERSION_5:
+		prepared = _migrate_v5_to_v6(prepared)
 	elif int(prepared.get("version", 0)) != VERSION:
 		return {"simulation": null, "error": "unsupported snapshot version"}
 	var validation_error := _validate_snapshot(prepared)
@@ -171,7 +174,7 @@ static func _migrate_v3_to_v4(data: Dictionary) -> Dictionary:
 
 static func _migrate_v4_to_v5(data: Dictionary) -> Dictionary:
 	var migrated: Dictionary = data.duplicate(true)
-	migrated["version"] = VERSION
+	migrated["version"] = LEGACY_VERSION_5
 	if not migrated.get("nodes") is Array:
 		return migrated
 	for node in migrated.nodes:
@@ -189,6 +192,21 @@ static func _migrate_v4_to_v5(data: Dictionary) -> Dictionary:
 			properties["hero_class_id"] = "warrior"
 			properties["shield_bash_skill_level"] = 0
 			properties["crippling_blows_skill_level"] = 0
+	return migrated
+
+static func _migrate_v5_to_v6(data: Dictionary) -> Dictionary:
+	var migrated: Dictionary = data.duplicate(true)
+	migrated["version"] = VERSION
+	if not migrated.get("nodes") is Array:
+		return migrated
+	var start_tick: int = 0
+	for node in migrated.nodes:
+		if node is Dictionary and node.get("script", "") == "res://scripts/core/world_clock.gd" and node.get("properties") is Dictionary:
+			start_tick = int(node.properties.get("world_tick", 0))
+	for node in migrated.nodes:
+		if node is Dictionary and node.get("script", "") == "res://scripts/core/simulation.gd" and node.get("properties") is Dictionary:
+			if not node.properties.has("downtime_ticks"):
+				node.properties["downtime_ticks"] = {"dictionary": [["dead", 0], ["no_quest", 0], ["start_tick", start_tick]]}
 	return migrated
 
 static func _encode(value, context: Dictionary, depth: int):

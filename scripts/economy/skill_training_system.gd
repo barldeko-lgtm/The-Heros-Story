@@ -6,21 +6,28 @@ const HeroProgressionScript = preload("res://scripts/hero/hero_progression.gd")
 const SKILL_ORDER := [
 	HeroProgressionScript.POWER_STRIKE_SKILL_ID,
 	HeroProgressionScript.BATTLE_GUARD_SKILL_ID,
+	HeroProgressionScript.SHIELD_BASH_SKILL_ID,
+	HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID,
 ]
 const SKILL_LEVEL_PROPERTIES := {
 	HeroProgressionScript.POWER_STRIKE_SKILL_ID: "power_strike_skill_level",
 	HeroProgressionScript.BATTLE_GUARD_SKILL_ID: "battle_guard_skill_level",
+	HeroProgressionScript.SHIELD_BASH_SKILL_ID: "shield_bash_skill_level",
+	HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID: "crippling_blows_skill_level",
 }
 const RANK_COSTS := [0, 0, 500, 650, 850, 1100, 1450, 1900, 2450, 3200, 4150]
+const SPECIALIZATION_PLACEHOLDER_RANK_COST: int = 1
 
 var hero_progression
 
 func _init(initial_hero_progression = null) -> void:
 	hero_progression = initial_hero_progression if initial_hero_progression != null else HeroProgressionScript.new()
 
-func get_rank_cost(skill_level: int) -> int:
+func get_rank_cost(skill_level: int, skill_id: String = "") -> int:
 	if skill_level < 2 or skill_level >= RANK_COSTS.size():
 		return -1
+	if skill_id in [HeroProgressionScript.SHIELD_BASH_SKILL_ID, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID]:
+		return SPECIALIZATION_PLACEHOLDER_RANK_COST
 	return int(RANK_COSTS[skill_level])
 
 func get_available_upgrades(hero_state) -> Array[Dictionary]:
@@ -37,7 +44,7 @@ func get_available_upgrades(hero_state) -> Array[Dictionary]:
 		if current_level >= max_unlocked_level or current_level >= HeroProgressionScript.MAX_SKILL_LEVEL:
 			continue
 		var next_level: int = current_level + 1
-		var price: int = get_rank_cost(next_level)
+		var price: int = get_rank_cost(next_level, skill_id)
 		if price < 0:
 			continue
 		result.append({

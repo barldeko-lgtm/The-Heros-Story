@@ -31,6 +31,7 @@ func run_test() -> void:
 	var simulation = simulation_script.new(1)
 	var starting_hp: float = simulation.base_combat_stats.max_hp
 	var starting_attack: float = simulation.base_combat_stats.attack
+	var starting_weapon_attack: float = simulation.hero_state.equipment.get_item("weapon").get_stat_bonus("attack")
 	var starting_block: float = simulation.base_combat_stats.block
 	simulation.receive_item_reward(rare_items["weapon"], 1, 10)
 	simulation.receive_item_reward(rare_items["shield"], 2, 10)
@@ -41,7 +42,7 @@ func run_test() -> void:
 	assert(sword_instance.get_base_stat("attack") == 17.0 and sword_instance.get_base_stat("attack_speed") == 0.10, "Compressed ilvl 10 sword must preserve the former ilvl 20 inherent stats.")
 	assert(shield_instance.get_base_stat("block") == 17.0, "Compressed ilvl 10 shield must preserve the former ilvl 20 Block.")
 	assert(is_equal_approx(simulation.base_combat_stats.max_hp, starting_hp + sword_instance.get_stat_bonus("max_hp") + shield_instance.get_stat_bonus("max_hp")), "Generated Health must resolve from both items.")
-	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack + sword_instance.get_stat_bonus("attack") + shield_instance.get_stat_bonus("attack")), "Generated sword Damage must resolve through Equipment.")
+	assert(is_equal_approx(simulation.base_combat_stats.attack, starting_attack - starting_weapon_attack + sword_instance.get_stat_bonus("attack") + shield_instance.get_stat_bonus("attack")), "Generated sword Damage must replace the starting weapon contribution through Equipment.")
 	assert(is_equal_approx(simulation.base_combat_stats.block, starting_block + sword_instance.get_stat_bonus("block") + shield_instance.get_stat_bonus("block")), "Generated shield Block must resolve through Equipment.")
 
 	var main_ui_script: Script = load("res://scripts/ui/main_ui.gd")

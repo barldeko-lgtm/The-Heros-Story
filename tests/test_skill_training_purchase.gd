@@ -6,6 +6,7 @@ const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
 func _init() -> void:
 	test_rank_availability_and_costs()
+	test_specialization_rank_training_placeholder_cost()
 	test_affordable_training_uses_one_tick_before_shop()
 	test_unaffordable_training_adds_no_extra_tick()
 	test_multiple_available_upgrades_take_separate_ticks()
@@ -26,12 +27,50 @@ func test_rank_availability_and_costs() -> void:
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.POWER_STRIKE_SKILL_ID, 15) == 3, "Power Strike Skill Level 3 must unlock at hero level 15.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.BATTLE_GUARD_SKILL_ID, 14) == 1, "Battle Guard must still cap at Skill Level 1 before hero level 15.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.BATTLE_GUARD_SKILL_ID, 15) == 2, "Battle Guard Skill Level 2 must unlock at hero level 15.")
+	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.SHIELD_BASH_SKILL_ID, 29) == 1, "Shield Bash must stay at Skill Level 1 before hero level 30.")
+	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.SHIELD_BASH_SKILL_ID, 30) == 2, "Shield Bash Skill Level 2 must unlock at hero level 30.")
+	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID, 30) == 2, "Crippling Blows Skill Level 2 must unlock at hero level 30.")
+	assert(training.get_rank_cost(2, HeroProgressionScript.SHIELD_BASH_SKILL_ID) == 1, "Shield Bash higher ranks must use the temporary 1-Gold placeholder cost.")
+	assert(training.get_rank_cost(10, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID) == 1, "Crippling Blows higher ranks must use the temporary 1-Gold placeholder cost.")
 	simulation.hero_state.level = 15
 	simulation.hero_state.power_strike_skill_level = 2
 	simulation.hero_state.battle_guard_skill_level = 1
 	simulation.hero_state.gold = 500
 	var affordable_candidate: Dictionary = training.select_affordable_upgrade(simulation.hero_state)
 	assert(str(affordable_candidate.get("skill_id", "")) == HeroProgressionScript.BATTLE_GUARD_SKILL_ID, "If the earlier skill's next rank is too expensive, an affordable later skill upgrade must still be selected.")
+
+func test_specialization_rank_training_placeholder_cost() -> void:
+	var protector = SimulationScript.new(9320)
+	protector.hero_state.level = 30
+	protector.hero_state.first_specialization_id = "protector"
+	protector.hero_state.hero_class_id = "protector"
+	protector.hero_state.shield_bash_skill_level = 1
+	protector.hero_state.gold = 1
+	protector.hero_state.loop_state = HeroState.SHOPPING
+	protector.shop_system.listings = []
+	var protector_base_power: float = protector.power_calculator.calculate(protector.base_combat_stats)
+	var protector_power_before: float = protector.get_hero_power()
+	var protector_result: Dictionary = protector.advance_shop_purchase_tick(20)
+	assert(str(protector_result.get("skill_id", "")) == HeroProgressionScript.SHIELD_BASH_SKILL_ID, "Protector must train the unlocked Shield Bash rank through the ordinary shopping flow.")
+	assert(protector.hero_state.shield_bash_skill_level == 2 and protector.hero_state.gold == 0, "Shield Bash SL2 must spend exactly the temporary 1 Gold placeholder price.")
+	assert(is_equal_approx(protector.get_hero_power() - protector_power_before, protector_base_power * 0.0065), "Purchasing Shield Bash SL2 must immediately add the approved +0.65% base HeroPower rank valuation.")
+	assert(protector.debug_log.get_text().contains("Удар щитом") and protector.debug_log.get_text().contains("1 золота"), "Shield Bash training must use the specialization skill name and placeholder price in the economy log.")
+
+	var slayer = SimulationScript.new(9321)
+	slayer.hero_state.level = 30
+	slayer.hero_state.first_specialization_id = "slayer"
+	slayer.hero_state.hero_class_id = "slayer"
+	slayer.hero_state.crippling_blows_skill_level = 1
+	slayer.hero_state.gold = 1
+	slayer.hero_state.loop_state = HeroState.SHOPPING
+	slayer.shop_system.listings = []
+	var slayer_base_power: float = slayer.power_calculator.calculate(slayer.base_combat_stats)
+	var slayer_power_before: float = slayer.get_hero_power()
+	var slayer_result: Dictionary = slayer.advance_shop_purchase_tick(21)
+	assert(str(slayer_result.get("skill_id", "")) == HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID, "Slayer must train the unlocked Crippling Blows rank through the ordinary shopping flow.")
+	assert(slayer.hero_state.crippling_blows_skill_level == 2 and slayer.hero_state.gold == 0, "Crippling Blows SL2 must spend exactly the temporary 1 Gold placeholder price.")
+	assert(is_equal_approx(slayer.get_hero_power() - slayer_power_before, slayer_base_power * 0.0045), "Purchasing Crippling Blows SL2 must immediately add the approved +0.45% base HeroPower rank valuation.")
+	assert(slayer.debug_log.get_text().contains("Калечащие удары") and slayer.debug_log.get_text().contains("1 золота"), "Crippling Blows training must use the specialization skill name and placeholder price in the economy log.")
 
 func test_affordable_training_uses_one_tick_before_shop() -> void:
 	var simulation = SimulationScript.new(9302)

@@ -22,6 +22,7 @@ If the task is about...
 - **world ticks / pause / speed** → `scripts/core/world_clock.gd`;
 - **hero mutable state** → `scripts/hero/hero_state.gd`;
 - **XP / level-up / primary-point spending** → `scripts/hero/hero_progression.gd`;
+- **first specialization quest / trainer / class-grant flow** → `scripts/hero/specialization_quest_system.gd`, `data/quests/specialization/`, coordinated by `scripts/core/simulation.gd`;
 - **personality axes / trait activation** → `scripts/hero/trait_development.gd` and `scripts/hero/hero_traits.gd`;
 - **resolved hero stats** → `scripts/hero/stat_resolver.gd`;
 - **combat rules** → `scripts/combat/`;
@@ -132,7 +133,7 @@ Shared stateless death-recovery rules used by QuestRunner, DungeonRunner and Eve
 
 ### `scripts/hero/hero_progression.gd`
 
-Owns XP application, level-up growth, pending primary-point creation/spending, current automatic base-Warrior ability unlocks, and the automatic Level-25 SL1 grant for an **actually granted** Protector/Slayer specialization. A chosen target alone does not unlock the specialization skill. It does not buy later ranks or execute combat abilities.
+Owns XP application, level-up growth, pending primary-point creation/spending, current automatic base-Warrior ability unlocks, post-specialization +1 CON/DEX level growth, Specialization Quest completion catch-up/free-point application, and the automatic Level-25 SL1 grant for an **actually granted** Protector/Slayer specialization. A chosen target alone does not unlock the specialization skill. It does not buy later ranks or execute combat abilities.
 
 ### `scripts/hero/hero_traits.gd`
 
@@ -148,9 +149,13 @@ Owns the four personality axes, clamping, activation/hysteresis transitions, map
 
 Owns the first Protector / Slayer decision rules: live attribute-profile weights, removal of actually earned mandatory Warrior STR, frozen Level-20 Brave/Cautious input, the 180-tick decision window, one-time `+0.15` divine influence, deterministic tie-break, permanent target selection in `first_specialization_id`, and the explicit later grant operation that changes `hero_class_id` only after the specialization trial is completed. `HeroState` stores the mutable/snapshotted decision facts; UI only presents this calculation and sends the approved influence request through `Simulation`.
 
+### `scripts/hero/specialization_quest_system.gd` / `data/quests/specialization/*.tres`
+
+Owns the small rule/query layer for the selected first Specialization Quest: path-to-definition lookup, whether trainer acceptance is needed, whether the persistent specialization-dungeon objective is complete, and identification of specialization dungeon instances. Immutable quest definitions own the selected dungeon plus Gold/free-point/equipment reward data. `Simulation` coordinates the trainer tick, authored dungeon spawn, quest turn-in, reward routing and class grant; this system does not execute combat/travel or replace ordinary `QuestRunner`.
+
 ### `scripts/hero/equipment.gd`
 
-Owns currently equipped `ItemInstance` objects by equipment slot and exposes the equipped loadout to stat calculation/evaluation.
+Owns currently equipped `ItemInstance` objects by equipment slot, including legal one-handed/shield versus two-handed hand configurations, and exposes the equipped loadout to stat calculation/evaluation. Two-handed replacement returns every displaced hand item so reward/shop callers can preserve their normal inventory/sale rules.
 
 It does not decide whether an item is better.
 
@@ -173,7 +178,7 @@ Consumes hero progression/attributes/equipment/effects. It does not resolve hit 
 
 Evaluates a candidate item without mutating live equipment.
 
-Ordinary equipment uses virtual replacement plus the shared resulting HeroPower. Rings are compared against both ring positions. Belt uses its separate potion-utility rule rather than pretending potion capacity is ordinary Power.
+Ordinary equipment uses virtual replacement plus the shared resulting HeroPower. Rings are compared against both ring positions. Two-handed candidates virtually replace the complete hand configuration. Class-restricted items are rejected for the wrong granted class. Belt uses its separate potion-utility rule rather than pretending potion capacity is ordinary Power.
 
 ## Combat
 
@@ -187,7 +192,7 @@ Factory/entry helper that creates one live duel from already resolved hero and m
 
 ### `scripts/combat/combat_session.gd`
 
-Owns one active duel: internal combat time, live HP, attack opportunities, hit/crit/block resolution calls, fight-local Rage, current autonomous Warrior/first-specialization abilities and final victory/defeat state. It also owns the fight-local Shield Bash enemy-turn freeze and Crippling Blows Attack-Speed interval/progress adjustment.
+Owns one active duel: internal combat time, live HP, attack opportunities, hit/crit/block resolution calls, fight-local Rage, current autonomous Warrior/first-specialization abilities and final victory/defeat state. It also owns the SL1–SL10 combat scaling for Shield Bash / Crippling Blows, their total-WIS specialization scaling, the fight-local Shield Bash enemy-turn freeze and Crippling Blows Attack-Speed interval/progress adjustment.
 
 It must not own quest cancellation, resurrection, shop logic, dungeon progression or God-system state.
 
@@ -205,7 +210,7 @@ Shared combat formulas for hit chance, Armor/Resistance mitigation and Block beh
 
 ### `scripts/combat/power_calculator.gd`
 
-Single shared Power calculation for `CombatStats`, including an optional incoming-damage context for defensive valuation, plus the current permanent Warrior skill/WIS HeroPower valuation layered through `calculate_hero(...)`.
+Single shared Power calculation for `CombatStats`, including an optional incoming-damage context for defensive valuation, plus the current permanent base-Warrior and first-specialization skill/WIS HeroPower valuation layered through `calculate_hero(...)`.
 
 Do not create a separate HeroPower or MobPower formula elsewhere. Hero, mob and virtual equipment comparisons ultimately rely on this shared calculator; current MobPower evaluates defense against Physical Warrior offense, ItemPower keeps the generic mixed incoming reference, and HeroPower/virtual hero loadouts use the Hero-aware path.
 
@@ -345,7 +350,7 @@ Immutable ordinary-dungeon content: placement constraints, ordinary encounter de
 
 Dungeon-only mob resources may live beside the dungeon definition; they are not ordinary quest mobs.
 
-`data/dungeons/mid_region/` contains the three current Arden ordinary dungeons and their dungeon-only enemies. `data/dungeons/specialization/` is intentionally separate from the ordinary-dungeon loader.
+`data/dungeons/mid_region/` contains the three current Arden ordinary dungeons and their dungeon-only enemies. `data/dungeons/specialization/` contains the two mirrored first-specialization trials and remains intentionally separate from the ordinary-dungeon loader; the selected one is inserted explicitly by the Specialization Quest flow.
 
 ### `scripts/model/runtime/dungeon_instance.gd`
 
@@ -353,7 +358,7 @@ Mutable runtime state for one placed dungeon: target/reservation, discovery/comp
 
 ### `scripts/dungeons/dungeon_system.gd`
 
-Owns ordinary-dungeon definition loading, deterministic map placement/reservations, discovery/knowledge state, Divine Vision reveal support and cleanup after completion.
+Owns ordinary-dungeon definition loading, deterministic map placement/reservations, discovery/knowledge state, Divine Vision reveal support, cleanup after completion, and the explicit placement/reservation entry point used to spawn an already-known authored specialization dungeon without adding it to ordinary population/discovery.
 
 It does not execute the expedition or combat.
 
@@ -379,7 +384,7 @@ Developer/debug narration for dungeon combat/progression facts only.
 
 ### `scripts/model/definitions/item_definition.gd`
 
-Immutable visual/base item identity: id, name, slot, icon/overlay references and authored definition-level fields.
+Immutable visual/base item identity: id, name, slot, icon/overlay references and authored definition-level fields, including current weapon handedness, optional required class and modifier-budget multiplier.
 
 Concrete generated combat values belong to `ItemInstance`, not to the visual definition.
 
@@ -408,7 +413,7 @@ Central conversion costs from modifier budget to supported secondary stats.
 
 ### `scripts/items/item_generator.gd`
 
-Creates a concrete `ItemInstance` from a visual definition, source Item Level/rarity and seeded RNG. Resolves inherent stats, affixes and generated values from shared balance data.
+Creates a concrete `ItemInstance` from a visual definition, source Item Level/rarity and seeded RNG. Resolves inherent stats, affixes and generated values from shared balance data. The current two-handed slice derives its heavier weapon base from the central sword table, removes the one-handed speed bonus and applies the definition's ×2 modifier-budget multiplier without changing rarity affix count.
 
 It does not decide whether the hero should equip the result.
 
@@ -422,6 +427,7 @@ Calculates generated ItemPower through the same shared `PowerCalculator` using t
 - `data/items/visual_families/rustchain_initiate/` — current low-tier armor/weapon/shield family.
 - `data/items/visual_families/ironwake_sentinel/` — current middle-tier core family.
 - `data/items/visual_families/ironward_vanguard/` — current higher-tier core/accessory definitions plus the current accessory resources used across compressed tiers.
+- `data/items/visual_families/crimson_thornplate/` / `gilded_wyrm/` — Arden standard equipment plus the current Slayer ilvl 20 Rare / ilvl 25 Common-Uncommon-Rare two-handed definitions; two-handers currently reuse sword icons as placeholders.
 - `assets/items/icons/` — inventory/equipment icons.
 - `assets/items/overlays/` — paper-doll overlays.
 - `assets/shaders/item_quality_outline.gdshader` — rarity-outline shader used by current item presentation.
@@ -463,7 +469,7 @@ Owns automatic liquidation of eligible unequipped ordinary equipment from Invent
 
 ### `scripts/economy/skill_training_system.gd`
 
-Owns current purchased Skill Level progression. It reads hero-level rank availability from `HeroProgression`, applies the shared rank-cost table, selects an affordable unlocked next rank in deterministic base-skill order, spends Gold and advances that learned rank. It does not advance world time, buy equipment, calculate dungeon-preparation reserve, or write narrative text.
+Owns current purchased Skill Level progression for both base Warrior and first-specialization skills. It reads hero-level rank availability from `HeroProgression`, applies the base-rank cost table or the current 1-Gold specialization placeholder cost, selects an affordable unlocked next rank in deterministic skill order, spends Gold and advances that learned rank. It does not grant Skill Level 1, advance world time, buy equipment, calculate dungeon-preparation reserve, or write narrative text.
 
 ### `scripts/model/definitions/shop_definition.gd`
 ### `scripts/model/definitions/shop_stock_band_definition.gd`
@@ -673,7 +679,7 @@ Exact pixel sizes, offsets and temporary visual placeholders belong in the UI co
 - `data/quests/` — current Дорнвальд ordinary quest templates; the root-directory loader intentionally ignores the `mid_city/` subdirectory.
 - `data/mobs/mid_region/` — current Арден / Mid Region ordinary mob cards, numbered `0101`–`0126`.
 - `data/quests/mid_city/` — current Арден ordinary quest templates, numbered `0101`–`0126`; Simulation switches to this directory/local placement context on physical arrival in Арден.
-- `data/quests/specialization/` — future specialization-quest scaffold.
+- `data/quests/specialization/` — live Protector/Slayer Specialization Quest definitions used by the Warrior Trainer flow.
 
 Quest code discovers content by directory rather than hard-coding every individual quest filename.
 
@@ -685,7 +691,7 @@ Quest code discovers content by directory rather than hard-coding every individu
 
 - `data/dungeons/starting_region/` — current ordinary Starting Region dungeons and their dungeon-only mobs.
 - `data/dungeons/mid_region/` — current three Arden / Mid Region ordinary dungeons and their dungeon-only mobs.
-- `data/dungeons/specialization/` — authored mirrored Protector/Slayer 2+boss specialization trials (approximately 340/420 Power); intentionally not part of the ordinary loader until the Specialization Quest spawn/activation flow is connected.
+- `data/dungeons/specialization/` — live mirrored Protector/Slayer 2+boss specialization trials (approximately 340/420 Power); intentionally excluded from the ordinary loader and spawned/known only through the selected Specialization Quest.
 
 ### Items/economy
 

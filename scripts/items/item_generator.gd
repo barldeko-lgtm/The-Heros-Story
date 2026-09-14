@@ -32,6 +32,9 @@ func generate(item_definition: Resource, item_level: int, rng, rarity_override: 
 		return null
 	var rarity: int = rarity_override if rarity_override >= 0 else int(item_definition.quality)
 	var base_stats: Dictionary = create_base_stats(item_definition.equipment_slot, item_level, rng)
+	if item_definition.equipment_slot == "weapon" and item_definition.has_method("is_two_handed_weapon") and item_definition.is_two_handed_weapon():
+		base_stats["attack"] = float(base_stats.get("attack", 0.0)) * 2.0
+		base_stats["attack_speed"] = 0.0
 	if base_stats.is_empty():
 		return null
 
@@ -40,6 +43,8 @@ func generate(item_definition: Resource, item_level: int, rng, rarity_override: 
 	var nominal_total_budget: float = 0.0 if is_belt else budget_table.get_nominal_total_budget(item_level, rarity)
 	if nominal_total_budget < 0.0:
 		return null
+	if not is_belt:
+		nominal_total_budget *= maxf(0.0, float(item_definition.modifier_budget_multiplier))
 	var rolled_total_budget: float = 0.0
 	if affix_count > 0:
 		var roll_factor: float = lerpf(budget_table.total_budget_roll_min, budget_table.total_budget_roll_max, rng.randf())

@@ -20,7 +20,7 @@ func _init() -> void:
 	for definition in ordinary_system.get_definitions():
 		assert(definition.id != ProtectorDungeon.id and definition.id != SlayerDungeon.id, "Specialization dungeons must remain outside the ordinary automatic population until explicitly connected.")
 
-	print("PASS: Protector/Slayer specialization dungeons are mirrored 2+boss trials at approximately 340/420 Power and are not auto-populated yet.")
+	print("PASS: Protector/Slayer specialization dungeons are mirrored 2+boss trials at approximately 340/420 Power and remain excluded from ordinary auto-population.")
 	quit()
 
 func assert_same_combat_profile(left, right, label: String) -> void:

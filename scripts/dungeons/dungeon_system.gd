@@ -63,6 +63,36 @@ func reload_from_directories(dungeon_directories: Array = DEFAULT_ORDINARY_DUNGE
 func get_definitions() -> Array:
 	return dungeon_definitions.duplicate()
 
+func spawn_known_authored_dungeon(definition: Resource, distance_origin: Vector2i, rng: RandomNumberGenerator, discovery_source: String = "authored_quest"):
+	if definition == null or hex_map == null or world_state == null or rng == null:
+		return null
+	for instance in dungeon_instances:
+		if instance != null and instance.definition != null and instance.definition.id == definition.id:
+			return instance
+	var valid_centers: Array[Vector2i] = placement_finder.find_valid_centers(
+		hex_map,
+		world_state,
+		definition.region_id,
+		distance_origin,
+		definition.placement_distance_hex_min,
+		definition.placement_distance_hex_max,
+		definition.placement_allowed_terrain_ids,
+		definition.placement_allowed_tags,
+		definition.placement_forbidden_tags,
+		definition.placement_radius
+	)
+	if valid_centers.is_empty():
+		return null
+	var target_hex: Vector2i = valid_centers[rng.randi_range(0, valid_centers.size() - 1)]
+	var activity_id := "dungeon:%s" % definition.id
+	var footprint: Array[Vector2i] = hex_map.get_cells_within_radius(target_hex, definition.placement_radius)
+	if not world_state.reserve_activity(activity_id, footprint):
+		return null
+	var instance = DungeonInstanceScript.new(definition, target_hex, activity_id)
+	instance.discover(discovery_source)
+	dungeon_instances.append(instance)
+	return instance
+
 func configure_map_placement(initial_hex_map, initial_world_state, distance_origin_by_region: Dictionary, initial_rng: RandomNumberGenerator) -> bool:
 	hex_map = initial_hex_map
 	world_state = initial_world_state

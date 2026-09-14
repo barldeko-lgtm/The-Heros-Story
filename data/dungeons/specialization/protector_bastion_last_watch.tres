@@ -11,6 +11,7 @@ display_name = "Бастион Последнего Дозора"
 region_id = "mid_region"
 placement_distance_hex_min = 4
 placement_distance_hex_max = 6
+placement_allowed_terrain_ids = PackedStringArray("plains")
 placement_forbidden_tags = PackedStringArray("city")
 placement_radius = 0
 ordinary_mob_definition = ExtResource("2_ordinary_mob")

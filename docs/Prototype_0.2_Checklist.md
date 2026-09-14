@@ -1,6 +1,6 @@
 # The Hero’s Story — Prototype 0.2 Checklist
 
-Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-11**.
+Last verified against the current repository, `current-state.md`, and the Prototype 0.2 Scope: **2026-09-14**.
 
 This is a **player/development progress map**, not a design or architecture document. It is intentionally concise and does not track every tuning change, test, file, or implementation detail.
 
@@ -24,7 +24,7 @@ Status:
 - ✅ Player-facing allocation of pending primary-attribute points works without directly commanding hero behaviour.
 - 🟡 Progression mechanics work and the current XP curve is tuned to 500 XP at Level 1, early +500/+600/+700 steps, +800 requirement growth through Level 13, then +1000 per level; full compressed level 1–30 balance/soak validation is still incomplete.
 - ✅ Four-question starting background assigns exactly three attribute points and mild hidden personality biases through selected answers.
-- ⬜ Post-specialization attribute growth/reward rules.
+- ✅ First-specialization completion grants +5 pending player points, retroactive +1 CON/DEX for each already-reached level above 20, and future +1 CON per Protector level / +1 DEX per Slayer level.
 - ⬜ Long-run Prototype 0.2 balance/soak validation.
 
 ## 2. Combat and Warrior abilities
@@ -36,9 +36,9 @@ Status:
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - ✅ Fire/Cold/Lightning ordinary attacks are live in Arden; elemental hits keep Accuracy/Dodge/Crit/Block, ignore Armor, use direct-percentage matching Resistance (75% cap), and receive the current ×1.20 elemental-offense weight inside shared Power. The Warrior now also has an innate 10% Fire / Cold / Lightning Resistance baseline before equipment.
-- ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick with the approved price curve.
-- ✅ Protector Shield Bash SL1 is live at Level 25; later ranks/HeroPower valuation remain pending.
-- ✅ Slayer Crippling Blows SL1 is live at Level 25; later ranks/HeroPower valuation remain pending.
+- ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick; base Warrior skills use the working price curve and first-specialization ranks currently use a 1-Gold placeholder price.
+- ✅ Protector Shield Bash is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation and purchasable higher ranks on the five-level cadence; final rank pricing remains pending.
+- ✅ Slayer Crippling Blows is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation and purchasable higher ranks on the five-level cadence; final rank pricing remains pending.
 
 ## 3. Personality and autonomous behaviour
 
@@ -108,7 +108,7 @@ Status:
 - 🟡 Inventory is a functional first pass: 36 retained equipment items plus separate persistent potion counts/visual bottle slots.
 - ✅ Ordinary quest equipment `QuestLoot` flow is live: mob drops wait until objective completion, all found equipment is reviewed in one dedicated tick, unreviewed equipment is lost on quest death, and reviewed items become normal permanent Equipment/Inventory before the return trip.
 - ⬜ General trophy/backpack carried-loot handling beyond ordinary equipment.
-- ⬜ Full legal two-handed / hand-configuration content and evaluation.
+- 🟡 Two-handed hand-configuration/evaluation is live for the current Slayer ilvl 20/25 slice, including shield displacement, class restriction and doubled modifier budget; broader weapon/content coverage remains incomplete.
 - 🟡 Six visual armor families now exist across the two-city progression; later Arden families still lack some weapon/shield/accessory and overlay breadth, so the full equipment-content target is not complete.
 
 ## 9. Economy, shops, Belt and healing potions
@@ -162,16 +162,16 @@ Status:
 
 - ✅ Protector / Slayer preference from live player-shaped attributes, excluding actually earned mandatory Warrior STR; the Level-20 Brave/Cautious state is frozen as a separate +0.05 influence.
 - ✅ Level-20 180-tick decision window, always-visible Level-1 debug preview, separate pending-choice `+`, one-time 80-Energy `+0.15` divine influence and deterministic timeout/tie resolution are live; the result now fixes only the target while the hero remains Warrior until the specialization trial is completed.
-- ✅ First specialization combat skills SL1 are implemented with specialization-first Rage priority, WIS scaling and their current stun/Attack-Speed-control rules; they unlock at Level 25 only after the specialization has actually been granted.
-- 🟡 Dedicated Protector/Slayer specialization dungeon **content** is authored as mirrored 2+boss 340/420-Power trials, but Specialization Quest spawning/activation, relic/objective completion and runtime hookup are still missing.
-- ⬜ Specialization granting, immediate/profile progression rewards and later specialization-directed attribute growth.
-- ⬜ Later Shield Bash / Crippling Blows Skill Level progression, shop training and HeroPower valuation.
+- ✅ First specialization combat skills are implemented with specialization-first Rage priority, total-WIS scaling, calibrated HeroPower valuation and full SL1–SL10 combat formulas; they still unlock only at SL1 on Level 25 after the specialization has actually been granted.
+- ✅ Dedicated Protector/Slayer Specialization Quests are live: trainer acceptance after an ordinary Arden turn-in creates only the selected known plains trial at 4–6 hexes; the quest remains parallel to ordinary `active_quest`, reuses normal dungeon preparation/retries and returns to the trainer after boss victory.
+- ✅ Trial turn-in grants the selected class, 2000 Gold, +5 pending points, catch-up/future CON-or-DEX specialization growth and Rare ilvl 20 path equipment (Protector sword+shield / Slayer two-hander).
+- 🟡 Shield Bash / Crippling Blows SL1–SL10 combat scaling, HeroPower valuation and later-rank unlock/purchase training are live; only final specialization-rank pricing remains pending (current placeholder: 1 Gold per rank).
 
 ## 14. Save / load / persistence
 
 - ✅ Two independent rolling slots are live: Manual and Autosave; Continue selects the newest valid candidate and Load exposes both slots.
 - ✅ Autosave is live after new-game creation, approximately every 10 real minutes, on normal close, and after an increased completed-dungeon count.
-- 🟡 Major dungeon-completion autosave is live; the later full-specialization milestone autosave remains pending because Specialization Quest completion/rewards are not implemented yet.
+- 🟡 Major dungeon-completion autosave is live; Specialization Quest completion is now implemented but the separate full-specialization milestone autosave is still pending.
 - ✅ The current simulation snapshot preserves the required live graph including progression/personality, equipment/inventory, world/activity state, dungeon/event state, God state, Diary/Log history and deterministic RNG continuation.
 - 🟡 Save/Load/Return controls are live in the current running-game menu; final Menu Screen presentation is still incomplete.
 - 🚫 Offline simulation while the game is closed.
@@ -184,10 +184,10 @@ Status:
 | Ordinary quest templates | 48 (22 + 26) | 48 current approved target (22 + 26) |
 | Handcrafted temporary events | 15 | ~15–20 across both regions |
 | Ordinary dungeons | 5 (2 Dornwald + 3 Arden) | 5 current approved target |
-| First specialization paths | 2 target-selection paths live; class grant pending trial hookup | 2 |
-| Specialization dungeon variants | 2 authored / not spawned yet | 2 |
+| First specialization paths | 2 complete target → trainer quest → class-grant paths live | 2 |
+| Specialization dungeon variants | 2 authored / quest-spawned selected variant | 2 |
 | Base Warrior abilities | 2 + purchasable Skill Levels 2–10 | 2 + purchasable ranks |
-| First-specialization abilities | 2 at SL1 | 2 + later ranks |
+| First-specialization abilities | 2 at SL1 progression; SL1–SL10 combat/Power formulas live | 2 + later purchasable ranks |
 | Personality axes | 4 live | 4 |
 | Visual armor families | 6 | at least 5–6 |
 | Item rarity | White / Green / Blue + dungeon Purple | White / Green / Blue / Purple |
@@ -204,6 +204,6 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival, Arden ordinary quests, economy and dungeons, especially local temporary events and remaining equipment-content breadth.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Complete remaining later equipment-content breadth; Mid Region ordinary dungeons and potion progression through Level 25 are already live.
-6. Connect the already-authored Protector / Slayer specialization dungeons to their Specialization Quests, grant the class only on successful trial completion, then add profile growth, later specialization-skill ranks and their HeroPower valuation.
+6. Extend the now-live first-specialization flow with later specialization-skill unlock/purchase training and pricing, the full-specialization autosave/Diary milestone and broader/final specialization weapon art/content; SL1–SL10 combat formulas and HeroPower valuation are already live.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
-8. Extend persistence only for still-missing future systems such as specialization, then run long-duration Prototype 0.2 validation through the intended compressed level range.
+8. Extend persistence only when a still-missing future system actually requires new mutable state, then run long-duration Prototype 0.2 validation through the intended compressed level range.

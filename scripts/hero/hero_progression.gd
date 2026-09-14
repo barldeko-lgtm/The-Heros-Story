@@ -22,10 +22,14 @@ const LATE_EXPERIENCE_START_LEVEL: int = 13
 const POWER_STRIKE_UNLOCK_LEVEL: int = 5
 const BATTLE_GUARD_UNLOCK_LEVEL: int = 10
 const FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL: int = 25
+const FIRST_SPECIALIZATION_BASE_LEVEL: int = 20
+const SPECIALIZATION_QUEST_FREE_ATTRIBUTE_POINTS: int = 5
 const MAX_SKILL_LEVEL: int = 10
 const SKILL_LEVEL_INTERVAL: int = 5
 const POWER_STRIKE_SKILL_ID := "power_strike"
 const BATTLE_GUARD_SKILL_ID := "battle_guard"
+const SHIELD_BASH_SKILL_ID := "shield_bash"
+const CRIPPLING_BLOWS_SKILL_ID := "crippling_blows"
 const PRIMARY_ATTRIBUTE_IDS := ["strength", "dexterity", "intelligence", "constitution", "wisdom"]
 
 func get_experience_required_for_next_level(current_level: int) -> int:
@@ -59,11 +63,39 @@ func apply_level_up(hero_state) -> void:
 	hero_state.experience_to_next_level = get_experience_required_for_next_level(hero_state.level)
 	hero_state.strength += FIXED_WARRIOR_STRENGTH_PER_LEVEL
 	hero_state.pending_primary_attribute_points += PLAYER_PRIMARY_ATTRIBUTE_POINTS_PER_LEVEL
+	if hero_state.hero_class_id == "protector":
+		hero_state.constitution += 1
+	elif hero_state.hero_class_id == "slayer":
+		hero_state.dexterity += 1
 	if hero_state.level >= POWER_STRIKE_UNLOCK_LEVEL and hero_state.power_strike_skill_level == 0:
 		hero_state.power_strike_skill_level = 1
 	if hero_state.level >= BATTLE_GUARD_UNLOCK_LEVEL and hero_state.battle_guard_skill_level == 0:
 		hero_state.battle_guard_skill_level = 1
 	ensure_first_specialization_skill(hero_state)
+
+func apply_first_specialization_completion_growth(hero_state, free_attribute_points: int = SPECIALIZATION_QUEST_FREE_ATTRIBUTE_POINTS) -> Dictionary:
+	var result := {
+		"catchup_points": 0,
+		"attribute_id": "",
+		"free_points": 0,
+	}
+	if hero_state == null:
+		return result
+	var catchup_points: int = maxi(0, hero_state.level - FIRST_SPECIALIZATION_BASE_LEVEL)
+	match hero_state.hero_class_id:
+		"protector":
+			hero_state.constitution += catchup_points
+			result["attribute_id"] = "constitution"
+		"slayer":
+			hero_state.dexterity += catchup_points
+			result["attribute_id"] = "dexterity"
+		_:
+			return result
+	var granted_free_points: int = maxi(0, free_attribute_points)
+	hero_state.pending_primary_attribute_points += granted_free_points
+	result["catchup_points"] = catchup_points
+	result["free_points"] = granted_free_points
+	return result
 
 func ensure_first_specialization_skill(hero_state) -> bool:
 	if hero_state == null or hero_state.level < FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL:
@@ -87,6 +119,8 @@ func get_skill_unlock_level(skill_id: String) -> int:
 	match skill_id:
 		POWER_STRIKE_SKILL_ID: return POWER_STRIKE_UNLOCK_LEVEL
 		BATTLE_GUARD_SKILL_ID: return BATTLE_GUARD_UNLOCK_LEVEL
+		SHIELD_BASH_SKILL_ID: return FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL
+		CRIPPLING_BLOWS_SKILL_ID: return FIRST_SPECIALIZATION_SKILL_UNLOCK_LEVEL
 	return -1
 
 func allocate_primary_attribute(hero_state, attribute_id: String) -> bool:

@@ -13,6 +13,10 @@ const POWER_STRIKE_LEARNED_POWER_BONUS: float = 0.04
 const POWER_STRIKE_RANK_POWER_BONUS: float = 0.0075
 const BATTLE_GUARD_LEARNED_POWER_BONUS: float = 0.045
 const BATTLE_GUARD_RANK_POWER_BONUS: float = 0.004
+const SHIELD_BASH_LEARNED_POWER_BONUS: float = 0.05
+const SHIELD_BASH_RANK_POWER_BONUS: float = 0.0065
+const CRIPPLING_BLOWS_LEARNED_POWER_BONUS: float = 0.05
+const CRIPPLING_BLOWS_RANK_POWER_BONUS: float = 0.0045
 const WISDOM_POWER_BONUS_PER_POINT: float = 0.002
 const BASE_WISDOM: int = 5
 
@@ -75,12 +79,20 @@ func get_hero_ability_power_multiplier(hero_state) -> float:
 	var power_bonus: float = 0.0
 	var power_strike_skill_level: int = maxi(0, int(hero_state.power_strike_skill_level))
 	var battle_guard_skill_level: int = maxi(0, int(hero_state.battle_guard_skill_level))
+	var shield_bash_skill_level: int = maxi(0, int(hero_state.shield_bash_skill_level))
+	var crippling_blows_skill_level: int = maxi(0, int(hero_state.crippling_blows_skill_level))
 	if power_strike_skill_level > 0:
 		power_bonus += POWER_STRIKE_LEARNED_POWER_BONUS
 		power_bonus += float(power_strike_skill_level - 1) * POWER_STRIKE_RANK_POWER_BONUS
 	if battle_guard_skill_level > 0:
 		power_bonus += BATTLE_GUARD_LEARNED_POWER_BONUS
 		power_bonus += float(battle_guard_skill_level - 1) * BATTLE_GUARD_RANK_POWER_BONUS
+	if shield_bash_skill_level > 0:
+		power_bonus += SHIELD_BASH_LEARNED_POWER_BONUS
+		power_bonus += float(shield_bash_skill_level - 1) * SHIELD_BASH_RANK_POWER_BONUS
+	elif crippling_blows_skill_level > 0:
+		power_bonus += CRIPPLING_BLOWS_LEARNED_POWER_BONUS
+		power_bonus += float(crippling_blows_skill_level - 1) * CRIPPLING_BLOWS_RANK_POWER_BONUS
 	if power_strike_skill_level > 0 and battle_guard_skill_level > 0:
 		power_bonus += float(maxi(0, int(hero_state.wisdom) - BASE_WISDOM)) * WISDOM_POWER_BONUS_PER_POINT
 	return 1.0 + power_bonus

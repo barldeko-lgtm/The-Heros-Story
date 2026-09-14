@@ -33,7 +33,25 @@ func _init() -> void:
 	hero.battle_guard_skill_level = 0
 	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.0475, "The provisional WIS HeroPower bonus must not apply until both base Warrior abilities are learned.")
 
-	print("PASS: HeroPower applies approved Power Strike, Battle Guard, Skill Level, and provisional WIS valuation through the shared PowerCalculator.")
+	hero.wisdom = 5
+	hero.power_strike_skill_level = 5
+	hero.battle_guard_skill_level = 4
+	hero.shield_bash_skill_level = 1
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.177, "Shield Bash SL1 must add the calibrated 5.0% HeroPower on top of the current base-skill valuation.")
+	hero.shield_bash_skill_level = 5
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.203, "Shield Bash SL5 must add 7.6% HeroPower from specialization skill valuation.")
+	hero.shield_bash_skill_level = 10
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.2355, "Shield Bash SL10 must add 10.85% HeroPower from specialization skill valuation.")
+
+	hero.shield_bash_skill_level = 0
+	hero.crippling_blows_skill_level = 1
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.177, "Crippling Blows SL1 must add the calibrated 5.0% HeroPower on top of the current base-skill valuation.")
+	hero.crippling_blows_skill_level = 5
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.195, "Crippling Blows SL5 must add 6.8% HeroPower from specialization skill valuation.")
+	hero.crippling_blows_skill_level = 10
+	assert_ratio(calculator.calculate_hero(stats, hero), base_power, 1.2175, "Crippling Blows SL10 must add 9.05% HeroPower from specialization skill valuation.")
+
+	print("PASS: HeroPower applies approved base Warrior and first-specialization skill valuations through the shared PowerCalculator.")
 	quit()
 
 func make_stats():
