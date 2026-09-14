@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=26 format=3]
+[gd_resource type="Resource" script_class="EquipmentDropTableDefinition" load_steps=41 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/equipment_drop_table_definition.gd" id="1_drop_table"]
 [ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_helmet.tres" id="c0"]
@@ -25,11 +25,26 @@
 [ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_greatsword.tres" id="c7"]
 [ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_greatsword_uncommon.tres" id="u7"]
 [ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_greatsword_rare.tres" id="r7"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_pendant.tres" id="c8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_earrings.tres" id="c9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_1.tres" id="c10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_2.tres" id="c11"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_belt.tres" id="c12"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_pendant_uncommon.tres" id="u8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_earrings_uncommon.tres" id="u9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_1_uncommon.tres" id="u10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_2_uncommon.tres" id="u11"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_belt_uncommon.tres" id="u12"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_pendant_rare.tres" id="r8"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_earrings_rare.tres" id="r9"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_1_rare.tres" id="r10"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_2_rare.tres" id="r11"]
+[ext_resource type="Resource" path="res://data/items/visual_families/crimson_thornplate/crimson_thornplate_belt_rare.tres" id="r12"]
 
 [resource]
 script = ExtResource("1_drop_table")
 drop_chance = 0.05
 item_level = 20
-common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5"), ExtResource("c6"), ExtResource("c7")])
-uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7")])
-rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4"), ExtResource("r5"), ExtResource("r6"), ExtResource("r7")])
+common_items = Array[Resource]([ExtResource("c0"), ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c8"), ExtResource("c9"), ExtResource("c10"), ExtResource("c11"), ExtResource("c12"), ExtResource("c5"), ExtResource("c6"), ExtResource("c7")])
+uncommon_items = Array[Resource]([ExtResource("u0"), ExtResource("u1"), ExtResource("u2"), ExtResource("u3"), ExtResource("u4"), ExtResource("u8"), ExtResource("u9"), ExtResource("u10"), ExtResource("u11"), ExtResource("u12"), ExtResource("u5"), ExtResource("u6"), ExtResource("u7")])
+rare_items = Array[Resource]([ExtResource("r0"), ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4"), ExtResource("r8"), ExtResource("r9"), ExtResource("r10"), ExtResource("r11"), ExtResource("r12"), ExtResource("r5"), ExtResource("r6"), ExtResource("r7")])

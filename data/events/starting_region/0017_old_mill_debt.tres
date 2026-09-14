@@ -1,0 +1,112 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "repair_without_full_pay"
+driver_attribute = "strength"
+next_stage_id = "str_repair"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "play_both_sides"
+driver_attribute = "wisdom"
+next_stage_id = "wis_terms"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "work_for_a_full_share"
+driver_attribute = "constitution"
+next_stage_id = "con_work"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "У старой мельницы герой застаёт спор между хозяином и человеком, пришедшим за просроченным долгом. Мельничное колесо заклинило после недавнего паводка, зерно лежит без помола, и хозяин уверяет, что расплатится, если мельница снова заработает. Кредитор уже грозит забрать мешки прямо сейчас."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_WIS"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_repair"]
+script = ExtResource("2_stage")
+id = "str_repair"
+stage_type = 0
+duration_ticks = 4
+scene_text = "Четыре тика герой вместе с мельником вытаскивает заклинившие брёвна, поднимает тяжёлую ось и снова запускает колесо. Когда мельник предлагает ему часть первых заработанных денег, герой оставляет себе только двадцать золотых на дорогу, чтобы большая часть выручки пошла на долг."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_wis_terms"]
+script = ExtResource("2_stage")
+id = "wis_terms"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой два тика разбирает долговую расписку и быстро замечает, что обе стороны читают её только в свою пользу. Он по отдельности убеждает мельника, что спас его от конфискации, а кредитора — что именно он заставил должника согласиться на новый срок. Оба считают полезным отдельно отблагодарить посредника."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_con_work"]
+script = ExtResource("2_stage")
+id = "con_work"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Герой не спорит о бумагах и три тика помогает перетаскивать мешки, запускать жернова и готовить первую партию муки к продаже. Когда работа закончена, он требует полный заранее оговорённый процент с выручки, не соглашаясь уменьшить свою долю ради чужого долга."
+next_stage_id = "con_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой помог запустить старую мельницу и позволил хозяину направить почти всю первую выручку на просроченный долг. Себе он оставил только двадцать золотых на дорогу."
+outcome_id = "mill_repaired_generously"
+gold_reward = 20
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Разобравшись в спорной расписке, герой сумел представить себя незаменимым посредником для обеих сторон. Мельник и кредитор заплатили ему отдельно, и спор принёс девяносто золотых."
+outcome_id = "mill_debt_manipulated"
+gold_reward = 90
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой помог мельнику запустить работу и подготовить первую продажу, но не стал отказываться от своей полной доли ради чужих долгов. За тяжёлую работу он получил сто золотых."
+outcome_id = "mill_work_paid_in_full"
+gold_reward = 100
+
+[resource]
+script = ExtResource("1_event")
+id = "old_mill_debt"
+display_name = "Долг у старой мельницы"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_terrain_ids = PackedStringArray("plains")
+placement_forbidden_tags = PackedStringArray("city", "road")
+placement_radius = 1
+activation_radius = 1
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_repair"), SubResource("Stage_wis_terms"), SubResource("Stage_con_work"), SubResource("Stage_str_end"), SubResource("Stage_wis_end"), SubResource("Stage_con_end")])

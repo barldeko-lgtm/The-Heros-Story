@@ -7,6 +7,7 @@ const CRIMSON_SOURCE_PATH := "res://data/loot/crimson_thornplate_ilvl20_drop_tab
 const GILDED_SOURCE_PATH := "res://data/loot/gilded_wyrm_ilvl25_drop_table.tres"
 
 const AZURE_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"]
+const CRIMSON_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"]
 const ARMOR_WEAPON_SHIELD_SLOTS := ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"]
 
 class ScriptedRng:
@@ -37,8 +38,8 @@ func _init() -> void:
 
 	assert(transition_source != null and transition_source.item_level == 10, "The five Arden transition mobs must keep the existing ilvl 10 source.")
 	assert_drop_source(azure_source, 15, AZURE_SLOTS)
-	assert_drop_source(crimson_source, 20, ARMOR_WEAPON_SHIELD_SLOTS, 1)
-	assert_drop_source(gilded_source, 25, ARMOR_WEAPON_SHIELD_SLOTS, 1)
+	assert_drop_source(crimson_source, 20, CRIMSON_SLOTS, 1)
+	assert_drop_source(gilded_source, 25, AZURE_SLOTS, 1)
 
 	var mob_files: Array[String] = []
 	for file_name in DirAccess.get_files_at(MID_MOB_DIRECTORY):

@@ -12,7 +12,7 @@ func _init() -> void:
 	test_medicine_content(medicine)
 	test_quarry_content(quarry)
 	var simulation = SimulationScript.new(1141501, null, [], true)
-	assert(simulation.event_system.event_definitions.size() == 15, "Starting Region event pool must contain exactly fifteen authored events after events 14-15 are added.")
+	assert(simulation.event_system.event_definitions.size() == 20, "Starting Region event pool must contain exactly twenty authored events after the balancing batch is added.")
 	print("PASS: Events 14-15 use underrepresented CON/STR and Generous/Cautious content with real secondary map objectives.")
 	quit()
 
@@ -102,4 +102,3 @@ func assert_reward(definition, stage_id: String, gold_reward: int) -> void:
 	var stage = definition.get_stage(stage_id)
 	assert(stage != null and stage.stage_type == 4)
 	assert(stage.gold_reward == gold_reward and not stage.diary_text.is_empty())
-

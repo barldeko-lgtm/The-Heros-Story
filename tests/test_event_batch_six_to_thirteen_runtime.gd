@@ -92,7 +92,7 @@ func test_casket_greedy_and_generous_outcomes() -> void:
 	var greedy_gold: int = greedy.hero_state.gold
 	advance_until_complete_without_combat(greedy, 30)
 	assert(greedy.hero_state.gold == greedy_gold + 120)
-	assert(greedy.hero_state.personality_axis_values["morality"] == 5)
+	assert(greedy.hero_state.personality_axis_values["greed"] == -35)
 	assert(greedy_setup["event"].outcome_id == "casket_money_taken")
 
 	var generous_setup = create_started_event(10802, EVENT_8)
@@ -105,7 +105,7 @@ func test_casket_greedy_and_generous_outcomes() -> void:
 	advance_until_complete_without_combat(generous, 30)
 	assert(generous.hero_state.gold == gold_before)
 	assert(count_items(generous, 5, 1) == items_before + 1)
-	assert(generous.hero_state.personality_axis_values["curiosity"] == 5)
+	assert(generous.hero_state.personality_axis_values["greed"] == 35)
 	assert(generous_setup["event"].outcome_id == "cargo_returned_generously")
 
 func test_fugitive_dex_fight_and_wis_devious_surrender() -> void:
@@ -120,7 +120,7 @@ func test_fugitive_dex_fight_and_wis_devious_surrender() -> void:
 	assert(fight.hero_state.experience == fight_xp + 145)
 	advance_until_complete_without_combat(fight, 10)
 	assert(fight.hero_state.gold == fight_gold + 60)
-	assert(fight.hero_state.personality_axis_values["curiosity"] == 5)
+	assert(fight.hero_state.personality_axis_values["morality"] == -5)
 	assert(fight_setup["event"].outcome_id == "fugitive_defeated")
 
 	var devious_setup = create_started_event(10902, EVENT_9)
@@ -212,11 +212,12 @@ func test_boundary_noble_and_devious_outcomes() -> void:
 	var noble_setup = create_started_event(11301, EVENT_13)
 	var noble = noble_setup["simulation"]
 	reset_personality(noble)
-	noble.trait_development.apply_movement(noble.hero_state, "morality", 35)
+	noble.trait_development.apply_movement(noble.hero_state, "morality", 40)
 	set_primary_winner(noble, "wisdom", false)
 	var noble_gold: int = noble.hero_state.gold
 	advance_until_complete_without_combat(noble, 30)
 	assert(noble.hero_state.personality_axis_values["morality"] == 40)
+	assert(noble.hero_state.personality_axis_values["curiosity"] == -5)
 	assert(noble.trait_development.has_trait(noble.hero_state, "noble"))
 	assert(noble.hero_state.gold == noble_gold + 70)
 	assert(noble_setup["event"].outcome_id == "boundary_fairly_restored")
@@ -230,7 +231,7 @@ func test_boundary_noble_and_devious_outcomes() -> void:
 	advance_until_complete_without_combat(devious, 30)
 	assert(devious.hero_state.gold == devious_gold + 100)
 	assert(devious.hero_state.personality_axis_values["morality"] == -40)
-	assert(devious.hero_state.personality_axis_values["courage"] == 5)
+	assert(devious.hero_state.personality_axis_values["courage"] == -5)
 	assert(devious_setup["event"].outcome_id == "boundary_profitable_settlement")
 
 func create_started_event(seed: int, event_path: String) -> Dictionary:

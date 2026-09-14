@@ -18,8 +18,8 @@ script = ExtResource("3_option")
 id = "strip_his_weapon"
 driver_attribute = "dexterity"
 next_stage_id = "dex_disarm"
-personality_axis_id = "curiosity"
-personality_delta = 5
+personality_axis_id = "morality"
+personality_delta = -5
 
 [sub_resource type="Resource" id="Option_WIS"]
 script = ExtResource("3_option")

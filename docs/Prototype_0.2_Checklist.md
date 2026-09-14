@@ -79,11 +79,11 @@ Status:
 ## 6. Temporary events
 
 - ✅ Generic event system, map placement/reservations, population lifecycle, authored stages, shared combat, rewards, personality effects and travel detours are live.
-- ✅ Current Starting Region events: **15** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`, `Лекарство до заката`, `Сигнал из старого карьера`.
+- ✅ Current Starting Region events: **20** — `У старой вырубки`, `Дым над старой башней`, `Чужие силки`, `Мёртвый гонец`, `Огр у старого кургана`, `Костёр без хозяина`, `Волки на пастбище`, `Чужая шкатулка`, `Беглый наёмник`, `Раненый разведчик`, `Камни старого старателя`, `Зверь в сломанной клетке`, `Спор у межевого камня`, `Лекарство до заката`, `Сигнал из старого карьера`, `Рассыпавшаяся выручка`, `Долг у старой мельницы`, `Ливень над обозом`, `Посылка лесничему`, `Тайник старого охотника`.
 - ✅ Current population pacing supports the tick-100 opening, shared rotations, up to five simultaneous events and per-definition engagement cooldowns.
 - ✅ Events can suspend/resume an ordinary quest route or either leg of an ordinary-dungeon trip, and can use their own real travel objective.
-- 🟡 Current event framework is functional and the Starting Region now has a complete first-city batch of 15 authored events, but Mid Region event content and the final two-region distribution remain incomplete.
-- 🟡 The current total is **15 handcrafted events**, all in the Starting Region; Mid Region event content and the final two-region distribution are still missing.
+- 🟡 Current event framework is functional and the Starting Region now has a complete first-city batch of 20 authored events, including five new non-combat stories aimed specifically at Devious / Generous / Greedy / Conservative development, but Mid Region event content remains incomplete.
+- 🟡 The current total is **20 handcrafted events**, all in the Starting Region. Mid Region event content is still missing, and the former ~15–20 combined two-region target must be revised upward during that content pass rather than removing approved Starting Region events.
 
 ## 7. Ordinary dungeons
 
@@ -182,7 +182,7 @@ Status:
 |---|---:|---:|
 | Normal cities | 2 on map / 1 complete + Arden quests/economy/dungeons context | 2 complete |
 | Ordinary quest templates | 48 (22 + 26) | 48 current approved target (22 + 26) |
-| Handcrafted temporary events | 15 | ~15–20 across both regions |
+| Handcrafted temporary events | 20 Starting Region / 0 Mid Region | 20 Starting Region + Mid Region batch (final combined count TBD) |
 | Ordinary dungeons | 5 (2 Dornwald + 3 Arden) | 5 current approved target |
 | First specialization paths | 2 complete target → trainer quest → class-grant paths live | 2 |
 | Specialization dungeon variants | 2 authored / quest-spawned selected variant | 2 |
@@ -202,7 +202,7 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 1. Continue expanding the already broad early-game Hero Diary coverage with the remaining progression sources and more phrase variation.
 2. Replace the debug all-in-one questionnaire layout with separate question pages when needed and later implement the currently locked non-Warrior classes outside the present Warrior slice.
 3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival, Arden ordinary quests, economy and dungeons, especially local temporary events and remaining equipment-content breadth.
-4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
+4. Add Mid Region temporary-event content and set the revised final two-region total; the previous ~15–20 combined target is already filled by the approved 20-event Starting Region pool.
 5. Complete remaining later equipment-content breadth; Mid Region ordinary dungeons and potion progression through Level 25 are already live.
 6. Extend the now-live first-specialization flow with broader/final specialization weapon art/content; the gained-specialization autosave/Diary milestone, SL1–SL10 combat formulas, HeroPower valuation, rank unlock/purchase training and pricing are already live.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.

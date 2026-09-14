@@ -8,9 +8,9 @@ It is intentionally a runtime snapshot rather than a second design specification
 
 The current build already contains a working autonomous early-game loop across quests, travel, events, economy, equipment, dungeons, personality, God influence, and a developer UI.
 
-The most recent gameplay-content work expanded the Starting Region temporary-event population to **fifteen handcrafted events**. The pool now mixes combat and non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, real event-owned secondary-map detours, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
+The most recent gameplay-content work expanded the Starting Region temporary-event population to **twenty handcrafted events**. Events 16–20 are deliberately non-combat personality-balancing stories: all fifteen of their Formative options move only toward the previously underrepresented **Devious / Generous / Greedy / Conservative** sides, and two of those five events use real event-owned secondary-map travel. The full pool also retains combat/non-combat stories, stat-driven Formative branches, broad use of all eight established trait sides, partial-HP preparation fights, Gold and ilvl 5/10 equipment rewards, and branch-specific successful-event Diary passages. The **Hero Diary / Chronicle** first slice also remains live: ordinary quest selection/completion are recorded, and combat death now records the real killer plus the owning quest, dungeon, or temporary event. Further diary work is content/coverage expansion rather than a redesign of the simulation.
 
-The larger Prototype 0.2 world is still incomplete: the Starting Region contains fifteen handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision and Specialization Quest slice is live**, including quest-driven specialization-dungeon spawning, class granting, immediate/catch-up profile growth, first two-handed Slayer equipment, full SL1–SL10 combat formulas for the first specialization skills, their HeroPower valuation and purchasable later specialization ranks with the current approved Gold price ladder; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
+The larger Prototype 0.2 world is still incomplete: the Starting Region contains twenty handcrafted temporary events while Mid Region event content is still absent; the first **Protector / Slayer decision and Specialization Quest slice is live**, including quest-driven specialization-dungeon spawning, class granting, immediate/catch-up profile growth, first two-handed Slayer equipment, full SL1–SL10 combat formulas for the first specialization skills, their HeroPower valuation and purchasable later specialization ranks with the current approved Gold price ladder; two-slot save/load is connected. Ordinary dungeons are live in both normal regions: two around Dornwald and three around Arden. Arden also has a live ordinary-quest slice: **26 ordinary Mid Region mob definitions numbered 0101–0126** on a deliberately non-linear approximately **300→900 Power** curve plus **26 matching local quest templates** on its own Mid Region **3/3/3/3** rotating board.
 
 ## Start menu and persistent saves
 
@@ -379,7 +379,7 @@ fight lost
 
 ## Temporary events
 
-The generic temporary-event system is live and currently has **15 authored Starting Region events**:
+The generic temporary-event system is live and currently has **20 authored Starting Region events**:
 
 1. `У старой вырубки`;
 2. `Дым над старой башней`;
@@ -395,7 +395,12 @@ The generic temporary-event system is live and currently has **15 authored Start
 12. `Зверь в сломанной клетке`;
 13. `Спор у межевого камня`;
 14. `Лекарство до заката`;
-15. `Сигнал из старого карьера`.
+15. `Сигнал из старого карьера`;
+16. `Рассыпавшаяся выручка`;
+17. `Долг у старой мельницы`;
+18. `Ливень над обозом`;
+19. `Посылка лесничему`;
+20. `Тайник старого охотника`.
 
 The current event framework supports:
 
@@ -416,6 +421,10 @@ The fifth event, `Огр у старого кургана`, is placed on Startin
 Events 6–13 deliberately reuse the same framework rather than adding more event-only systems. They cover forest/plains/hill/road placements and combine STR/DEX/CON/WIS Formative openings with Curious, Conservative, Noble, Devious, Greedy, Generous, Brave and Cautious Expressive behaviour. Some outcomes are entirely social or exploratory, some make combat optional, and some always lead to shared `CombatSession` fights against existing ordinary mobs. Their authored material rewards range from 25–120 Gold and guaranteed Common/Uncommon ilvl 5/10 items; successful END stages contain their own branch-specific Diary text. Several branches intentionally prove same-event personality activation: a Formative `±5` movement can establish Greedy, Conservative, Cautious, Noble or Curious at the `±40` threshold and the later Expressive stage sees it immediately.
 
 Events 14–15 were added specifically to balance underused event inputs. Before them, CON appeared in 8 of 13 event Formative openings and STR in 9, while DEX/WIS each appeared in 11; Cautious and Generous each had only one event that read them Expressively. Both new events therefore use a two-way **CON / STR** Formative comparison. `Лекарство до заката` moves to a real off-road secondary camp and gives Generous a costly selfless outcome; its CON action can move Greed `+5` and establish Generous for that same destination check. `Сигнал из старого карьера` travels to a real farther hill objective and then returns to the encounter point; its CON action moves Courage `−5`, and established Cautious spends extra time to rescue the trapped worker without fighting the Cave Lizard, while a non-Cautious hero fights the normal shared enemy instead. After these additions, event-level Formative participation is CON 10 / STR 11 / DEX 11 / WIS 11, while Cautious and Generous each appear in two event concepts.
+
+Events 16–20 are a deliberate **non-combat personality-balancing batch**. Every one uses a three-option Formative STR / DEX / CON / WIS subset and none contains a COMBAT stage. Across their fifteen Formative options, movement is exclusively toward the four previously underrepresented trait sides: **Devious 4 / Generous 4 / Greedy 4 / Conservative 3**, always by the normal 5-point movement. Their authored primary-stat participation is **STR 4 / DEX 4 / CON 4 / WIS 3**, bringing the full twenty-event Starting Region option participation to **STR 15 / DEX 15 / CON 14 / WIS 14**. `Посылка лесничему` travels to a real secondary forest/hill objective and ends there; `Тайник старого охотника` travels to a real secondary cache and then physically returns to the encounter hex before the interrupted route resumes. The other three stories remain local to their encounter footprint.
+
+A follow-up semantic balance pass also corrected five older Formative movements whose original trait labels did not match the authored action closely enough. The current full twenty-event Formative distribution is **Brave 11 / Cautious 11 / Noble 6 / Devious 5 / Generous 6 / Greedy 6 / Curious 7 / Conservative 5**. The Courage pair is intentionally exact at 11/11 because established Brave/Cautious affects the first-specialization decision, while the remaining six sides are now much closer without changing event outcomes, rewards, combat structure, or Expressive checks.
 
 Current shared population rules:
 
@@ -440,7 +449,7 @@ If an event kills the hero while travelling toward a dungeon, that trip is cance
 
 If an event kills the hero while returning from an already completed dungeon, the dungeon remains completed and its granted completion rewards remain permanent; the interrupted return runtime is cleared and no new dungeon failed-attempt memory or retry-Power penalty is created.
 
-The final Prototype 0.2 target of roughly 15–20 handcrafted events across both regions remains incomplete; the current Starting Region pool contains 15 events; Mid Region content and the final two-region distribution remain incomplete.
+The Starting Region now deliberately contains **20 handcrafted events**. Mid Region event content is still missing. The earlier approximately 15–20-event total across both regions is therefore no longer a usable combined-content target after the approved Starting Region balancing expansion; the final two-region total must be reset during the Mid Region content pass rather than deleting approved Dornwald events merely to preserve the older count.
 
 ## Ordinary dungeons
 

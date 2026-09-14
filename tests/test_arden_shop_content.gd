@@ -8,8 +8,8 @@ const BAND_PATHS := [
 ]
 const EXPECTED_BANDS := [
 	{"item_level": 15, "white_listings": 6, "slots": ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"], "white_price": 1350, "uncommon_price": 4050},
-	{"item_level": 20, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"], "white_price": 2300, "uncommon_price": 6900},
-	{"item_level": 25, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "weapon", "shield"], "white_price": 3600, "uncommon_price": 10800},
+	{"item_level": 20, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"], "white_price": 2300, "uncommon_price": 6900},
+	{"item_level": 25, "white_listings": 5, "slots": ["helmet", "chest", "gloves", "pants", "boots", "necklace", "earrings", "ring_1", "ring_2", "belt", "weapon", "shield"], "white_price": 3600, "uncommon_price": 10800},
 ]
 const EXPECTED_DEFINITIONS := [
 	{"path": "res://data/items/visual_families/azure_dawnplate/azure_dawnplate_helmet.tres", "id": "azure_dawnplate_helmet", "name": "Шлем Лазурной Зари", "slot": "helmet", "overlay": true},
@@ -29,6 +29,11 @@ const EXPECTED_DEFINITIONS := [
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_gauntlets.tres", "id": "crimson_thornplate_gauntlets", "name": "Рукавицы Багрового Шипа", "slot": "gloves", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_legguards.tres", "id": "crimson_thornplate_legguards", "name": "Поножи Багрового Шипа", "slot": "pants", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sabatons.tres", "id": "crimson_thornplate_sabatons", "name": "Сабатоны Багрового Шипа", "slot": "boots", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_1.tres", "id": "crimson_thornplate_signet_ring_1", "name": "Печать Багрового Шипа", "slot": "ring_1", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_signet_ring_2.tres", "id": "crimson_thornplate_signet_ring_2", "name": "Печать Багрового Шипа", "slot": "ring_2", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_belt.tres", "id": "crimson_thornplate_belt", "name": "Пояс Багрового Шипа", "slot": "belt", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_earrings.tres", "id": "crimson_thornplate_earrings", "name": "Серьги Багрового Шипа", "slot": "earrings", "overlay": false},
+	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_pendant.tres", "id": "crimson_thornplate_pendant", "name": "Подвеска Багрового Шипа", "slot": "necklace", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_sword.tres", "id": "crimson_thornplate_sword", "name": "Меч Багрового Шипа", "slot": "weapon", "overlay": false},
 	{"path": "res://data/items/visual_families/crimson_thornplate/crimson_thornplate_shield.tres", "id": "crimson_thornplate_shield", "name": "Щит Багрового Шипа", "slot": "shield", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_helmet.tres", "id": "gilded_wyrm_helmet", "name": "Шлем Златого Дракона", "slot": "helmet", "overlay": false},
@@ -36,6 +41,11 @@ const EXPECTED_DEFINITIONS := [
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_gauntlets.tres", "id": "gilded_wyrm_gauntlets", "name": "Рукавицы Златого Дракона", "slot": "gloves", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_legguards.tres", "id": "gilded_wyrm_legguards", "name": "Поножи Златого Дракона", "slot": "pants", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sabatons.tres", "id": "gilded_wyrm_sabatons", "name": "Сабатоны Златого Дракона", "slot": "boots", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_signet_ring_1.tres", "id": "gilded_wyrm_signet_ring_1", "name": "Печать Златого Дракона", "slot": "ring_1", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_signet_ring_2.tres", "id": "gilded_wyrm_signet_ring_2", "name": "Печать Златого Дракона", "slot": "ring_2", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_belt.tres", "id": "gilded_wyrm_belt", "name": "Пояс Златого Дракона", "slot": "belt", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_earrings.tres", "id": "gilded_wyrm_earrings", "name": "Серьги Златого Дракона", "slot": "earrings", "overlay": false},
+	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_pendant.tres", "id": "gilded_wyrm_pendant", "name": "Подвеска Златого Дракона", "slot": "necklace", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_sword.tres", "id": "gilded_wyrm_sword", "name": "Меч Златого Дракона", "slot": "weapon", "overlay": false},
 	{"path": "res://data/items/visual_families/gilded_wyrm/gilded_wyrm_shield.tres", "id": "gilded_wyrm_shield", "name": "Щит Златого Дракона", "slot": "shield", "overlay": false},
 ]
@@ -81,7 +91,7 @@ func assert_definition_resources() -> void:
 				assert(definition.hero_overlay_texture == null, "Icon-only Arden items must not invent overlays: %s" % resource_path)
 
 func assert_definition_file_sets() -> void:
-	var expected_by_family := {"azure_dawnplate": 36, "crimson_thornplate": 24, "gilded_wyrm": 24}
+	var expected_by_family := {"azure_dawnplate": 36, "crimson_thornplate": 39, "gilded_wyrm": 39}
 	var approved_extra_files := {
 		"crimson_thornplate": [
 			"crimson_thornplate_greatsword.tres",

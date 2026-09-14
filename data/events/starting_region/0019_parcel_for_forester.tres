@@ -1,0 +1,172 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "inflate_delivery_fee"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "take_extra_medicine"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Option_WIS"]
+script = ExtResource("3_option")
+id = "take_only_safe_parcel"
+driver_attribute = "wisdom"
+next_stage_id = "wis_prepare"
+personality_axis_id = "curiosity"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На дороге героя останавливает пожилая травница. Ей нужно передать лесничему в дальнем сторожевом доме запечатанный свёрток с бумагами и небольшой запас лекарств. Сама она идти не может, а случайный посыльный обещал вернуться только через несколько дней."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_WIS")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой легко берёт весь свёрток и заранее решает, что лесничему не обязательно знать настоящую цену доставки. По дороге можно будет рассказать о тяжёлом обходе и назвать гораздо более крупную сумму, будто её просила сама травница."
+next_stage_id = "str_travel"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой замечает ещё один небольшой ящик с лекарствами, который травница собиралась оставить до следующей оказии. Он привязывает его к основному свёртку и два тика переделывает крепления так, чтобы донести всё за один раз, не спрашивая дополнительной платы."
+next_stage_id = "dex_travel"
+
+[sub_resource type="Resource" id="Stage_wis_prepare"]
+script = ExtResource("2_stage")
+id = "wis_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой осматривает груз и отказывается брать лишние стеклянные бутыли, которые легко разбить в лесу. Он два тика тщательно перепаковывает только запечатанный свёрток и самые нужные лекарства, предпочитая гарантированную доставку попытке унести всё сразу."
+next_stage_id = "wis_travel"
+
+[sub_resource type="Resource" id="Stage_str_travel"]
+script = ExtResource("2_stage")
+id = "str_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой несёт свёрток к лесному сторожевому дому."
+next_stage_id = "str_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_travel"]
+script = ExtResource("2_stage")
+id = "dex_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой несёт к лесничему и основной свёрток, и дополнительный ящик лекарств."
+next_stage_id = "dex_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_wis_travel"]
+script = ExtResource("2_stage")
+id = "wis_travel"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой осторожно несёт подготовленный свёрток к сторожевому дому лесничего."
+next_stage_id = "wis_arrival"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_arrival"]
+script = ExtResource("2_stage")
+id = "str_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Лесничий принимает посылку и спрашивает, сколько травница обещала за дорогу. Герой уверенно называет завышенную сумму и описывает путь так, будто едва не потратил на него весь день. Не имея причин спорить, лесничий отсчитывает девяносто золотых."
+next_stage_id = "str_end"
+
+[sub_resource type="Resource" id="Stage_dex_arrival"]
+script = ExtResource("2_stage")
+id = "dex_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Лесничий особенно радуется дополнительным лекарствам, которых не ожидал получить. Герой отказывается от полной платы за второй груз и берёт только двадцать золотых на дорогу, оставляя остальную благодарность травнице."
+next_stage_id = "dex_end"
+
+[sub_resource type="Resource" id="Stage_wis_arrival"]
+script = ExtResource("2_stage")
+id = "wis_arrival"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Свёрток и основные лекарства доходят в целости. Лесничий признаёт, что хрупкий дополнительный груз по такой дороге действительно мог пропасть, и платит герою обычные пятьдесят золотых за надёжную доставку."
+next_stage_id = "wis_end"
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой доставил посылку травницы лесничему, но назвал получателю сильно завышенную цену дороги. Лесничий поверил и заплатил девяносто золотых."
+outcome_id = "forester_parcel_delivered_with_false_fee"
+gold_reward = 90
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой донёс лесничему не только нужный свёрток, но и дополнительный ящик лекарств, который травница не могла отправить сама. За всю дорогу он взял лишь двадцать золотых."
+outcome_id = "forester_parcel_delivered_generously"
+gold_reward = 20
+
+[sub_resource type="Resource" id="Stage_wis_end"]
+script = ExtResource("2_stage")
+id = "wis_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой отказался перегружать дорогу хрупкими лишними бутылями и доставил лесничему только надёжно упакованные бумаги и основные лекарства. За аккуратную доставку он получил пятьдесят золотых."
+outcome_id = "forester_parcel_delivered_safely"
+gold_reward = 50
+
+[resource]
+script = ExtResource("1_event")
+id = "parcel_for_forester"
+display_name = "Посылка лесничему"
+region_id = "starting_region"
+placement_distance_hex_min = 2
+placement_distance_hex_max = 4
+placement_allowed_tags = PackedStringArray("road")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 4
+secondary_target_distance_hex_max = 6
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("forest", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city", "road")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_wis_prepare"), SubResource("Stage_str_travel"), SubResource("Stage_dex_travel"), SubResource("Stage_wis_travel"), SubResource("Stage_str_arrival"), SubResource("Stage_dex_arrival"), SubResource("Stage_wis_arrival"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_wis_end")])

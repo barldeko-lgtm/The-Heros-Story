@@ -1,0 +1,199 @@
+[gd_resource type="Resource" script_class="EventDefinition" load_steps=30 format=3]
+
+[ext_resource type="Script" path="res://scripts/model/definitions/event_definition.gd" id="1_event"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_stage_definition.gd" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/model/definitions/event_option_definition.gd" id="3_option"]
+
+[sub_resource type="Resource" id="Option_STR"]
+script = ExtResource("3_option")
+id = "claim_large_share"
+driver_attribute = "strength"
+next_stage_id = "str_prepare"
+personality_axis_id = "greed"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_DEX"]
+script = ExtResource("3_option")
+id = "keep_unlisted_pouch"
+driver_attribute = "dexterity"
+next_stage_id = "dex_prepare"
+personality_axis_id = "morality"
+personality_delta = -5
+
+[sub_resource type="Resource" id="Option_CON"]
+script = ExtResource("3_option")
+id = "return_everything_without_share"
+driver_attribute = "constitution"
+next_stage_id = "con_prepare"
+personality_axis_id = "greed"
+personality_delta = 5
+
+[sub_resource type="Resource" id="Stage_intro"]
+script = ExtResource("2_stage")
+id = "intro"
+stage_type = 0
+duration_ticks = 1
+scene_text = "На холме герой встречает старого охотника с перевязанной ногой. Тот много лет держал в лесу запас на случай тяжёлой зимы: инструменты, сушёное мясо и несколько кошелей с деньгами. Теперь тайник нужно забрать до дождей, но сам охотник туда уже не дойдёт. Он показывает ориентиры и просит принести запас обратно."
+next_stage_id = "first_decision"
+
+[sub_resource type="Resource" id="Stage_first_decision"]
+script = ExtResource("2_stage")
+id = "first_decision"
+stage_type = 1
+decision_role = 1
+duration_ticks = 1
+selection_rule = "highest_primary_attribute"
+options = Array[Resource]([SubResource("Option_STR"), SubResource("Option_DEX"), SubResource("Option_CON")])
+
+[sub_resource type="Resource" id="Stage_str_prepare"]
+script = ExtResource("2_stage")
+id = "str_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой соглашается принести весь запас, но сразу предупреждает, что за тяжёлую работу возьмёт большую долю найденных денег. Старик не спорит: добраться до тайника сам он всё равно не сможет."
+next_stage_id = "str_travel_out"
+
+[sub_resource type="Resource" id="Stage_dex_prepare"]
+script = ExtResource("2_stage")
+id = "dex_prepare"
+stage_type = 0
+duration_ticks = 1
+scene_text = "Герой внимательно запоминает ориентиры и замечает, что старик сам уже не уверен в точном количестве кошелей. По пути у него появляется мысль: если в тайнике найдётся что-то, о чём хозяин не упомянул, пропажу будет невозможно доказать."
+next_stage_id = "dex_travel_out"
+
+[sub_resource type="Resource" id="Stage_con_prepare"]
+script = ExtResource("2_stage")
+id = "con_prepare"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Герой два тика готовит крепкие ремни и простую волокушу, чтобы забрать запас целиком и не бросить тяжёлые инструменты в лесу. Он заранее говорит охотнику, что платы за возвращение зимнего запаса не потребует."
+next_stage_id = "con_travel_out"
+
+[sub_resource type="Resource" id="Stage_str_travel_out"]
+script = ExtResource("2_stage")
+id = "str_travel_out"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой идёт по ориентирам старого охотника к скрытому лесному тайнику."
+next_stage_id = "str_cache"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_dex_travel_out"]
+script = ExtResource("2_stage")
+id = "dex_travel_out"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой идёт к тайнику, запоминая каждую деталь местности и старые охотничьи метки."
+next_stage_id = "dex_cache"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_con_travel_out"]
+script = ExtResource("2_stage")
+id = "con_travel_out"
+stage_type = 2
+duration_ticks = 1
+scene_text = "С ремнями и волокушей герой отправляется к лесному тайнику старого охотника."
+next_stage_id = "con_cache"
+travel_target = 2
+
+[sub_resource type="Resource" id="Stage_str_cache"]
+script = ExtResource("2_stage")
+id = "str_cache"
+stage_type = 0
+duration_ticks = 2
+scene_text = "Два тика герой откапывает тяжёлый ящик и вытаскивает из укрытия весь зимний запас. Денег оказывается достаточно, чтобы обещанная большая доля составила сто десять золотых. Остальное он связывает и готовит к обратной дороге."
+next_stage_id = "str_return"
+
+[sub_resource type="Resource" id="Stage_dex_cache"]
+script = ExtResource("2_stage")
+id = "dex_cache"
+stage_type = 0
+duration_ticks = 2
+scene_text = "В тайнике герой находит основной ящик и маленький кошель, спрятанный отдельно за камнем. Такой кошель старик не упоминал. Герой прячет его среди своих вещей, а весь известный запас собирает для возвращения хозяину."
+next_stage_id = "dex_return"
+
+[sub_resource type="Resource" id="Stage_con_cache"]
+script = ExtResource("2_stage")
+id = "con_cache"
+stage_type = 0
+duration_ticks = 3
+scene_text = "Три тика герой тщательно собирает всё: деньги, мясо, инструменты и даже тяжёлые железные ловушки. Волокуша выходит неудобной и тяжёлой, но герой не оставляет в лесу ничего из того, что старик копил годами."
+next_stage_id = "con_return"
+
+[sub_resource type="Resource" id="Stage_str_return"]
+script = ExtResource("2_stage")
+id = "str_return"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой возвращает оставшуюся часть зимнего запаса старому охотнику."
+next_stage_id = "str_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_dex_return"]
+script = ExtResource("2_stage")
+id = "dex_return"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой возвращается к охотнику с известной хозяину частью тайника."
+next_stage_id = "dex_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_con_return"]
+script = ExtResource("2_stage")
+id = "con_return"
+stage_type = 2
+duration_ticks = 1
+scene_text = "Герой тяжело тянет весь сохранённый запас обратно к старому охотнику."
+next_stage_id = "con_end"
+travel_target = 1
+
+[sub_resource type="Resource" id="Stage_str_end"]
+script = ExtResource("2_stage")
+id = "str_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой нашёл зимний тайник старого охотника и вернул ему запас, оставив себе заранее оговорённую крупную долю — сто десять золотых."
+outcome_id = "hunter_cache_returned_for_large_share"
+gold_reward = 110
+
+[sub_resource type="Resource" id="Stage_dex_end"]
+script = ExtResource("2_stage")
+id = "dex_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой вернул старому охотнику известный ему зимний запас, но найденный отдельно кошель оставил при себе. В нём оказалось сто золотых."
+outcome_id = "hunter_cache_partly_hidden"
+gold_reward = 100
+
+[sub_resource type="Resource" id="Stage_con_end"]
+script = ExtResource("2_stage")
+id = "con_end"
+stage_type = 4
+duration_ticks = 1
+diary_text = "Герой принёс старому охотнику весь тяжёлый зимний запас до последнего инструмента и отказался брать долю из накоплений. Старик настоял лишь на двадцати золотых на дорожные расходы."
+outcome_id = "hunter_cache_returned_generously"
+gold_reward = 20
+
+[resource]
+script = ExtResource("1_event")
+id = "old_hunters_cache"
+display_name = "Тайник старого охотника"
+region_id = "starting_region"
+placement_distance_hex_min = 3
+placement_distance_hex_max = 5
+placement_allowed_terrain_ids = PackedStringArray("hill")
+placement_forbidden_tags = PackedStringArray("city")
+placement_radius = 1
+activation_radius = 1
+secondary_target_enabled = true
+secondary_target_distance_hex_min = 5
+secondary_target_distance_hex_max = 7
+secondary_target_distance_from_event_hex_min = 2
+secondary_target_distance_from_event_hex_max = 4
+secondary_target_allowed_terrain_ids = PackedStringArray("forest", "hill")
+secondary_target_forbidden_tags = PackedStringArray("city")
+secondary_target_radius = 0
+secondary_target_must_be_farther_from_region_origin = true
+lifetime_ticks = 200
+start_stage_id = "intro"
+stages = Array[Resource]([SubResource("Stage_intro"), SubResource("Stage_first_decision"), SubResource("Stage_str_prepare"), SubResource("Stage_dex_prepare"), SubResource("Stage_con_prepare"), SubResource("Stage_str_travel_out"), SubResource("Stage_dex_travel_out"), SubResource("Stage_con_travel_out"), SubResource("Stage_str_cache"), SubResource("Stage_dex_cache"), SubResource("Stage_con_cache"), SubResource("Stage_str_return"), SubResource("Stage_dex_return"), SubResource("Stage_con_return"), SubResource("Stage_str_end"), SubResource("Stage_dex_end"), SubResource("Stage_con_end")])

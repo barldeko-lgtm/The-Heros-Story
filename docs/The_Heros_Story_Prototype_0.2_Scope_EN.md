@@ -1682,7 +1682,7 @@ The current event population uses one shared rotation cadence rather than allowi
 
 > **first population at world tick 100 → full unengaged population reroll every 200 world ticks: 300 / 500 / 700 / ...**
 
-At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current fifteen authored Starting Region events, a normal full rotation selects **five of the eligible definitions**, not the entire pool; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
+At each shared rotation, every unengaged event from the previous cycle is removed and its reservations are released. `EventSystem` then selects up to five eligible definitions without replacement from the authored pool and places them through the normal seeded placement rules. If fewer than five definitions are currently authored or eligible, the population is correspondingly smaller. With the current twenty authored Starting Region events, a normal full rotation selects **five of the eligible definitions**, not the entire pool; a selected definition that cannot immediately fit remains pending for that cycle under the normal placement rules.
 
 If a selected definition cannot fit because an already-active world activity occupies every valid footprint, that definition remains selected for the current cycle and may appear at the first later valid placement opportunity. The system must not cancel or move an already-active hero objective to force event placement.
 
@@ -1694,9 +1694,7 @@ Prototype 0.2 uses one global early-game warm-up gate for temporary events:
 
 This is a world-pacing rule rather than a hero-level requirement. Its purpose is to let the hero live through an initial stretch of ordinary quests and begin differentiating primary attributes before stat-driven formative events can occur. If no valid free footprint exists for a selected event because an already-active world activity occupies the required area, placement may wait until the first later valid opportunity inside that population cycle; the gate and later rotations must never cancel or displace the hero's current activity merely to force an event onto the map. Ordinary available quest-board offers may be re-placed around an event at their normal refresh boundary, but an already accepted active quest keeps its real target reservation.
 
-Prototype 0.2 content target:
-
-> **approximately 15–20 handcrafted temporary events total across both city regions**
+The original Prototype 0.2 working target was approximately 15–20 handcrafted temporary events total across both city regions. The approved Starting Region personality-balancing expansion has superseded that combined-count target: **Dornwald / Starting Region now deliberately contains 20 authored events by itself**, while Mid Region event content still remains to be authored. The final combined two-region count must therefore be set during the Mid Region content pass rather than deleting approved Starting Region stories to preserve the obsolete earlier total.
 
 A handcrafted temporary event should behave like a small authored RPG situation rather than a one-tick random popup. Different branches may contain different numbers and kinds of stages. A branch may end quickly, continue through another decision, require a temporary detour, enter normal combat, inspect an established trait, or combine several of these before reaching a final outcome.
 
@@ -1928,12 +1926,12 @@ The next eight Starting Region events deliberately expand content breadth using 
 | --- | --- | --- | --- | --- |
 | `ownerless_campfire` / **Костёр без хозяина** | forest, 3–5, off road | STR Courage +5 / DEX Curiosity +5 / WIS Courage −5 | Curious pursues an Experienced Bandit; otherwise Conservative safely leaves or neutral hero checks locally | Curious: Common ilvl10 + 145 XP; Conservative: 40 Gold; neutral: 25 Gold |
 | `wolves_at_pasture` / **Волки на пастбище** | plains, 3–5 | STR Courage +5 / DEX Curiosity +5 / CON Courage −5 | all fight Mature Wolf at 90% / 75% / 80% starting HP; Noble spends +2 ticks helping afterward | 40 Gold base or 75 Gold with Noble, plus normal 120 XP |
-| `strangers_casket` / **Чужая шкатулка** | road, 2–4 | WIS Morality +5 / DEX Curiosity +5 / CON Morality +5 | Greedy takes money; otherwise Generous returns everything and helps; neutral accepts normal payment | Greedy 120 Gold / Generous Green ilvl5 / neutral 60 Gold |
-| `fugitive_mercenary` / **Беглый наёмник** | hill, 4–6 | STR Courage +5 / DEX Curiosity +5 / WIS Morality +5 | Devious secures surrender alive; otherwise fight Experienced Bandit at 100% / 70% / 85% HP | Devious 100 Gold; combat 60 Gold + normal 145 XP |
+| `strangers_casket` / **Чужая шкатулка** | road, 2–4 | WIS Greed +5 toward Generous / DEX Greed −5 toward Greedy / CON Morality +5 | Greedy takes money; otherwise Generous returns everything and helps; neutral accepts normal payment | Greedy 120 Gold / Generous Green ilvl5 / neutral 60 Gold |
+| `fugitive_mercenary` / **Беглый наёмник** | hill, 4–6 | STR Courage +5 / DEX Morality −5 toward Devious / WIS Morality +5 | Devious secures surrender alive; otherwise fight Experienced Bandit at 100% / 70% / 85% HP | Devious 100 Gold; combat 60 Gold + normal 145 XP |
 | `wounded_scout` / **Раненый разведчик** | hill, 4–6 | CON Morality +5 / WIS Courage −5 / DEX Curiosity +5 | without Brave, rescue ends safely; Brave additionally hunts Orc Raider at 100% / 80% / 70% HP | safe 50 Gold; Brave 50 Gold + Common ilvl10 + normal 240 XP |
 | `old_prospectors_stones` / **Камни старого старателя** | hill, 3–5 | STR Greed −5 / WIS Curiosity −5 / DEX Curiosity +5 | Greedy empties cache; otherwise Conservative leaves early; neutral searches moderately | 120 / 50 / 80 Gold respectively |
 | `beast_in_broken_cage` / **Зверь в сломанной клетке** | forest, 4–6 | STR Courage +5 / CON Courage −5 / WIS Curiosity +5 | Bear starts at 80% / 75% / 65%; Cautious adds +2 preparation ticks and reduces that branch by another 10 percentage points | Green ilvl5 + normal 100 XP |
-| `boundary_stone_dispute` / **Спор у межевого камня** | plains, 2–4, off road | WIS Morality +5 / CON Courage −5 / STR Courage +5 | Noble negotiates a fair settlement; otherwise Devious profits from both sides; neutral gives a plain ruling | Noble 70 Gold / Devious 100 Gold / neutral 50 Gold |
+| `boundary_stone_dispute` / **Спор у межевого камня** | plains, 2–4, off road | WIS Curiosity −5 toward Conservative / CON Courage −5 / STR Courage −5 | Noble negotiates a fair settlement; otherwise Devious profits from both sides; neutral gives a plain ruling | Noble 70 Gold / Devious 100 Gold / neutral 50 Gold |
 
 All eight events author complete `scene_text` for their lived stages and branch-specific `diary_text` on every successful END. Formative movement is applied before later Expressive checks, so newly established traits at the `±40` threshold may affect the later stage of the same event exactly as in the earlier approved content.
 
@@ -1945,6 +1943,18 @@ The final two currently authored Starting Region events deliberately emphasize e
 - `signal_from_old_quarry` / **«Сигнал из старого карьера»** begins on hill terrain 3–5 steps from Starting City. Its old-quarry secondary objective is hill terrain 5–7 steps from the city, 2–4 steps from the encounter and strictly farther out. STR prepares for one tick, moves Courage `+5`, reaches the quarry and faces the normal **Cave Lizard** at 100% current HP if no later personality branch intervenes. CON spends two preparation ticks with ropes/braces, moves Courage `−5` toward Cautious, and its heavy barricade wounds the same Cave Lizard to **85% starting current HP** if combat occurs. At the quarry an Expressive Cautious check may spend three extra waiting/luring ticks to create a safe rescue window and avoid combat entirely; otherwise the shared `CombatSession` fight occurs and grants the Cave Lizard's normal XP on victory. Both successful routes rescue the trapped quarry worker, physically travel back to the encounter point, and receive **70 Gold** from the stoneworkers before the interrupted route resumes.
 
 After events 14–15, event-level Formative participation in the Starting Region pool is **CON 10 / STR 11 / DEX 11 / WIS 11**. Cautious and Generous each now participate in two event concepts, bringing their use in line with Brave's two while preserving the more frequently used middle traits for other story roles.
+
+### 15.12. Current Authored Event Batch — Events 16–20
+
+The next five Starting Region stories are an explicit personality-balance pass. They do **not** add more combat to a pool that already contains many fighting events. All five are non-combat, each uses one normal three-option Formative highest-primary comparison, and every authored personality movement in this batch goes only toward one of the previously underrepresented sides: **Devious / Generous / Greedy / Conservative**. All movement remains the normal 5 points.
+
+- `scattered_earnings` / **«Рассыпавшаяся выручка»** is a local road incident. STR demands an outsized finder fee and moves toward Greedy; DEX secretly keeps one pouch and moves toward Devious; CON carefully counts/reseals the money and takes only a fixed safe fee, moving toward Conservative.
+- `old_mill_debt` / **«Долг у старой мельницы»** is a local plains dispute around a broken mill and an overdue debt. STR repairs the mill while leaving most first earnings for the debt and moves toward Generous; WIS manipulates debtor and creditor into each paying the hero and moves toward Devious; CON works for a full promised share and moves toward Greedy.
+- `rain_over_caravan` / **«Ливень над обозом»** is a local forest salvage problem. DEX saves only safely accessible valuable crates and moves toward Conservative; WIS gives low-value but useful supplies to local workers and moves toward Generous; CON salvages almost everything for a negotiated share and moves toward Greedy.
+- `parcel_for_forester` / **«Посылка лесничему»** begins on a road and owns a real farther forest/hill secondary objective. STR inflates the delivery fee and moves toward Devious; DEX carries extra medicine without demanding extra payment and moves toward Generous; WIS deliberately refuses unsafe excess fragile cargo and moves toward Conservative. The event ends at the real secondary location, after which the interrupted route resumes from the hero's new hex.
+- `old_hunters_cache` / **«Тайник старого охотника»** begins on a hill and owns a real farther forest/hill cache. STR claims a large agreed share and moves toward Greedy; DEX hides an unlisted money pouch and moves toward Devious; CON returns the complete heavy winter stock without taking a share and moves toward Generous. Every branch physically travels to the cache and then returns to the encounter hex before the interrupted route resumes.
+
+Across these fifteen new Formative options the intended movement distribution is exactly **Devious 4 / Generous 4 / Greedy 4 / Conservative 3**. Their primary-stat participation is **STR 4 / DEX 4 / CON 4 / WIS 3**, bringing the full twenty-event Starting Region authored-option participation to **STR 15 / DEX 15 / CON 14 / WIS 14**. Exactly two of these five events own secondary-map objectives and none contains a COMBAT stage.
 
 ---
 
@@ -4456,7 +4466,7 @@ Current Prototype 0.2 content target:
 | Starting questionnaire | small fixed set of questions |
 | Ordinary quest templates | 15 per city |
 | Simultaneous ordinary quest offers | up to 6 per city: maximum 2 from each of the 3 relative-strength bands |
-| Handcrafted temporary events | 15–20 total |
+| Handcrafted temporary events | 20 Starting Region + Mid Region batch; final combined total to be fixed during the Mid Region content pass |
 | Ordinary dungeon content | 2 per city / region |
 | First specialization paths | 2 |
 | Specialization dungeon variants | 1 per first specialization path, sharing one system |

@@ -123,15 +123,16 @@ func assert_drop_filtering() -> void:
 		[GildedDropSource, "gilded_wyrm_greatsword", "gilded_wyrm_greatsword_rare"],
 	]:
 		var source = source_and_id[0]
+		var accessory_count := 5
 		for pool in [source.common_items, source.uncommon_items, source.rare_items]:
 			var slayer_items: Array[Resource] = loot_generator.get_eligible_items(pool, "slayer")
-			assert(slayer_items.size() == 6, "Slayer drop pools must contain five armor pieces plus one two-hander.")
+			assert(slayer_items.size() == 6 + accessory_count, "Slayer drop pools must contain five armor pieces, all available accessories, and one two-hander.")
 			for definition in slayer_items:
 				assert(definition.equipment_slot != "shield", "Slayer drop pools must exclude shields.")
 				assert(definition.equipment_slot != "weapon" or definition.is_two_handed_weapon(), "Slayer drop pools must exclude one-handed weapons.")
 
 			var protector_items: Array[Resource] = loot_generator.get_eligible_items(pool, "protector")
-			assert(protector_items.size() == 7, "Protector drop pools must retain five armor pieces, one-handed weapon, and shield.")
+			assert(protector_items.size() == 7 + accessory_count, "Protector drop pools must retain five armor pieces, all available accessories, one-handed weapon, and shield.")
 			for definition in protector_items:
 				assert(not definition.is_two_handed_weapon(), "Protector drop pools must exclude Slayer two-handers.")
 		var mob := MobFixture.new()
