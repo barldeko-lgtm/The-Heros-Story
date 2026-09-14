@@ -14,6 +14,8 @@ Use this file when changing a system that hands state or decisions to another sy
 
 `startup_flow.gd` owns session replacement through `save_controller.gd`; MainUI only emits Save/Load requests. Snapshots are captured synchronously after a completed simulation update, never from UI widgets. Loading constructs and validates a detached simulation before replacing MainUI, so every screen binds to the restored live owners. Creation bonuses are not reapplied to the restored state; wall time does not advance simulation on load.
 
+`save_controller.gd` owns milestone autosave detection. Dungeon completion uses the completed-instance count; first-specialization completion is recognized only when the already-selected valid first-specialization id also becomes the actually granted `hero_class_id`. Selecting the Protector/Slayer target alone must not save as a gained specialization. `attach_game(...)` initializes both milestone baselines from the attached/restored Simulation so loading an already-completed milestone does not immediately write another autosave. These baselines are controller runtime state only and do not require snapshot-schema fields.
+
 `save_store.gd` reads primitive Variant data only (never executable object deserialization), verifies a SHA-256 envelope, and keeps independent manual/auto files and prior-copy backups. Temporary writes are verified before replacing a target; a corrupt primary never overwrites a valid backup. File format and snapshot schema have independent versions; incompatible data is rejected rather than partly loaded. UI tests must override `startup.save_directory` to a unique project `.godot/` directory, never touch real `user://saves`.
 
 `simulation_snapshot.gd` requires the complete serialized script-property set for the current schema; adding/removing persisted runtime fields needs an explicit compatibility/version decision, not silent constructor-default fallback. Hydration validates values and rebuilds typed arrays before `Object.set` (Godot can silently refuse an untyped Array). Saved questionnaire bonuses/history are restored, not replayed. Both world-position and world-clock callbacks reconnect after hydration. Whole-graph round-trip/continuation comparisons cover history and shared owners, not only HP/Gold.
@@ -184,10 +186,10 @@ Contracts:
 
 - Rage is fight-local `CombatSession` state and is not carried between fights in `HeroState`;
 - ability unlock/progression state belongs to hero progression/state, not to `CombatSession`;
-- `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it never grants Skill Level 1. Base Warrior ranks use their current working cost curve, while Shield Bash / Crippling Blows temporarily cost 1 Gold per higher rank until final specialization pricing is approved;
+- `SkillTrainingSystem` may advance only an already-learned rank that `HeroProgression` says is currently unlocked; it never grants Skill Level 1. Base Warrior rank prices are keyed to the hero-level milestone at which each rank unlocks, so different base skills pay the same price for ranks unlocked at the same hero level. Shield Bash / Crippling Blows share their own approved ladder starting at 1600 Gold for SL2 at Level 30 and increasing by the same approximately 30%-per-five-level rule with nearest-50 rounding;
 - `CombatSession` decides autonomous use of already-learned combat abilities during the duel;
 - when a first-specialization skill is usable it has Rage-spending priority over Power Strike; Power Strike remains the fallback while the specialization skill is unavailable/on cooldown;
-- first-specialization combat formulas, HeroPower valuation and `SkillTrainingSystem` all support Skill Levels 1–10; higher specialization ranks unlock every five hero levels after Level 25 and currently use the explicit temporary 1-Gold placeholder price;
+- first-specialization combat formulas, HeroPower valuation and `SkillTrainingSystem` all support Skill Levels 1–10; higher specialization ranks unlock every five hero levels after Level 25 and use the approved specialization price ladder;
 - Shield Bash freezes the current enemy attack timer for its resolved stun duration instead of allowing hidden progress to accumulate during stun;
 - Crippling Blows owns its temporary enemy Attack-Speed adjustment in `CombatSession`, preserving current attack-progress percentage both when the slow starts and when it expires;
 - ability-specific WIS scaling belongs to the ability/combat implementation rather than a fake generic WIS stat conversion in `StatResolver`;
@@ -262,7 +264,7 @@ Contracts:
 - failed specialization attempts retain the same `DungeonInstance` and ordinary DungeonEvaluator retry rules; failure must not erase the quest or force immediate repeated attempts;
 - specialization boss completion must not run the ordinary dungeon Gold/equipment reward pipeline; the material/class/profile reward belongs to trainer turn-in after real return travel;
 - trainer completion grants 2000 Gold, +5 pending player points, Protector CON or Slayer DEX catch-up for each reached level above 20, and the authored Rare ilvl 20 path equipment; future levels continue +1 CON/DEX through `HeroProgression`;
-- final specialization-skill pricing, full-specialization autosave/Diary milestone and broader specialization equipment content remain separate future slices; specialization combat scaling, rank unlock/purchase training and HeroPower valuation are already live.
+- the specialization-gained Diary/autosave milestone, specialization combat scaling, rank unlock/purchase training, pricing and HeroPower valuation are already live; broader/final specialization equipment content remains a separate future slice.
 
 ## Ordinary quest selection and execution
 

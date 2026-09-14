@@ -11,7 +11,8 @@ func _init(initial_loot_generator, initial_item_generator, initial_equipment_eva
 	equipment_evaluator = initial_equipment_evaluator
 
 func resolve_mob_equipment_drop(hero_state, mob_definition: Resource, rng) -> Dictionary:
-	var generated: Dictionary = generate_mob_equipment_drop(mob_definition, rng)
+	var hero_class_id: String = "" if hero_state == null else str(hero_state.hero_class_id)
+	var generated: Dictionary = generate_mob_equipment_drop(mob_definition, rng, hero_class_id)
 	var item_instance = generated.get("item_instance")
 	if item_instance == null:
 		var empty_result: Dictionary = create_empty_routing_result()
@@ -21,14 +22,14 @@ func resolve_mob_equipment_drop(hero_state, mob_definition: Resource, rng) -> Di
 	result["item_definition"] = generated.get("item_definition")
 	return result
 
-func generate_mob_equipment_drop(mob_definition: Resource, rng) -> Dictionary:
+func generate_mob_equipment_drop(mob_definition: Resource, rng, hero_class_id: String = "") -> Dictionary:
 	var result: Dictionary = {
 		"item_definition": null,
 		"item_instance": null,
 	}
 	if mob_definition == null or rng == null or mob_definition.equipment_drop_table == null:
 		return result
-	var item_definition = loot_generator.roll_mob_equipment(mob_definition, rng)
+	var item_definition = loot_generator.roll_mob_equipment(mob_definition, rng, hero_class_id)
 	if item_definition == null:
 		return result
 	var item_level: int = int(mob_definition.equipment_drop_table.item_level)
@@ -39,7 +40,8 @@ func generate_mob_equipment_drop(mob_definition: Resource, rng) -> Dictionary:
 	return result
 
 func resolve_dungeon_completion_reward(hero_state, dungeon_definition: Resource, rng) -> Dictionary:
-	var roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon_definition, rng)
+	var hero_class_id: String = "" if hero_state == null else str(hero_state.hero_class_id)
+	var roll: Dictionary = loot_generator.roll_dungeon_completion_equipment(dungeon_definition, rng, hero_class_id)
 	if roll.is_empty():
 		return {
 			"item_definition": null,

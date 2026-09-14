@@ -15,8 +15,29 @@ const SKILL_LEVEL_PROPERTIES := {
 	HeroProgressionScript.SHIELD_BASH_SKILL_ID: "shield_bash_skill_level",
 	HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID: "crippling_blows_skill_level",
 }
-const RANK_COSTS := [0, 0, 500, 650, 850, 1100, 1450, 1900, 2450, 3200, 4150]
-const SPECIALIZATION_PLACEHOLDER_RANK_COST: int = 1
+const BASE_RANK_COSTS_BY_HERO_LEVEL := {
+	10: 500,
+	15: 650,
+	20: 850,
+	25: 1100,
+	30: 1450,
+	35: 1900,
+	40: 2450,
+	45: 3200,
+	50: 4150,
+	55: 5400,
+}
+const SPECIALIZATION_RANK_COSTS_BY_HERO_LEVEL := {
+	30: 1600,
+	35: 2100,
+	40: 2750,
+	45: 3600,
+	50: 4700,
+	55: 6100,
+	60: 7950,
+	65: 10350,
+	70: 13450,
+}
 
 var hero_progression
 
@@ -24,11 +45,17 @@ func _init(initial_hero_progression = null) -> void:
 	hero_progression = initial_hero_progression if initial_hero_progression != null else HeroProgressionScript.new()
 
 func get_rank_cost(skill_level: int, skill_id: String = "") -> int:
-	if skill_level < 2 or skill_level >= RANK_COSTS.size():
+	if skill_level < 2 or skill_level > HeroProgressionScript.MAX_SKILL_LEVEL:
 		return -1
 	if skill_id in [HeroProgressionScript.SHIELD_BASH_SKILL_ID, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID]:
-		return SPECIALIZATION_PLACEHOLDER_RANK_COST
-	return int(RANK_COSTS[skill_level])
+		var specialization_unlock_level: int = hero_progression.get_skill_unlock_level(skill_id) + (skill_level - 1) * HeroProgressionScript.SKILL_LEVEL_INTERVAL
+		return int(SPECIALIZATION_RANK_COSTS_BY_HERO_LEVEL.get(specialization_unlock_level, -1))
+	var resolved_skill_id: String = skill_id if not skill_id.is_empty() else HeroProgressionScript.POWER_STRIKE_SKILL_ID
+	if resolved_skill_id not in [HeroProgressionScript.POWER_STRIKE_SKILL_ID, HeroProgressionScript.BATTLE_GUARD_SKILL_ID]:
+		return -1
+	var base_unlock_level: int = hero_progression.get_skill_unlock_level(resolved_skill_id)
+	var rank_unlock_level: int = base_unlock_level + (skill_level - 1) * HeroProgressionScript.SKILL_LEVEL_INTERVAL
+	return int(BASE_RANK_COSTS_BY_HERO_LEVEL.get(rank_unlock_level, -1))
 
 func get_available_upgrades(hero_state) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []

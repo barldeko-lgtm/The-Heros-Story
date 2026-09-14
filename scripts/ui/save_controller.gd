@@ -3,12 +3,14 @@ extends Node
 const StoreScript = preload("res://scripts/core/save_store.gd")
 const SnapshotScript = preload("res://scripts/core/simulation_snapshot.gd")
 const MainUIScript = preload("res://scripts/ui/main_ui.gd")
+const HeroSpecializationScript = preload("res://scripts/hero/hero_specialization.gd")
 const AUTOSAVE_SECONDS := 600.0
 var store = StoreScript.new()
 var elapsed: float = 0.0
 var host: Control
 var ui: Control
 var completed_dungeons: int = 0
+var granted_specialization_id: String = ""
 var status_label: Label
 var pending_quit: bool = false
 
@@ -72,6 +74,7 @@ func attach_game(game: Control, fresh: bool) -> void:
 	ui = game
 	elapsed = 0.0
 	completed_dungeons = dungeon_count()
+	granted_specialization_id = get_granted_specialization_id()
 	ui.save_requested.connect(request_manual_save)
 	ui.load_requested.connect(request_load)
 	status_label = Label.new()
@@ -95,13 +98,25 @@ func dungeon_count() -> int:
 			total += 1
 	return total
 
+func get_granted_specialization_id() -> String:
+	if not is_instance_valid(ui) or ui.simulation == null or ui.simulation.hero_state == null:
+		return ""
+	var hero_state = ui.simulation.hero_state
+	var class_id: String = str(hero_state.hero_class_id)
+	if class_id != str(hero_state.first_specialization_id):
+		return ""
+	return class_id if HeroSpecializationScript.is_valid_specialization_id(class_id) else ""
+
 func _process(delta: float) -> void:
 	if not is_instance_valid(ui):
 		return
 	elapsed += delta
 	var count := dungeon_count()
-	if elapsed >= AUTOSAVE_SECONDS or count > completed_dungeons:
+	var current_specialization_id: String = get_granted_specialization_id()
+	var specialization_gained: bool = not current_specialization_id.is_empty() and current_specialization_id != granted_specialization_id
+	if elapsed >= AUTOSAVE_SECONDS or count > completed_dungeons or specialization_gained:
 		completed_dungeons = count
+		granted_specialization_id = current_specialization_id
 		elapsed = 0.0 # Failed writes retry next interval, never every frame.
 		var result := save_slot("auto")
 		if result.has("error"):

@@ -768,6 +768,11 @@ func complete_specialization_quest(completed_tick: int) -> void:
 		int(growth_result.get("catchup_points", 0)),
 		directed_stat_name
 	))
+	diary_recorder.record_specialization_gained_diary_entry(
+		hero_state.hero_name,
+		HeroSpecializationScript.get_class_display_name(granted_id),
+		completed_tick
+	)
 	hero_state.state_changed.emit()
 	hero_state.loop_state = HeroState.VISITING_MARKET
 
@@ -776,7 +781,7 @@ func record_quest_diary_event(event, event_tick: int) -> void:
 
 func collect_mob_equipment_drop(mob_definition: Resource, rng_override = null) -> Dictionary:
 	var rng = rng_override if rng_override != null else seeded_rng.get_rng()
-	var result: Dictionary = equipment_reward_system.generate_mob_equipment_drop(mob_definition, rng)
+	var result: Dictionary = equipment_reward_system.generate_mob_equipment_drop(mob_definition, rng, str(hero_state.hero_class_id))
 	var item_instance = result.get("item_instance")
 	if item_instance != null:
 		pending_quest_equipment_drops.append(item_instance)

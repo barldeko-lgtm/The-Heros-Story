@@ -81,9 +81,13 @@ func assert_definition_resources() -> void:
 				assert(definition.hero_overlay_texture == null, "Icon-only Arden items must not invent overlays: %s" % resource_path)
 
 func assert_definition_file_sets() -> void:
-	var expected_by_family := {"azure_dawnplate": 36, "crimson_thornplate": 22, "gilded_wyrm": 24}
+	var expected_by_family := {"azure_dawnplate": 36, "crimson_thornplate": 24, "gilded_wyrm": 24}
 	var approved_extra_files := {
-		"crimson_thornplate": ["crimson_thornplate_greatsword_rare.tres"],
+		"crimson_thornplate": [
+			"crimson_thornplate_greatsword.tres",
+			"crimson_thornplate_greatsword_uncommon.tres",
+			"crimson_thornplate_greatsword_rare.tres",
+		],
 		"gilded_wyrm": [
 			"gilded_wyrm_greatsword.tres",
 			"gilded_wyrm_greatsword_uncommon.tres",
@@ -115,8 +119,8 @@ func assert_band(band: Resource, expected: Dictionary, expected_path: String) ->
 		definitions_by_rarity[int(definition.quality)].append(definition)
 	for rarity in [0, 1]:
 		var definitions: Array = definitions_by_rarity[rarity]
-		var allowed_extra_count: int = 1 if int(expected.item_level) == 25 else 0
-		assert(definitions.size() == expected.slots.size() + allowed_extra_count, "Each Arden rarity pool must contain the approved base slots plus only the explicit ilvl25 Slayer two-hander when applicable.")
+		var allowed_extra_count: int = 1 if int(expected.item_level) in [20, 25] else 0
+		assert(definitions.size() == expected.slots.size() + allowed_extra_count, "Each Arden rarity pool must contain the approved base slots plus only the explicit ilvl20/25 Slayer two-hander when applicable.")
 		var slots: Array[String] = []
 		var specialization_weapons := 0
 		for definition in definitions:
@@ -126,7 +130,7 @@ func assert_band(band: Resource, expected: Dictionary, expected_path: String) ->
 			assert(not slots.has(definition.equipment_slot), "Base Arden rarity pool must not duplicate an equipment slot.")
 			slots.append(definition.equipment_slot)
 		assert(slots == expected.slots, "Each Arden rarity pool must preserve the approved base slot order and no missing visuals.")
-		assert(specialization_weapons == allowed_extra_count, "Only ilvl25 may add exactly one Slayer-only two-handed weapon per Common/Uncommon rarity pool.")
+		assert(specialization_weapons == allowed_extra_count, "Only ilvl20/25 may add exactly one Slayer-only two-handed weapon per Common/Uncommon rarity pool.")
 
 func assert_generated_stock(shop: Resource) -> void:
 	var shop_system_script: Script = load("res://scripts/economy/shop_system.gd")

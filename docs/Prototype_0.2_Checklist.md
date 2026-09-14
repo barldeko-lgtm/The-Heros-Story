@@ -36,9 +36,9 @@ Status:
 - ✅ Per-mob XP, post-fight recovery, mid-quest level-up and stat refresh.
 - ✅ Death, failed activity handling, 100-tick natural resurrection and city recovery.
 - ✅ Fire/Cold/Lightning ordinary attacks are live in Arden; elemental hits keep Accuracy/Dodge/Crit/Block, ignore Armor, use direct-percentage matching Resistance (75% cap), and receive the current ×1.20 elemental-offense weight inside shared Power. The Warrior now also has an innate 10% Fire / Cold / Lightning Resistance baseline before equipment.
-- ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick; base Warrior skills use the working price curve and first-specialization ranks currently use a 1-Gold placeholder price.
-- ✅ Protector Shield Bash is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation and purchasable higher ranks on the five-level cadence; final rank pricing remains pending.
-- ✅ Slayer Crippling Blows is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation and purchasable higher ranks on the five-level cadence; final rank pricing remains pending.
+- ✅ Autonomous purchase of unlocked Skill Levels 2–10 is live after market sale, one purchased rank per shopping tick; base Warrior skills use the hero-level price curve and first-specialization ranks use their own 1600-Gold-at-Level-30 curve with the same ~30%/five-level progression rule.
+- ✅ Protector Shield Bash is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation, five-level rank unlocks and the approved specialization price ladder.
+- ✅ Slayer Crippling Blows is live at Level 25 with SL1–SL10 combat scaling, total-WIS scaling, calibrated HeroPower valuation, five-level rank unlocks and the approved specialization price ladder.
 
 ## 3. Personality and autonomous behaviour
 
@@ -142,7 +142,7 @@ Status:
 - ✅ Diary keeps only the newest **100 meaningful entries**; ordinary quest acceptance is temporary and is removed when that quest is successfully completed or cancelled, so completed quests do not occupy two permanent Diary records.
 - 🟡 Ordinary quest Diary wording already lives in external narrative data with variant arrays and per-quest override support, but only one phrase per category is currently authored.
 - 🟡 Diary UI updates live and stays scrolled to the newest entry.
-- ⬜ Remaining required Diary sources include levels, visible trait changes, specialization, remaining divine/progression milestones and other important progression moments.
+- ⬜ Remaining required Diary sources include levels, visible trait changes, specialization direction/quest progress beyond the now-live gained-specialization milestone, remaining divine/progression milestones and other important progression moments.
 - 🟡 Diary episode grouping is still missing; current Diary/Log history is preserved by save/load.
 - ⬜ Player-facing Explanatory Log and its UI.
 
@@ -165,13 +165,13 @@ Status:
 - ✅ First specialization combat skills are implemented with specialization-first Rage priority, total-WIS scaling, calibrated HeroPower valuation and full SL1–SL10 combat formulas; they still unlock only at SL1 on Level 25 after the specialization has actually been granted.
 - ✅ Dedicated Protector/Slayer Specialization Quests are live: trainer acceptance after an ordinary Arden turn-in creates only the selected known plains trial at 4–6 hexes; the quest remains parallel to ordinary `active_quest`, reuses normal dungeon preparation/retries and returns to the trainer after boss victory.
 - ✅ Trial turn-in grants the selected class, 2000 Gold, +5 pending points, catch-up/future CON-or-DEX specialization growth and Rare ilvl 20 path equipment (Protector sword+shield / Slayer two-hander).
-- 🟡 Shield Bash / Crippling Blows SL1–SL10 combat scaling, HeroPower valuation and later-rank unlock/purchase training are live; only final specialization-rank pricing remains pending (current placeholder: 1 Gold per rank).
+- ✅ Shield Bash / Crippling Blows SL1–SL10 combat scaling, HeroPower valuation, later-rank unlock/purchase training and specialization-rank pricing are live.
 
 ## 14. Save / load / persistence
 
 - ✅ Two independent rolling slots are live: Manual and Autosave; Continue selects the newest valid candidate and Load exposes both slots.
 - ✅ Autosave is live after new-game creation, approximately every 10 real minutes, on normal close, and after an increased completed-dungeon count.
-- 🟡 Major dungeon-completion autosave is live; Specialization Quest completion is now implemented but the separate full-specialization milestone autosave is still pending.
+- ✅ Major dungeon-completion and gained-specialization milestone autosaves are live; choosing only the specialization target does not trigger the latter.
 - ✅ The current simulation snapshot preserves the required live graph including progression/personality, equipment/inventory, world/activity state, dungeon/event state, God state, Diary/Log history and deterministic RNG continuation.
 - 🟡 Save/Load/Return controls are live in the current running-game menu; final Menu Screen presentation is still incomplete.
 - 🚫 Offline simulation while the game is closed.
@@ -204,6 +204,6 @@ This is a progress-oriented list, not automatic permission or a fixed implementa
 3. Complete the Mid-Level City gameplay context behind the now-live Level-13 relocation/arrival, Arden ordinary quests, economy and dungeons, especially local temporary events and remaining equipment-content breadth.
 4. Add Mid Region temporary-event content and decide the final two-region distribution within/around the current ~15–20 prototype target as that city is implemented.
 5. Complete remaining later equipment-content breadth; Mid Region ordinary dungeons and potion progression through Level 25 are already live.
-6. Extend the now-live first-specialization flow with later specialization-skill unlock/purchase training and pricing, the full-specialization autosave/Diary milestone and broader/final specialization weapon art/content; SL1–SL10 combat formulas and HeroPower valuation are already live.
+6. Extend the now-live first-specialization flow with broader/final specialization weapon art/content; the gained-specialization autosave/Diary milestone, SL1–SL10 combat formulas, HeroPower valuation, rank unlock/purchase training and pricing are already live.
 7. Complete the remaining generalized trophy/backpack side of QuestLoot, remaining equipment/hand-configuration breadth, player-facing Explanatory Log and final UI screens.
 8. Extend persistence only when a still-missing future system actually requires new mutable state, then run long-duration Prototype 0.2 validation through the intended compressed level range.

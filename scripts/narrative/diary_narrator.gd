@@ -27,6 +27,11 @@ func describe_new_game_arrival(hero_name: String, city_name: String) -> String:
 func describe_city_arrival(hero_name: String, city_name: String) -> String:
 	return "%s прибыл в %s. Здесь было куда больше жизни: торговые обозы, солдаты, наёмники и люди со всего региона. Но разговоры у ворот были тревожными — окрестности становились всё опаснее, а городской гарнизон уже не успевал справляться со всеми угрозами." % [hero_name, city_name]
 
+func describe_specialization_gained(hero_name: String, specialization_name: String) -> String:
+	if hero_name.is_empty() or specialization_name.is_empty():
+		return ""
+	return "%s завершил испытание и обучение у тренера воинов и получил специализацию «%s». С этого дня его дальнейший боевой путь был окончательно определён." % [hero_name, specialization_name]
+
 func describe_quest_event(event) -> String:
 	if event == null or event.quest_definition == null:
 		return ""

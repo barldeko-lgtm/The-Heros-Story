@@ -53,6 +53,13 @@ func record_event_completed_diary_entry(end_stage, completed_tick: int) -> void:
 	if not diary_text.is_empty():
 		diary.add_entry(completed_tick, diary_text)
 
+func record_specialization_gained_diary_entry(hero_name: String, specialization_name: String, completed_tick: int) -> void:
+	if diary_narrator == null:
+		return
+	var diary_text: String = diary_narrator.describe_specialization_gained(hero_name, specialization_name)
+	if not diary_text.is_empty():
+		diary.add_entry(completed_tick, diary_text)
+
 func record_equipment_acquisition_diary_entry(hero_name: String, item_instance, completed_tick: int) -> void:
 	if diary_narrator == null or item_instance == null or item_instance.definition == null:
 		return

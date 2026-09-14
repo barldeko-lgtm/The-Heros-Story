@@ -3523,21 +3523,36 @@ Prototype 0.2 bosses and special enemies receive the normal resolved Crippling B
 
 Higher Skill Levels cost progressively more Gold.
 
-The current working Prototype 0.2 price curve for the two base Warrior skills is:
+The current working Prototype 0.2 price curve for the two base Warrior skills is keyed to the **hero level at which a rank becomes available**, not to the numerical Skill Level. Ranks that unlock at the same hero level therefore cost the same even when they belong to different abilities:
 
-| Purchased Skill Level | Gold cost |
+| Hero level that unlocks the purchased rank | Gold cost |
 |---:|---:|
-| 2 | 500 |
-| 3 | 650 |
-| 4 | 850 |
-| 5 | 1100 |
-| 6 | 1450 |
-| 7 | 1900 |
-| 8 | 2450 |
-| 9 | 3200 |
-| 10 | 4150 |
+| 10 | 500 |
+| 15 | 650 |
+| 20 | 850 |
+| 25 | 1100 |
+| 30 | 1450 |
+| 35 | 1900 |
+| 40 | 2450 |
+| 45 | 3200 |
+| 50 | 4150 |
+| 55 | 5400 |
 
-The intended tuning rule for the base Warrior skills is **Skill Level 2 = 500 Gold; each following rank costs approximately 30% more than the previous one, rounded to the nearest 50 Gold**. First-specialization rank pricing is not finalized yet; the current runtime deliberately uses a **1 Gold per purchased Shield Bash / Crippling Blows rank** placeholder so rank/combat testing is not blocked by unfinished economy tuning. The placeholder is not intended final balance.
+The base-skill ladder starts at **500 Gold for the Level-10 rank milestone** and then rises by approximately 30% per later five-level milestone, rounded to the nearest 50 Gold. This makes Power Strike SL2–SL10 cost 500 / 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 Gold, while Battle Guard SL2–SL10 cost 650 / 850 / 1100 / 1450 / 1900 / 2450 / 3200 / 4150 / 5400 Gold because Battle Guard begins five hero levels later.
+
+The first specialization skill is learned at **SL1 for free** at Level 25 after the specialization is actually granted. Purchased specialization ranks then use their own ladder beginning at **1600 Gold for SL2 at Level 30** and following the same approximately 30% increase per later five-level milestone with nearest-50 rounding:
+
+| Purchased specialization Skill Level | Hero level | Gold cost |
+|---:|---:|---:|
+| 2 | 30 | 1600 |
+| 3 | 35 | 2100 |
+| 4 | 40 | 2750 |
+| 5 | 45 | 3600 |
+| 6 | 50 | 4700 |
+| 7 | 55 | 6100 |
+| 8 | 60 | 7950 |
+| 9 | 65 | 10350 |
+| 10 | 70 | 13450 |
 
 The rank system itself is fixed:
 

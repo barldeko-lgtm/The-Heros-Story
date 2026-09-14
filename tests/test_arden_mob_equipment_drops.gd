@@ -37,8 +37,8 @@ func _init() -> void:
 
 	assert(transition_source != null and transition_source.item_level == 10, "The five Arden transition mobs must keep the existing ilvl 10 source.")
 	assert_drop_source(azure_source, 15, AZURE_SLOTS)
-	assert_drop_source(crimson_source, 20, ARMOR_WEAPON_SHIELD_SLOTS)
-	assert_drop_source(gilded_source, 25, ARMOR_WEAPON_SHIELD_SLOTS)
+	assert_drop_source(crimson_source, 20, ARMOR_WEAPON_SHIELD_SLOTS, 1)
+	assert_drop_source(gilded_source, 25, ARMOR_WEAPON_SHIELD_SLOTS, 1)
 
 	var mob_files: Array[String] = []
 	for file_name in DirAccess.get_files_at(MID_MOB_DIRECTORY):
@@ -79,14 +79,18 @@ func _init() -> void:
 	print("PASS: Arden ordinary mobs use transition ilvl10 then Azure ilvl15, Crimson ilvl20, and Gilded ilvl25 equipment drops with the normal 5% / 70-25-5 rules.")
 	quit()
 
-func assert_drop_source(source: Resource, item_level: int, expected_slots: Array) -> void:
+func assert_drop_source(source: Resource, item_level: int, expected_slots: Array, expected_specialization_weapons: int = 0) -> void:
 	assert(source != null, "Arden equipment drop source must load for ilvl %d." % item_level)
 	assert(source.item_level == item_level and is_equal_approx(source.drop_chance, 0.05), "Arden ilvl %d source must use the normal 5 percent mob drop chance." % item_level)
 	var pools := [source.common_items, source.uncommon_items, source.rare_items]
 	for rarity in pools.size():
 		var pool: Array = pools[rarity]
-		assert(pool.size() == expected_slots.size(), "Arden ilvl %d rarity pool must cover every currently supplied slot." % item_level)
+		assert(pool.size() == expected_slots.size() + expected_specialization_weapons, "Arden ilvl %d rarity pool must cover every supplied base slot plus approved specialization weapons." % item_level)
 		for slot_index in expected_slots.size():
 			var definition: Resource = pool[slot_index]
 			assert(definition != null and definition.equipment_slot == expected_slots[slot_index], "Arden ilvl %d drop slots must remain aligned across rarities." % item_level)
 			assert(int(definition.quality) == rarity, "Arden ilvl %d drop definitions must match Common/Uncommon/Rare pool quality." % item_level)
+		for extra_index in expected_specialization_weapons:
+			var definition: Resource = pool[expected_slots.size() + extra_index]
+			assert(definition != null and definition.is_two_handed_weapon() and definition.required_class_id == "slayer", "Arden ilvl %d specialization drop additions must be Slayer-only two-handers." % item_level)
+			assert(int(definition.quality) == rarity, "Arden ilvl %d specialization drop definitions must match their rarity pool." % item_level)

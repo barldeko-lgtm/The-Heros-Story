@@ -469,7 +469,7 @@ Owns automatic liquidation of eligible unequipped ordinary equipment from Invent
 
 ### `scripts/economy/skill_training_system.gd`
 
-Owns current purchased Skill Level progression for both base Warrior and first-specialization skills. It reads hero-level rank availability from `HeroProgression`, applies the base-rank cost table or the current 1-Gold specialization placeholder cost, selects an affordable unlocked next rank in deterministic skill order, spends Gold and advances that learned rank. It does not grant Skill Level 1, advance world time, buy equipment, calculate dungeon-preparation reserve, or write narrative text.
+Owns current purchased Skill Level progression for both base Warrior and first-specialization skills. It reads hero-level rank availability from `HeroProgression`, prices base-skill ranks by the hero-level milestone at which that rank unlocks (same unlock level = same price), applies the approved first-specialization ladder starting at 1600 Gold on Level 30, selects an affordable unlocked next rank in deterministic skill order, spends Gold and advances that learned rank. It does not grant Skill Level 1, advance world time, buy equipment, calculate dungeon-preparation reserve, or write narrative text.
 
 ### `scripts/model/definitions/shop_definition.gd`
 ### `scripts/model/definitions/shop_stock_band_definition.gd`

@@ -6,7 +6,7 @@ const HeroTraitsScript = preload("res://scripts/hero/hero_traits.gd")
 
 func _init() -> void:
 	test_rank_availability_and_costs()
-	test_specialization_rank_training_placeholder_cost()
+	test_specialization_rank_training_cost_curve()
 	test_affordable_training_uses_one_tick_before_shop()
 	test_unaffordable_training_adds_no_extra_tick()
 	test_multiple_available_upgrades_take_separate_ticks()
@@ -19,9 +19,14 @@ func _init() -> void:
 func test_rank_availability_and_costs() -> void:
 	var simulation = SimulationScript.new(9301)
 	var training = simulation.skill_training_system
-	var expected_costs := [500, 650, 850, 1100, 1450, 1900, 2450, 3200, 4150]
-	for index in expected_costs.size():
-		assert(training.get_rank_cost(index + 2) == expected_costs[index], "Skill rank costs must match the approved SL2-SL10 curve.")
+	var expected_power_strike_costs := [500, 650, 850, 1100, 1450, 1900, 2450, 3200, 4150]
+	var expected_battle_guard_costs := [650, 850, 1100, 1450, 1900, 2450, 3200, 4150, 5400]
+	var expected_specialization_costs := [1600, 2100, 2750, 3600, 4700, 6100, 7950, 10350, 13450]
+	for index in expected_power_strike_costs.size():
+		assert(training.get_rank_cost(index + 2, HeroProgressionScript.POWER_STRIKE_SKILL_ID) == expected_power_strike_costs[index], "Power Strike rank costs must follow the approved hero-level price ladder.")
+		assert(training.get_rank_cost(index + 2, HeroProgressionScript.BATTLE_GUARD_SKILL_ID) == expected_battle_guard_costs[index], "Battle Guard rank costs must use the price for the hero level at which that rank unlocks.")
+		assert(training.get_rank_cost(index + 2, HeroProgressionScript.SHIELD_BASH_SKILL_ID) == expected_specialization_costs[index], "Shield Bash rank costs must follow the approved specialization price ladder.")
+		assert(training.get_rank_cost(index + 2, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID) == expected_specialization_costs[index], "Crippling Blows rank costs must follow the approved specialization price ladder.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.POWER_STRIKE_SKILL_ID, 9) == 1, "Power Strike must still cap at Skill Level 1 before hero level 10.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.POWER_STRIKE_SKILL_ID, 10) == 2, "Power Strike Skill Level 2 must unlock at hero level 10.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.POWER_STRIKE_SKILL_ID, 15) == 3, "Power Strike Skill Level 3 must unlock at hero level 15.")
@@ -30,47 +35,47 @@ func test_rank_availability_and_costs() -> void:
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.SHIELD_BASH_SKILL_ID, 29) == 1, "Shield Bash must stay at Skill Level 1 before hero level 30.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.SHIELD_BASH_SKILL_ID, 30) == 2, "Shield Bash Skill Level 2 must unlock at hero level 30.")
 	assert(simulation.hero_progression.get_max_unlocked_skill_level(HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID, 30) == 2, "Crippling Blows Skill Level 2 must unlock at hero level 30.")
-	assert(training.get_rank_cost(2, HeroProgressionScript.SHIELD_BASH_SKILL_ID) == 1, "Shield Bash higher ranks must use the temporary 1-Gold placeholder cost.")
-	assert(training.get_rank_cost(10, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID) == 1, "Crippling Blows higher ranks must use the temporary 1-Gold placeholder cost.")
-	simulation.hero_state.level = 15
-	simulation.hero_state.power_strike_skill_level = 2
+	assert(training.get_rank_cost(2, HeroProgressionScript.SHIELD_BASH_SKILL_ID) == 1600, "Shield Bash SL2 must cost 1600 Gold at hero Level 30.")
+	assert(training.get_rank_cost(10, HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID) == 13450, "Crippling Blows SL10 must cost 13450 Gold at hero Level 70.")
+	simulation.hero_state.level = 20
+	simulation.hero_state.power_strike_skill_level = 3
 	simulation.hero_state.battle_guard_skill_level = 1
-	simulation.hero_state.gold = 500
+	simulation.hero_state.gold = 650
 	var affordable_candidate: Dictionary = training.select_affordable_upgrade(simulation.hero_state)
-	assert(str(affordable_candidate.get("skill_id", "")) == HeroProgressionScript.BATTLE_GUARD_SKILL_ID, "If the earlier skill's next rank is too expensive, an affordable later skill upgrade must still be selected.")
+	assert(str(affordable_candidate.get("skill_id", "")) == HeroProgressionScript.BATTLE_GUARD_SKILL_ID, "An older unlocked Battle Guard rank must still be selectable when the newer Power Strike rank is more expensive.")
 
-func test_specialization_rank_training_placeholder_cost() -> void:
+func test_specialization_rank_training_cost_curve() -> void:
 	var protector = SimulationScript.new(9320)
 	protector.hero_state.level = 30
 	protector.hero_state.first_specialization_id = "protector"
 	protector.hero_state.hero_class_id = "protector"
 	protector.hero_state.shield_bash_skill_level = 1
-	protector.hero_state.gold = 1
+	protector.hero_state.gold = 1600
 	protector.hero_state.loop_state = HeroState.SHOPPING
 	protector.shop_system.listings = []
 	var protector_base_power: float = protector.power_calculator.calculate(protector.base_combat_stats)
 	var protector_power_before: float = protector.get_hero_power()
 	var protector_result: Dictionary = protector.advance_shop_purchase_tick(20)
 	assert(str(protector_result.get("skill_id", "")) == HeroProgressionScript.SHIELD_BASH_SKILL_ID, "Protector must train the unlocked Shield Bash rank through the ordinary shopping flow.")
-	assert(protector.hero_state.shield_bash_skill_level == 2 and protector.hero_state.gold == 0, "Shield Bash SL2 must spend exactly the temporary 1 Gold placeholder price.")
+	assert(protector.hero_state.shield_bash_skill_level == 2 and protector.hero_state.gold == 0, "Shield Bash SL2 must spend exactly 1600 Gold.")
 	assert(is_equal_approx(protector.get_hero_power() - protector_power_before, protector_base_power * 0.0065), "Purchasing Shield Bash SL2 must immediately add the approved +0.65% base HeroPower rank valuation.")
-	assert(protector.debug_log.get_text().contains("Удар щитом") and protector.debug_log.get_text().contains("1 золота"), "Shield Bash training must use the specialization skill name and placeholder price in the economy log.")
+	assert(protector.debug_log.get_text().contains("Удар щитом") and protector.debug_log.get_text().contains("1600 золота"), "Shield Bash training must use the specialization skill name and approved price in the economy log.")
 
 	var slayer = SimulationScript.new(9321)
 	slayer.hero_state.level = 30
 	slayer.hero_state.first_specialization_id = "slayer"
 	slayer.hero_state.hero_class_id = "slayer"
 	slayer.hero_state.crippling_blows_skill_level = 1
-	slayer.hero_state.gold = 1
+	slayer.hero_state.gold = 1600
 	slayer.hero_state.loop_state = HeroState.SHOPPING
 	slayer.shop_system.listings = []
 	var slayer_base_power: float = slayer.power_calculator.calculate(slayer.base_combat_stats)
 	var slayer_power_before: float = slayer.get_hero_power()
 	var slayer_result: Dictionary = slayer.advance_shop_purchase_tick(21)
 	assert(str(slayer_result.get("skill_id", "")) == HeroProgressionScript.CRIPPLING_BLOWS_SKILL_ID, "Slayer must train the unlocked Crippling Blows rank through the ordinary shopping flow.")
-	assert(slayer.hero_state.crippling_blows_skill_level == 2 and slayer.hero_state.gold == 0, "Crippling Blows SL2 must spend exactly the temporary 1 Gold placeholder price.")
+	assert(slayer.hero_state.crippling_blows_skill_level == 2 and slayer.hero_state.gold == 0, "Crippling Blows SL2 must spend exactly 1600 Gold.")
 	assert(is_equal_approx(slayer.get_hero_power() - slayer_power_before, slayer_base_power * 0.0045), "Purchasing Crippling Blows SL2 must immediately add the approved +0.45% base HeroPower rank valuation.")
-	assert(slayer.debug_log.get_text().contains("Калечащие удары") and slayer.debug_log.get_text().contains("1 золота"), "Crippling Blows training must use the specialization skill name and placeholder price in the economy log.")
+	assert(slayer.debug_log.get_text().contains("Калечащие удары") and slayer.debug_log.get_text().contains("1600 золота"), "Crippling Blows training must use the specialization skill name and approved price in the economy log.")
 
 func test_affordable_training_uses_one_tick_before_shop() -> void:
 	var simulation = SimulationScript.new(9302)
@@ -118,18 +123,18 @@ func test_multiple_available_upgrades_take_separate_ticks() -> void:
 	simulation.hero_state.level = 15
 	simulation.hero_state.power_strike_skill_level = 2
 	simulation.hero_state.battle_guard_skill_level = 1
-	simulation.hero_state.gold = 1150
+	simulation.hero_state.gold = 1300
 	simulation.hero_state.loop_state = HeroState.SHOPPING
 	simulation.shop_system.listings = []
 
 	var first_result: Dictionary = simulation.advance_shop_purchase_tick(4)
 	assert(str(first_result.get("skill_id", "")) == HeroProgressionScript.POWER_STRIKE_SKILL_ID, "When both are affordable, current deterministic base-skill order must train Power Strike first.")
-	assert(simulation.hero_state.power_strike_skill_level == 3 and simulation.hero_state.battle_guard_skill_level == 1 and simulation.hero_state.gold == 500, "First training tick must buy only Power Strike SL3 for 650 Gold.")
+	assert(simulation.hero_state.power_strike_skill_level == 3 and simulation.hero_state.battle_guard_skill_level == 1 and simulation.hero_state.gold == 650, "First training tick must buy only Power Strike SL3 for the Level-15 price of 650 Gold.")
 	assert(simulation.hero_state.loop_state == HeroState.SHOPPING, "A second available rank must wait for another world tick.")
 
 	var second_result: Dictionary = simulation.advance_shop_purchase_tick(5)
 	assert(str(second_result.get("skill_id", "")) == HeroProgressionScript.BATTLE_GUARD_SKILL_ID, "The next training tick must buy the remaining affordable Battle Guard rank.")
-	assert(simulation.hero_state.battle_guard_skill_level == 2 and simulation.hero_state.gold == 0, "Second training tick must spend the remaining 500 Gold on Battle Guard SL2.")
+	assert(simulation.hero_state.battle_guard_skill_level == 2 and simulation.hero_state.gold == 0, "Second training tick must spend the same Level-15 price of 650 Gold on Battle Guard SL2.")
 
 	simulation.advance_shop_purchase_tick(6)
 	assert(simulation.hero_state.loop_state == HeroState.CHOOSING_QUEST, "Only a later no-training shopping tick may finish the city phase.")

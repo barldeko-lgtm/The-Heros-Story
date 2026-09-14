@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="ItemDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/model/definitions/item_definition.gd" id="1_item_definition"]
-[ext_resource type="Texture2D" path="res://assets/items/icons/gilded_wyrm/gilded_wyrm_greatsword.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/items/icons/crimson_thornplate/crimson_thornplate_greatsword.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item_definition")
-id = "gilded_wyrm_greatsword_uncommon"
-display_name = "Двуручный меч Златого Дракона"
+id = "crimson_thornplate_greatsword"
+display_name = "Двуручный меч Багрового Шипа"
 equipment_slot = "weapon"
-quality = 1
+quality = 0
 icon_texture = ExtResource("2_icon")
-reference_shop_value_override = 20550
+reference_shop_value_override = 4350
 weapon_handedness = "two_handed"
 required_class_id = "slayer"
 modifier_budget_multiplier = 2.0

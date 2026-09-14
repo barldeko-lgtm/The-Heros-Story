@@ -36,6 +36,7 @@ func test_protector_quest_reward() -> void:
 	assert(weapon != null and weapon.item_level == 20 and weapon.rarity == 2 and weapon.definition.id == "crimson_thornplate_sword_rare", "Protector reward must include the existing Rare ilvl20 one-handed sword.")
 	assert(shield != null and shield.item_level == 20 and shield.rarity == 2 and shield.definition.id == "crimson_thornplate_shield_rare", "Protector reward must include the existing Rare ilvl20 shield.")
 	assert(simulation.hero_state.shield_bash_skill_level == 0, "A Level-23 Protector must still wait until Level 25 for Shield Bash.")
+	assert(simulation.diary.get_text().contains("получил специализацию «Защитник»"), "Completing the Protector Specialization Quest must record the gained specialization in the Hero Diary.")
 
 func test_slayer_quest_reward_and_growth() -> void:
 	var simulation = make_ready_simulation("slayer", 25)
